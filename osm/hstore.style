@@ -1,0 +1,33 @@
+# OsmType  Tag          DataType     Flags
+way   aeroway      text         polygon,nocolumn
+way   amenity      text         polygon,nocolumn
+way   area         text         polygon,nocolumn
+way   building     text         polygon,nocolumn
+way   harbour      text         polygon,nocolumn
+way   historic     text         polygon,nocolumn
+way   landuse      text         polygon,nocolumn
+way   leisure      text         polygon,nocolumn
+way   man_made     text         polygon,nocolumn
+way   military     text         polygon,nocolumn
+way   natural      text         polygon,nocolumn
+way   office       text         polygon,nocolumn
+way   place        text         polygon,nocolumn
+way   power        text         polygon,nocolumn
+way   public_transport text     polygon,nocolumn
+way   shop         text         polygon,nocolumn
+way   sport        text         polygon,nocolumn
+way   tourism      text         polygon,nocolumn
+way   water        text         polygon,nocolumn
+way   waterway     text         polygon,nocolumn
+way   wetland      text         polygon,nocolumn
+way         abandoned:aeroway       text    polygon,nocolumn
+way         abandoned:amenity       text    polygon,nocolumn
+way         abandoned:building      text    polygon,nocolumn
+way         abandoned:landuse       text    polygon,nocolumn
+way         abandoned:power         text    polygon,nocolumn
+way         area:highway            text    polygon,nocolumn
+
+node,way    osm_user text linear
+node,way    osm_timestamp timestamptz linear
+node,way    z_order      int4         linear # This is calculated during import
+way         way_area     real         linear # This is calculated during import

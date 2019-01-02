@@ -29,5 +29,3 @@ way         area:highway            text    polygon,nocolumn
 
 node,way    osm_user text linear
 node,way    osm_timestamp timestamptz linear
-node,way    z_order      int4         linear # This is calculated during import
-way         way_area     real         linear # This is calculated during import

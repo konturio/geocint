@@ -27,9 +27,9 @@ way         abandoned:landuse   text        polygon,nocolumn
 way         abandoned:power     text        polygon,nocolumn
 way         area:highway        text        polygon,nocolumn
 
-node,way    osm_user            text        linear
-node,way    osm_timestamp       timestamptz linear
-node,way    osm_version         bigint      linear
+node,way    osm_user            text        delete
+node,way    osm_timestamp       timestamptz delete
+node,way    osm_version         bigint      delete
 
 node,way    osm_uid             text        delete
 node,way    osm_changeset       text        delete

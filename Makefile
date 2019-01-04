@@ -14,7 +14,7 @@ data/planet-latest.osm.pbf: | data
 	touch $@
 
 _db/import_planet: data/planet-latest.osm.pbf | _db
-	osm2pgsql -C 50000 --flat-nodes nodes.cache --slim --hstore --hstore-add-index --extra-attributes --multi-geometry --style osm/hstore.style data/planet-latest.osm.pbf
+	osm2pgsql -C 50000 --flat-nodes nodes.cache --slim --hstore --hstore-add-index --multi-geometry --style osm/hstore.style data/planet-latest.osm.pbf
 	touch $@
 
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data

@@ -1,7 +1,26 @@
-import-planet:
-	osm2pgsql --flat-nodes nodes.cache --slim --hstore --extra-attributes --multi-geometry --style default.style ../planet-181217.osm.pbf
+init: _db/import_planet
+
+refresh: _db/refresh_planet
+
+data:
+	mkdir $@
+
+_db:
+	mkdir $@
+
+data/planet-latest.osm.pbf: | data
+	wget https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
+	# TODO: smoke check correctness of file
 	touch $@
 
+_db/import_planet: data/planet-latest.osm.pbf | _db
+	osm2pgsql -C 50000 --flat-nodes nodes.cache --slim --hstore --hstore-add-index --extra-attributes --multi-geometry --style osm/hstore.style data/planet-latest.osm.pbf
+	touch $@
+
+data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
+	osmupdate data/planet-latest.osm.pbf data/planet-latest-updated.osm.pbf
+	# TODO: smoke check correctness of file
+	touch $@
 
 
 
@@ -42,5 +61,3 @@ start-router-car: osrm-backend-car
 start-router-foot: osrm-backend-foot
 	docker run -p 5001:5000 -v `pwd`:/data osrm/osrm-backend osrm-routed --algorithm mld /data/BY-foot.osrm  --max-trip-size 1000000
 
-data:
-	mkdir $@

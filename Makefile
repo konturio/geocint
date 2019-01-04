@@ -22,9 +22,11 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	# TODO: smoke check correctness of file
 	touch $@
 
-
-
-
+osrm-backend-foot: data/planet-latest.osm.pbf
+	ln -sf data/planet-latest.osm.pbf data/planet-latest-foot.osm.pbf
+	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-extract -p /data/osm/profiles/foot.lua /data/data/planet-latest-foot.osm.pbf
+	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-partition /data/data/planet-latest-foot.osm.pbf
+	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-customize /data/data/planet-latest-foot.osm.pbf
 
 env: import start-router-car start-router-foot
 
@@ -44,12 +46,6 @@ osrm-backend-car: update-dump
 	#docker run -t -v `pwd`:/data osrm/osrm-backend osrm-contract /data/BY-car.osrm
 	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-partition /data/BY-car.osrm
 	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-customize /data/BY-car.osrm
-
-osrm-backend-foot: update-dump
-	ln -sf BY.osm.pbf BY-foot.osm.pbf
-	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-extract -p /data/profiles/foot.lua /data/BY-foot.osm.pbf
-	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-partition /data/BY-foot.osrm
-	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-customize /data/BY-foot.osrm
 	
 rebuild:
 	make update-dump

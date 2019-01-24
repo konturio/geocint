@@ -1,6 +1,4 @@
-init: _db/import_planet
-
-refresh: _db/refresh_planet
+all: _db/function/isochrone
 
 data:
 	mkdir $@
@@ -8,52 +6,56 @@ data:
 _db:
 	mkdir $@
 
+_db/function: | _db
+	mkdir $@
+
+_db/table: | _db
+	mkdir $@
+
 data/planet-latest.osm.pbf: | data
 	wget https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
 	# TODO: smoke check correctness of file
 	touch $@
 
-_db/import_planet: data/planet-latest.osm.pbf | _db
-	osm2pgsql -C 50000 --flat-nodes nodes.cache --slim --hstore-all --hstore-add-index --multi-geometry --style osm/hstore.style data/planet-latest.osm.pbf
-	touch $@
-
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	osmupdate data/planet-latest.osm.pbf data/planet-latest-updated.osm.pbf
 	# TODO: smoke check correctness of file
+	mv data/planet-latest-updated.osm.pbf data.planet-latest.osm.pbf
 	touch $@
 
-osrm-backend-foot: data/planet-latest.osm.pbf
-	ln -sf data/planet-latest.osm.pbf data/planet-latest-foot.osm.pbf
-	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-extract -p /data/osm/profiles/foot.lua /data/data/planet-latest-foot.osm.pbf
-	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-partition /data/data/planet-latest-foot.osm.pbf
-	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-customize /data/data/planet-latest-foot.osm.pbf
+_db/table/osm: data/planet-latest-updated.osm.pbf | _db/table
+	psql -f "drop table if exists osm;"
+	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, way_nodes bigint[], tags jsonb);copy osm from stdin freeze;'
+	touch $@
 
-env: import start-router-car start-router-foot
+_db/function/osm_way_nodes_to_segments: | _db/function
+	psql -f functions/osm_way_nodes_to_segments.sql
+	touch $@
 
-data/BY.osm.pbf: | data
-	wget http://data.gis-lab.info/osm_dump/dump/latest/BY.osm.pbf -O $@
-	
-osrm-frontend:
-	docker run -p 9966:9966 osrm/osrm-frontend
+_db/function/ST_ClosestPointWithZ: | _db/function
+	psql -f functions/ST_ClosestPointWithZ.sql
+	touch $@
 
-update-dump: BY.osm.pbf BY.poly
-	osmupdate BY.osm.pbf BY2.osm.pbf --verbose
-	osmium extract --strategy=smart -p BY.poly --overwrite -o BY.osm.pbf BY2.osm.pbf
-	
-osrm-backend-car: update-dump
-	ln -sf BY.osm.pbf BY-car.osm.pbf
-	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-extract -p /data/profiles/car.lua /data/BY-car.osm.pbf
-	#docker run -t -v `pwd`:/data osrm/osrm-backend osrm-contract /data/BY-car.osrm
-	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-partition /data/BY-car.osrm
-	docker run -t -v `pwd`:/data osrm/osrm-backend osrm-customize /data/BY-car.osrm
-	
-rebuild:
-	make update-dump
-	make osrm-backend
-	
-start-router-car: osrm-backend-car
-	docker run -p 5000:5000 -v `pwd`:/data osrm/osrm-backend osrm-routed --algorithm ch /data/BY-car.osrm  --max-trip-size 1000000
+_db/table/osm_road_segments: _db/table/osm _db/function/ST_ClosestPointWithZ _db/function/osm_way_nodes_to_segments
+	psql -f tables/osm_road_segments.sql
+	touch $@
 
-start-router-foot: osrm-backend-foot
-	docker run -p 5001:5000 -v `pwd`:/data osrm/osrm-backend osrm-routed --algorithm mld /data/BY-foot.osrm  --max-trip-size 1000000
+_db/index/osm_tags_idx: db/table/osm | _db/index
+	psql -c "create index osm_tags_idx on osm using gin (tags);"
+	touch $@
 
+_db/index/osm_geog_idx: db/table/osm | _db/index
+	psql -c "create index osm_geog_idx on osm using gist (geog);"
+	touch $@
+
+_db/index/osm_road_segments_osm_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments | _db/index
+	psql -c "create index osm_road_segments_osm_id_node_from_node_to_seg_geom_idx on osm_road_segments (osm_id, node_from, node_to, seg_geom);
+	touch $@
+
+_db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | _db/index
+	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using gist (seg_geom);
+	touch $@
+
+_db/function/isochrone: _db/table/osm_road_segments _db/index/osm_road_segments_osm_id_node_from_node_to_seg_geom_idx _db/index/osm_road_segments_seg_geom_idx _db/function/ST_ClosestPointWithZ
+	psql -f functions/isochrone.sql
+	touch $@

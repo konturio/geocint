@@ -1,4 +1,4 @@
-all: db/function/isochrone
+all: db/function/isochrone db/index/osm_geog_idx db/index/osm_tags_idx
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf
@@ -13,6 +13,9 @@ db/function: | db
 	mkdir $@
 
 db/table: | db
+	mkdir $@
+
+db/index: | db
 	mkdir $@
 
 data/planet-latest.osm.pbf: | data

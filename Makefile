@@ -30,7 +30,7 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	touch $@
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
-	psql -f "drop table if exists osm;"
+	psql -c "drop table if exists osm;"
 	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, way_nodes bigint[], tags jsonb);copy osm from stdin freeze;'
 	touch $@
 
@@ -55,11 +55,11 @@ db/index/osm_geog_idx: db/table/osm | db/index
 	touch $@
 
 db/index/osm_road_segments_osm_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments | db/index
-	psql -c "create index osm_road_segments_osm_id_node_from_node_to_seg_geom_idx on osm_road_segments (osm_id, node_from, node_to, seg_geom);
+	psql -c "create index osm_road_segments_osm_id_node_from_node_to_seg_geom_idx on osm_road_segments (osm_id, node_from, node_to, seg_geom);"
 	touch $@
 
 db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
-	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using gist (seg_geom);
+	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using gist (seg_geom);"
 	touch $@
 
 db/function/isochrone: db/table/osm_road_segments db/index/osm_road_segments_osm_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx db/function/ST_ClosestPointWithZ

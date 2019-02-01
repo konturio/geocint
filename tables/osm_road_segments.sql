@@ -14,7 +14,6 @@ create table osm_road_segments as (
         ST_Length(seg_geom::geography) / 1.4 -- 5 km/hr
       when
           tags @> '{"foot":"no"}' or
-          tags @> '{"access":"private"}' or
           tags @> '{"access":"no"}' or
           tags @> '{"highway":"motorway"}' or
           tags @> '{"highway":"trunk"}' or
@@ -22,7 +21,8 @@ create table osm_road_segments as (
           tags @> '{"highway":"secondary"}'
         then null
       when
-        tags @> '{"highway":"steps"}'
+          tags @> '{"highway":"steps"}' or
+          tags @> '{"highway":"cycleway"}'
         then
         ST_Length(seg_geom::geography) / 1.0 -- 3.6 km/hr
       else

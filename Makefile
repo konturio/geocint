@@ -1,4 +1,4 @@
-all: db/function/isochrone db/index/osm_geog_idx db/index/osm_tags_idx
+all: db/function/isochrone db/index/osm_geog_idx db/table/osm_population_split
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf
@@ -64,4 +64,28 @@ db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
 
 db/function/isochrone: db/table/osm_road_segments db/index/osm_road_segments_osm_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx db/function/ST_ClosestPointWithZ
 	psql -f functions/isochrone.sql
+	touch $@
+
+db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
+	psql -f tables/osm_population_raw.sql
+	touch $@
+
+db/procedure: | db
+	mkdir -p $@
+
+db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population_raw | db/procedure
+	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=2
+	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=3
+	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=4
+	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=5
+	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=6
+	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=7
+	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=8
+	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=9
+	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=10
+	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=11
+	touch $@
+
+db/table/osm_population_split: db/procedure/decimate_admin_level_in_osm_population_raw | db/table
+	psql -f tables/osm_population_split.sql
 	touch $@

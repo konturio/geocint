@@ -74,16 +74,16 @@ db/procedure: | db
 	mkdir -p $@
 
 db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population_raw | db/procedure
-	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=2
-	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=3
-	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=4
-	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=5
-	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=6
-	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=7
-	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=8
-	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=9
-	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=10
-	psql -f decimate_admin_level_in_osm_population_raw.sql -v current_level=11
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=2
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=3
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=4
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=5
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=6
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=7
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=8
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=9
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=10
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
 	touch $@
 
 db/table/osm_population_split: db/procedure/decimate_admin_level_in_osm_population_raw | db/table

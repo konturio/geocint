@@ -32,6 +32,7 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
 	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, way_nodes bigint[], tags jsonb);copy osm from stdin freeze;'
+	psql -c "vacuum analyze osm;"
 	touch $@
 
 db/function/osm_way_nodes_to_segments: | db/function

@@ -90,16 +90,22 @@ db/table/osm_population_split: db/procedure/decimate_admin_level_in_osm_populati
 	psql -f tables/osm_population_split.sql
 	touch $@
 
-db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster | db/table
+db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 | db/table
 	psql -f tables/ghs_globe_population_vector.sql
 	touch $@
 
+data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.zip: | data
+	wget https://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GPW4_GLOBE_R2015A/GHS_POP_GPW42015_GLOBE_R2015A_54009_250/V1-0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.zip -O $@
+
+data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif: data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.zip
+	cd data; unzip -o data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.zip
+
 db/table/ghs_globe_population_raster: data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif | db/table
-	raster2pgsql data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif -t auto ghs_globe_population_raster | pv -T | psql -q
+	raster2pgsql data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif -t auto ghs_globe_population_raster |  psql -q
 	touch $@
 
 db/procedure/insert_projection_54009: | db/procedure
-	psql -f procedures/insert_projection_54009.sql
+	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
 db/table/ghs_population_grid_1000: db/table/ghs_globe_population_vector | db/table

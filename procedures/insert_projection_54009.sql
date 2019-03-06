@@ -1,3 +1,4 @@
+-- TODO: make sure this is part of PostGIS/Proj
 insert into
   spatial_ref_sys (srid, auth_name, auth_srid, proj4text, srtext)
 values

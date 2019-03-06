@@ -1,4 +1,4 @@
-all: db/function/isochrone db/index/osm_geog_idx db/table/osm_population_split
+all: db/function/isochrone db/index/osm_geog_idx db/table/osm_population_split db/table/osm_quality_bivariate_grid_1000
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf

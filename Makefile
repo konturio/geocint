@@ -89,3 +89,27 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 db/table/osm_population_split: db/procedure/decimate_admin_level_in_osm_population_raw | db/table
 	psql -f tables/osm_population_split.sql
 	touch $@
+
+db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster | db/table
+	psql -f tables/ghs_globe_population_vector.sql
+	touch $@
+
+db/table/ghs_globe_population_raster: data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif | db/table
+	raster2pgsql data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif -t auto ghs_globe_population_raster | pv -T | psql -q
+	touch $@
+
+db/procedure/insert_projection_54009: | db/procedure
+	psql -f procedures/insert_projection_54009.sql
+	touch $@
+
+db/table/ghs_population_grid_1000: db/table/ghs_globe_population_vector | db/table
+	psql -f tables/ghs_population_grid_1000.sql
+	touch $@
+
+db/table/osm_object_count_grid_1000: db/table/osm | db/table
+	psql -f tables/osm_object_count_grid_1000.sql
+	touch $@
+
+db/table/osm_quality_bivariate_grid_1000: db/table/ghs_population_grid_1000 db/table/osm_object_count_grid_1000 | db/table
+	psql -f tables/osm_quality_bivariate_grid_1000.sql
+	touch $@

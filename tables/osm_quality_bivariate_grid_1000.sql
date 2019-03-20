@@ -33,6 +33,16 @@ create temporary table osm_pop_stats as (
 );
 analyse osm_pop_stats;
 
+
+-- here we follow this idea:
+-- http://www.joshuastevens.net/cartography/make-a-bivariate-choropleth-map/
+-- A - less map objects than 33 percentile
+-- B - intermediate map objects (33-66 percentile)
+-- C - many objects (66+ percentile)
+-- 1 - population less than 1 person on this square km
+-- 2 - population less than 66 percentile
+-- 3 - populated, more than 66 percentile.
+-- A1 is not interesting for HOT, A3 needs mapping
 drop table if exists osm_quality_bivariate_grid_1000;
 create table osm_quality_bivariate_grid_1000 as (
   select

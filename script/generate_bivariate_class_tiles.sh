@@ -25,7 +25,7 @@ function bivariate_class() {
       FROM osm_quality_bivariate_grid_1000
       WHERE geom && TileBBox($tz, $tx, $ty)
       AND ST_Intersects(geom, TileBBox($tz, $tx, $ty))
-    ) AS q;
+    ) AS q
   ) TO STDOUT;
   "
 }
@@ -34,7 +34,7 @@ for (( z=$zoom; z<=9; ++z )); do
   for (( x=$x0; x<=$x0; ++x )); do
     mkdir -p ./tiles/$z/$x
     for (( y=$y0; y<=$y0; ++y )); do
-      echo $x, $y, $z, %time%
+      echo $x, $y, $z
       file="./tiles/$z/$x/$y.pbf"
       {
         psql gis gis -tq -c "$(bivariate_class $z $x $y)" | xxd -r -p ;

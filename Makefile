@@ -63,10 +63,13 @@ db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
 	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using gist (seg_geom);"
 	touch $@
 
-db/function/isochrone: db/table/osm_road_segments db/index/osm_road_segments_osm_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx db/function/ST_ClosestPointWithZ
+db/function/isochrone: db/function/TileBBox db/table/osm_road_segments db/index/osm_road_segments_osm_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx db/function/ST_ClosestPointWithZ
 	psql -f functions/isochrone.sql
-	psql -f functions/TileBBox.sql
 	touch $@
+
+db/function/TileBBox: | db/function
+    psql -f functions/TileBBox.sql
+    touch $@
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_population_raw.sql

@@ -30,12 +30,11 @@ function bivariate_class() {
   "
 }
 
-offset=1
-
 for (( z=$zoom; z<=9; ++z )); do
-  for (( x=$x0-$offset; x<=$x0+$offset; ++x )); do
+  for (( x=$x0; x<=$x0; ++x )); do
     mkdir -p ./tiles/$z/$x
-    for (( y=$y0-$offset; y<=$y0+$offset; ++y )); do
+    for (( y=$y0; y<=$y0; ++y )); do
+      echo $x, $y, $z, %time%
       file="./tiles/$z/$x/$y.pbf"
       {
         psql gis gis -tq -c "$(bivariate_class $z $x $y)" | xxd -r -p ;
@@ -43,7 +42,6 @@ for (( z=$zoom; z<=9; ++z )); do
       du -h $file
     done
   done
-  let "offset *= 2"
   let "x0 = x0 * 2"
   let "y0 = y0 * 2"
 done

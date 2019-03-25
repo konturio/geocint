@@ -17,14 +17,14 @@ function bivariate_class() {
       SELECT bivariate_class,
         ST_AsMvtGeom(
           geom,
-          TileBBox($tz, $tx, $tz),
+          TileBBox($tz, $tx, $ty),
           4096,
           256,
           true
         ) AS geom
       FROM osm_quality_bivariate_grid_1000
-      WHERE geom && TileBBox($tz, $tx, $tz)
-      AND ST_Intersects(geom, TileBBox($tz, $tx, $tz))
+      WHERE geom && TileBBox($tz, $tx, $ty)
+      AND ST_Intersects(geom, TileBBox($tz, $tx, $ty))
     ) AS q;
   ) TO STDOUT;
   "

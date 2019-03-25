@@ -65,6 +65,7 @@ db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
 
 db/function/isochrone: db/table/osm_road_segments db/index/osm_road_segments_osm_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx db/function/ST_ClosestPointWithZ
 	psql -f functions/isochrone.sql
+	psql -f functions/TileBBox.sql
 	touch $@
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table

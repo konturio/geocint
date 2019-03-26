@@ -2,8 +2,8 @@
 
 set -e
 
-x0=0
-y0=0
+x0=1
+y0=1
 zoom=0
 
 function bivariate_class() {
@@ -30,10 +30,12 @@ function bivariate_class() {
   "
 }
 
-for (( z=$zoom; z<=9; ++z )); do
-  for (( x=0; x<=$x0; ++x )); do
+for (( z=$zoom; z<=9; z++ )); do
+  let "x0 = 2**$z"
+  let "y0 = 2**$z"
+  for (( x=0; x<$x0; x++ )); do
     mkdir -p ./tiles/$z/$x
-    for (( y=0; y<=$y0; ++y )); do
+    for (( y=0; y<$y0; y++ )); do
       echo $z, $x, $y
       file="./tiles/$z/$x/$y.pbf"
       {
@@ -42,6 +44,4 @@ for (( z=$zoom; z<=9; ++z )); do
       du -h $file
     done
   done
-  let "x0 = 2**$z"
-  let "y0 = 2**$z"
 done

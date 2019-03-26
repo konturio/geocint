@@ -34,7 +34,7 @@ for (( z=$zoom; z<=9; ++z )); do
   for (( x=0; x<=$x0; ++x )); do
     mkdir -p ./tiles/$z/$x
     for (( y=0; y<=$y0; ++y )); do
-      echo $x, $y, $z
+      echo $z, $x, $y
       file="./tiles/$z/$x/$y.pbf"
       {
         psql gis gis -tq -c "$(bivariate_class $z $x $y)" | xxd -r -p ;

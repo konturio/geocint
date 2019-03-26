@@ -42,6 +42,6 @@ for (( z=$zoom; z<=9; ++z )); do
       du -h $file
     done
   done
-  let "x0 = x0 * 2"
-  let "y0 = y0 * 2"
+  let "x0 = 2**$z"
+  let "y0 = 2**$z"
 done

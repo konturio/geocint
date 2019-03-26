@@ -31,9 +31,9 @@ function bivariate_class() {
 }
 
 for (( z=$zoom; z<=9; ++z )); do
-  for (( x=$x0; x<=$x0; ++x )); do
+  for (( x=0; x<=$x0; ++x )); do
     mkdir -p ./tiles/$z/$x
-    for (( y=$y0; y<=$y0; ++y )); do
+    for (( y=0; y<=$y0; ++y )); do
       echo $x, $y, $z
       file="./tiles/$z/$x/$y.pbf"
       {
@@ -42,6 +42,6 @@ for (( z=$zoom; z<=9; ++z )); do
       du -h $file
     done
   done
-  let "x0 = x0 * 2"
-  let "y0 = y0 * 2"
+  let "x0 = 2**$z"
+  let "y0 = 2**$z"
 done

@@ -45,3 +45,5 @@ for (( z=$zoom; z<=9; z++ )); do
     done
   done
 done
+
+scp -C tiles user@server:/var/www/tiles

@@ -126,3 +126,6 @@ db/table/osm_object_count_grid_1000: db/table/osm | db/table
 db/table/osm_quality_bivariate_grid_1000: db/table/ghs_population_grid_1000 db/table/osm_object_count_grid_1000 | db/table
 	psql -f tables/osm_quality_bivariate_grid_1000.sql
 	touch $@
+
+task_generate_bivariate_class_tiles: ; @echo "Starting tiles generation..."; \
+  /bin/bash scripts/generate_bivariate_class_tiles.sh

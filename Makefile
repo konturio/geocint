@@ -1,4 +1,7 @@
-all: db/function/isochrone db/index/osm_geog_idx db/table/osm_population_split db/table/osm_quality_bivariate_grid_1000
+# A bivariate class tiles folder @dollar/var/www/tiles/
+BIVARIATE_CLASS_TILES_TARGET = "osm_quality_bivariate"
+
+all: db/function/isochrone db/index/osm_geog_idx db/table/osm_population_split db/table/osm_quality_bivariate_grid_1000 deploy/bivariate_tiles_to_dollar
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf
@@ -17,6 +20,9 @@ db/table: | db
 
 db/index: | db
 	mkdir $@
+
+data/tiles: | data
+    mkdir $@
 
 data/planet-latest.osm.pbf: | data
 	wget https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
@@ -127,5 +133,14 @@ db/table/osm_quality_bivariate_grid_1000: db/table/ghs_population_grid_1000 db/t
 	psql -f tables/osm_quality_bivariate_grid_1000.sql
 	touch $@
 
-task_generate_bivariate_class_tiles: ; @echo "Starting tiles generation..."; \
-  /bin/bash scripts/generate_bivariate_class_tiles.sh
+data/tiles/bivariate_class_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_1000 | data/tiles
+    cd ./scripts/ && . generate_bivariate_class_tiles.sh  | parallel --eta
+    tar cvfj $@ ./data/tiles
+
+deploy/bivariate_tiles_to_dollar: data/tiles/bivariate_class_tiles.tar.bz2
+    ssh root@disaster.ninja -c "rm bivariate_class_tiles.tar.bz2"
+    scp data/tiles/bivariate_class_tiles.tar.bz2 root@disaster.ninja:
+    ssh root@disaster.ninja -c `rm -rf /var/www/tiles/${BIVARIATE_CLASS_TILES_TARGET}`
+    ssh root@disaster.ninja -c `tar xvf bivariate_class_tiles.tar.bz2 -C /var/www/tiles/${BIVARIATE_CLASS_TILES_TARGET}`
+    touch $@
+

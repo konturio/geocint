@@ -38,12 +38,7 @@ for (( z=$zoom; z<=9; z++ )); do
     for (( y=0; y<$y0; y++ )); do
       echo $z, $x, $y
       file="./tiles/$z/$x/$y.pbf"
-      {
-        psql gis gis -tq -c "$(bivariate_class $z $x $y)" | xxd -r -p ;
-      } > $file
-      du -h $file
+      echo "psql -q -X -f bivariate_class_tile.sql -v z=$z -v x=$x -v y=$y | xxd -r -p > $file"
     done
   done
 done
-
-scp -C tiles user@server:/var/www/tiles

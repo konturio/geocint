@@ -1,28 +1,31 @@
-# A bivariate class tiles folder @dollar/var/www/tiles/
-BIVARIATE_CLASS_TILES_TARGET = "osm_quality_bivariate"
-
-all: db/function/isochrone db/index/osm_geog_idx db/table/osm_population_split db/table/osm_quality_bivariate_grid_1000 deploy/bivariate_tiles_to_dollar
+all: db/function/isochrone db/index/osm_geog_idx db/table/osm_population_split deploy/dollar/osm_quality_bivariate_tiles
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf
 
 data:
-	mkdir $@
+	mkdir -p $@
 
 db:
-	mkdir $@
+	mkdir -p $@
 
 db/function: | db
-	mkdir $@
+	mkdir -p $@
 
 db/table: | db
-	mkdir $@
+	mkdir -p $@
 
 db/index: | db
-	mkdir $@
+	mkdir -p $@
 
 data/tiles: | data
-    mkdir $@
+	mkdir -p $@
+
+deploy:
+	mkdir -p $@
+
+deploy/dollar:
+	mkdir -p $@
 
 data/planet-latest.osm.pbf: | data
 	wget https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
@@ -74,8 +77,8 @@ db/function/isochrone: db/function/TileBBox db/table/osm_road_segments db/index/
 	touch $@
 
 db/function/TileBBox: | db/function
-    psql -f functions/TileBBox.sql
-    touch $@
+	psql -f functions/TileBBox.sql
+	touch $@
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_population_raw.sql
@@ -133,14 +136,16 @@ db/table/osm_quality_bivariate_grid_1000: db/table/ghs_population_grid_1000 db/t
 	psql -f tables/osm_quality_bivariate_grid_1000.sql
 	touch $@
 
-data/tiles/bivariate_class_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_1000 | data/tiles
-    bash ./scripts/generate_bivariate_class_tiles.sh  | parallel --eta
-    tar cvfj $@ ./data/tiles
+data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_1000 db/function/TileBBox | data/tiles
+	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
+	cd data/tiles/osm_quality_bivariate/tiles/; tar cjvf ../../osm_quality_bivariate_tiles.tar.bz2 ./
 
-deploy/bivariate_tiles_to_dollar: data/tiles/bivariate_class_tiles.tar.bz2
-    ssh root@disaster.ninja -c "rm bivariate_class_tiles.tar.bz2"
-    scp data/tiles/bivariate_class_tiles.tar.bz2 root@disaster.ninja:
-    ssh root@disaster.ninja -c `rm -rf /var/www/tiles/${BIVARIATE_CLASS_TILES_TARGET}`
-    ssh root@disaster.ninja -c `tar xvf bivariate_class_tiles.tar.bz2 -C /var/www/tiles/${BIVARIATE_CLASS_TILES_TARGET}`
-    touch $@
-
+deploy/dollar/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/dollar
+	ssh root@disaster.ninja -c "rm osm_quality_bivariate_tiles.tar.bz2"
+	scp data/tiles/osm_quality_bivariate_tiles.tar.bz2 root@disaster.ninja:
+	ssh root@disaster.ninja -c "rm -rf /var/www/tiles/osm_quality_bivariate_new"
+	ssh root@disaster.ninja -c "tar xvf bivariate_class_tiles.tar.bz2 -C /var/www/tiles/osm_quality_bivariate_new"
+	ssh root@disaster.ninja -c "rm -rf /var/www/tiles/osm_quality_bivariate_old"
+	ssh root@disaster.ninja -c "mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old && mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate"
+	# TODO: remove old when we're sure we don't wnt to go back
+	touch $@

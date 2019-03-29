@@ -4,40 +4,14 @@ x0=1
 y0=1
 zoom=0
 
-# Function is moved to bivariate_class_tile.sql file.
-
-#function bivariate_class() {
-#  tz=$1
-#  tx=$2
-#  ty=$3
-#  echo "
-#  COPY (
-#    SELECT encode(ST_AsMVT(q, 'bivariate_class', 4096, 'geom'), 'hex')
-#    FROM (
-#      SELECT bivariate_class,
-#        ST_AsMvtGeom(
-#          geom,
-#          TileBBox($tz, $tx, $ty),
-#          4096,
-#          256,
-#          true
-#        ) AS geom
-#      FROM osm_quality_bivariate_grid_1000
-#      WHERE geom && TileBBox($tz, $tx, $ty)
-#      AND ST_Intersects(geom, TileBBox($tz, $tx, $ty))
-#    ) AS q
-#  ) TO STDOUT;
-#  "
-#}
-
 for (( z=$zoom; z<=9; z++ )); do
   let "x0 = 2**$z"
   let "y0 = 2**$z"
   for (( x=0; x<$x0; x++ )); do
-    mkdir -p ../data/tiles/$z/$x
+    mkdir -p data/tiles/osm_quality_bivariate/tiles/$z/$x
     for (( y=0; y<$y0; y++ )); do
       echo $z, $x, $y
-      file="../data/tiles/$z/$x/$y.pbf"
+      file="data/tiles/osm_quality_bivariate/tiles/$z/$x/$y.pbf"
       echo "psql -q -X -f bivariate_tile.sql -v x=$x -v y=$y -v z=$z | xxd -r -p > $file"
     done
   done

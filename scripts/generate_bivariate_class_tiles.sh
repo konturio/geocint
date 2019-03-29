@@ -12,7 +12,7 @@ for (( z=$zoom; z<=9; z++ )); do
     for (( y=0; y<$y0; y++ )); do
       echo $z, $x, $y
       file="data/tiles/osm_quality_bivariate/tiles/$z/$x/$y.pbf"
-      echo "psql -q -X -f bivariate_tile.sql -v x=$x -v y=$y -v z=$z | xxd -r -p > $file"
+      echo "psql -q -X -f scripts/bivariate_class_tile.sql -v x=$x -v y=$y -v z=$z | xxd -r -p > $file"
     done
   done
 done

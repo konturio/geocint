@@ -141,11 +141,11 @@ data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_g
 	cd data/tiles/osm_quality_bivariate/tiles/; tar cjvf ../../osm_quality_bivariate_tiles.tar.bz2 ./
 
 deploy/dollar/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/dollar
-	ssh root@disaster.ninja -c "rm osm_quality_bivariate_tiles.tar.bz2"
+	ssh root@disaster.ninja -C "rm -f osm_quality_bivariate_tiles.tar.bz2"
 	scp data/tiles/osm_quality_bivariate_tiles.tar.bz2 root@disaster.ninja:
-	ssh root@disaster.ninja -c "rm -rf /var/www/tiles/osm_quality_bivariate_new"
-	ssh root@disaster.ninja -c "tar xvf bivariate_class_tiles.tar.bz2 -C /var/www/tiles/osm_quality_bivariate_new"
-	ssh root@disaster.ninja -c "rm -rf /var/www/tiles/osm_quality_bivariate_old"
-	ssh root@disaster.ninja -c "mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old && mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate"
-	# TODO: remove old when we're sure we don't wnt to go back
+	ssh root@disaster.ninja -C "rm -rf /var/www/tiles/osm_quality_bivariate_new; mkdir -p /var/www/tiles/osm_quality_bivariate_new"
+	ssh root@disaster.ninja -C "tar xvf osm_quality_bivariate_tiles.tar.bz2 -C /var/www/tiles/osm_quality_bivariate_new"
+	ssh root@disaster.ninja -C "rm -rf /var/www/tiles/osm_quality_bivariate_old"
+	ssh root@disaster.ninja -C "mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old; mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate"
+	# TODO: remove old when we're sure we don't want to go back
 	touch $@

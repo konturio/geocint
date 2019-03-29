@@ -134,7 +134,7 @@ db/table/osm_quality_bivariate_grid_1000: db/table/ghs_population_grid_1000 db/t
 	touch $@
 
 data/tiles/bivariate_class_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_1000 | data/tiles
-    cd ./scripts/ && . generate_bivariate_class_tiles.sh  | parallel --eta
+    bash ./scripts/generate_bivariate_class_tiles.sh  | parallel --eta
     tar cvfj $@ ./data/tiles
 
 deploy/bivariate_tiles_to_dollar: data/tiles/bivariate_class_tiles.tar.bz2

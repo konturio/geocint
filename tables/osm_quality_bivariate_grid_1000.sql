@@ -61,4 +61,4 @@ create table osm_quality_bivariate_grid_1000 as (
     osm_pop_stats,
     osm_quality_grid_with_population qg
 );
-create index on osm_quality_bivariate using brin (geom);
+create index on osm_quality_bivariate_grid_1000 using gist (geom);

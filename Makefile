@@ -35,7 +35,7 @@ data/planet-latest.osm.pbf: | data
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	osmupdate data/planet-latest.osm.pbf data/planet-latest-updated.osm.pbf
 	# TODO: smoke check correctness of file
-	mv data/planet-latest-updated.osm.pbf data.planet-latest.osm.pbf
+	mv data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
 	touch $@
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table

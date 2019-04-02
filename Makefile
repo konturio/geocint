@@ -140,7 +140,7 @@ db/table/osm_quality_bivariate_tiles: db/table/osm_quality_bivariate_grid_1000 |
 	psql -f tables/osm_quality_bivariate_tiles.sql
 	touch $@
 
-data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_1000 db/function/TileBBox | data/tiles
+data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_tiles db/function/TileBBox | data/tiles
 	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
 	cd data/tiles/osm_quality_bivariate/tiles/; tar cjvf ../../osm_quality_bivariate_tiles.tar.bz2 ./
 

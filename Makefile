@@ -137,8 +137,8 @@ db/table/osm_quality_bivariate_grid_1000: db/table/ghs_population_grid_1000 db/t
 	touch $@
 
 db/table/osm_quality_bivariate_tiles: db/table/osm_quality_bivariate_grid_1000 | db/table
-    psql -f tables/osm_quality_bivariate_tiles.sql
-    touch $@
+	psql -f tables/osm_quality_bivariate_tiles.sql
+	touch $@
 
 data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_1000 db/function/TileBBox | data/tiles
 	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta

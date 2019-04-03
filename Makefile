@@ -149,7 +149,7 @@ data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_t
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint
 	rm -rf /var/www/tiles/osm_quality_bivariate_new; mkdir -p /var/www/tiles/osm_quality_bivariate_new
-	cp data/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_new
+	cp -a data/tiles/osm_quality_bivariate/. /var/www/tiles/osm_quality_bivariate_new/
 	rm -rf /var/www/tiles/osm_quality_bivariate_old
 	mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old; mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate
 

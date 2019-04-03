@@ -148,6 +148,7 @@ data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_t
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../../osm_quality_bivariate_tiles.tar.bz2 ./
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint
+	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles
 	rm -rf /var/www/tiles/osm_quality_bivariate_new; mkdir -p /var/www/tiles/osm_quality_bivariate_new
 	cp -a data/tiles/osm_quality_bivariate/. /var/www/tiles/osm_quality_bivariate_new/
 	rm -rf /var/www/tiles/osm_quality_bivariate_old

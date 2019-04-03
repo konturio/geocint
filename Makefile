@@ -142,7 +142,7 @@ db/table/osm_quality_bivariate_tiles: db/table/osm_quality_bivariate_grid_1000 |
 
 data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_tiles db/function/TileBBox | data/tiles
 	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
-	cd data/tiles/osm_quality_bivariate/tiles/; tar cjvf ../../osm_quality_bivariate_tiles.tar.bz2 ./
+	cd data/tiles/osm_quality_bivariate/; tar cjvf ../../osm_quality_bivariate_tiles.tar.bz2 ./
 
 deploy/dollar/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/dollar
 	ssh root@disaster.ninja -C "rm -f osm_quality_bivariate_tiles.tar.bz2"

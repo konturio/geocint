@@ -16,9 +16,14 @@ create table osm_road_segments as (
           tags @> '{"foot":"no"}' or
           tags @> '{"access":"no"}' or
           tags @> '{"highway":"motorway"}' or
+          tags @> '{"highway":"motorway_link"}' or
           tags @> '{"highway":"trunk"}' or
+          tags @> '{"highway":"trunk_link"}' or
           tags @> '{"highway":"primary"}' or
-          tags @> '{"highway":"secondary"}'
+          tags @> '{"highway":"primary_link"}' or
+          tags @> '{"highway":"secondary"}' or
+          tags @> '{"highway":"secondary_link"}' or
+          tags @> '{"tunnel":"yes"}'
         then null
       when
           tags @> '{"highway":"steps"}' or

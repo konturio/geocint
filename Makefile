@@ -27,6 +27,9 @@ deploy:
 deploy/dollar:
 	mkdir -p $@
 
+deploy/geocint:
+	mkdir -p $@
+
 data/planet-latest.osm.pbf: | data
 	wget https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
 	# TODO: smoke check correctness of file
@@ -143,9 +146,20 @@ db/table/osm_quality_bivariate_grid_1000: db/table/ghs_population_grid_1000 db/t
 	psql -f tables/osm_quality_bivariate_grid_1000.sql
 	touch $@
 
-data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_1000 db/function/TileBBox | data/tiles
+db/table/osm_quality_bivariate_tiles: db/table/osm_quality_bivariate_grid_1000 | db/table
+	psql -f tables/osm_quality_bivariate_tiles.sql
+	touch $@
+
+data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_tiles db/function/TileBBox | data/tiles
 	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
-	cd data/tiles/osm_quality_bivariate/tiles/; tar cjvf ../../osm_quality_bivariate_tiles.tar.bz2 ./
+	cd data/tiles/osm_quality_bivariate/; tar cjvf ../../osm_quality_bivariate_tiles.tar.bz2 ./
+
+deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint
+	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles
+	rm -rf /var/www/tiles/osm_quality_bivariate_new; mkdir -p /var/www/tiles/osm_quality_bivariate_new
+	cp -a data/tiles/osm_quality_bivariate/. /var/www/tiles/osm_quality_bivariate_new/
+	rm -rf /var/www/tiles/osm_quality_bivariate_old
+	mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old; mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate
 
 deploy/dollar/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/dollar
 	ssh root@disaster.ninja -C "rm -f osm_quality_bivariate_tiles.tar.bz2"

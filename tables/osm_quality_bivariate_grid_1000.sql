@@ -1,7 +1,7 @@
 drop table if exists osm_quality_bivariate_grid_1000_meta;
 create table osm_quality_bivariate_grid_1000_meta as (
     select
-        round(percentile_cont(0.33333) within group (order by count / area_km2))      as count_ab,
+        1::float                                                                      as count_ab,
         round(percentile_cont(0.66666) within group (order by count / area_km2))      as count_bc,
         round(max(count / area_km2))                                                  as count_max,
         1::float                                                                      as population_12,
@@ -10,8 +10,7 @@ create table osm_quality_bivariate_grid_1000_meta as (
     from
         osm_object_count_grid_1000_with_population
     where
-          population > 0
-      and count > 0
+        population > 0
 );
 analyse osm_quality_bivariate_grid_1000_meta;
 

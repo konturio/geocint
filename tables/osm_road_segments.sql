@@ -1,7 +1,7 @@
 drop table if exists osm_road_segments;
 create table osm_road_segments as (
   select
-    osm_id,
+    z.uosm_id as osm_id,
     node_from,
     node_to,
     seg_geom,
@@ -30,7 +30,7 @@ create table osm_road_segments as (
       end                          as walk_time
   from
     osm o,
-    osm_way_nodes_to_segments(geog::geometry, way_nodes) z
+    osm_way_nodes_to_segments(geog::geometry, way_nodes, osm_id) z
   where
     tags ? 'highway'
     and osm_type = 'way'

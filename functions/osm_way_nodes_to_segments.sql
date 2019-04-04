@@ -1,7 +1,11 @@
+drop function if exists osm_way_nodes_to_segments;
+
 create or replace function osm_way_nodes_to_segments(geom geometry,
-                                                     way_nodes bigint[])
+                                                     way_nodes bigint[],
+                                                     osm_id bigint)
   returns table
           (
+            uosm_id   bigint,
             node_from bigint,
             node_to   bigint,
             seg_geom  geometry
@@ -10,9 +14,10 @@ create or replace function osm_way_nodes_to_segments(geom geometry,
 as
 $$
 select
-  n                                 as node_from,
-  lead(n) over ()                   as node_to,
-  ST_MakeLine(pt, lead(pt) over ()) as seg_geom
+  osm_id * 10000 + ROW_NUMBER() over()     as uosm_id,
+  n                                        as node_from,
+  lead(n) over ()                          as node_to,
+  ST_MakeLine(pt, lead(pt) over ())        as seg_geom
 from
   (
     select

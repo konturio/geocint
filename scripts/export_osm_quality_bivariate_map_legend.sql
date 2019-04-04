@@ -1,4 +1,4 @@
-select
+copy (select
     jsonb_build_object(
             'name', 'Kontur OpenStreetMap Coverage Map',
             'description', 'This map shows relative distribution of OpenStreetMap object ' ||
@@ -46,4 +46,4 @@ European Commission, Joint Research Centre (JRC); Columbia University, Center fo
                                 (select count_max from osm_quality_bivariate_grid_1000_meta)
                         )
                 )
-        );
+        )) to stdout;

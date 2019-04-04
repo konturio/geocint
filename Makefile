@@ -34,14 +34,21 @@ data/planet-latest.osm.pbf: | data
 
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	osmupdate data/planet-latest.osm.pbf data/planet-latest-updated.osm.pbf
+	osmium fileinfo data/planet-latest-updated.osm.pbf -ej > data/planet-latest-updated.osm.pbf.meta.json
 	# TODO: smoke check correctness of file
-	mv data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
+	cp data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
+	cp data/planet-latest-updated.osm.pbf.meta.json data/planet-latest.osm.pbf.meta.json
 	touch $@
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
 	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, way_nodes bigint[], tags jsonb);copy osm from stdin freeze;'
 	psql -c "vacuum analyze osm;"
+	touch $@
+
+db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
+	psql -c "drop table if exists osm_meta;"
+	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb);copy osm_meta from stdin freeze;'
 	touch $@
 
 db/function/osm_way_nodes_to_segments: | db/function

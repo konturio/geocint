@@ -1,4 +1,4 @@
-all: db/function/isochrone db/index/osm_geog_idx db/table/osm_population_split deploy/dollar/osm_quality_bivariate_tiles
+all: db/function/isochrone db/index/osm_geog_idx db/table/osm_population_split deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/osm_quality_bivariate_tiles
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf
@@ -142,7 +142,11 @@ db/table/osm_object_count_grid_1000: db/table/osm | db/table
 	psql -f tables/osm_object_count_grid_1000.sql
 	touch $@
 
-db/table/osm_quality_bivariate_grid_1000: db/table/ghs_population_grid_1000 db/table/osm_object_count_grid_1000 | db/table
+db/table/osm_object_count_grid_1000_with_population: db/table/osm db/table/ghs_population_grid_1000 | db/table
+	psql -f tables/osm_object_count_grid_1000_with_population.sql
+	touch $@
+
+db/table/osm_quality_bivariate_grid_1000: db/table/osm_object_count_grid_1000 db/table/osm_object_count_grid_1000_with_population | db/table
 	psql -f tables/osm_quality_bivariate_grid_1000.sql
 	touch $@
 
@@ -150,8 +154,9 @@ db/table/osm_quality_bivariate_tiles: db/table/osm_quality_bivariate_grid_1000 |
 	psql -f tables/osm_quality_bivariate_tiles.sql
 	touch $@
 
-data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_tiles db/function/TileBBox | data/tiles
+data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_meta db/table/osm_quality_bivariate_tiles db/function/TileBBox | data/tiles
 	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
+	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../../osm_quality_bivariate_tiles.tar.bz2 ./
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint
@@ -160,6 +165,7 @@ deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_til
 	cp -a data/tiles/osm_quality_bivariate/. /var/www/tiles/osm_quality_bivariate_new/
 	rm -rf /var/www/tiles/osm_quality_bivariate_old
 	mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old; mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate
+	touch $@
 
 deploy/dollar/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/dollar
 	ssh root@disaster.ninja -C "rm -f osm_quality_bivariate_tiles.tar.bz2"

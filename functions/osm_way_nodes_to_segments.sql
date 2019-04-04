@@ -5,7 +5,7 @@ create or replace function osm_way_nodes_to_segments(geom geometry,
                                                      osm_id bigint)
   returns table
           (
-            uosm_id   bigint,
+            seg_id   bigint,
             node_from bigint,
             node_to   bigint,
             seg_geom  geometry

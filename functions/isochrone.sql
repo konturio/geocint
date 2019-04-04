@@ -83,7 +83,7 @@ create table pgrouting_isochrones as (
             from_v
           from
             pgr_drivingDistance(
-                  'select osm_id as id, node_from as source, node_to as target, walk_time as cost, walk_time as reverse_cost' ||
+                  'select seg_id as id, node_from as source, node_to as target, walk_time as cost, walk_time as reverse_cost' ||
                   ' from osm_road_segments where walk_time is not null and ST_Intersects(seg_geom, ''' ||
                   ST_AsEWKT(possible_area) || ''')',
                   start_node_id,
@@ -93,7 +93,7 @@ create table pgrouting_isochrones as (
               ) d
           order by 1, 2, 3
           ) d on true
-          join osm_road_segments z on (z.osm_id = d.edge and (z.node_to = d.node or z.node_from = d.node))
+          join osm_road_segments z on (z.seg_id = d.edge and (z.node_to = d.node or z.node_from = d.node))
       order by
         node_from,
         node_to,

@@ -14,7 +14,7 @@ create or replace function osm_way_nodes_to_segments(geom geometry,
 as
 $$
 select
-  osm_id * 10000 + ROW_NUMBER() over()     as uosm_id,
+  osm_id * 10000 + ROW_NUMBER() over()     as seg_id,
   n                                        as node_from,
   lead(n) over ()                          as node_to,
   ST_MakeLine(pt, lead(pt) over ())        as seg_geom

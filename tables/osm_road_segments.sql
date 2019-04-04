@@ -1,7 +1,7 @@
 drop table if exists osm_road_segments;
 create table osm_road_segments as (
   select
-    z.uosm_id as osm_id,
+    seg_id,
     node_from,
     node_to,
     seg_geom,

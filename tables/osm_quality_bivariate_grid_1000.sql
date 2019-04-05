@@ -1,12 +1,12 @@
 drop table if exists osm_quality_bivariate_grid_1000_meta;
 create table osm_quality_bivariate_grid_1000_meta as (
     select
-        1::float                                                                      as count_ab,
-        round(percentile_cont(0.66666) within group (order by count / area_km2))      as count_bc,
-        round(max(count / area_km2))                                                  as count_max,
-        1::float                                                                      as population_12,
-        round(percentile_cont(0.66666) within group (order by population / area_km2)) as population_23,
-        round(max(population / area_km2))                                             as population_max
+        2::float                                                                   as count_ab,
+        round(percentile_cont(0.75) within group (order by count / area_km2))      as count_bc,
+        round(max(count / area_km2))                                               as count_max,
+        1::float                                                                   as population_12,
+        round(percentile_cont(0.75) within group (order by population / area_km2)) as population_23,
+        round(max(population / area_km2))                                          as population_max
     from
         osm_object_count_grid_1000_with_population
     where

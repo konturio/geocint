@@ -156,7 +156,7 @@ db/table/osm_quality_bivariate_tiles: db/table/osm_quality_bivariate_grid_1000 |
 
 data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_meta db/table/osm_quality_bivariate_tiles db/function/TileBBox | data/tiles
 	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
-	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql > data/tiles/osm_quality_bivariate/legend.json
+	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../../osm_quality_bivariate_tiles.tar.bz2 ./
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint

@@ -43,6 +43,14 @@ db/function/ST_ClosestPointWithZ: | db/function
 	psql -f functions/ST_ClosestPointWithZ.sql
 	touch $@
 
+db/function/make_isochrones: | db/function
+	psql -f functions/make_isochrones.sql
+	touch $@
+
+db/function/time_annotated_spanning_tree: | db/function
+	psql -f functions/time_annotated_spanning_tree.sql
+	touch $@
+
 db/table/osm_road_segments: db/table/osm db/function/ST_ClosestPointWithZ db/function/osm_way_nodes_to_segments
 	psql -f tables/osm_road_segments.sql
 	touch $@

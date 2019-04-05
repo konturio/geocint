@@ -3,9 +3,8 @@ copy (select
             'name', 'Kontur OpenStreetMap Coverage Map',
             'description', 'This map shows relative distribution of OpenStreetMap object ' ||
                            'count and Population. Last updated ' ||
-                           (select meta -> 'data' -> 'timestamp' ->> 'last' from osm_meta) ||
-                           'Map Object Density © OpenStreetMap contributors, https://www.openstreetmap.org/copyright
-
+                           (select meta -> 'data' -> 'timestamp' ->> 'last' from osm_meta) || '.',
+            'attribution', 'Map Object Density © OpenStreetMap contributors, https://www.openstreetmap.org/copyright.
 European Commission, Joint Research Centre (JRC); Columbia University, Center for International Earth Science Information Network - CIESIN (2015): GHS population grid, derived from GPW4, multitemporal (1975, 1990, 2000, 2015). European Commission, Joint Research Centre (JRC) [Dataset] PID: http://data.europa.eu/89h/jrc-ghsl-ghs_pop_gpw4_globe_r2015a',
             'maxzoom', 9,
             'minzoom', 0,

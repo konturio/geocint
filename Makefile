@@ -1,4 +1,4 @@
-all: db/function/isochrone db/index/osm_geog_idx db/table/osm_population_split deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/osm_quality_bivariate_tiles
+all: db/function/isochrone db/table/osm_population_split deploy/_all
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf
@@ -29,6 +29,9 @@ deploy/dollar:
 
 deploy/geocint:
 	mkdir -p $@
+
+deploy/_all: deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/osm_quality_bivariate_tiles
+	touch $@
 
 data/planet-latest.osm.pbf: | data
 	wget https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@

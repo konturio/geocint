@@ -16,4 +16,4 @@ create table osm_object_count_grid_1000 as (
   group by 1
   order by 1
 );
-create index on osm_quality_grid using brin (geom);
+create index on osm_object_count_grid_1000 using gist (geom);

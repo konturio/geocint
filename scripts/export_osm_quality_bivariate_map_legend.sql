@@ -31,9 +31,9 @@ European Commission, Joint Research Centre (JRC); Columbia University, Center fo
                                                      'Many people live here, but not much map!'),
                                   jsonb_build_object('id', 'C1', 'color', '#5ac87f', 'description',
                                                      'Almost nobody lives here. Detailed map.'),
-                                  jsonb_build_object('id', 'C2', 'color', '#53986a', 'description',
+                                  jsonb_build_object('id', 'C2', 'color', '#4daf4a', 'description',
                                                      'Some people live here. Detailed map.'),
-                                  jsonb_build_object('id', 'C3', 'color', '#4daf4a', 'description',
+                                  jsonb_build_object('id', 'C3', 'color', '#53986a', 'description',
                                                      'Many people live here. Detailed map.')
                               ),
                           'xAxisName', 'Population (ppl/km²)',

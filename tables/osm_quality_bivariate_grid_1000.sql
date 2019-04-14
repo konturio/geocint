@@ -10,7 +10,7 @@ create table osm_quality_bivariate_grid_1000_meta as (
     from
         osm_object_count_grid_1000_with_population
     where
-        population > 0
+        population > 1
 );
 analyse osm_quality_bivariate_grid_1000_meta;
 

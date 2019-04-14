@@ -1,7 +1,7 @@
 all: db/function/isochrone db/table/osm_population_split deploy/_all
 
 clean:
-	rm -rf db/ data/planet-latest-updated.osm.pbf
+	rm -rf db/ data/planet-latest-updated.osm.pbf deploy/ data/tiles 
 
 data:
 	mkdir -p $@

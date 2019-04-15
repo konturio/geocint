@@ -9,9 +9,11 @@ create table osm_road_segments as (
     ST_Length(seg_geom::geography) as length,
     case
       when
-        tags @> '{"foot":"yes"}'
+          tags @> '{"foot":"yes"}' or
+          tags @> '{"highway":"pedestrian"}' or
+          tags @> '{"highway":"footway"}'
         then
-        ST_Length(seg_geom::geography) / 1.4 -- 5 km/hr
+          ST_Length(seg_geom::geography) / 1.4 -- 5 km/hr
       when
           tags @> '{"foot":"no"}' or
           tags @> '{"access":"no"}' or

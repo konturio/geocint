@@ -16,9 +16,11 @@ create table ghs_globe_population_vector as (
           from
             (select (ST_PixelAsPolygons(rast)).* from ghs_globe_population_raster) z
           where
-            val >= 1
+            val > 0
         ) z
     ) r
+    where
+        ST_IsValid(geom)
 );
 
 create index on ghs_globe_population_vector using gist (geom);

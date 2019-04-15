@@ -1,4 +1,4 @@
-all: db/function/isochrone db/table/osm_population_split deploy/_all
+all: db/function/osm_way_nodes_to_segments db/table/osm_population_split deploy/_all
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf deploy/ data/tiles 
@@ -57,23 +57,15 @@ db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb);copy osm_meta from stdin freeze;'
 	touch $@
 
-db/function/osm_way_nodes_to_segments: | db/function
+db/function/osm_way_nodes_to_segments: db/function/TileBBox db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx
 	psql -f functions/osm_way_nodes_to_segments.sql
 	touch $@
 
-db/function/ST_ClosestPointWithZ: | db/function
-	psql -f functions/ST_ClosestPointWithZ.sql
+db/function/TileBBox: | db/function
+	psql -f functions/TileBBox.sql
 	touch $@
 
-db/function/make_isochrones: | db/function
-	psql -f functions/make_isochrones.sql
-	touch $@
-
-db/function/time_annotated_spanning_tree: | db/function
-	psql -f functions/time_annotated_spanning_tree.sql
-	touch $@
-
-db/table/osm_road_segments: db/table/osm db/function/ST_ClosestPointWithZ db/function/osm_way_nodes_to_segments
+db/table/osm_road_segments: db/table/osm
 	psql -f tables/osm_road_segments.sql
 	touch $@
 
@@ -91,14 +83,6 @@ db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_r
 
 db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
 	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using gist (seg_geom);"
-	touch $@
-
-db/function/isochrone: db/function/TileBBox db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx db/function/ST_ClosestPointWithZ
-	psql -f functions/isochrone.sql
-	touch $@
-
-db/function/TileBBox: | db/function
-	psql -f functions/TileBBox.sql
 	touch $@
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table

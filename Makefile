@@ -1,4 +1,4 @@
-all: db/function/osm_way_nodes_to_segments db/table/osm_population_split deploy/_all
+all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf deploy/ data/tiles 
@@ -33,6 +33,9 @@ deploy/geocint:
 deploy/_all: deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/osm_quality_bivariate_tiles
 	touch $@
 
+deploy/geocint/isochrone_tables: db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx
+	touch $@
+
 data/planet-latest.osm.pbf: | data
 	wget https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
 	# TODO: smoke check correctness of file
@@ -57,7 +60,7 @@ db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb);copy osm_meta from stdin freeze;'
 	touch $@
 
-db/function/osm_way_nodes_to_segments: db/function/TileBBox db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx
+db/function/osm_way_nodes_to_segments: | db/function
 	psql -f functions/osm_way_nodes_to_segments.sql
 	touch $@
 
@@ -65,7 +68,7 @@ db/function/TileBBox: | db/function
 	psql -f functions/TileBBox.sql
 	touch $@
 
-db/table/osm_road_segments: db/table/osm
+db/table/osm_road_segments: db/table/osm db/function/osm_way_nodes_to_segments
 	psql -f tables/osm_road_segments.sql
 	touch $@
 
@@ -145,7 +148,7 @@ db/table/osm_quality_bivariate_grid_1000: db/table/osm_object_count_grid_1000 db
 	psql -f tables/osm_quality_bivariate_grid_1000.sql
 	touch $@
 
-db/table/osm_quality_bivariate_tiles: db/table/osm_quality_bivariate_grid_1000 | db/table
+db/table/osm_quality_bivariate_tiles: db/table/osm_quality_bivariate_grid_1000 db/function/TileBBox | db/table
 	psql -f tables/osm_quality_bivariate_tiles.sql
 	touch $@
 

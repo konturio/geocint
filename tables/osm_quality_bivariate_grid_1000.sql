@@ -10,7 +10,8 @@ create table osm_quality_bivariate_grid_1000_meta as (
     from
         osm_object_count_grid_1000_with_population
     where
-        population > 1
+          population > 1
+      and resolution = 1000
 );
 analyse osm_quality_bivariate_grid_1000_meta;
 
@@ -30,6 +31,8 @@ create table osm_quality_bivariate_grid_1000 as (
         geom,
         population,
         count,
+        resolution,
+        zoom,
         case
             when (count / area_km2) <= count_ab then 'A'
             when (count / area_km2) <= count_bc then 'B'

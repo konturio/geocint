@@ -17,6 +17,7 @@ create table osm_road_segments as (
       when
           tags @> '{"foot":"no"}' or
           tags @> '{"access":"no"}' or
+          tags @> '{"highway":"proposed"}' or
           tags @> '{"highway":"motorway"}' or
           tags @> '{"highway":"motorway_link"}' or
           tags @> '{"highway":"trunk"}' or

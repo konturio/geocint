@@ -7,7 +7,7 @@ create table z_grid as (
         y,
         TileBBOX(z, x, y) as geom
     from
-        generate_series(1, 8) as z,
+        generate_series(0, 8) as z,
         generate_series(0, (2 ^ z)::integer) as x,
         generate_series(0, (2 ^ z)::integer) as y
 );

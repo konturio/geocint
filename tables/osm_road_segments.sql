@@ -10,6 +10,10 @@ create table osm_road_segments as (
     case
       when
           tags @> '{"foot":"yes"}' or
+          tags @> '{"highway":"residential"}' or
+          tags @> '{"highway":"service"}' or
+          tags @> '{"highway":"track"}' or
+          tags @> '{"highway":"living_street"}' or
           tags @> '{"highway":"pedestrian"}' or
           tags @> '{"highway":"footway"}'
         then

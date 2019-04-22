@@ -30,7 +30,7 @@ deploy/dollar:
 deploy/geocint:
 	mkdir -p $@
 
-deploy/_all: deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/osm_quality_bivariate_tiles
+deploy/_all: deploy/geocint/osm_quality_bivariate_tiles
 	touch $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx

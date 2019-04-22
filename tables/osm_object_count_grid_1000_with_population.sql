@@ -11,33 +11,18 @@ create table osm_object_count_grid_1000_with_population as (
         coalesce(landuse_count, 0)                                                        as landuse_count,
         coalesce(population, 0)                                                           as population,
         ST_Area(ST_Transform(coalesce(a.geom, b.geom), 4326)::geography)::float / 1000000 as area_km2,
-        8                                                                                 as zoom
+        7                                                                                 as zoom
     from
         osm_object_count_grid_1000 a
             full outer join ghs_population_grid_1000 b on a.geom::bytea = b.geom::bytea
     order by 1
 );
--- for zoom 7
-insert into osm_object_count_grid_1000_with_population
-select
-    ST_SnapToCellGrid(geog::geometry, 7) as geom,
-    sum(count)                           as count,
-    sum(building_count)                  as building_count,
-    sum(highway_count)                   as highway_count,
-    sum(highway_length)                  as highway_length,
-    sum(amenity_count)                   as amenity_count,
-    sum(natural_count)                   as natural_count,
-    sum(landuse_count)                   as landuse_count,
-    sum(population)                      as population,
-    sum(area_km2)                        as area_km2,
-    7                                    as zoom
-from
-    osm_object_count_grid_1000_with_population
-group by 1;
+
+create index on osm_object_count_grid_1000_with_population using brin(zoom);
 -- for zoom 6
 insert into osm_object_count_grid_1000_with_population
 select
-    ST_SnapToCellGrid(geog::geometry, 6) as geom,
+    ST_SnapToCellGrid(geom, 6) as geom,
     sum(count)                           as count,
     sum(building_count)                  as building_count,
     sum(highway_count)                   as highway_count,
@@ -56,7 +41,7 @@ group by 1;
 -- for zoom 5
 insert into osm_object_count_grid_1000_with_population
 select
-    ST_SnapToCellGrid(geog::geometry, 5) as geom,
+    ST_SnapToCellGrid(geom, 5) as geom,
     sum(count)                           as count,
     sum(building_count)                  as building_count,
     sum(highway_count)                   as highway_count,
@@ -75,7 +60,7 @@ group by 1;
 -- for zoom  4
 insert into osm_object_count_grid_1000_with_population
 select
-    ST_SnapToCellGrid(geog::geometry, 4) as geom,
+    ST_SnapToCellGrid(geom, 4) as geom,
     sum(count)                           as count,
     sum(building_count)                  as building_count,
     sum(highway_count)                   as highway_count,
@@ -94,7 +79,7 @@ group by 1;
 -- for zoom 3
 insert into osm_object_count_grid_1000_with_population
 select
-    ST_SnapToCellGrid(geog::geometry, 3) as geom,
+    ST_SnapToCellGrid(geom, 3) as geom,
     sum(count)                           as count,
     sum(building_count)                  as building_count,
     sum(highway_count)                   as highway_count,
@@ -113,7 +98,7 @@ group by 1;
 -- for zoom 2
 insert into osm_object_count_grid_1000_with_population
 select
-    ST_SnapToCellGrid(geog::geometry, 2) as geom,
+    ST_SnapToCellGrid(geom, 2) as geom,
     sum(count)                           as count,
     sum(building_count)                  as building_count,
     sum(highway_count)                   as highway_count,
@@ -132,7 +117,7 @@ group by 1;
 -- for zoom 1
 insert into osm_object_count_grid_1000_with_population
 select
-    ST_SnapToCellGrid(geog::geometry, 1) as geom,
+    ST_SnapToCellGrid(geom, 1) as geom,
     sum(count)                           as count,
     sum(building_count)                  as building_count,
     sum(highway_count)                   as highway_count,
@@ -151,7 +136,7 @@ group by 1;
 -- for zoom 0
 insert into osm_object_count_grid_1000_with_population
 select
-    ST_SnapToCellGrid(geog::geometry, 0) as geom,
+    ST_SnapToCellGrid(geom, 0) as geom,
     sum(count)                           as count,
     sum(building_count)                  as building_count,
     sum(highway_count)                   as highway_count,

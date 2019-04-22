@@ -6,7 +6,7 @@ copy (select
                                  (select meta -> 'data' -> 'timestamp' ->> 'last' from osm_meta) || '.',
                   'attribution', 'Map Object Density © OpenStreetMap contributors, https://www.openstreetmap.org/copyright.
 European Commission, Joint Research Centre (JRC); Columbia University, Center for International Earth Science Information Network - CIESIN (2015): GHS population grid, derived from GPW4, multitemporal (1975, 1990, 2000, 2015). European Commission, Joint Research Centre (JRC) [Dataset] PID: http://data.europa.eu/89h/jrc-ghsl-ghs_pop_gpw4_globe_r2015a',
-                  'max_zoom', 8,
+                  'max_zoom', 7,
                   'min_zoom', 0,
                   'tile_size', 512,
                   'tile_type', 'vector',

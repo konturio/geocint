@@ -3,6 +3,6 @@ COPY (
   FROM (
     SELECT bivariate_class, ST_AsMvtGeom(geom, TileBBox(:z, :x, :y), 512, 0, false) AS geom
     FROM osm_quality_bivariate_tiles
-    WHERE geom && TileBBox(:z, :x, :y)
+    WHERE geom && TileBBox(:z, :x, :y) and z=:z and x=:x and y=:y
   ) AS q
 ) TO STDOUT;

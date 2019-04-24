@@ -1,7 +1,7 @@
 drop table if exists osm_object_count_grid_1000;
 create table osm_object_count_grid_1000 as (
     select
-        ST_SnapToCellGrid(geog::geometry, 7)                 as geom,
+        ST_Pixel(geog::geometry, 7)                          as geom,
         count(*)                                             as count,
         count(*) filter (where tags ? 'building')            as building_count,
         count(*) filter (where tags ? 'highway')             as highway_count,

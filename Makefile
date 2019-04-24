@@ -148,15 +148,15 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/ghs_population_grid_1000: db/table/ghs_globe_population_vector | db/table
+db/table/ghs_population_grid_1000: db/table/ghs_globe_population_vector db/function/ST_Pixel | db/table
 	psql -f tables/ghs_population_grid_1000.sql
 	touch $@
 
-db/table/osm_object_count_grid_1000: db/table/osm | db/table
+db/table/osm_object_count_grid_1000: db/table/osm db/function/ST_Pixel | db/table
 	psql -f tables/osm_object_count_grid_1000.sql
 	touch $@
 
-db/table/osm_object_count_grid_1000_with_population: db/table/osm db/table/ghs_population_grid_1000 db/table/osm_object_count_grid_1000 | db/table
+db/table/osm_object_count_grid_1000_with_population: db/table/osm db/table/ghs_population_grid_1000 db/table/osm_object_count_grid_1000 db/function/ST_Pixel | db/table
 	psql -f tables/osm_object_count_grid_1000_with_population.sql
 	touch $@
 

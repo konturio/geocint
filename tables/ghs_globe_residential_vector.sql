@@ -1,5 +1,5 @@
-drop table if exists ghs_globe_residental_vector;
-create table ghs_globe_residental_vector as (
+drop table if exists ghs_globe_residential_vector;
+create table ghs_globe_residential_vector as (
   select
     centroid,
     geom,
@@ -14,7 +14,7 @@ create table ghs_globe_residental_vector as (
         (
           select *
           from
-            (select (ST_PixelAsPolygons(rast)).* from ghs_globe_residental_raster) z
+            (select (ST_PixelAsPolygons(rast)).* from ghs_globe_residential_raster) z
           where
             val > 0
         ) z
@@ -23,4 +23,4 @@ create table ghs_globe_residental_vector as (
         ST_IsValid(geom)
 );
 
-create index on ghs_globe_residental_vector using gist (geom);
+create index on ghs_globe_residential_vector using gist (geom);

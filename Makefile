@@ -135,13 +135,13 @@ data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_5
 	cd data; unzip -o GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip
 	touch $@
 
-db/table/ghs_globe_residental_raster: data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif | db/table
-	psql -c "drop table if exists ghs_globe_residental_raster"
-	raster2pgsql -M -Y -s 54009 data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif -t auto ghs_globe_residental_raster | psql -q
+db/table/ghs_globe_residential_raster: data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif | db/table
+	psql -c "drop table if exists ghs_globe_residential_raster"
+	raster2pgsql -M -Y -s 54009 data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif -t auto ghs_globe_residential_raster | psql -q
 	touch $@
 
-db/table/ghs_globe_residental_raster: db/table/ghs_globe_residental_raster db/procedure/insert_projection_54009 | db/table
-	psql -f tables/ghs_globe_residental_vector.sql
+db/table/ghs_globe_residential_raster: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 | db/table
+	psql -f tables/ghs_globe_residential_vector.sql
 	touch $@
 
 db/procedure/insert_projection_54009: | db/procedure

@@ -7,9 +7,9 @@ create table z_grid as (
         y,
         TileBBOX(z, x, y) as geom
     from
-        generate_series(0, 8) as z,
-        generate_series(0, (2 ^ z)::integer) as x,
-        generate_series(0, (2 ^ z)::integer) as y
+        generate_series(0, 7) as z,
+        generate_series(0, (2 ^ z - 1)::integer) as x,
+        generate_series(0, (2 ^ z - 1)::integer) as y
 );
 
 drop table if exists osm_quality_bivariate_tiles;

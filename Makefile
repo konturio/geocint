@@ -68,6 +68,10 @@ db/function/TileBBox: | db/function
 	psql -f functions/TileBBox.sql
 	touch $@
 
+db/function/ST_Pixel: | db/function
+	psql -f functions/ST_Pixel.sql
+	touch $@
+
 db/table/osm_road_segments: db/table/osm db/function/osm_way_nodes_to_segments
 	psql -f tables/osm_road_segments.sql
 	touch $@
@@ -140,7 +144,7 @@ db/table/ghs_globe_residential_raster: data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_
 	raster2pgsql -M -Y -s 54009 data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif -t auto ghs_globe_residential_raster | psql -q
 	touch $@
 
-db/table/ghs_globe_residential_raster: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 | db/table
+db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 | db/table
 	psql -f tables/ghs_globe_residential_vector.sql
 	touch $@
 

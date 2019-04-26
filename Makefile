@@ -21,6 +21,9 @@ db/index: | db
 data/tiles: | data
 	mkdir -p $@
 
+data/population: | data
+	mkdir -p $@
+
 deploy:
 	mkdir -p $@
 
@@ -176,6 +179,9 @@ data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_meta db/table/osm_q
 	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
 	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../osm_quality_bivariate_tiles.tar.bz2 ./
+
+data/population/population_api_tables.sql: db/table/ghs_globe_population_vector db/table/ghs_globe_residential_vector | data/population
+	pg_dump -o -d gis -h localhost -p 5432 -U gis -t ghs_globe_population_vector -t ghs_globe_residential_vector -f data/population/population_api_tables.sql
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint
 	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles

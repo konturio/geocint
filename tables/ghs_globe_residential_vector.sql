@@ -3,7 +3,7 @@ create table ghs_globe_residential_vector as (
   select
     centroid,
     geom,
-    r.val as residental
+    r.val as residential
   from
     (
       select
@@ -16,7 +16,7 @@ create table ghs_globe_residential_vector as (
           from
             (select (ST_PixelAsPolygons(rast)).* from ghs_globe_residential_raster) z
           where
-            val > 0
+            val > 1
         ) z
     ) r
     where

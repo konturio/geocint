@@ -1,7 +1,8 @@
 all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all
 
 clean:
-	rm -rf db/ data/planet-latest-updated.osm.pbf deploy/ data/tiles 
+	rm -rf db/ data/planet-latest-updated.osm.pbf deploy/ data/tiles
+	psql -f scripts/clean.sql
 
 data:
 	mkdir -p $@
@@ -171,11 +172,7 @@ db/table/osm_quality_bivariate_grid_1000: db/table/osm_object_count_grid_1000 db
 	psql -f tables/osm_quality_bivariate_grid_1000.sql
 	touch $@
 
-db/table/osm_quality_bivariate_tiles: db/table/osm_quality_bivariate_grid_1000 db/function/TileBBox | db/table
-	psql -f tables/osm_quality_bivariate_tiles.sql
-	touch $@
-
-data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_meta db/table/osm_quality_bivariate_tiles db/function/TileBBox | data/tiles
+data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/function/TileBBox | data/tiles
 	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
 	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../osm_quality_bivariate_tiles.tar.bz2 ./

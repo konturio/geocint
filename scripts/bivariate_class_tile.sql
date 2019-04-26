@@ -7,6 +7,6 @@ COPY (
              FROM osm_quality_bivariate_grid_1000
              WHERE zoom = :z
                AND geom && TileBBox(:z, :x, :y)
-             GROUP BY bivariate_class, geom
+             GROUP BY bivariate_class
          ) AS q
     ) TO STDOUT;

@@ -1,7 +1,8 @@
 all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all
 
 clean:
-	rm -rf db/ data/planet-latest-updated.osm.pbf deploy/ data/tiles 
+	rm -rf db/ data/planet-latest-updated.osm.pbf deploy/ data/tiles
+	psql -f scripts/clean.sql
 
 data:
 	mkdir -p $@

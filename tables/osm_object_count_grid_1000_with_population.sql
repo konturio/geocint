@@ -152,5 +152,7 @@ from
 where
     zoom = 1
 group by 1;
+
+vacuum analyze osm_object_count_grid_1000_with_population;
 -- create index
 create index on osm_object_count_grid_1000_with_population using gist (geom);

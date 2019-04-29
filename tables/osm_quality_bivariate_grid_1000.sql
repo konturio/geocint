@@ -31,6 +31,7 @@ create table osm_quality_bivariate_grid_1000 as (
         geom,
         population,
         count,
+	area_km2,
         zoom,
         case
             when (count / area_km2) <= count_ab then 'A'

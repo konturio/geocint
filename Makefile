@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all data/population/population_api_tables.sqld.gz
+all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all data/population/population_api_tables.sqld.gz db/table/fb_africa_population_vector
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf deploy/ data/tiles

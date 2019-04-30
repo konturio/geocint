@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all data/population/population_api_tables.sqld.gz
+all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all data/population/population_api_tables.sqld.gz db/table/fb_africa_population_vector
 
 clean:
 	rm -rf db/ data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -23,6 +23,9 @@ data/tiles: | data
 	mkdir -p $@
 
 data/population: | data
+	mkdir -p $@
+
+data/population_africa_2018-10-01: | data
 	mkdir -p $@
 
 deploy:
@@ -150,6 +153,23 @@ db/table/ghs_globe_residential_raster: data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_
 
 db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 | db/table
 	psql -f tables/ghs_globe_residential_vector.sql
+	touch $@
+
+data/population_africa_2018-10-01/population_af_2018-10-01.zip: | data/population_africa_2018-10-01
+	wget https://data.humdata.org/dataset/dbd7b22d-7426-4eb0-b3c4-faa29a87f44b/resource/7b3ef0ae-a37d-4a42-a2c9-6b111e592c2c/download/population_af_2018-10-01.zip -O $@
+
+data/population_africa_2018-10-01/population_af_2018-10-01_unzip: data/population_africa_2018-10-01/population_af_2018-10-01.zip
+	cd data/population_africa_2018-10-01; unzip -o population_af_2018-10-01.zip
+	touch $@
+
+db/table/fb_africa_population_raster: data/population_africa_2018-10-01/population_af_2018-10-01_unzip | db/table
+	psql -c "drop table if exists fb_africa_population_raster"
+	raster2pgsql -p -M -Y -s 4326 data/population_africa_2018-10-01/*.tif -t auto fb_africa_population_raster | psql -q
+	ls data/population_africa_2018-10-01/*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t auto fb_africa_population_raster | psql -q'
+	touch $@
+
+db/table/fb_africa_population_vector: db/table/fb_africa_population_raster | db/table
+	psql -f tables/fb_africa_population_vector.sql
 	touch $@
 
 db/procedure/insert_projection_54009: | db/procedure

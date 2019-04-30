@@ -160,6 +160,7 @@ data/population_africa_2018-10-01/population_af_2018-10-01.zip: | data/populatio
 
 data/population_africa_2018-10-01/population_af_2018-10-01_unzip: data/population_africa_2018-10-01/population_af_2018-10-01.zip
 	cd data/population_africa_2018-10-01; unzip -o population_af_2018-10-01.zip
+	touch $@
 
 db/table/fb_africa_population_raster: data/population_africa_2018-10-01/population_af_2018-10-01_unzip | db/table
 	psql -c "drop table if exists fb_africa_population_raster"

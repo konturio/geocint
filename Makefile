@@ -170,6 +170,7 @@ data/population_africa_2018-10-01/population_af_2018-10-01_convert: data/populat
 db/table/fb_africa_population_raster: data/population_africa_2018-10-01/population_af_2018-10-01_convert | db/table
 	psql -c "drop table if exists fb_africa_population_raster"
 	raster2pgsql -p -M -Y -s 4326 data/population_africa_2018-10-01/*.tif -t auto fb_africa_population_raster | psql -q
+	psql -c 'alter table fb_africa_population_raster drop CONSTRAINT fb_africa_population_raster_pkey;'
 	ls data/population_africa_2018-10-01/0_*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t auto fb_africa_population_raster | psql -q'
 	touch $@
 

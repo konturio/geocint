@@ -43,7 +43,18 @@ create table osm_road_segments as (
         ST_Length(seg_geom::geography) / 1.0 -- 3.6 km/hr
       else
         ST_Length(seg_geom::geography) / 1.4 -- 5 km/hr
-      end                          as walk_time
+      end                          as walk_time,
+    case
+      when
+          tags @> '{"access":"no"}' or
+          tags @> '{"highway":"pedestrian"}' or
+          tags @> '{"highway":"footway"}' or
+          tags @> '{"highway":"steps"}' or
+          tags @> '{"highway":"cycleway"}'
+        then null
+      else
+        ST_Length(seg_geom::geography) / 11.11 -- 40 km/hr
+      end                          as drive_time
   from
     osm o,
     osm_way_nodes_to_segments(geog::geometry, way_nodes, osm_id) z

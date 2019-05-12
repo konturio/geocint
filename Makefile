@@ -37,7 +37,7 @@ deploy/dollar:
 deploy/geocint:
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/osm_quality_bivariate_tiles
+deploy/_all: deploy/geocint/osm_quality_bivariate_tiles deploy/dollar/osm_quality_bivariate_tiles
 	touch $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx
@@ -87,9 +87,9 @@ db/index/osm_tags_idx: db/table/osm | db/index
 	psql -c "create index osm_tags_idx on osm using gin (tags);"
 	touch $@
 
-db/index/osm_geog_idx: db/table/osm | db/index
-	psql -c "create index osm_geog_idx on osm using gist (geog);"
-	touch $@
+#db/index/osm_geog_idx: db/table/osm | db/index
+#	psql -c "create index osm_geog_idx on osm using gist (geog);"
+#	touch $@
 
 db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments | db/index
 	psql -c "create index osm_road_segments_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments (seg_id, node_from, node_to, seg_geom);"
@@ -163,8 +163,7 @@ data/population_africa_2018-10-01/population_af_2018-10-01_unzip: data/populatio
 	touch $@
 
 data/population_africa_2018-10-01/population_af_2018-10-01_convert: data/population_africa_2018-10-01/population_af_2018-10-01_unzip
-	cd data/population_africa_2018-10-01
-	ls *.tif | parallel --eta 'gdalwarp -srcnodata NaN -dstnodata 0 {} 0_{}'
+	cd data/population_africa_2018-10-01; rm 0_*.tif;  ls *.tif | parallel --eta 'gdalwarp -srcnodata NaN -dstnodata 0 {} 0_{}'
 	touch $@
 
 db/table/fb_africa_population_raster: data/population_africa_2018-10-01/population_af_2018-10-01_convert | db/table
@@ -205,6 +204,7 @@ data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/function/TileBBox db/table/os
 
 data/population/population_api_tables.sqld.gz: db/table/ghs_globe_population_vector db/table/ghs_globe_residential_vector | data/population
 	pg_dump -o -d gis -h localhost -p 5432 -U gis -t ghs_globe_population_vector -t ghs_globe_residential_vector -f data/population/population_api_tables.sqld
+	rm -f data/population/population_api_tables.sqld.gz 
 	gzip data/population/population_api_tables.sqld
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint

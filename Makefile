@@ -136,7 +136,7 @@ data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_
 
 db/table/ghs_globe_population_raster: data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_population_raster"
-	raster2pgsql -M -Y -s 54009 data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif -t auto ghs_globe_population_raster | psql -q
+	raster2pgsql -M -Y -s 54009 data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif -t 256x256 ghs_globe_population_raster | psql -q
 	touch $@
 
 data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data
@@ -148,7 +148,7 @@ data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_5
 
 db/table/ghs_globe_residential_raster: data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_residential_raster"
-	raster2pgsql -M -Y -s 54009 data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif -t auto ghs_globe_residential_raster | psql -q
+	raster2pgsql -M -Y -s 54009 data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif -t 256x256 ghs_globe_residential_raster | psql -q
 	touch $@
 
 db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 | db/table
@@ -170,7 +170,7 @@ db/table/fb_africa_population_raster: data/population_africa_2018-10-01/populati
 	psql -c "drop table if exists fb_africa_population_raster"
 	raster2pgsql -p -M -Y -s 4326 data/population_africa_2018-10-01/*.tif -t auto fb_africa_population_raster | psql -q
 	psql -c 'alter table fb_africa_population_raster drop CONSTRAINT fb_africa_population_raster_pkey;'
-	ls data/population_africa_2018-10-01/0_*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t auto fb_africa_population_raster | psql -q'
+	ls data/population_africa_2018-10-01/0_*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t 256x256 fb_africa_population_raster | psql -q'
 	touch $@
 
 db/table/fb_africa_population_vector: db/table/fb_africa_population_raster | db/table

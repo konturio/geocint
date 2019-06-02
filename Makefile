@@ -163,7 +163,7 @@ data/population_africa_2018-10-01/population_af_2018-10-01_unzip: data/populatio
 	touch $@
 
 data/population_africa_2018-10-01/population_af_2018-10-01_convert: data/population_africa_2018-10-01/population_af_2018-10-01_unzip
-	cd data/population_africa_2018-10-01; rm 0_*.tif;  ls *.tif | parallel --eta 'gdalwarp -srcnodata NaN -dstnodata 0 {} 0_{}'
+	cd data/population_africa_2018-10-01; rm 0_*.tif;  ls *.tif | parallel --eta 'gdalwarp -co COMPRESS=LZW -co TILED=YES -srcnodata NaN -dstnodata 0 {} 0_{}'
 	touch $@
 
 db/table/fb_africa_population_raster: data/population_africa_2018-10-01/population_af_2018-10-01_convert | db/table

@@ -123,6 +123,37 @@ db/table/osm_population_split: db/procedure/decimate_admin_level_in_osm_populati
 	psql -f tables/osm_population_split.sql
 	touch $@
 
+data/population_hrsl: |data
+	mkdir -p $@
+
+data/population_hrsl/download: | data/population_hrsl
+	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_phl_v1.zip
+	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_idn_v1.zip
+	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_khm_v1.zip
+	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_tha_v1.zip
+	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_lka_v1.zip
+	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_arg_v1.zip
+	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_pri_v1.zip
+	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_hti_v1.zip
+	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_gtm_v1.zip
+	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_mex_v1.zip
+	touch $@
+
+data/population_hrsl/unzip: data/population_hrsl/download
+	cd data/population_hrsl; ls *zip | parallel "unzip -o {}"
+	touch $@
+
+db/table/hrsl_population_raster: data/population_hrsl/unzip | db/table
+	psql -c "drop table if exists hrsl_population_raster"
+	raster2pgsql -p -M -Y -s 4326 data/population_hrsl/*pop.tif -t auto hrsl_population_raster | psql -q
+	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
+	ls data/population_hrsl/*pop.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t 256x256 hrsl_population_raster | psql -q'
+	touch $@
+
+db/table/hrsl_population_vector: db/table/hrsl_population_raster
+	psql -f tables/hrsl_population_vector.sql
+	touch $@
+
 db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 | db/table
 	psql -f tables/ghs_globe_population_vector.sql
 	touch $@

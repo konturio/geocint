@@ -1,3 +1,4 @@
+set client_min_messages to warning;
 drop table if exists fb_africa_population_vector;
 create table fb_africa_population_vector as (
   select

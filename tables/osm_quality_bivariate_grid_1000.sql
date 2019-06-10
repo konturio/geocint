@@ -4,14 +4,14 @@ create table osm_quality_bivariate_grid_1000_meta as (
         2::float                                                                   as count_ab,
         round(percentile_cont(0.75) within group (order by count / area_km2))      as count_bc,
         round(max(count / area_km2))                                               as count_max,
-        1::float                                                                   as population_12,
+        2::float                                                                   as population_12,
         round(percentile_cont(0.75) within group (order by population / area_km2)) as population_23,
         round(max(population / area_km2))                                          as population_max
     from
         osm_object_count_grid_1000_with_population
     where
           population > 1
-      and zoom = 7
+      and zoom = 6
 );
 analyse osm_quality_bivariate_grid_1000_meta;
 

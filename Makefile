@@ -1,7 +1,8 @@
 all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all data/population/population_api_tables.sqld.gz db/table/fb_africa_population_vector
 
 clean:
-	rm -rf db/ data/planet-latest-updated.osm.pbf deploy/ data/tiles
+	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
+	profile_make_clean data/planet-latest-updated.osm.pbf
 	psql -f scripts/clean.sql
 
 data:
@@ -140,18 +141,33 @@ data/population_hrsl/download: | data/population_hrsl
 	touch $@
 
 data/population_hrsl/unzip: data/population_hrsl/download
+	rm -rf *tif
 	cd data/population_hrsl; ls *zip | parallel "unzip -o {}"
+	cd data/population_hrsl; ls *pop.tif | parallel 'gdal_translate -co "TILED=YES" -co "COMPRESS=DEFLATE" {} tiled_{}'
 	touch $@
 
 db/table/hrsl_population_raster: data/population_hrsl/unzip | db/table
 	psql -c "drop table if exists hrsl_population_raster"
-	raster2pgsql -p -M -Y -s 4326 data/population_hrsl/*pop.tif -t auto hrsl_population_raster | psql -q
+	raster2pgsql -p -M -Y -s 4326 data/population_hrsl/tiled_*pop.tif -t auto hrsl_population_raster | psql -q
 	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
-	ls data/population_hrsl/*pop.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t 256x256 hrsl_population_raster | psql -q'
+	ls data/population_hrsl/tiled_*pop.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -M -Y -s 4326 {} -t 256x256 hrsl_population_raster | psql -q'
 	touch $@
 
 db/table/hrsl_population_vector: db/table/hrsl_population_raster
 	psql -f tables/hrsl_population_vector.sql
+	touch $@
+
+
+db/table/hrsl_population_boundary: db/index/osm_tags_idx | db/table
+	psql -f tables/hrsl_population_boundary.sql
+	touch $@
+
+db/table/fb_africa_population_boundary: db/index/osm_tags_idx db/table/fb_africa_population_vector | db/table
+	psql -f tables/fb_africa_population_boundary.sql
+	touch $@
+
+db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_population_boundary db/table/ghs_globe_population_vector db/table/fb_africa_population_vector db/table/fb_africa_population_boundary | db/table
+	psql -f tables/population_vector.sql
 	touch $@
 
 db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 | db/table
@@ -212,15 +228,15 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/ghs_population_grid_1000: db/table/ghs_globe_population_vector db/function/ST_Pixel | db/table
-	psql -f tables/ghs_population_grid_1000.sql
+db/table/population_grid_1000: db/table/population_vector db/function/ST_Pixel | db/table
+	psql -f tables/population_grid_1000.sql
 	touch $@
 
 db/table/osm_object_count_grid_1000: db/table/osm db/function/ST_Pixel | db/table
 	psql -f tables/osm_object_count_grid_1000.sql
 	touch $@
 
-db/table/osm_object_count_grid_1000_with_population: db/table/osm db/table/ghs_population_grid_1000 db/table/osm_object_count_grid_1000 db/function/ST_Pixel | db/table
+db/table/osm_object_count_grid_1000_with_population: db/table/osm db/table/population_grid_1000 db/table/osm_object_count_grid_1000 db/function/ST_Pixel | db/table
 	psql -f tables/osm_object_count_grid_1000_with_population.sql
 	touch $@
 

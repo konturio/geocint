@@ -1,3 +1,4 @@
+set client_min_messages to warning;
 drop table if exists hrsl_population_vector;
 create table hrsl_population_vector as (
   select
@@ -21,6 +22,7 @@ create table hrsl_population_vector as (
     ) r
     where
         ST_IsValid(geom)
+	and r.val != 'NaN'
 );
 
-create index on hrsl_population_vector using gist (geom);
+--create index on hrsl_population_vector using gist (geom);

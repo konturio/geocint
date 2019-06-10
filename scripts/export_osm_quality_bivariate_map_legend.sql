@@ -5,7 +5,8 @@ copy (select
                                  'count and Population. Last updated ' ||
                                  (select meta -> 'data' -> 'timestamp' ->> 'last' from osm_meta) || '.',
                   'attribution', 'Map Object Density © OpenStreetMap contributors, https://www.openstreetmap.org/copyright.
-European Commission, Joint Research Centre (JRC); Columbia University, Center for International Earth Science Information Network - CIESIN (2015): GHS population grid, derived from GPW4, multitemporal (1975, 1990, 2000, 2015). European Commission, Joint Research Centre (JRC) [Dataset] PID: http://data.europa.eu/89h/jrc-ghsl-ghs_pop_gpw4_globe_r2015a',
+European Commission, Joint Research Centre (JRC); Columbia University, Center for International Earth Science Information Network - CIESIN (2015): GHS population grid, derived from GPW4, multitemporal (1975, 1990, 2000, 2015). European Commission, Joint Research Centre (JRC) [Dataset] PID: http://data.europa.eu/89h/jrc-ghsl-ghs_pop_gpw4_globe_r2015a
+Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe.',
                   'max_zoom', 7,
                   'min_zoom', 0,
                   'tile_size', 512,

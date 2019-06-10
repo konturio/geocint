@@ -14,7 +14,7 @@ create table osm_object_count_grid_1000_with_population as (
         7                                                                                 as zoom
     from
         osm_object_count_grid_1000 a
-            full outer join ghs_population_grid_1000 b on a.geom::bytea = b.geom::bytea
+            full outer join population_grid_1000 b on a.geom::bytea = b.geom::bytea
     order by 1
 );
 
@@ -152,6 +152,8 @@ from
 where
     zoom = 1
 group by 1;
+
+update osm_object_count_grid_1000_with_population set area_km2 = ST_Area(ST_Transform(geom, 4326)::geography)::float / 1000000;
 
 vacuum analyze osm_object_count_grid_1000_with_population;
 -- create index

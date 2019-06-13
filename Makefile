@@ -249,8 +249,8 @@ data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/function/TileBBox db/table/os
 	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../osm_quality_bivariate_tiles.tar.bz2 ./
 
-data/population/population_api_tables.sqld.gz: db/table/ghs_globe_population_vector db/table/ghs_globe_residential_vector | data/population
-	pg_dump -o -d gis -h localhost -p 5432 -U gis -t ghs_globe_population_vector -t ghs_globe_residential_vector -f data/population/population_api_tables.sqld
+data/population/population_api_tables.sqld.gz: db/table/population_vector db/table/ghs_globe_residential_vector | data/population
+	pg_dump -o -d gis -h localhost -p 5432 -U gis -t population_vector -t ghs_globe_residential_vector -f data/population/population_api_tables.sqld
 	rm -f data/population/population_api_tables.sqld.gz 
 	gzip data/population/population_api_tables.sqld
 

@@ -1,10 +1,12 @@
 drop table if exists population_vector;
-create table population_vector as (select * from ghs_globe_population_vector);
+create table population_vector as (select * from ghs_globe_population_vector order by centroid);
 create index on population_vector using gist (geom);
 analyze population_vector;
 delete from population_vector p using hrsl_population_boundary b where ST_Intersects(b.geom, p.geom);
 delete from population_vector p using fb_africa_population_boundary b where ST_Intersects(b.geom, p.geom);
-insert into population_vector (geom, centroid, people) select geom, centroid, people from hrsl_population_vector;
-insert into population_vector (geom, centroid, people) select geom, centroid, population from fb_africa_population_vector;
-delete from population_vector where population = 'NaN';
+vacuum population_vector;
+insert into population_vector (geom, centroid, people) select geom, centroid, people from hrsl_population_vector order by centroid;
+insert into population_vector (geom, centroid, people) select geom, centroid, population from fb_africa_population_vector order by centroid;
+delete from population_vector where people = 'NaN';
+alter table population_vector set (parallel_workers=32);
 vacuum population_vector;

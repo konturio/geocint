@@ -50,17 +50,17 @@ data/planet-latest.osm.pbf: | data
 	touch $@
 
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
-	osmupdate data/planet-latest.osm.pbf data/planet-latest-updated.osm.pbf
+	pyosmium-up-to-date -s 10000 -o data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf || true
 	osmium fileinfo data/planet-latest-updated.osm.pbf -ej > data/planet-latest-updated.osm.pbf.meta.json
 	# TODO: smoke check correctness of file
-	cp data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
-	cp data/planet-latest-updated.osm.pbf.meta.json data/planet-latest.osm.pbf.meta.json
+	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
+	cp -lf data/planet-latest-updated.osm.pbf.meta.json data/planet-latest.osm.pbf.meta.json
 	touch $@
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
 	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, way_nodes bigint[], tags jsonb);copy osm from stdin freeze;'
-	psql -c "vacuum analyze osm;"
+	psql -c "vacuum analyze osm; alter table osm set (parallel_workers=32);"
 	touch $@
 
 db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table

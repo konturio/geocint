@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all data/population/population_api_tables.sqld.gz db/table/fb_africa_population_vector
+all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all data/population/population_api_tables.sqld.gz db/table/fb_africa_population_vector db/table/osm_water_polygons db/table/water_polygons_vector
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -222,6 +222,22 @@ db/table/fb_africa_population_raster: data/population_africa_2018-10-01/populati
 
 db/table/fb_africa_population_vector: db/table/fb_africa_population_raster | db/table
 	psql -f tables/fb_africa_population_vector.sql
+	touch $@
+
+data/water-polygons-split-3857.zip: | data
+	wget https://osmdata.openstreetmap.de/download/water-polygons-split-3857.zip -O $@
+
+data/water_polygons.shp: water-polygons-split-3857.zip
+	cd data; unzip -o water-polygons-split-3857.zip
+	touch $@
+
+db/table/water_polygons_vector: data/water_polygons.shp | db/table
+	psql -c "drop table if exists water_polygons_vector"
+	shp2pgsql -I -s 3857 data/water-polygons-split-3857/water_polygons.shp water_polygons_vector | psql -q
+	touch $@
+
+db/table/osm_water_polygons: db/table
+	psql -f tables/osm_water_polygons.sql
 	touch $@
 
 db/procedure/insert_projection_54009: | db/procedure

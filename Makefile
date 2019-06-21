@@ -227,7 +227,7 @@ db/table/fb_africa_population_vector: db/table/fb_africa_population_raster | db/
 data/water-polygons-split-3857.zip: | data
 	wget https://osmdata.openstreetmap.de/download/water-polygons-split-3857.zip -O $@
 
-data/water_polygons.shp: water-polygons-split-3857.zip
+data/water_polygons.shp: data/water-polygons-split-3857.zip
 	cd data; unzip -o water-polygons-split-3857.zip
 	touch $@
 

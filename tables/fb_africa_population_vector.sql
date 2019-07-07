@@ -20,8 +20,6 @@ create table fb_africa_population_vector as (
             val > 0
         ) z
     ) r
-    where
-        ST_IsValid(geom)
 );
 
 create index on fb_africa_population_vector using gist (geom);

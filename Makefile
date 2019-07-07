@@ -1,4 +1,6 @@
-all: deploy/geocint/isochrone_tables db/table/osm_population_split deploy/_all data/population/population_api_tables.sqld.gz db/table/fb_africa_population_vector db/table/osm_water_polygons db/table/water_polygons_vector
+weekly: deploy/geocint/isochrone_tables db/table/osm_water_polygons db/table/water_polygons_vector
+
+daily: deploy/_all db/table/osm_population_split data/population/population_api_tables.sqld.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -60,7 +62,8 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
 	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, way_nodes bigint[], tags jsonb);copy osm from stdin freeze;'
-	psql -c "vacuum analyze osm; alter table osm set (parallel_workers=32);"
+	psql -c "vacuum analyze osm;"
+	psql -c "alter table osm set (parallel_workers=32);"
 	touch $@
 
 db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
@@ -76,7 +79,7 @@ db/function/TileBBox: | db/function
 	psql -f functions/TileBBox.sql
 	touch $@
 
-db/function/ST_Pixel: | db/function
+db/function/ST_Pixel: db/function/TileBBox | db/function
 	psql -f functions/ST_Pixel.sql
 	touch $@
 
@@ -87,10 +90,6 @@ db/table/osm_road_segments: db/table/osm db/function/osm_way_nodes_to_segments
 db/index/osm_tags_idx: db/table/osm | db/index
 	psql -c "create index osm_tags_idx on osm using gin (tags);"
 	touch $@
-
-#db/index/osm_geog_idx: db/table/osm | db/index
-#	psql -c "create index osm_geog_idx on osm using gist (geog);"
-#	touch $@
 
 db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments | db/index
 	psql -c "create index osm_road_segments_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments (seg_id, node_from, node_to, seg_geom);"
@@ -209,15 +208,12 @@ data/population_africa_2018-10-01/population_af_2018-10-01_unzip: data/populatio
 	cd data/population_africa_2018-10-01; unzip -o population_af_2018-10-01.zip
 	touch $@
 
-data/population_africa_2018-10-01/population_af_2018-10-01_convert: data/population_africa_2018-10-01/population_af_2018-10-01_unzip
-	cd data/population_africa_2018-10-01; rm 0_*.tif;  ls *.tif | parallel --eta 'gdalwarp -co COMPRESS=LZW -co TILED=YES -srcnodata NaN -dstnodata 0 {} 0_{}'
-	touch $@
-
-db/table/fb_africa_population_raster: data/population_africa_2018-10-01/population_af_2018-10-01_convert | db/table
+db/table/fb_africa_population_raster: data/population_africa_2018-10-01/population_af_2018-10-01_unzip | db/table
 	psql -c "drop table if exists fb_africa_population_raster"
 	raster2pgsql -p -M -Y -s 4326 data/population_africa_2018-10-01/*.tif -t auto fb_africa_population_raster | psql -q
 	psql -c 'alter table fb_africa_population_raster drop CONSTRAINT fb_africa_population_raster_pkey;'
-	ls data/population_africa_2018-10-01/0_*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t 256x256 fb_africa_population_raster | psql -q'
+	ls data/population_africa_2018-10-01/*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t 256x256 fb_africa_population_raster | psql -q'
+	psql -c "alter table fb_africa_population_raster set (parallel_workers=32)"
 	touch $@
 
 db/table/fb_africa_population_vector: db/table/fb_africa_population_raster | db/table
@@ -266,9 +262,7 @@ data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/function/TileBBox db/table/os
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../osm_quality_bivariate_tiles.tar.bz2 ./
 
 data/population/population_api_tables.sqld.gz: db/table/population_vector db/table/ghs_globe_residential_vector | data/population
-	pg_dump -o -d gis -h localhost -p 5432 -U gis -t population_vector -t ghs_globe_residential_vector -f data/population/population_api_tables.sqld
-	rm -f data/population/population_api_tables.sqld.gz 
-	gzip data/population/population_api_tables.sqld
+	pg_dump -t population_vector -t ghs_globe_residential_vector | pigz > $@
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint
 	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles

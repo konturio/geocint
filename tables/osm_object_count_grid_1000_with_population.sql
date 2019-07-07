@@ -14,7 +14,7 @@ create table osm_object_count_grid_1000_with_population as (
         7                                                                                 as zoom
     from
         osm_object_count_grid_1000 a
-            full outer join population_grid_1000 b on a.geom::bytea = b.geom::bytea
+            full outer join population_grid_1000 b on a.geom = b.geom
     order by 1
 );
 

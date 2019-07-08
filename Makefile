@@ -157,12 +157,12 @@ db/table/hrsl_population_vector: db/table/hrsl_population_raster
 	touch $@
 
 
-db/table/hrsl_population_boundary: db/index/osm_tags_idx | db/table
-	psql -f tables/hrsl_population_boundary.sql
+db/table/hrsl_population_boundary: | db/table
+	zcat data/hrsl_population_boundary.sqld.gz | psql
 	touch $@
 
-db/table/fb_africa_population_boundary: db/index/osm_tags_idx db/table/fb_africa_population_vector | db/table
-	psql -f tables/fb_africa_population_boundary.sql
+db/table/fb_africa_population_boundary: | db/table
+	zcat data/fb_africa_population_boundary.sqld.gz | psql
 	touch $@
 
 db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_population_boundary db/table/ghs_globe_population_vector db/table/fb_africa_population_vector db/table/fb_africa_population_boundary | db/table

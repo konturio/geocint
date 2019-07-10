@@ -1,4 +1,4 @@
-weekly: deploy/geocint/isochrone_tables db/table/osm_water_polygons db/table/water_polygons_vector
+weekly: deploy/geocint/isochrone_tables db/table/water_polygons_vector db/table/osm_water_polygons
 
 daily: deploy/_all db/table/osm_population_split data/population/population_api_tables.sqld.gz
 
@@ -233,7 +233,7 @@ db/table/water_polygons_vector: data/water_polygons.shp | db/table
 	shp2pgsql -I -s 3857 data/water-polygons-split-3857/water_polygons.shp water_polygons_vector | psql -q
 	touch $@
 
-db/table/osm_water_polygons: db/index/osm_tags_idx | db/table
+db/table/osm_water_polygons: db/index/osm_tags_idx | db/table | db/table/water_polygons_vector
 	psql -f tables/osm_water_polygons.sql
 	touch $@
 

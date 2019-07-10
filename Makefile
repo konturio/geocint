@@ -173,16 +173,17 @@ db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster db/pr
 	psql -f tables/ghs_globe_population_vector.sql
 	touch $@
 
-data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.zip: | data
-	wget https://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GPW4_GLOBE_R2015A/GHS_POP_GPW42015_GLOBE_R2015A_54009_250/V1-0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.zip -O $@
+data/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip: | data
+	wget http://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_MT_GLOBE_R2019A/GHS_POP_E2015_GLOBE_R2019A_54009_250/V1-0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip -O $@
 
-data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif: data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.zip
-	cd data; unzip -o GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.zip
+data/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif: data/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip
+	cd data; unzip -o GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip
 	touch $@
 
-db/table/ghs_globe_population_raster: data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif | db/table
+db/table/ghs_globe_population_raster: data/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_population_raster"
-	raster2pgsql -M -Y -s 54009 data/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0/GHS_POP_GPW42015_GLOBE_R2015A_54009_250_v1_0.tif -t 256x256 ghs_globe_population_raster | psql -q
+	raster2pgsql -M -Y -s 54009 data/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif -t auto ghs_globe_population_raster | psql -q
+	psql -c "alter table ghs_globe_population_raster set (parallel_workers=32);"
 	touch $@
 
 data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data

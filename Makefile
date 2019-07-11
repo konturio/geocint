@@ -47,7 +47,7 @@ deploy/geocint/isochrone_tables: db/table/osm_road_segments db/index/osm_road_se
 	touch $@
 
 data/planet-latest.osm.pbf: | data
-	wget https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
+	wget -t inf https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
 	# TODO: smoke check correctness of file
 	touch $@
 

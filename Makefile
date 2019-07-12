@@ -1,4 +1,4 @@
-weekly: deploy/geocint/isochrone_tables db/table/water_polygons_vector db/table/osm_water_polygons
+weekly: deploy/geocint/isochrone_tables
 
 daily: deploy/_all db/table/osm_population_split data/population/population_api_tables.sqld.gz
 
@@ -119,7 +119,11 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
 	touch $@
 
-db/table/osm_population_split: db/procedure/decimate_admin_level_in_osm_population_raw | db/table
+db/procedure/trim_water_in_osm_population_raw: db/procedure/decimate_admin_level_in_osm_population_raw db/table/osm_water_polygons | db/procedure
+	psql -f procedures/trim_water_in_osm_population_raw.sql
+	touch $@
+
+db/table/osm_population_split: db/procedure/trim_water_in_osm_population_raw | db/table
 	psql -f tables/osm_population_split.sql
 	touch $@
 

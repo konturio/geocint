@@ -9,7 +9,7 @@ create table osm_water_polygons as (
   from
     osm
   where
-    ((tags ->> 'natural') = 'water' or (tags ->> 'waterway') in ('riverbank', 'river', 'stream', 'canal') or (tags ->> 'water') is not null)
+   (tags? 'water' or tags?'natural' or tags?'waterway') and  ((tags ->> 'natural') = 'water' or (tags ->> 'waterway') in ('riverbank', 'river', 'stream', 'canal') or (tags ->> 'water') is not null)
     and ST_GeometryType(geog::geometry) != 'ST_Point'
     and ST_GeometryType(geog::geometry) != 'ST_LineString'
 );
@@ -31,7 +31,7 @@ create table osm_water_lines_base as (
   from
     osm
   where
-    ((tags ->> 'natural') = 'water' or (tags ->> 'waterway') in ('riverbank', 'river', 'stream', 'canal', 'ditch', 'drain') or (tags ->> 'water') is not null)
+    (tags? 'water' or tags?'natural' or tags?'waterway') and ((tags ->> 'natural') = 'water' or (tags ->> 'waterway') in ('riverbank', 'river', 'stream', 'canal', 'ditch', 'drain') or (tags ->> 'water') is not null)
     and ST_GeometryType(geog::geometry) = 'ST_LineString'
 );
 create index on osm_water_lines_base using gist(geom);

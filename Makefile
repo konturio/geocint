@@ -237,7 +237,11 @@ db/table/water_polygons_vector: data/water_polygons.shp | db/table
 	shp2pgsql -I -s 3857 data/water-polygons-split-3857/water_polygons.shp water_polygons_vector | psql -q
 	touch $@
 
-db/table/osm_water_polygons: db/index/osm_tags_idx db/table/water_polygons_vector | db/table
+db/table/osm_water_lines: db/index/osm_tags_idx | db/table
+	psql -f tables/osm_water_lines.sql
+	touch $@
+
+db/table/osm_water_polygons: db/index/osm_tags_idx db/table/water_polygons_vector db/table/osm_water_lines | db/table
 	psql -f tables/osm_water_polygons.sql
 	touch $@
 

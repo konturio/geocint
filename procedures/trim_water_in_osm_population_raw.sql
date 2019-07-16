@@ -10,6 +10,40 @@ create table tmp_osm_pop_split_for_water_trim as (
     order by geom );
 alter table tmp_osm_pop_split_for_water_trim
     set (parallel_workers=32);
+
+
+drop table if exists tmp_osm_pop_split_for_water_lines;
+create table tmp_osm_pop_split_for_water_lines as (
+    select p.geom as p_geom,
+           ST_Collect(w.geom) as w_geom,
+           p.osm_type,
+           p.osm_id,
+           p.population,
+           p.admin_level
+    from tmp_osm_pop_split_for_water_trim p
+         left join osm_water_lines_buffer w on ST_Intersects(w.geom, p.geom)
+    group by p.osm_type, p.osm_id, p.population, p.admin_level, p.geom
+);
+drop table tmp_osm_pop_split_for_water_trim;
+
+
+drop table if exists tmp_osm_pop_split_for_water_lines_diff_trim;
+
+alter table tmp_osm_pop_split_for_water_lines
+    set (parallel_workers=32);
+
+create table tmp_osm_pop_split_for_water_lines_diff_trim as (
+    select population,
+           osm_type,
+           osm_id,
+           admin_level,
+           ST_Subdivide(ST_Difference(p_geom, ST_UnaryUnion(w_geom)), 100) as geom
+    from tmp_osm_pop_split_for_water_lines offset 0
+    group by 1, 2, 3, 4
+);
+drop table tmp_osm_pop_split_for_water_lines;
+
+
 drop table if exists tmp_osm_population_raw_nowater;
 create table tmp_osm_population_raw_nowater as (
     select p.geom as p_geom,
@@ -18,11 +52,11 @@ create table tmp_osm_population_raw_nowater as (
            p.osm_id,
            p.population,
            p.admin_level
-    from tmp_osm_pop_split_for_water_trim p
+    from tmp_osm_pop_split_for_water_lines_diff_trim p
          left join osm_water_polygons w on ST_Intersects(w.geom, p.geom)
     group by p.osm_type, p.osm_id, p.population, p.admin_level, p.geom
 );
-drop table tmp_osm_pop_split_for_water_trim;
+drop table tmp_osm_pop_split_for_water_lines_diff_trim;
 drop table if exists osm_population_raw_nowater;
 
 alter table tmp_osm_population_raw_nowater

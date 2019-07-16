@@ -43,6 +43,8 @@ create table tmp_osm_pop_split_for_water_lines_diff_trim as (
 );
 drop table tmp_osm_pop_split_for_water_lines;
 
+alter table tmp_osm_pop_split_for_water_lines_diff_trim
+    set (parallel_workers=32);
 
 drop table if exists tmp_osm_population_raw_nowater;
 create table tmp_osm_population_raw_nowater as (

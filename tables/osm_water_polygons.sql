@@ -4,36 +4,39 @@ create table osm_water_polygons as (
   select
     osm_type,
     osm_id,
-    ST_Area(geog)                      as area,
-    ST_Subdivide(ST_Transform(geog::geometry, 3857)) as geom
+    ST_Subdivide(ST_Transform(geog::geometry, 3857), 100) as geom
   from
     osm
   where
-   (tags? 'water' or tags?'natural' or tags?'waterway') and  ((tags ->> 'natural') = 'water' or (tags ->> 'waterway') in ('riverbank', 'river', 'stream', 'canal') or (tags ->> 'water') is not null)
+    (tags ? 'water'
+    or tags @> '{"natural":"water"}' 
+    or tags @> '{"waterway":"riverbank"}'
+    or tags @> '{"waterway":"river"}'
+    or tags @> '{"waterway":"stream"}'
+    or tags @> '{"waterway":"canal"}'
+    or tags @> '{"waterway":"ditch"}'
+    or tags @> '{"waterway":"drain"}')
     and ST_GeometryType(geog::geometry) != 'ST_Point'
     and ST_GeometryType(geog::geometry) != 'ST_LineString'
+
+    union all
+
+    select 
+      'oceans' as osm_type, 
+      gid as osm_id, 
+      ST_Subdivide(geom, 100) as geom 
+    from 
+      water_polygons_vector
+
+    union all
+
+    select 
+      osm_type, 
+      osm_id, 
+      ST_Subdivide(ST_Buffer(geom, 1, 'endcap=round join=round'), 100) as geom 
+      from 
+        osm_water_lines
 );
 
-insert into osm_water_polygons (osm_type, osm_id, geom) 
-select 'oceans' as osm_type, gid as osm_id, ST_Subdivide(geom) as geom from water_polygons_vector;
 
 create index on osm_water_polygons using gist (geom);
-
-
-drop table if exists osm_water_lines_base;
-
-create table osm_water_lines_base as (
-  select
-    osm_type,
-    osm_id,
-    ST_Area(geog)                      as area,
-    ST_Transform(geog::geometry, 3857) as geom
-  from
-    osm
-  where
-    (tags? 'water' or tags?'natural' or tags?'waterway') and ((tags ->> 'natural') = 'water' or (tags ->> 'waterway') in ('riverbank', 'river', 'stream', 'canal', 'ditch', 'drain') or (tags ->> 'water') is not null)
-    and ST_GeometryType(geog::geometry) = 'ST_LineString'
-);
-create index on osm_water_lines_base using gist(geom);
-
-

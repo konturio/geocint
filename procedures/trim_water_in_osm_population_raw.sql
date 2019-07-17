@@ -76,7 +76,8 @@ create table osm_population_raw_nowater as (
                     osm_type,
                     osm_id,
                     admin_level,
-                    ST_Difference(p_geom, ST_UnaryUnion(w_geom)) as geom
+		-- TODO: Fix after https://trac.osgeo.org/geos/ticket/978 is done
+                    ST_Difference(p_geom, ST_Buffer(w_geom, 0)) as geom
              from tmp_osm_population_raw_nowater offset 0
          ) z
     group by 1, 2, 3, 4

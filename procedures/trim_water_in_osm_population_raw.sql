@@ -38,8 +38,7 @@ create table tmp_osm_pop_split_for_water_lines_diff_trim as (
            osm_id,
            admin_level,
            ST_Subdivide(ST_Difference(p_geom, ST_UnaryUnion(w_geom)), 100) as geom
-    from tmp_osm_pop_split_for_water_lines offset 0
-    group by 1, 2, 3, 4
+    from tmp_osm_pop_split_for_water_lines
 );
 drop table tmp_osm_pop_split_for_water_lines;
 

@@ -37,7 +37,7 @@ create table tmp_osm_pop_split_for_water_lines_diff_trim as (
            osm_type,
            osm_id,
            admin_level,
-           ST_Subdivide(ST_Difference(p_geom, ST_UnaryUnion(w_geom)), 100) as geom
+           ST_Subdivide(coalesce(ST_Difference(p_geom, ST_UnaryUnion(w_geom)), p_geom), 100) as geom
     from tmp_osm_pop_split_for_water_lines
 );
 drop table tmp_osm_pop_split_for_water_lines;
@@ -77,7 +77,9 @@ create table osm_population_raw_nowater as (
                     osm_id,
                     admin_level,
 		-- TODO: Fix after https://trac.osgeo.org/geos/ticket/978 is done
-                    ST_Difference(p_geom, ST_Buffer(w_geom, 0)) as geom
+		-- TODO: Fix after https://trac.osgeo.org/geos/ticket/980 is done
+                   coalesce(ST_Difference(p_geom, ST_MakeValid(ST_Buffer(w_geom, 0))), p_geom) as geom
+	     -- TODO: Fix after https://www.postgresql.org/message-id/CAC8Q8tL-T7tSJK-_rw%3Dw-Ukh8eLipnrB_T8MGSPxMbdNtesudg%40mail.gmail.com
              from tmp_osm_population_raw_nowater offset 0
          ) z
     group by 1, 2, 3, 4

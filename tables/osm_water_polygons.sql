@@ -33,10 +33,11 @@ create table osm_water_polygons as (
     select 
       osm_type, 
       osm_id, 
-      ST_Subdivide(ST_Buffer(geom, 1, 'endcap=round join=round'), 100) as geom 
+      ST_Subdivide(ST_Buffer(geom, 1), 100) as geom 
       from 
         osm_water_lines
+    order by 3
 );
 
-
+vacuum osm_water_polygons;
 create index on osm_water_polygons using gist (geom);

@@ -4,7 +4,7 @@ create table population_grid_1000 as (
         ST_Pixel(geom, 7) as geom,
         sum(people)       as population
     from
-        population_vector
+        population_vector_nowater
     group by 1
     order by 1
 );

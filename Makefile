@@ -249,7 +249,11 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_1000: db/table/population_vector db/function/ST_Pixel | db/table
+db/table/population_vector_nowater: db/table/population_vector db/table/osm_water_polygons
+	psql -f tables/population_vector_nowater.sql
+	touch $@
+
+db/table/population_grid_1000: db/table/population_vector_nowater db/function/ST_Pixel | db/table
 	psql -f tables/population_grid_1000.sql
 	touch $@
 

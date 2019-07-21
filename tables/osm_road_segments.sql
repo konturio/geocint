@@ -66,3 +66,4 @@ create table osm_road_segments as (
     and ST_GeometryType(geog::geometry) != 'ST_Polygon'
   order by seg_geom
 );
+vacuum osm_road_segments;

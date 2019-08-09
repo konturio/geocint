@@ -4,7 +4,7 @@
     "id": true,
     "version": false,
     "changeset": false,
-    "timestamp": false,
+    "timestamp": true,
     "uid": false,
     "user": false,
     "way_nodes": true

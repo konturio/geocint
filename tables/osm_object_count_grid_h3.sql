@@ -1,5 +1,5 @@
 drop table if exists osm_object_count_grid_h3;
-explain verbose create table osm_object_count_grid_h3 as (
+create table osm_object_count_grid_h3 as (
     select resolution,
            h3,
            count(*)                                                             as count,

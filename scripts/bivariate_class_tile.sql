@@ -3,7 +3,7 @@ COPY (
     FROM (
              SELECT bivariate_class,
                     ST_AsMVTGeom(ST_Union(geom), ST_TileEnvelope(:z, :x, :y), 4096, 0, false) AS geom
-             FROM osm_quality_bivariate_grid_1000
+             FROM osm_quality_bivariate_grid_h3
              WHERE zoom = :z
                AND geom && ST_TileEnvelope(:z, :x, :y)
              GROUP BY bivariate_class

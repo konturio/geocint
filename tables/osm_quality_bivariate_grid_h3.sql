@@ -1,5 +1,5 @@
-drop table if exists osm_quality_bivariate_grid_1000_meta;
-create table osm_quality_bivariate_grid_1000_meta as (
+drop table if exists osm_quality_bivariate_grid_h3_meta;
+create table osm_quality_bivariate_grid_h3_meta as (
     select
         2::float                                                                   as count_ab,
         round(percentile_cont(0.75) within group (order by count / area_km2))      as count_bc,
@@ -8,12 +8,12 @@ create table osm_quality_bivariate_grid_1000_meta as (
         round(percentile_cont(0.75) within group (order by population / area_km2)) as population_23,
         round(max(population / area_km2))                                          as population_max
     from
-        osm_object_count_grid_1000_with_population
+        osm_object_count_grid_h3_with_population
     where
           population > 1
       and zoom = 6
 );
-analyse osm_quality_bivariate_grid_1000_meta;
+analyse osm_quality_bivariate_grid_h3_meta;
 
 
 -- here we follow this idea:
@@ -42,7 +42,7 @@ create table osm_quality_bivariate_grid_1000 as (
             when (population / area_km2) <= population_23 then '2'
             else '3' end as bivariate_class
     from
-        osm_quality_bivariate_grid_1000_meta,
-        osm_object_count_grid_1000_with_population qg
+        osm_quality_bivariate_grid_h3_meta,
+        osm_object_count_grid_h3_with_population qg
 );
-create index on osm_quality_bivariate_grid_1000 using gist (geom);
+create index on osm_quality_bivariate_grid_h3 using gist (geom);

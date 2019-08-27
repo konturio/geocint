@@ -9,6 +9,7 @@ create table osm_object_count_grid_1000_with_population as (
         coalesce(amenity_count, 0)                                                        as amenity_count,
         coalesce(natural_count, 0)                                                        as natural_count,
         coalesce(landuse_count, 0)                                                        as landuse_count,
+	coalesce(osm_users, 0) 	                                                          as osm_users,
         coalesce(population, 0)                                                           as population,
         ST_Area(ST_Transform(coalesce(a.geom, b.geom), 4326)::geography)::float / 1000000 as area_km2,
         7                                                                                 as zoom
@@ -30,6 +31,7 @@ select
     sum(amenity_count)  as amenity_count,
     sum(natural_count)  as natural_count,
     sum(landuse_count)  as landuse_count,
+    max(osm_users)      as osm_users,
     sum(population)     as population,
     sum(area_km2)       as area_km2,
     6                   as zoom
@@ -49,6 +51,7 @@ select
     sum(amenity_count)  as amenity_count,
     sum(natural_count)  as natural_count,
     sum(landuse_count)  as landuse_count,
+    max(osm_users)      as osm_users,
     sum(population)     as population,
     sum(area_km2)       as area_km2,
     5                   as zoom
@@ -68,6 +71,7 @@ select
     sum(amenity_count)  as amenity_count,
     sum(natural_count)  as natural_count,
     sum(landuse_count)  as landuse_count,
+    max(osm_users)      as osm_users,
     sum(population)     as population,
     sum(area_km2)       as area_km2,
     4                   as zoom
@@ -87,6 +91,7 @@ select
     sum(amenity_count)  as amenity_count,
     sum(natural_count)  as natural_count,
     sum(landuse_count)  as landuse_count,
+    max(osm_users)      as osm_users,
     sum(population)     as population,
     sum(area_km2)       as area_km2,
     3                   as zoom
@@ -106,6 +111,7 @@ select
     sum(amenity_count)  as amenity_count,
     sum(natural_count)  as natural_count,
     sum(landuse_count)  as landuse_count,
+    max(osm_users)      as osm_users,
     sum(population)     as population,
     sum(area_km2)       as area_km2,
     2                   as zoom
@@ -125,6 +131,7 @@ select
     sum(amenity_count)  as amenity_count,
     sum(natural_count)  as natural_count,
     sum(landuse_count)  as landuse_count,
+    max(osm_users)      as osm_users,
     sum(population)     as population,
     sum(area_km2)       as area_km2,
     1                   as zoom
@@ -144,6 +151,7 @@ select
     sum(amenity_count)  as amenity_count,
     sum(natural_count)  as natural_count,
     sum(landuse_count)  as landuse_count,
+    max(osm_users)      as osm_users,
     sum(population)     as population,
     sum(area_km2)       as area_km2,
     0                   as zoom

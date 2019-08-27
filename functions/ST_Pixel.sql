@@ -10,8 +10,7 @@ __Parameters:__
   box. Defaults to 3857 (Web Mercator).
 __Returns:__ `geometry(polygon)`
 ******************************************************************************/
-create or replace function ST_Pixel(geom geometry, zoom integer, srid integer = 3857
-                                   )
+create or replace function ST_Pixel(geom geometry, zoom integer)
     returns geometry
     language plpgsql
     immutable strict parallel safe
@@ -31,7 +30,7 @@ begin
     xTile := floor(n * ((ST_X(point) + 20037508.34) / 40075016.68));
     yTile := floor(n * ((20037508.34 - ST_Y(point)) / 40075016.68));
 
-    pixel := TileBBox(z, xTile, yTile, srid);
+    pixel := ST_TileEnvelope(z, xTile, yTile);
     return pixel;
 end;
 $function$;

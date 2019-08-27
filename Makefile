@@ -61,7 +61,7 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
-	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, ts timestamptz, way_nodes bigint[], tags jsonb);copy osm from stdin freeze;'
+	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);copy osm from stdin freeze;'
 	psql -c "vacuum analyze osm;"
 	psql -c "alter table osm set (parallel_workers=32);"
 	touch $@
@@ -75,11 +75,7 @@ db/function/osm_way_nodes_to_segments: | db/function
 	psql -f functions/osm_way_nodes_to_segments.sql
 	touch $@
 
-db/function/TileBBox: | db/function
-	psql -f functions/TileBBox.sql
-	touch $@
-
-db/function/ST_Pixel: db/function/TileBBox | db/function
+db/function/ST_Pixel: | db/function
 	psql -f functions/ST_Pixel.sql
 	touch $@
 
@@ -269,7 +265,7 @@ db/table/osm_quality_bivariate_grid_1000: db/table/osm_object_count_grid_1000 db
 	psql -f tables/osm_quality_bivariate_grid_1000.sql
 	touch $@
 
-data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/function/TileBBox db/table/osm_quality_bivariate_grid_1000 db/table/osm_meta | data/tiles
+data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_1000 db/table/osm_meta | data/tiles
 	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
 	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../osm_quality_bivariate_tiles.tar.bz2 ./

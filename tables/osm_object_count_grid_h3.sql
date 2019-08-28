@@ -31,4 +31,4 @@ create table osm_object_count_grid_h3 as (
     group by 1, 2
 
 );
-create index on osm_object_count_grid_h3 using (h3, resolution);
+create index on osm_object_count_grid_h3 (h3, resolution);

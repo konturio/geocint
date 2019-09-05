@@ -75,8 +75,8 @@ db/function/osm_way_nodes_to_segments: | db/function
 	psql -f functions/osm_way_nodes_to_segments.sql
 	touch $@
 
-db/function/ST_Pixel: | db/function
-	psql -f functions/ST_Pixel.sql
+db/function/h3: | db/function
+	psql -f function/h3.sql
 	touch $@
 
 db/table/osm_road_segments: db/table/osm db/function/osm_way_nodes_to_segments
@@ -155,7 +155,6 @@ db/table/hrsl_population_raster: data/population_hrsl/unzip | db/table
 db/table/hrsl_population_vector: db/table/hrsl_population_raster
 	psql -f tables/hrsl_population_vector.sql
 	touch $@
-
 
 db/table/hrsl_population_boundary: | db/table
 	zcat data/hrsl_population_boundary.sqld.gz | psql
@@ -257,7 +256,7 @@ db/table/osm_object_count_grid_h3: db/table/osm  | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/function/ST_Pixel | db/table
+db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 | db/table
 	psql -f tables/osm_object_count_grid_h3_with_population.sql
 	touch $@
 

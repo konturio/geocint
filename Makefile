@@ -75,8 +75,8 @@ db/function/osm_way_nodes_to_segments: | db/function
 	psql -f functions/osm_way_nodes_to_segments.sql
 	touch $@
 
-db/function/ST_Pixel: | db/function
-	psql -f functions/ST_Pixel.sql
+db/function/h3: | db/function
+	psql -f function/h3.sql
 	touch $@
 
 db/table/osm_road_segments: db/table/osm db/function/osm_way_nodes_to_segments
@@ -155,7 +155,6 @@ db/table/hrsl_population_raster: data/population_hrsl/unzip | db/table
 db/table/hrsl_population_vector: db/table/hrsl_population_raster
 	psql -f tables/hrsl_population_vector.sql
 	touch $@
-
 
 db/table/hrsl_population_boundary: | db/table
 	zcat data/hrsl_population_boundary.sqld.gz | psql
@@ -249,23 +248,23 @@ db/table/population_vector_nowater: db/table/population_vector db/table/osm_wate
 	psql -f tables/population_vector_nowater.sql
 	touch $@
 
-db/table/population_grid_1000: db/table/population_vector_nowater db/function/ST_Pixel | db/table
-	psql -f tables/population_grid_1000.sql
+db/table/population_grid_h3: db/table/population_vector_nowater | db/table
+	psql -f tables/population_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_1000: db/table/osm db/function/ST_Pixel | db/table
-	psql -f tables/osm_object_count_grid_1000.sql
+db/table/osm_object_count_grid_h3: db/table/osm  | db/table
+	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_1000_with_population: db/table/osm db/table/population_grid_1000 db/table/osm_object_count_grid_1000 db/function/ST_Pixel | db/table
-	psql -f tables/osm_object_count_grid_1000_with_population.sql
+db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 | db/table
+	psql -f tables/osm_object_count_grid_h3_with_population.sql
 	touch $@
 
-db/table/osm_quality_bivariate_grid_1000: db/table/osm_object_count_grid_1000 db/table/osm_object_count_grid_1000_with_population | db/table
-	psql -f tables/osm_quality_bivariate_grid_1000.sql
+db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/table/osm_object_count_grid_h3_with_population | db/table
+	psql -f tables/osm_quality_bivariate_grid_h3.sql
 	touch $@
 
-data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_1000 db/table/osm_meta | data/tiles
+data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_h3 db/table/osm_meta | data/tiles
 	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
 	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../osm_quality_bivariate_tiles.tar.bz2 ./

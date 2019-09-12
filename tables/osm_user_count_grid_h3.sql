@@ -3,14 +3,11 @@ create table osm_user_count_grid_h3 as (
     select resolution,
            h3,
            osm_user,
-           count(*)      as count,
-           min(ts_epoch) as min_ts,
-           max(ts_epoch) as max_ts
+           count(*) as count
     from (
-             select resolution             as resolution,
-                    h3                     as h3,
-                    osm_user               as osm_user,
-                    extract(epoch from ts) as ts_epoch
+             select resolution as resolution,
+                    h3         as h3,
+                    osm_user   as osm_user
              from osm,
                   ST_H3Bucket(geog) as hex
              where ts > (select max(ts) - interval '2 years' from osm)
@@ -74,8 +71,3 @@ create table osm_user_count_grid_h3_normalized_geom as (
     from osm_user_count_grid_h3_normalized_population a
              join ST_HexagonFromH3(h3) hex on true
 );
-
-
-select _ST_DistanceTree(
-           '0103000020E610000001000000070000003718F1670B59F3BF883CC6864FCE2F406A7A568D7E50F3BFE282195C13C82F40A762DD24A921F3BF3D47633362C52F40D8BDC49F5DFBF2BFA08CBF32EDC82F40600DC59AE803F3BF33FDA1A229CF2F401FB898FAC032F3BF097FF2CDDAD12F403718F1670B59F3BF883CC6864FCE2F40'::geography,
-           'SRID=4326;LINESTRING(0 -87, 0 87)'::geography);

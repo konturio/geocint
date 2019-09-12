@@ -13,7 +13,7 @@ select ST_ClipByBox2D(
            ST_Transform(
                case
                    when hex_raw::geometry && 'BOX(0 -87, 0 87)'::box2d and
-                        not ST_DWithin(hex_raw::geography, 'SRID=4326;LINESTRING(0 -87, 0 87)'::geography, 0) then
+                        not _ST_DWithinUncached(hex_raw::geography, 'SRID=4326;LINESTRING(0 -87, 0 87)'::geography, 0) then
                        ST_WrapX(
                            ST_ShiftLongitude(hex.geom),
                            180,
@@ -32,6 +32,27 @@ from (select h3_to_geo_boundary_geometry(h3) as hex_raw) hex_raw_geog
                else hex_raw end as geom
     ) as hex on true;
 $function$;
+
+
+create or replace function ST_Safe_HexagonFromH3(h3 h3index)
+    returns table
+            (
+                geom geometry,
+                area float
+            )
+    language plpgsql
+    immutable strict parallel restricted
+as
+$$
+begin
+    return query select ST_HexagonFromH3(h3);
+exception
+    when others then
+        raise exception 'h3: %s' , h3;
+
+end;
+$$;
+
 
 create or replace function ST_H3Bucket(geom geometry, max_resolution integer default 7)
     returns table
@@ -57,6 +78,11 @@ create or replace function ST_H3Bucket(geog geography, max_resolution integer de
     immutable strict parallel safe
 as
 $function$
-select h3_geo_to_h3(ST_PointOnSurface(geog::geometry), res), res
-from generate_series(0, max_resolution) res
+select h3_geo_to_h3(pt, res), res
+from ST_Dimension(geog::geometry) dim,
+     lateral (select case
+                         when dim = 0 then geog::geometry
+                         when dim = 1 then ST_StartPoint(geog::geometry)
+                         else ST_Centroid(ST_Expand(geog::geometry, 0)) end::point as pt) as point,
+     generate_series(0, max_resolution) res
 $function$;

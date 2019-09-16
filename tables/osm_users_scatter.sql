@@ -54,30 +54,34 @@ vacuum full osm_users_hex_in;
 vacuum analyse osm_users_hex_in;
 create index osm_users_hex_in_count_h3_osm_user_idx on osm_users_hex_in (count desc, h3, osm_user);
 cluster osm_users_hex_in using osm_users_hex_in_count_h3_osm_user_idx;
-drop index osm_users_hex_in_count_h3_osm_user_idx;
+--drop index osm_users_hex_in_count_h3_osm_user_idx;
 vacuum osm_users_hex_in;
-do
-$$
+
+CREATE or replace PROCEDURE trim_osm_users_h3()
+LANGUAGE plpgsql
+AS $$
     declare
         cur_rec record;
         counter integer;
+        total_rec integer;
+        last_seen timestamptz;
     begin
         counter = 0;
-        for cur_rec in (select h3, osm_user, ctid from osm_users_hex_in order by count desc, h3)
+        total_rec = (select count(*) from osm_users_hex_in);
+        last_seen = clock_timestamp();
+        while true loop
+
+        for cur_rec in (select h3, osm_user, ctid from osm_users_hex_in order by count desc, h3 limit 100000)
         loop
             if not exists(select from osm_users_hex_in where ctid = cur_rec.ctid) then
-  --              raise notice '%s %s', cur_rec.osm_user, cur_rec.h3;
-                continue ;
+                continue;
             end if;
             counter = counter + 1;
             if counter % 10000 = 0 then
-                raise warning '%s of %s', counter, (select count(*) from osm_users_hex_in);
-                --exit;
+                raise warning '% %% - % of % (% per block, % left)', 100.0*counter/total_rec, counter, total_rec, clock_timestamp()-last_seen, (clock_timestamp()-last_seen)*(total_rec-counter)/10000;
+                last_seen = clock_timestamp();
+                commit;
             end if;
---             select h3, osm_user into cur_rec from osm_users_hex_in order by count desc, h3 limit 1;
---             if cur_rec is null then
---                 exit;
---             end if;
             insert into osm_users_hex_out (
                                               h3, osm_user
             )
@@ -92,9 +96,17 @@ $$
               and osm_user = cur_rec.osm_user;
             --raise notice '%s %s', cur_rec.osm_user, cur_rec.h3;
         end loop;
+
+         raise warning 'clustering...';
+                cluster osm_users_hex_in;
+                raise warning 'clustered in %', clock_timestamp()-last_seen;
+                last_seen = clock_timestamp();
+                total_rec = (select count(*) from osm_users_hex_in) + counter;
+        if total_rec = counter then exit; end if;
+        end loop;
     end;
 $$;
-
+ call trim_osm_users_h3 ();
 
 
 

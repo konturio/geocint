@@ -163,12 +163,12 @@ db/table/hrsl_population_boundary: | db/table
 	zcat data/hrsl_population_boundary.sqld.gz | psql
 	touch $@
 
-db/table/fb_africa_population_boundary: | db/table
-	zcat data/fb_africa_population_boundary.sqld.gz | psql
+db/table/fb_africa_population_boundary: db/table/gadm_countries_boundary | db/table
+	sql -f tables/fb_africa_population_boundary.sql
 	touch $@
 
-db/table/fb_population_boundary: | db/table
-	zcat data/fb_population_boundary.sqld.gz | psql
+db/table/fb_population_boundary: db/table/gadm_countries_boundary | db/table
+	sql -f tables/fb_population_boundary.sql
 	touch $@
 
 db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_population_boundary db/table/ghs_globe_population_vector db/table/fb_africa_population_vector db/table/fb_africa_population_boundary db/table/fb_population_vector db/table/fb_population_boundary | db/table
@@ -260,9 +260,9 @@ data/gadm/gadm36_0.shp: data/gadm/gadm36_levels_shp.zip
 	cd data/gadm; unzip -o gadm36_levels_shp.zip
 	touch $@
 
-db/table/country_edge: data/gadm/gadm36_0.shp | db/table
-	psql -c "drop table if exists country_edge"
-	shp2pgsql -I -s 3857 data/gadm/gadm36_0.shp country_edge | psql -q
+db/table/gadm_countries_boundary: data/gadm/gadm36_0.shp | db/table
+	psql -c "drop table if exists gadm_countries_boundary"
+	shp2pgsql -I -s 3857 data/gadm/gadm36_0.shp gadm_countries_boundary | psql -q
 	touch $@
 
 data/water-polygons-split-3857.zip: | data

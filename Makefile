@@ -160,15 +160,15 @@ db/table/hrsl_population_vector: db/table/hrsl_population_raster
 	touch $@
 
 db/table/hrsl_population_boundary: | db/table
-	zcat data/hrsl_population_boundary.sqld.gz | psql
+	psql -f tables/hrsl_population_boundary.sql
 	touch $@
 
 db/table/fb_africa_population_boundary: db/table/gadm_countries_boundary | db/table
-	sql -f tables/fb_africa_population_boundary.sql
+	psql -f tables/fb_africa_population_boundary.sql
 	touch $@
 
 db/table/fb_population_boundary: db/table/gadm_countries_boundary | db/table
-	sql -f tables/fb_population_boundary.sql
+	psql -f tables/fb_population_boundary.sql
 	touch $@
 
 db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_population_boundary db/table/ghs_globe_population_vector db/table/fb_africa_population_vector db/table/fb_africa_population_boundary db/table/fb_population_vector db/table/fb_population_boundary | db/table

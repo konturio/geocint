@@ -28,6 +28,9 @@ data/tiles: | data
 data/population: | data
 	mkdir -p $@
 
+data/gadm: | data
+	mkdir -p $@
+
 data/population_africa_2018-10-01: | data
 	mkdir -p $@
 
@@ -157,14 +160,18 @@ db/table/hrsl_population_vector: db/table/hrsl_population_raster
 	touch $@
 
 db/table/hrsl_population_boundary: | db/table
-	zcat data/hrsl_population_boundary.sqld.gz | psql
+	psql -f tables/hrsl_population_boundary.sql
 	touch $@
 
-db/table/fb_africa_population_boundary: | db/table
-	zcat data/fb_africa_population_boundary.sqld.gz | psql
+db/table/fb_africa_population_boundary: db/table/gadm_countries_boundary | db/table
+	psql -f tables/fb_africa_population_boundary.sql
 	touch $@
 
-db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_population_boundary db/table/ghs_globe_population_vector db/table/fb_africa_population_vector db/table/fb_africa_population_boundary | db/table
+db/table/fb_population_boundary: db/table/gadm_countries_boundary | db/table
+	psql -f tables/fb_population_boundary.sql
+	touch $@
+
+db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_population_boundary db/table/ghs_globe_population_vector db/table/fb_africa_population_vector db/table/fb_africa_population_boundary db/table/fb_population_vector db/table/fb_population_boundary | db/table
 	psql -f tables/population_vector.sql
 	touch $@
 
@@ -218,6 +225,44 @@ db/table/fb_africa_population_raster: data/population_africa_2018-10-01/populati
 
 db/table/fb_africa_population_vector: db/table/fb_africa_population_raster | db/table
 	psql -f tables/fb_africa_population_vector.sql
+	touch $@
+
+data/population_fb: |data
+	mkdir -p $@
+
+data/population_fb/download: | data/population_fb
+	cd data/population_fb; curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].url' -r | sed -n '/population_[a-z]\{3\}_[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}_geotiff.zip/p' | parallel --eta "wget -N {}"
+	cd data/population_fb; curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].url' -r | sed -n '/population_[a-z]\{3\}_[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}.zip/p' | parallel --eta "wget -N {}"
+	touch $@
+
+data/population_fb/unzip: data/population_fb/download
+	cd data/population_fb; rm -rf *tif
+	cd data/population_fb; rm -rf *xml
+	cd data/population_fb; ls *zip | parallel "unzip -o {}"
+	touch $@
+
+db/table/population_fb_raster: data/population_fb/unzip | db/table
+	psql -c "drop table if exists fb_population_raster"
+	raster2pgsql -p -M -Y -s 4326 data/population_fb/*.tif -t auto fb_population_raster | psql -q
+	psql -c 'alter table fb_population_raster drop CONSTRAINT fb_population_raster_pkey;'
+	ls data/population_fb/*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t 256x256 fb_population_raster | psql -q'
+	psql -c "alter table fb_population_raster set (parallel_workers=32)"
+	touch $@
+
+db/table/fb_population_vector: db/table/fb_population_raster | db/table
+	psql -f tables/fb_population_vector.sql
+	touch $@
+
+data/gadm/gadm36_levels_shp.zip: | data
+	cd data/gadm; wget https://biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip -O $@
+
+data/gadm/gadm36_0.shp: data/gadm/gadm36_levels_shp.zip
+	cd data/gadm; unzip -o gadm36_levels_shp.zip
+	touch $@
+
+db/table/gadm_countries_boundary: data/gadm/gadm36_0.shp | db/table
+	psql -c "drop table if exists gadm_countries_boundary"
+	shp2pgsql -I -s 3857 data/gadm/gadm36_0.shp gadm_countries_boundary | psql -q
 	touch $@
 
 data/water-polygons-split-3857.zip: | data

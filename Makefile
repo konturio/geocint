@@ -126,7 +126,7 @@ db/table/osm_population_split: db/procedure/trim_water_in_osm_population_raw | d
 	psql -f tables/osm_population_split.sql
 	touch $@
 
-data/population_hrsl: |data
+data/population_hrsl: | data
 	mkdir -p $@
 
 data/population_hrsl/download: | data/population_hrsl
@@ -241,7 +241,7 @@ data/population_fb/unzip: data/population_fb/download
 	cd data/population_fb; ls *zip | parallel "unzip -o {}"
 	touch $@
 
-db/table/population_fb_raster: data/population_fb/unzip | db/table
+db/table/fb_population_raster: data/population_fb/unzip | db/table
 	psql -c "drop table if exists fb_population_raster"
 	raster2pgsql -p -M -Y -s 4326 data/population_fb/*.tif -t auto fb_population_raster | psql -q
 	psql -c 'alter table fb_population_raster drop CONSTRAINT fb_population_raster_pkey;'
@@ -253,16 +253,18 @@ db/table/fb_population_vector: db/table/fb_population_raster | db/table
 	psql -f tables/fb_population_vector.sql
 	touch $@
 
-data/gadm/gadm36_levels_shp.zip: | data
-	cd data/gadm; wget https://biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip -O $@
+data/gadm/gadm36_levels_shp.zip: | data/gadm
+	wget https://web.archive.org/web/20190829093806if_/https://data.biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip -O $@
 
 data/gadm/gadm36_0.shp: data/gadm/gadm36_levels_shp.zip
-	cd data/gadm; unzip -o gadm36_levels_shp.zip
+	cd data/gadm; unzip -o gadm36_levels_shp.zip || true
 	touch $@
 
 db/table/gadm_countries_boundary: data/gadm/gadm36_0.shp | db/table
 	psql -c "drop table if exists gadm_countries_boundary"
-	shp2pgsql -I -s 3857 data/gadm/gadm36_0.shp gadm_countries_boundary | psql -q
+	shp2pgsql -I -s 4326 data/gadm/gadm36_0.shp gadm_countries_boundary | psql -q
+	psql -c "alter table gadm_countries_boundary alter column geom set data type geometry;"
+	psql -c "update gadm_countries_boundary set geom = ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
 
 data/water-polygons-split-3857.zip: | data

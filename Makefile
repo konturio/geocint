@@ -230,16 +230,16 @@ db/table/fb_africa_population_vector: db/table/fb_africa_population_raster | db/
 db/table/fb_country_codes: | db/table
 	psql -c "drop table if exists fb_country_codes"
 	psql -c "create table fb_country_codes (code varchar(3) not null, primary key (code))"
-	curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].name' -r | sed -n '/population_[a-z]\{3\}_[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}_geotiff.zip/p' | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
-	curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].name' -r | sed -n '/population_[a-z]\{3\}_[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}.zip/p' | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
+	curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].name' -r | sed -n '/population_[a-z]\{3\}_[a-z_]*[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}_geotiff.zip/p' | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
+	curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].name' -r | sed -n '/population_[a-z]\{3\}_[a-z_]*[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}.zip/p' | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
 	touch $@
 
 data/population_fb: |data
 	mkdir -p $@
 
 data/population_fb/download: | data/population_fb
-	cd data/population_fb; curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].url' -r | sed -n '/population_[a-z]\{3\}_[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}_geotiff.zip/p' | parallel --eta "wget -N {}"
-	cd data/population_fb; curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].url' -r | sed -n '/population_[a-z]\{3\}_[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}.zip/p' | parallel --eta "wget -N {}"
+	cd data/population_fb; curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].url' -r | sed -n '/population_[a-z]\{3\}_[a-z_]*[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}_geotiff.zip/p' | parallel --eta "wget -N {}"
+	cd data/population_fb; curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].url' -r | sed -n '/population_[a-z]\{3\}_[a-z_]*[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}.zip/p' | parallel --eta "wget -N {}"
 	touch $@
 
 data/population_fb/unzip: data/population_fb/download

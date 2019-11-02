@@ -1,7 +1,7 @@
 drop table if exists osm_object_count_grid_h3_with_population_tmp;
 create table osm_object_count_grid_h3_with_population_tmp as (
     select coalesce(a.resolution, b.resolution) as resolution,
-           coalesce(a.resolution, b.resolution) as zoom,
+           coalesce(a.resolution, b.resolution) - 1 as zoom,
            coalesce(a.h3, b.h3)                 as h3,
            coalesce(a.count, 0)                 as count,
            coalesce(building_count, 0)          as building_count,

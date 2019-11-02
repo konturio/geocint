@@ -301,19 +301,19 @@ db/table/population_vector_nowater: db/table/population_vector db/table/osm_wate
 	psql -f tables/population_vector_nowater.sql
 	touch $@
 
-db/table/population_grid_h3: db/table/population_vector_nowater | db/table
+db/table/population_grid_h3: db/table/population_vector_nowater db/function/h3 | db/table
 	psql -f tables/population_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3: db/table/osm  | db/table
+db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 | db/table
+db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3_with_population.sql
 	touch $@
 
-db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/table/osm_object_count_grid_h3_with_population | db/table
+db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/table/osm_object_count_grid_h3_with_population db/function/h3 | db/table
 	psql -f tables/osm_quality_bivariate_grid_h3.sql
 	touch $@
 

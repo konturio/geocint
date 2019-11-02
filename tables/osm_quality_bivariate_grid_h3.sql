@@ -2,10 +2,10 @@ drop table if exists osm_quality_bivariate_grid_h3_meta;
 create table osm_quality_bivariate_grid_h3_meta as (
     select 2::float                                                                   as count_ab,
            round(percentile_cont(0.75) within group (order by count / area_km2))      as count_bc,
-           round(max(count / area_km2))                                               as count_max,
+           ceil(max(count / area_km2))                                                as count_max,
            2::float                                                                   as population_12,
            round(percentile_cont(0.75) within group (order by population / area_km2)) as population_23,
-           round(max(population / area_km2))                                          as population_max
+           ceil(max(population / area_km2))                                           as population_max
     from osm_object_count_grid_h3_with_population
     where population > 1
       and zoom = 6
@@ -29,6 +29,7 @@ create table osm_quality_bivariate_grid_h3 as (
            count,
            area_km2,
            zoom,
+           resolution,
            case
                when (count / area_km2) <= count_ab then 'A'
                when (count / area_km2) <= count_bc then 'B'

@@ -54,7 +54,7 @@ end;
 $$;
 
 
-create or replace function ST_H3Bucket(geom geometry, max_resolution integer default 7)
+create or replace function ST_H3Bucket(geom geometry, max_resolution integer default 8)
     returns table
             (
                 h3         h3index,
@@ -68,7 +68,7 @@ select h3_geo_to_h3(ST_Transform(ST_PointOnSurface(geom), 4326), res), res
 from generate_series(0, max_resolution) res
 $function$;
 
-create or replace function ST_H3Bucket(geog geography, max_resolution integer default 7)
+create or replace function ST_H3Bucket(geog geography, max_resolution integer default 8)
     returns table
             (
                 h3         h3index,

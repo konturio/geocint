@@ -39,15 +39,15 @@ Dataset: Schiavina, Marcello; Freire, Sergio; MacManus, Kytt (2019): GHS populat
                               ),
                           'xAxisName', 'Population (ppl/km²)',
                           'xScale', jsonb_build_array(
-                                      (select population_12 from osm_quality_bivariate_grid_1000_meta),
-                                      (select population_23 from osm_quality_bivariate_grid_1000_meta),
-                                      (select population_max from osm_quality_bivariate_grid_1000_meta)
+                                      (select population_12 from osm_quality_bivariate_grid_h3_meta),
+                                      (select population_23 from osm_quality_bivariate_grid_h3_meta),
+                                      (select population_max from osm_quality_bivariate_grid_h3_meta)
                               ),
                           'yAxisName', 'Map objects (n/km²)',
                           'yScale', jsonb_build_array(
-                                      (select count_ab from osm_quality_bivariate_grid_1000_meta),
-                                      (select count_bc from osm_quality_bivariate_grid_1000_meta),
-                                      (select count_max from osm_quality_bivariate_grid_1000_meta)
+                                      (select count_ab from osm_quality_bivariate_grid_h3_meta),
+                                      (select count_bc from osm_quality_bivariate_grid_h3_meta),
+                                      (select count_max from osm_quality_bivariate_grid_h3_meta)
                               )
                       )
               )) to stdout;

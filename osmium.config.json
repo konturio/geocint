@@ -21,7 +21,8 @@
     "landuse",
     "leisure",
     "man_made",
-    "natural!=coastline"
+    "natural!=coastline",
+    "waterway=riverbank"
   ],
   "exclude_tags": [
     "created_by",

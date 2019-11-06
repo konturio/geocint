@@ -6,7 +6,7 @@ create table osm_road_segments as (
     node_to,
     seg_geom,
     -- TODO: elevation profile
-    ST_Length(seg_geom::geography) as length,
+    length_m as length,
     case
       when
           tags @> '{"foot":"yes"}' or
@@ -21,12 +21,12 @@ create table osm_road_segments as (
           tags @> '{"sidewalk":"both"}' or
           tags @> '{"sidewalk":"yes"}'
         then
-          ST_Length(seg_geom::geography) / 1.4 -- 5 km/hr
+          length_m / 1.4 -- 5 km/hr
       when
           tags @> '{"highway":"steps"}' or
           tags @> '{"highway":"cycleway"}'
-       then
-        ST_Length(seg_geom::geography) / 1.0 -- 3.6 km/hr
+        then
+          length_m / 1.0 -- 3.6 km/hr
       when
           tags @> '{"foot":"no"}' or
           tags @> '{"access":"no"}' or
@@ -42,7 +42,7 @@ create table osm_road_segments as (
           tags @> '{"tunnel":"yes"}'
         then null
       else
-        ST_Length(seg_geom::geography) / 1.4 -- 5 km/hr
+        length_m / 1.4 -- 5 km/hr
       end                          as walk_time,
     case
       when
@@ -53,11 +53,12 @@ create table osm_road_segments as (
           tags @> '{"highway":"cycleway"}'
         then null
       else
-        ST_Length(seg_geom::geography) / 11.11 -- 40 km/hr
+        length_m / 11.11 -- 40 km/hr
       end                          as drive_time
   from
     osm o,
-    osm_way_nodes_to_segments(geog::geometry, way_nodes, osm_id) z
+    osm_way_nodes_to_segments(geog::geometry, way_nodes, osm_id) z,
+    ST_Length(z.seg_geom) as length_m
   where
     tags ? 'highway'
     and osm_type = 'way'

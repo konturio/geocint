@@ -66,7 +66,7 @@ db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
 	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);copy osm from stdin freeze;'
 	psql -c "vacuum analyze osm;"
-	psql -c "alter table osm set (parallel_workers=32);"
+	psql -c "alter table osm set (parallel_workers=16);"
 	touch $@
 
 db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
@@ -79,7 +79,7 @@ db/function/osm_way_nodes_to_segments: | db/function
 	touch $@
 
 db/function/h3: | db/function
-	psql -f function/h3.sql
+	psql -f functions/h3.sql
 	touch $@
 
 db/table/osm_road_segments: db/table/osm db/function/osm_way_nodes_to_segments
@@ -301,11 +301,11 @@ db/table/population_vector_nowater: db/table/population_vector db/table/osm_wate
 	psql -f tables/population_vector_nowater.sql
 	touch $@
 
-db/table/population_grid_h3: db/table/population_vector_nowater db/function/h3 | db/table
+db/table/population_grid_h3: db/table/population_vector_nowater db/function/h3 | db/table 
 	psql -f tables/population_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
+db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table db/index/osm_tags_idx
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
@@ -334,11 +334,11 @@ deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_til
 	touch $@
 
 deploy/dollar/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/dollar
-	ssh root@disaster.ninja -C "rm -f osm_quality_bivariate_tiles.tar.bz2"
-	scp data/tiles/osm_quality_bivariate_tiles.tar.bz2 root@disaster.ninja:
-	ssh root@disaster.ninja -C "rm -rf /var/www/tiles/osm_quality_bivariate_new; mkdir -p /var/www/tiles/osm_quality_bivariate_new"
-	ssh root@disaster.ninja -C "tar xvf osm_quality_bivariate_tiles.tar.bz2 -C /var/www/tiles/osm_quality_bivariate_new"
-	ssh root@disaster.ninja -C "rm -rf /var/www/tiles/osm_quality_bivariate_old"
-	ssh root@disaster.ninja -C "mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old; mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate"
+	ssh root@dollar.disaster.ninja -C "rm -f osm_quality_bivariate_tiles.tar.bz2"
+	scp data/tiles/osm_quality_bivariate_tiles.tar.bz2 root@dollar.disaster.ninja:
+	ssh root@dollar.disaster.ninja -C "rm -rf /var/www/tiles/osm_quality_bivariate_new; mkdir -p /var/www/tiles/osm_quality_bivariate_new"
+	ssh root@dollar.disaster.ninja -C "tar xvf osm_quality_bivariate_tiles.tar.bz2 -C /var/www/tiles/osm_quality_bivariate_new"
+	ssh root@dollar.disaster.ninja -C "rm -rf /var/www/tiles/osm_quality_bivariate_old"
+	ssh root@dollar.disaster.ninja -C "mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old; mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate"
 	# TODO: remove old when we're sure we don't want to go back
 	touch $@

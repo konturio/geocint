@@ -26,6 +26,5 @@ create table osm_object_count_grid_h3 as (
              order by 1, 2, 3
          ) z
     group by 1, 2
-
 );
 create index on osm_object_count_grid_h3 (h3, resolution);

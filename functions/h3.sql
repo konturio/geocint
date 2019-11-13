@@ -83,6 +83,6 @@ from ST_Dimension(geog::geometry) dim,
      lateral (select case
                          when dim = 0 then geog::geometry
                          when dim = 1 then ST_StartPoint(geog::geometry)
-                         else ST_Centroid(ST_Expand(geog::geometry, 0)) end::point as pt) as point,
+                         else ST_PointOnSurface(geog::geometry) end::point as pt) as point,
      generate_series(0, max_resolution) res
 $function$;

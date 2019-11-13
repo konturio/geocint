@@ -102,6 +102,11 @@ db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_population_raw.sql
 	touch $@
 
+db/table/osm_user_count_grid_h3: db/table/osm db/function/h3
+	psql -f tables/osm_user_count_grid_h3.sql
+	psql -f tables/osm_users_scatter.sql
+	touch $@
+
 db/procedure: | db
 	mkdir -p $@
 

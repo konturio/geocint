@@ -7,7 +7,6 @@ copy (
                     amenity_count,
                     osm_users,
                     osm_users_recent,
-                    osm_users_normalized,
                     top_user,
                     top_user_objects,
                     population,

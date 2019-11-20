@@ -10,8 +10,8 @@ for (( z=$zoom; z<=7; z++ )); do
   for (( x=0; x<$x0; x++ )); do
     mkdir -p data/tiles/osm_quality_bivariate/$z/$x
     for (( y=0; y<$y0; y++ )); do
-      file="data/tiles/osm_quality_bivariate/$z/$x/$y.mvt"
-      echo "psql -q -X -f scripts/bivariate_class_tile.sql -v x=$x -v y=$y -v z=$z | xxd -r -p > $file"
+      file="data/tiles/$1/$z/$x/$y.mvt"
+      echo "psql -q -X -f scripts/$1.sql -v x=$x -v y=$y -v z=$z | xxd -r -p > $file"
     done
   done
 done

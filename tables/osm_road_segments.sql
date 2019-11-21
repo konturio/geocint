@@ -58,7 +58,7 @@ create table osm_road_segments as (
   from
     osm o,
     osm_way_nodes_to_segments(geog::geometry, way_nodes, osm_id) z,
-    ST_Length(z.seg_geom) as length_m
+    ST_Length(z.seg_geom::geography) as length_m
   where
     tags ? 'highway'
     and osm_type = 'way'

@@ -43,7 +43,7 @@ deploy/dollar:
 deploy/geocint:
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/osm_quality_bivariate_tiles deploy/dollar/osm_quality_bivariate_tiles
+deploy/_all: deploy/geocint/osm_quality_bivariate_tiles deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/stats_tiles
 	touch $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx
@@ -100,6 +100,11 @@ db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_population_raw.sql
+	touch $@
+
+db/table/osm_user_count_grid_h3: db/table/osm db/function/h3
+	psql -f tables/osm_user_count_grid_h3.sql
+	psql -f tables/osm_users_scatter.sql
 	touch $@
 
 db/procedure: | db
@@ -309,7 +314,7 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table db/ind
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/function/h3 | db/table
+db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3_with_population.sql
 	touch $@
 
@@ -318,9 +323,21 @@ db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/tab
 	touch $@
 
 data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_h3 db/table/osm_meta | data/tiles
-	bash ./scripts/generate_bivariate_class_tiles.sh | parallel --eta
+	bash ./scripts/generate_tiles.sh osm_quality_bivariate | parallel --eta
 	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../osm_quality_bivariate_tiles.tar.bz2 ./
+
+data/tiles/stats_tiles.tar.bz2: db/table/osm_object_count_grid_h3_with_population db/table/osm_meta | data/tiles
+	bash ./scripts/generate_tiles.sh stats | parallel --eta
+	cd data/tiles/stats/; tar cjvf ../stats_tiles.tar.bz2 ./
+
+deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint
+	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles
+	rm -rf /var/www/tiles/stats_new; mkdir -p /var/www/tiles/stats_new
+	cp -a data/tiles/stats/. /var/www/tiles/stats_new/
+	rm -rf /var/www/tiles/stats_old
+	mv /var/www/tiles/stats /var/www/tiles/stats_old; mv /var/www/tiles/stats_new /var/www/tiles/stats
+	touch $@
 
 data/population/population_api_tables.sqld.gz: db/table/population_vector db/table/ghs_globe_residential_vector | data/population
 	pg_dump -t population_vector -t ghs_globe_residential_vector | pigz > $@

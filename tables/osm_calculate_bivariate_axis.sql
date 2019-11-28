@@ -39,8 +39,8 @@ declare
 begin
     insert_query = 'insert into bivariate_axis (min, p25, p75, max, division, divisor) ' ||
     'select round(min(' || parameter1 || ' / ' || parameter2 || '))   as min, ' ||
-    'greatest(round(percentile_cont(0.25) within group (order by ' || parameter1 || ' / ' || parameter2 || ')), 2::float)   as p25, ' ||
-    'round(percentile_cont(0.75) within group (order by ' || parameter1 || ' / ' || parameter2 || '))   as p75, ' ||
+    'percentile_cont(0.33) within group (order by ' || parameter1 || ' / ' || parameter2 || ') as p25, ' ||
+    'percentile_cont(0.66) within group (order by ' || parameter1 || ' / ' || parameter2 || ') as p75, ' ||
     'ceil(max(' || parameter1 || ' / ' || parameter2 || '))   as max, ''' ||
     parameter1  || '''   as division, ''' ||
     parameter2 || '''   as divisor ' ||
@@ -57,8 +57,6 @@ from osm_axis_parameters p,
      (select parameter from osm_axis_parameters) as p2
 where p2.parameter != p.parameter
 and p.parameter not in ('area_km2');
-
-
 
 analyse bivariate_axis;
 

@@ -1,62 +1,38 @@
-drop table if exists osm_axis_parameters;
+drop function if exists calculate_axis_stops;
 
-create table osm_axis_parameters
-(
-    parameter varchar(64)
-);
-
-insert into osm_axis_parameters (parameter)
-select UNNEST(ARRAY ['count', 'area_km2', 'population', 'building_count', 'highway_length']);
-
-
-------------------------
-
-drop table if exists bivariate_axis;
-
-create table bivariate_axis
-(
-    min      double precision,
-    p25      double precision,
-    p75      double precision,
-    max      double precision,
-    division varchar(64),
-    divisor  varchar(64)
-);
-
-
-------------------------
-
-
-drop function if exists calculate_bivariate_axis;
-
-create or replace function calculate_bivariate_axis(parameter1 varchar, parameter2 varchar)
-    returns void
+create or replace function calculate_axis_stops(parameter1 text, parameter2 text)
+    RETURNS TABLE (min double precision, p25 double precision, p75 double precision, max double precision)
     language plpgsql
 as
 $$
 declare
-    insert_query text;
+    select_query text;
 begin
-    insert_query = 'insert into bivariate_axis (min, p25, p75, max, division, divisor) ' ||
-    'select round(min(' || parameter1 || ' / ' || parameter2 || '))   as min, ' ||
-    'percentile_cont(0.33) within group (order by ' || parameter1 || ' / ' || parameter2 || ') as p25, ' ||
-    'percentile_cont(0.66) within group (order by ' || parameter1 || ' / ' || parameter2 || ') as p75, ' ||
-    'ceil(max(' || parameter1 || ' / ' || parameter2 || '))   as max, ''' ||
-    parameter1  || '''   as division, ''' ||
-    parameter2 || '''   as divisor ' ||
-    'from osm_object_count_grid_h3_with_population ' ||
-    'where ' || parameter1 || ' != 0 and ' || parameter2 || ' != 0 and zoom = 6';
+    select_query = 'select floor(min(' || parameter1 || ' / ' || parameter2 || '))   as min, ' ||
+                   'percentile_disc(0.33) within group (order by ' || parameter1 || ' / ' || parameter2 || ')::double precision as p25, ' ||
+                   'percentile_disc(0.66) within group (order by ' || parameter1 || ' / ' || parameter2 || ')::double precision as p75, ' ||
+                   'ceil(max(' || parameter1 || ' / ' || parameter2 || '))   as max ' ||
+                   'from osm_object_count_grid_h3_with_population ' ||
+                   'where ' || parameter1 || ' != 0 and ' || parameter2 || ' != 0 and zoom = 6';
 
-    execute insert_query;
+    RETURN QUERY execute select_query;
 end;
 $$
 ;
 
-select calculate_bivariate_axis(p.parameter, p2.parameter)
-from osm_axis_parameters p,
-     (select parameter from osm_axis_parameters) as p2
-where p2.parameter != p.parameter
-and p.parameter not in ('area_km2');
+
+drop table if exists bivariate_axis;
+
+create table bivariate_axis as (
+    with axis_parameters as (
+        select UNNEST(ARRAY ['count', 'area_km2', 'population', 'building_count', 'highway_length']) as parameter
+    )
+    select a.parameter as numerator, b.parameter as denominator, f.*
+    from axis_parameters a,
+         axis_parameters b,
+         calculate_axis_stops(a.parameter, b.parameter) f
+    where a.parameter != b.parameter
+      and b.parameter not in ('area_km2'));
 
 analyse bivariate_axis;
 

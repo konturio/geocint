@@ -322,18 +322,16 @@ db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/tab
 	psql -f tables/osm_quality_bivariate_grid_h3.sql
 	touch $@
 
-db/table/calculate_bivariate_axis: db/table/osm_object_count_grid_h3_with_population
-	psql -f tables/osm_calculate_bivariate_axis.sql
-    psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/axis.json
-#     TODO find out the json name ^
-	touch $@
+data/tiles/stat/stat.json: db/table/osm_object_count_grid_h3_with_population
+    psql -f tables/osm_calculate_bivariate_axis.sql
+    psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stat/stat.json
 
-data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/calculate_bivariate_axis db/table/osm_quality_bivariate_grid_h3 db/table/osm_meta | data/tiles
+data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_h3 db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh osm_quality_bivariate | parallel --eta
 	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../osm_quality_bivariate_tiles.tar.bz2 ./
 
-data/tiles/stats_tiles.tar.bz2: db/table/osm_object_count_grid_h3_with_population db/table/osm_meta | data/tiles
+data/tiles/stats_tiles.tar.bz2: data/tiles/stat/stat.json db/table/osm_object_count_grid_h3_with_population db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh stats | parallel --eta
 	cd data/tiles/stats/; tar cjvf ../stats_tiles.tar.bz2 ./
 

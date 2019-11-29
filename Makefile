@@ -25,6 +25,9 @@ db/index: | db
 data/tiles: | data
 	mkdir -p $@
 
+data/tiles/stat: | data/tiles
+	mkdir -p $@
+
 data/population: | data
 	mkdir -p $@
 
@@ -322,9 +325,9 @@ db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/tab
 	psql -f tables/osm_quality_bivariate_grid_h3.sql
 	touch $@
 
-data/tiles/stat/stat.json: db/table/osm_object_count_grid_h3_with_population
-    psql -f tables/osm_calculate_bivariate_axis.sql
-    psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stat/stat.json
+data/tiles/stat/stat.json: db/table/osm_object_count_grid_h3_with_population | data/tiles/stat
+	psql -f tables/osm_calculate_bivariate_axis.sql
+	psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stat/stat.json
 
 data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_h3 db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh osm_quality_bivariate | parallel --eta

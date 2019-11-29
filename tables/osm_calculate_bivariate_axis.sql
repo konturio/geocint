@@ -32,7 +32,7 @@ create table bivariate_axis as (
          axis_parameters b,
          calculate_axis_stops(a.parameter, b.parameter) f
     where a.parameter != b.parameter
-      and b.parameter not in ('area_km2'));
+      and a.parameter not in ('area_km2'));
 
 analyse bivariate_axis;
 

@@ -1,4 +1,4 @@
-drop function if exists calculate_axis_stops;
+drop function if exists calculate_axis_stops(text, text);
 
 create or replace function calculate_axis_stops(parameter1 text, parameter2 text)
     RETURNS TABLE (min double precision, p25 double precision, p75 double precision, max double precision)
@@ -20,6 +20,28 @@ end;
 $$
 ;
 
+drop function if exists calculate_axis_stops(text);
+
+create or replace function calculate_axis_stops(parameter1 text)
+    RETURNS TABLE (min double precision, p25 double precision, p75 double precision, max double precision)
+    language plpgsql
+as
+$$
+declare
+    select_query text;
+begin
+    select_query = 'select floor(min(' || parameter1 || ' ))   as min, ' ||
+                   'percentile_disc(0.33) within group (order by ' || parameter1 || ' )::double precision as p25, ' ||
+                   'percentile_disc(0.66) within group (order by ' || parameter1 || ' )::double precision as p75, ' ||
+                   'ceil(max(' || parameter1 || ' ))   as max ' ||
+                   'from osm_object_count_grid_h3_with_population ' ||
+                   'where zoom = 6';
+
+    RETURN QUERY execute select_query;
+end;
+$$
+;
+
 
 drop table if exists bivariate_axis;
 
@@ -32,7 +54,10 @@ create table bivariate_axis as (
          axis_parameters b,
          calculate_axis_stops(a.parameter, b.parameter) f
     where a.parameter != b.parameter
-      and a.parameter not in ('area_km2'));
+      and a.parameter not in ('area_km2')
+    UNION
+    select a.parameter as numerator, '1' as denominator, f.*
+    from axis_parameters a,
+         calculate_axis_stops(a.parameter) f);
 
 analyse bivariate_axis;
-

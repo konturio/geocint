@@ -25,6 +25,9 @@ db/index: | db
 data/tiles: | data
 	mkdir -p $@
 
+data/tiles/stat: | data/tiles
+	mkdir -p $@
+
 data/population: | data
 	mkdir -p $@
 
@@ -322,13 +325,18 @@ db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/tab
 	psql -f tables/osm_quality_bivariate_grid_h3.sql
 	touch $@
 
+db/table/bivariate_axis: db/table/osm_object_count_grid_h3_with_population | data/tiles/stat
+	psql -f tables/bivariate_axis.sql
+	touch $@
+
 data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_h3 db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh osm_quality_bivariate | parallel --eta
 	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../osm_quality_bivariate_tiles.tar.bz2 ./
 
-data/tiles/stats_tiles.tar.bz2: db/table/osm_object_count_grid_h3_with_population db/table/osm_meta | data/tiles
+data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/osm_object_count_grid_h3_with_population db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh stats | parallel --eta
+	psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stat/stat.json
 	cd data/tiles/stats/; tar cjvf ../stats_tiles.tar.bz2 ./
 
 deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint

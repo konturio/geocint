@@ -4,7 +4,7 @@ x0=1
 y0=1
 zoom=0
 
-for (( z=$zoom; z<=7; z++ )); do
+for (( z=$zoom; z<=8; z++ )); do
   let "x0 = 2**$z"
   let "y0 = 2**$z"
   for (( x=0; x<$x0; x++ )); do

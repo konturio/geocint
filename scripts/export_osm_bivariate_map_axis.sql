@@ -1,6 +1,4 @@
-copy (select jsonb_build_object('axis',
-                                json_agg(jsonb_build_object('quotient', jsonb_build_array(numerator, denominator),
-                                                            'steps', jsonb_build_array(min, p25, p75, max))),
+copy (select jsonb_build_object('axis', ba.axis,
                                 'translations', '{
           "count": "Count",
           "building_count": "Building count",
@@ -17,15 +15,24 @@ copy (select jsonb_build_object('axis',
           "area_km2": "Area",
           "1": "1"
         }'::json,
-                                'initAxis', '{
-          "x": [
-            "count",
-            "area_km2"
-          ],
-          "y": [
-            "population",
-            "area_km2"
-          ]
-        }'::json)
-      from bivariate_axis
+                                'initAxis',
+                                jsonb_build_object('x', jsonb_build_object('quotient',
+                                                                           jsonb_build_array(x.numerator, x.denominator),
+                                                                           'steps',
+                                                                           jsonb_build_array(x.min, x.p25, x.p75, x.max)),
+                                                   'y', jsonb_build_object('quotient',
+                                                                           jsonb_build_array(y.numerator, y.denominator),
+                                                                           'steps',
+                                                                           jsonb_build_array(y.min, y.p25, y.p75, y.max))
+                                    )
+                 )
+      from (select json_agg(jsonb_build_object('quotient', jsonb_build_array(numerator, denominator),
+                                               'steps', jsonb_build_array(min, p25, p75, max))) as axis
+            from bivariate_axis) ba,
+           bivariate_axis x,
+           bivariate_axis y
+      where x.numerator = 'count'
+        and x.denominator = 'area_km2'
+        and y.numerator = 'population'
+        and y.denominator = 'area_km2'
     ) to stdout;

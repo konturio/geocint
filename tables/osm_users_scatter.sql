@@ -11,27 +11,25 @@ create index osm_users_hex_in_osm_user_count_h3 on osm_users_hex_in (osm_user, c
 drop table if exists osm_users_hex_out;
 create table osm_users_hex_out
 (
-    h3 h3index, osm_user text
+    h3 h3index, osm_user text, resolution integer, count bigint
 );
 
 do
 $$
     declare
         cur_user text;
-        cur_hex  h3index;
+        cur_hex  record;
     begin
         for cur_user in (
             select osm_user from osm_user_object_count where count > 20 order by max_count desc, hex_count
         )
             loop
-                cur_hex = (
-                    select h3 from osm_users_hex_in where osm_user = cur_user order by count desc limit 1
-                );
+                select h3, resolution, count into cur_hex from osm_users_hex_in where osm_user = cur_user order by count desc limit 1;
                 if cur_hex is not null then
-                    insert into osm_users_hex_out (h3, osm_user)
-                    values (cur_hex, cur_user);
-                    delete from osm_users_hex_in where h3 = cur_hex;
-                    delete from osm_users_hex_in using h3_k_ring(cur_hex, 3) r where h3 = r and osm_user = cur_user;
+                    insert into osm_users_hex_out (h3, osm_user, resolution, count)
+                    values (cur_hex.h3 , cur_user, cur_hex.resolution, cur_hex.count);
+                    delete from osm_users_hex_in where h3 = cur_hex.h3;
+                    delete from osm_users_hex_in using h3_k_ring(cur_hex.h3, 3) r where h3 = r and osm_user = cur_user;
                     --raise notice '%s %s', cur_hex, cur_user;
                 end if;
             end loop;
@@ -75,7 +73,7 @@ begin
         loop
 
             for cur_rec in (
-                select h3, osm_user, ctid from osm_users_hex_in order by count desc, h3 limit 100000
+                select h3, osm_user, ctid, resolution, count from osm_users_hex_in order by count desc, h3 limit 100000
             )
                 loop
                     if not exists(select from osm_users_hex_in where ctid = cur_rec.ctid) then
@@ -87,8 +85,8 @@ begin
                         last_seen = clock_timestamp();
                         commit;
                     end if;
-                    insert into osm_users_hex_out (h3, osm_user)
-                    values (cur_rec.h3, cur_rec.osm_user);
+                    insert into osm_users_hex_out (h3, osm_user, resolution, count)
+                    values (cur_rec.h3, cur_rec.osm_user, cur_rec.resolution, cur_rec.count);
                     delete from osm_users_hex_in where h3 = cur_rec.h3;
                     delete
                     from osm_users_hex_in using h3_k_ring(cur_rec.h3, 3) r

@@ -18,7 +18,7 @@ create table osm_object_count_grid_h3_with_population_tmp as (
     from osm_object_count_grid_h3 a
              full join population_grid_h3 b on a.resolution = b.resolution and a.h3 = b.h3
              left join osm_user_count_grid_h3_normalized c on a.resolution = c.resolution and a.h3 = c.h3
-             left join osm_user_grid_h3 d on a.resolution = d.resolution and a.h3 = d.h3
+             left join osm_users_hex d on a.resolution = d.resolution and a.h3 = d.h3
     order by 1, 2
 );
 

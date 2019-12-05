@@ -2,7 +2,6 @@ drop table if exists osm_users_hex_in;
 create table osm_users_hex_in as (
     select *
     from osm_user_count_grid_h3
-    where resolution = 7
     order by h3, count desc, osm_user
 );
 create index osm_users_hex_in_h3_osm_user on osm_users_hex_in (h3, osm_user);

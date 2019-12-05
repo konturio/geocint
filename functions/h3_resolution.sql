@@ -9,6 +9,8 @@ select (40075016.6855785/(256*2^z));
 $func$;
 
 
+drop table if exists h3_resolutions;
+
 create table h3_resolutions (id integer, edge_length float);
 
 insert into h3_resolutions (id, edge_length) values (0, 1107.712591000);

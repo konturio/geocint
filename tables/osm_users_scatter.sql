@@ -16,21 +16,31 @@ create table osm_users_hex_out
 do
 $$
     declare
+        z integer;
         cur_user text;
         cur_hex  record;
     begin
-        for cur_user in (
-            select osm_user from osm_user_object_count where count > 20 order by max_count desc, hex_count
-        )
+        for z in (select distinct resolution from osm_users_hex_in)
             loop
-                select h3, resolution, count into cur_hex from osm_users_hex_in where osm_user = cur_user order by count desc limit 1;
-                if cur_hex is not null then
-                    insert into osm_users_hex_out (h3, osm_user, resolution, count)
-                    values (cur_hex.h3 , cur_user, cur_hex.resolution, cur_hex.count);
-                    delete from osm_users_hex_in where h3 = cur_hex.h3;
-                    delete from osm_users_hex_in using h3_k_ring(cur_hex.h3, 3) r where h3 = r and osm_user = cur_user;
-                    --raise notice '%s %s', cur_hex, cur_user;
-                end if;
+                for cur_user in (
+                    select osm_user from osm_user_object_count where count > 20 and resolution = z order by max_count desc, hex_count
+                )
+                    loop
+                        select h3, resolution, count
+                        into cur_hex
+                        from osm_users_hex_in
+                        where osm_user = cur_user and resolution = z
+                        order by count desc
+                        limit 1;
+                        if cur_hex is not null then
+                            insert into osm_users_hex_out (h3, osm_user, resolution, count)
+                            values (cur_hex.h3, cur_user, cur_hex.resolution, cur_hex.count);
+                            delete from osm_users_hex_in where h3 = cur_hex.h3 and resolution = z;
+                            delete from osm_users_hex_in using h3_k_ring(cur_hex.h3, 3) r
+                                where h3 = r and osm_user = cur_user and resolution = z;
+                            --raise notice '%s %s', cur_hex, cur_user;
+                        end if;
+                    end loop;
             end loop;
     end;
 $$;

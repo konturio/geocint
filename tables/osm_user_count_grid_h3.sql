@@ -3,11 +3,14 @@ create table osm_user_count_grid_h3 as (
     select resolution,
            h3,
            osm_user,
-           count(*) as count
+           count(*) as count,
+           count(distinct hours) as hours
     from (
-             select resolution as resolution,
-                    h3         as h3,
-                    osm_user   as osm_user
+             select
+                 resolution as resolution,
+                 h3         as h3,
+                 osm_user   as osm_user,
+                 date_trunc('hour', ts) as hours
              from osm,
                   ST_H3Bucket(geog) as hex
              where ts > (select max(ts) - interval '2 years' from osm)
@@ -20,6 +23,8 @@ create table osm_user_object_count as (
     select osm_user,
            sum(count) as count,
            max(count) as max_count,
+           sum(hours) as hours,
+           max(hours) as max_hours,
            count(*) as hex_count,
            resolution
     from osm_user_count_grid_h3

@@ -10,7 +10,7 @@ create index osm_users_hex_in_osm_user_count_h3 on osm_users_hex_in (osm_user, c
 drop table if exists osm_users_hex_out;
 create table osm_users_hex_out
 (
-    h3 h3index, osm_user text, resolution integer, count bigint
+    h3 h3index, osm_user text, resolution integer, count bigint, hours bigint
 );
 
 do
@@ -23,18 +23,18 @@ $$
         for z in (select distinct resolution from osm_users_hex_in)
             loop
                 for cur_user in (
-                    select osm_user from osm_user_object_count where count > 20 and resolution = z order by max_count desc, hex_count
+                    select osm_user from osm_user_object_count where count > 20 and resolution = z order by max_hours desc, hex_count
                 )
                     loop
-                        select h3, resolution, count
+                        select h3, resolution, count, hours
                         into cur_hex
                         from osm_users_hex_in
                         where osm_user = cur_user and resolution = z
-                        order by count desc
+                        order by hours desc
                         limit 1;
                         if cur_hex is not null then
-                            insert into osm_users_hex_out (h3, osm_user, resolution, count)
-                            values (cur_hex.h3, cur_user, cur_hex.resolution, cur_hex.count);
+                            insert into osm_users_hex_out (h3, osm_user, resolution, count, hours)
+                            values (cur_hex.h3, cur_user, cur_hex.resolution, cur_hex.count, cur_hex.hours);
                             delete from osm_users_hex_in where h3 = cur_hex.h3 and resolution = z;
                             delete from osm_users_hex_in using h3_k_ring(cur_hex.h3, 3) r
                                 where h3 = r and osm_user = cur_user and resolution = z;
@@ -44,15 +44,6 @@ $$
             end loop;
     end;
 $$;
-
-drop table if exists osm_users_hex;
-create table osm_users_hex as (
-    select a.*,
-           hex.area / 1000000.0 as area_km2,
-           hex.geom             as geom
-    from osm_users_hex_out a
-             join ST_HexagonFromH3(h3) hex on true
-);
 
 drop index osm_users_hex_in_osm_user_count_h3;
 vacuum full osm_users_hex_in;
@@ -82,7 +73,7 @@ begin
         loop
 
             for cur_rec in (
-                select h3, osm_user, ctid, resolution, count from osm_users_hex_in order by count desc, h3 limit 100000
+                select h3, osm_user, ctid, resolution, count, hours from osm_users_hex_in order by hours desc, h3 limit 100000
             )
                 loop
                     if not exists(select from osm_users_hex_in where ctid = cur_rec.ctid) then
@@ -94,8 +85,8 @@ begin
                         last_seen = clock_timestamp();
                         commit;
                     end if;
-                    insert into osm_users_hex_out (h3, osm_user, resolution, count)
-                    values (cur_rec.h3, cur_rec.osm_user, cur_rec.resolution, cur_rec.count);
+                    insert into osm_users_hex_out (h3, osm_user, resolution, count, hours)
+                    values (cur_rec.h3, cur_rec.osm_user, cur_rec.resolution, cur_rec.count, cur_rec.hours);
                     delete from osm_users_hex_in where h3 = cur_rec.h3;
                     delete
                     from osm_users_hex_in using h3_k_ring(cur_rec.h3, 3) r

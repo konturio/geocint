@@ -13,17 +13,7 @@ drop table if exists h3_resolutions;
 
 create table h3_resolutions (id integer, edge_length float);
 
-do
-$$
-    declare
-        i integer;
-    begin
-        for i in 0..15
-            loop
-                insert into h3_resolutions (id, edge_length) values (i, h3_edge_length(i));
-            end loop;
-    end;
-$$;
+insert into h3_resolutions (id, edge_length) select i, h3_edge_length(i) from generate_series(0,15) i;
 
 
 drop function if exists calculate_h3_res(z integer);
@@ -33,12 +23,6 @@ create or replace function calculate_h3_res(z integer)
     returns null on null input
     language sql immutable as
 $func$
-SELECT id FROM
-    (
-        (SELECT id, edge_length FROM h3_resolutions WHERE edge_length >= ZRES(z) * 15  ORDER BY edge_length LIMIT 1)
-        UNION ALL
-        (SELECT id, edge_length FROM h3_resolutions WHERE edge_length < ZRES(z) * 15  ORDER BY edge_length DESC LIMIT 1)
-    ) as foo
-ORDER BY abs(ZRES(z) * 15 - edge_length) LIMIT 1;
+SELECT id FROM h3_resolutions ORDER BY abs(ZRES(z) * 15 - edge_length) LIMIT 1;
 $func$;
 

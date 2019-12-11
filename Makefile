@@ -85,8 +85,8 @@ db/function/h3: | db/function
 	psql -f functions/h3.sql
 	touch $@
 
-db/function/h3_resolution: | db/function/h3
-	psql -f functions/h3_resolution.sql
+db/function/calculate_h3_res: | db/function/h3
+	psql -f functions/calculate_h3_res.sql
 	touch $@
 
 db/table/osm_road_segments: db/table/osm db/function/osm_way_nodes_to_segments
@@ -351,7 +351,7 @@ deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint
 	mv /var/www/tiles/stats /var/www/tiles/stats_old; mv /var/www/tiles/stats_new /var/www/tiles/stats
 	touch $@
 
-data/tiles/users_tiles.tar.bz2: db/table/osm_user_count_grid_h3 db/table/osm_meta db/function/h3_resolution | data/tiles
+data/tiles/users_tiles.tar.bz2: db/table/osm_user_count_grid_h3 db/table/osm_meta db/function/calculate_h3_res | data/tiles
 	bash ./scripts/generate_tiles.sh users | parallel --eta
 	cd data/tiles/users/; tar cjvf ../users_tiles.tar.bz2 ./
 

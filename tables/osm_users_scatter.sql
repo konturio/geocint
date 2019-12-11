@@ -59,51 +59,21 @@ as
 $$
 declare
     cur_rec   record;
-    counter   integer;
-    total_rec integer;
-    last_seen timestamptz;
 begin
-    counter = 0;
-    total_rec = (
-        select count(*)
-        from osm_users_hex_in
-    );
-    last_seen = clock_timestamp();
-    while true
+    for cur_rec in (
+        select h3, osm_user, ctid, resolution, count, hours from osm_users_hex_in order by hours desc, h3
+    )
         loop
-
-            for cur_rec in (
-                select h3, osm_user, ctid, resolution, count, hours from osm_users_hex_in order by hours desc, h3 limit 100000
-            )
-                loop
-                    if not exists(select from osm_users_hex_in where ctid = cur_rec.ctid) then
-                        continue;
-                    end if;
-                    counter = counter + 1;
-                    if counter % 10000 = 0 then
-                        raise warning '% %% - % of % (% per block, % left)', 100.0 * counter / total_rec, counter, total_rec, clock_timestamp() - last_seen, (clock_timestamp() - last_seen) * (total_rec - counter) / 10000;
-                        last_seen = clock_timestamp();
-                        commit;
-                    end if;
-                    insert into osm_users_hex_out (h3, osm_user, resolution, count, hours)
-                    values (cur_rec.h3, cur_rec.osm_user, cur_rec.resolution, cur_rec.count, cur_rec.hours);
-                    delete from osm_users_hex_in where h3 = cur_rec.h3;
-                    delete
-                    from osm_users_hex_in using h3_k_ring(cur_rec.h3, 3) r
-                    where h3 = r
-                      and osm_user = cur_rec.osm_user;
-                    --raise notice '%s %s', cur_rec.osm_user, cur_rec.h3;
-                end loop;
-
-            raise warning 'clustering...';
-            cluster osm_users_hex_in;
-            raise warning 'clustered in %', clock_timestamp() - last_seen;
-            last_seen = clock_timestamp();
-            total_rec = (
-                            select count(*)
-                            from osm_users_hex_in
-                        ) + counter;
-            if total_rec = counter then exit; end if;
+            if not exists(select from osm_users_hex_in where ctid = cur_rec.ctid) then
+                continue;
+            end if;
+            insert into osm_users_hex_out (h3, osm_user, resolution, count, hours)
+            values (cur_rec.h3, cur_rec.osm_user, cur_rec.resolution, cur_rec.count, cur_rec.hours);
+            delete from osm_users_hex_in where h3 = cur_rec.h3;
+            delete
+            from osm_users_hex_in using h3_k_ring(cur_rec.h3, 3) r
+            where h3 = r
+              and osm_user = cur_rec.osm_user;
         end loop;
 end;
 $$;

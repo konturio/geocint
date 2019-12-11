@@ -8,10 +8,10 @@ $$
 declare
     select_query text;
 begin
-    select_query = 'select floor(min(' || parameter1 || ' / ' || parameter2 || '))   as min, ' ||
-                   'percentile_disc(0.33) within group (order by ' || parameter1 || ' / ' || parameter2 || ')::double precision as p25, ' ||
-                   'percentile_disc(0.66) within group (order by ' || parameter1 || ' / ' || parameter2 || ')::double precision as p75, ' ||
-                   'ceil(max(' || parameter1 || ' / ' || parameter2 || '))   as max ' ||
+    select_query = 'select floor(min(' || parameter1 || ' / ' || parameter2 || '::double precision))   as min, ' ||
+                   'percentile_disc(0.33) within group (order by ' || parameter1 || ' / ' || parameter2 || '::double precision)::double precision as p25, ' ||
+                   'percentile_disc(0.66) within group (order by ' || parameter1 || ' / ' || parameter2 || '::double precision)::double precision as p75, ' ||
+                   'ceil(max(' || parameter1 || ' / ' || parameter2 || '::double precision))   as max ' ||
                    'from osm_object_count_grid_h3_with_population ' ||
                    'where ' || parameter1 || ' != 0 and ' || parameter2 || ' != 0 and zoom = 6';
 

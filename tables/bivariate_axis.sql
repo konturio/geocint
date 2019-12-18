@@ -13,7 +13,7 @@ begin
                    'percentile_disc(0.66) within group (order by ' || parameter1 || ' / ' || parameter2 || '::double precision)::double precision as p75, ' ||
                    'ceil(max(' || parameter1 || ' / ' || parameter2 || '::double precision))   as max ' ||
                    'from osm_object_count_grid_h3_with_population ' ||
-                   'where ' || parameter1 || ' != 0 and ' || parameter2 || ' != 0 and zoom = 6';
+                   'where ' || parameter1 || ' != 0 and ' || parameter2 || ' != 0 and population >= 1 and zoom = 6';
 
     RETURN QUERY execute select_query;
 end;
@@ -35,7 +35,7 @@ begin
                    'percentile_disc(0.66) within group (order by ' || parameter1 || ' )::double precision as p75, ' ||
                    'ceil(max(' || parameter1 || ' ))   as max ' ||
                    'from osm_object_count_grid_h3_with_population ' ||
-                   'where zoom = 6';
+                   'where population >= 1 and zoom = 6';
 
     RETURN QUERY execute select_query;
 end;

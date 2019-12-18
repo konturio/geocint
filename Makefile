@@ -340,7 +340,7 @@ data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_g
 
 data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/osm_object_count_grid_h3_with_population db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh stats | parallel --eta
-	psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stat/stat.json
+	psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stats/stat.json
 	cd data/tiles/stats/; tar cjvf ../stats_tiles.tar.bz2 ./
 
 deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint

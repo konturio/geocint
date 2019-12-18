@@ -37,6 +37,12 @@ data/gadm: | data
 data/population_africa_2018-10-01: | data
 	mkdir -p $@
 
+data/wb: | data
+	mkdir -p $@
+
+data/wb/gdp: | data/wb
+	mkdir -p $@
+
 deploy:
 	mkdir -p $@
 
@@ -283,6 +289,22 @@ db/table/gadm_countries_boundary: data/gadm/gadm36_0.shp | db/table
 	shp2pgsql -I -s 4326 data/gadm/gadm36_0.shp gadm_countries_boundary | psql -q
 	psql -c "alter table gadm_countries_boundary alter column geom set data type geometry;"
 	psql -c "update gadm_countries_boundary set geom = ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
+	touch $@
+
+data/wb/gdp/wb_gdp.zip: | data/wb/gdp
+	wget http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=xml -O $@
+
+data/wb/gdp/wb_gdp.xml: data/wb/gdp/wb_gdp.zip
+	cd data/wb/gdp; unzip -o wb_gdp.zip
+	cat data/wb/gdp/API_NY*.xml | tr -d '\n\r\t' | sed 's/^.\{1\}//' >> data/wb/gdp/wb_gdp.xml
+	touch $@	
+
+db/table/wb_gdp: data/wb/gdp/wb_gdp.xml | db/table
+	psql -c "drop table if exists temp_xml;"
+	psql -c "create table temp_xml ( value text );"
+	cat data/wb/gdp/wb_gdp.xml | psql -c "COPY temp_xml(value) FROM stdin DELIMITER E'\t' CSV QUOTE '''';"
+	psql -f tables/wb_gdp.sql
+	psql -c "drop table if exists temp_xml;"
 	touch $@
 
 data/water-polygons-split-3857.zip: | data

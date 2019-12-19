@@ -129,3 +129,5 @@ create table osm_users_hex as (
              join ST_HexagonFromH3(h3) hex on true
     order by geom
 );
+
+create index on osm_users_hex using gist(geom);

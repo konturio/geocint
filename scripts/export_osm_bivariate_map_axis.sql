@@ -34,11 +34,17 @@ Dataset: Schiavina, Marcello; Freire, Sergio; MacManus, Kytt (2019): GHS populat
                                                                            jsonb_build_array(y.numerator, y.denominator),
                                                                            'steps',
                                                                            jsonb_build_array(y.min, y.p25, y.p75, y.max))
-                                    )
+                                    ),
+                                'overlay', ov.overlay
                  )
       from (select json_agg(jsonb_build_object('quotient', jsonb_build_array(numerator, denominator),
                                                'steps', jsonb_build_array(min, p25, p75, max))) as axis
             from bivariate_axis) ba,
+           (select json_agg(json_build_object('name', name,
+                                              'active', active,
+                                              'x', json_build_array(x_numerator, x_denominator),
+                                              'y', json_build_array(y_numerator, y_denominator))) as overlay
+            from bivariate_overlays) ov,
            bivariate_axis x,
            bivariate_axis y
       where x.numerator = 'count'

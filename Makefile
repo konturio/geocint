@@ -193,6 +193,14 @@ db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_popula
 	psql -f tables/population_vector.sql
 	touch $@
 
+db/table/population_vector_buildings: db/table/population_vector
+	psql -f tables/osm_buildings.sql
+	touch $@
+
+db/table/population_vector_unused: db/table/population_vector_buildings db/table/osm_water_polygons
+	psql -f tables/osm_buildings.sql
+	touch $@
+
 db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 | db/table
 	psql -f tables/ghs_globe_population_vector.sql
 	touch $@
@@ -331,7 +339,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_vector_nowater: db/table/population_vector db/table/osm_water_polygons
+db/table/population_vector_nowater: db/table/population_vector_unused db/table/osm_water_polygons
 	psql -f tables/population_vector_nowater.sql
 	touch $@
 

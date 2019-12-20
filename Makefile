@@ -198,7 +198,7 @@ db/table/population_vector_buildings: db/table/population_vector
 	touch $@
 
 db/table/population_vector_unused: db/table/population_vector_buildings db/table/osm_water_polygons
-	psql -f tables/osm_buildings.sql
+	psql -f tables/osm_unused.sql
 	touch $@
 
 db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 | db/table

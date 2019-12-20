@@ -52,7 +52,7 @@ deploy/dollar:
 deploy/geocint:
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/osm_quality_bivariate_tiles deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/stats_tiles deploy/geocint/users_tiles
+deploy/_all: deploy/geocint/osm_quality_bivariate_tiles deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/stats_tiles deploy/geocint/users_tiles db/table/countries_info
 	touch $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx
@@ -313,6 +313,10 @@ db/table/wb_gdp: data/wb/gdp/wb_gdp.xml | db/table
 	cat data/wb/gdp/wb_gdp.xml | psql -c "COPY temp_xml(value) FROM stdin DELIMITER E'\t' CSV QUOTE '''';"
 	psql -f tables/wb_gdp.sql
 	psql -c "drop table if exists temp_xml;"
+	touch $@
+
+db/table/countries_info: db/table/wb_gdp db/table/population_vector_nowater
+	psql -f tables/countries_info.sql
 	touch $@
 
 data/water-polygons-split-3857.zip: | data

@@ -1,0 +1,29 @@
+drop table if exists osm_unused;
+
+create table osm_unused as (
+  select
+    osm_type,
+    osm_id,
+    ST_Transform(geog::geometry, 3857) as geom
+  from
+    osm
+  where
+    ((tags ->> 'natural') = 'wood' or (tags ->> 'landuse') in ('forest', 'quarry'))
+    and ST_GeometryType(geog::geometry) != 'ST_Point'
+    and ST_GeometryType(geog::geometry) != 'ST_LineString'
+);
+
+create index on osm_unused using gist(geom);
+
+alter table population_vector add column max_population float;
+
+update population_vector p
+  set max_population = 0
+  from osm_unused b
+  where  ST_Intersects(p.geom, b.geom);
+
+update population_vector p
+  set max_population = 0
+  from osm_water_polygons w
+  where  ST_Intersects(p.geom, w.geom);
+

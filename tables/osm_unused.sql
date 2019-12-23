@@ -15,14 +15,12 @@ create table osm_unused as (
 
 create index on osm_unused using gist(geom);
 
-alter table population_vector add column max_population float;
-
-update population_vector p
+update population_vector_constrained p
   set max_population = 0
   from osm_unused b
   where  ST_Intersects(p.geom, b.geom);
 
-update population_vector p
+update population_vector_constrained p
   set max_population = 0
   from osm_water_polygons w
   where  ST_Intersects(p.geom, w.geom);

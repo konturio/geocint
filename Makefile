@@ -1,6 +1,6 @@
 weekly: deploy/geocint/isochrone_tables
 
-daily: deploy/_all db/table/osm_population_split data/population/population_api_tables.sqld.gz
+daily: deploy/_all db/table/osm_population_split data/population/population_api_tables.sqld.gz db/table/population_vector_unused
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -73,7 +73,7 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
-	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
+	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb) tablespace bcache;alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
 	psql -c "vacuum analyze osm;"
 	psql -c "alter table osm set (parallel_workers=16);"
 	touch $@
@@ -104,11 +104,11 @@ db/index/osm_tags_idx: db/table/osm | db/index
 	touch $@
 
 db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments | db/index
-	psql -c "create index osm_road_segments_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments (seg_id, node_from, node_to, seg_geom);"
+	psql -c "create index osm_road_segments_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments (seg_id, node_from, node_to, seg_geom) tablespace bcache;"
 	touch $@
 
 db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
-	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using gist (seg_geom);"
+	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using gist (seg_geom) tablespace bcache;"
 	touch $@
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
@@ -193,7 +193,11 @@ db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_popula
 	psql -f tables/population_vector.sql
 	touch $@
 
-db/table/population_vector_buildings: db/table/population_vector
+db/table/population_vector_constrained: db/table/population_vector
+	psql -f tables/population_vector_constrained.sql
+	touch $@
+
+db/table/population_vector_buildings: db/table/population_vector_constrained db/table/osm
 	psql -f tables/osm_buildings.sql
 	touch $@
 
@@ -343,7 +347,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_vector_nowater: db/table/population_vector_unused db/table/osm_water_polygons
+db/table/population_vector_nowater: db/table/population_vector db/table/osm_water_polygons
 	psql -f tables/population_vector_nowater.sql
 	touch $@
 

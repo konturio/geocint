@@ -40,11 +40,22 @@ Dataset: Schiavina, Marcello; Freire, Sergio; MacManus, Kytt (2019): GHS populat
       from (select json_agg(jsonb_build_object('quotient', jsonb_build_array(numerator, denominator),
                                                'steps', jsonb_build_array(min, p25, p75, max))) as axis
             from bivariate_axis) ba,
-           (select json_agg(json_build_object('name', name,
-                                              'active', active,
-                                              'x', json_build_array(x_numerator, x_denominator),
-                                              'y', json_build_array(y_numerator, y_denominator))) as overlay
-            from bivariate_overlays) ov,
+           (select json_agg(jsonb_build_object('name', o.name, 'active', o.active,
+                                               'x', jsonb_build_object('quotient',
+                                                                       jsonb_build_array(ax.numerator, ax.denominator),
+                                                                       'steps',
+                                                                       jsonb_build_array(ax.min, ax.p25, ax.p75, ax.max)),
+                                               'y', jsonb_build_object('quotient',
+                                                                       jsonb_build_array(ay.numerator, ay.denominator),
+                                                                       'steps',
+                                                                       jsonb_build_array(ay.min, ay.p25, ay.p75, ay.max)))) as overlay
+            from bivariate_axis ax,
+                 bivariate_axis ay,
+                 bivariate_overlays o
+            where ax.denominator = o.x_denominator
+              and ax.numerator = o.x_numerator
+              and ay.denominator = o.y_denominator
+              and ay.numerator = o.y_numerator) ov,
            bivariate_axis x,
            bivariate_axis y
       where x.numerator = 'count'

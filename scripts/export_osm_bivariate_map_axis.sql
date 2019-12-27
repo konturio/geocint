@@ -35,7 +35,7 @@ Dataset: Schiavina, Marcello; Freire, Sergio; MacManus, Kytt (2019): GHS populat
                                                                            'steps',
                                                                            jsonb_build_array(y.min, y.p25, y.p75, y.max))
                                     ),
-                                'overlay', ov.overlay
+                                'overlays', ov.overlay
                  )
       from (select json_agg(jsonb_build_object('quotient', jsonb_build_array(numerator, denominator),
                                                'steps', jsonb_build_array(min, p25, p75, max))) as axis

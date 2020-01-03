@@ -46,6 +46,9 @@ data/wb/gdp: | data/wb
 deploy:
 	mkdir -p $@
 
+deploy/lima:
+	mkdir -p $@
+
 deploy/dollar:
 	mkdir -p $@
 
@@ -414,6 +417,22 @@ deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_til
 	cp -a data/tiles/osm_quality_bivariate/. /var/www/tiles/osm_quality_bivariate_new/
 	rm -rf /var/www/tiles/osm_quality_bivariate_old
 	mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old; mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate
+	touch $@
+
+deploy/lima/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/lima
+	ansible lima_live_dashboard -m copy -a 'src=data/tiles/osm_quality_bivariate_tiles.tar.bz2 dest=$$HOME/tmp/osm_quality_bivariate_tiles.tar.bz2'
+	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		tar -cjf "$$HOME/tmp/osm_quality_bivariate_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/osm_quality_bivariate/"" . ; \
+		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
+		function on_exit { rm -rf "$$TMPDIR"; }; \
+		trap on_exit EXIT; \
+		tar -xf "$$HOME/tmp/osm_quality_bivariate_tiles.tar.bz2" -C "$$TMPDIR"; \
+		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
+		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
+		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/osm_quality_bivariate"; \
+	'
 	touch $@
 
 deploy/dollar/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/dollar

@@ -424,7 +424,7 @@ deploy/lima/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
 		set -e; \
 		set -o pipefail; \
-		tar -cjf "$$HOME/tmp/osm_quality_bivariate_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/osm_quality_bivariate/"" . ; \
+		tar -cjf "$$HOME/tmp/osm_quality_bivariate_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/osm_quality_bivariate/" . ; \
 		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
 		function on_exit { rm -rf "$$TMPDIR"; }; \
 		trap on_exit EXIT; \

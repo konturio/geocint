@@ -351,10 +351,6 @@ db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/populat
 	psql -f tables/osm_object_count_grid_h3_with_population.sql
 	touch $@
 
-db/table/osm_pop_z8: db/table/osm_object_count_grid_h3_with_population | db/table
-	psql -f tables/osm_pop_z8.sql
-	touch $@
-
 db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/table/osm_object_count_grid_h3_with_population db/function/h3 | db/table
 	psql -f tables/osm_quality_bivariate_grid_h3.sql
 	touch $@

@@ -35,3 +35,16 @@ drop table osm_object_count_grid_h3_with_population_tmp;
 
 vacuum analyze osm_object_count_grid_h3_with_population;
 create index on osm_object_count_grid_h3_with_population using gist (geom, zoom);
+
+
+alter table osm_object_count_grid_h3_with_population add column max_population float default 46200;
+
+update osm_object_count_grid_h3_with_population p
+  set max_population = 0
+  from osm_unused b
+  where  ST_Intersects(p.geom, b.geom);
+
+update osm_object_count_grid_h3_with_population p
+  set max_population = 0
+  from osm_water_polygons w
+  where  ST_Intersects(p.geom, w.geom);

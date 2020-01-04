@@ -49,12 +49,11 @@ update osm_object_count_grid_h3_with_population_tmp2 p
     from osm_water_polygons w
     where  ST_Intersects(p.geom, w.geom);
 
-drop table if exists osm_pop_z8;
-create table osm_pop_z8 (
+drop table if exists osm_pop_tmp;
+create table osm_pop_tmp (
     h3         h3index,
-    geom       geometry,
-    orig_pop   float,
-    population float
+    population float,
+    resolution integer
 )
     tablespace pg_default;
 
@@ -106,14 +105,31 @@ $$
                 carry = cur_row.population + carry - cur_pop;
                 if cur_pop > 0
                 then
-                    insert into osm_pop_z8 (h3, geom, orig_pop, population)
-                    values (cur_row.h3, cur_row.geom, cur_row.population, cur_pop);
+                    insert into osm_pop_tmp (h3, population, resolution)
+                    values (cur_row.h3, cur_pop, 8);
                 end if;
                 --         raise notice '% pop, % new pop, % carry, % buildings ', cur_row.population, cur_pop, carry, cur_row.building_count;
             end loop;
         raise notice 'unprocessed carry %', carry;
     end;
 $$;
+
+
+do
+$$
+    declare
+        res   integer;
+    begin
+        res = 8;
+        while res > 0
+            loop
+                insert into osm_pop_tmp (h3, population, resolution) 
+                    select h3_to_parent(h3) as h3, sum(population) as population, (res - 1) as resolution from osm_pop_tmp where resolution = res group by 1;
+                res = res - 1;
+            end loop;
+    end;
+$$;
+
 
 alter table osm_object_count_grid_h3_with_population_tmp2 rename column population to population_raw;
 
@@ -122,9 +138,9 @@ create table osm_object_count_grid_h3_with_population as (
     select a.*,
            p.population as population
     from osm_object_count_grid_h3_with_population_tmp2 a
-        join osm_pop_z8 p on p.h3 = a.h3
+        full outer join osm_pop_tmp p on p.h3 = a.h3
 );
 
 drop table osm_object_count_grid_h3_with_population_tmp2;
-drop table if exists osm_pop_z8;
+drop table if exists osm_pop_tmp;
 

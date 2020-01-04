@@ -193,7 +193,7 @@ db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_popula
 	psql -f tables/population_vector.sql
 	touch $@
 
-db/table/osm_unused: db/table/osm_water_polygons
+db/table/osm_unused: db/index/osm_tags_idx | db/table
 	psql -f tables/osm_unused.sql
 	touch $@
 
@@ -347,7 +347,7 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table db/ind
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/osm_unused db/function/h3 | db/table
+db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/osm_unused db/table/osm_water_polygons db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3_with_population.sql
 	touch $@
 

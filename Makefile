@@ -1,6 +1,6 @@
 weekly: deploy/geocint/isochrone_tables
 
-daily: deploy/_all db/table/osm_population_split data/population/population_api_tables.sqld.gz db/table/population_vector_unused
+daily: deploy/_all db/table/osm_population_split data/population/population_api_tables.sqld.gz db/table/osm_unused
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -196,15 +196,7 @@ db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_popula
 	psql -f tables/population_vector.sql
 	touch $@
 
-db/table/population_vector_constrained: db/table/population_vector
-	psql -f tables/population_vector_constrained.sql
-	touch $@
-
-db/table/population_vector_buildings: db/table/population_vector_constrained db/table/osm
-	psql -f tables/osm_buildings.sql
-	touch $@
-
-db/table/population_vector_unused: db/table/population_vector_buildings db/table/osm_water_polygons
+db/table/osm_unused: db/index/osm_tags_idx | db/table
 	psql -f tables/osm_unused.sql
 	touch $@
 
@@ -322,7 +314,7 @@ db/table/wb_gdp: data/wb/gdp/wb_gdp.xml | db/table
 	psql -c "drop table if exists temp_xml;"
 	touch $@
 
-db/table/countries_info: db/table/wb_gdp db/table/population_vector_nowater
+db/table/countries_info: db/table/wb_gdp db/table/population_vector
 	psql -f tables/countries_info.sql
 	touch $@
 
@@ -350,11 +342,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_vector_nowater: db/table/population_vector db/table/osm_water_polygons
-	psql -f tables/population_vector_nowater.sql
-	touch $@
-
-db/table/population_grid_h3: db/table/population_vector_nowater db/function/h3 | db/table 
+db/table/population_grid_h3: db/table/population_vector db/function/h3 | db/table 
 	psql -f tables/population_grid_h3.sql
 	touch $@
 
@@ -362,7 +350,7 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table db/ind
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/function/h3 | db/table
+db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/osm_unused db/table/osm_water_polygons db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3_with_population.sql
 	touch $@
 

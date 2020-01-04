@@ -22,8 +22,8 @@ create table osm_object_count_grid_h3_with_population_tmp as (
     order by 1, 2
 );
 
-drop table if exists osm_object_count_grid_h3_with_population;
-create table osm_object_count_grid_h3_with_population as (
+drop table if exists osm_object_count_grid_h3_with_population_tmp2;
+create table osm_object_count_grid_h3_with_population_tmp2 as (
     select a.*,
            hex.area / 1000000.0 as area_km2,
            hex.geom             as geom
@@ -33,5 +33,114 @@ create table osm_object_count_grid_h3_with_population as (
 
 drop table osm_object_count_grid_h3_with_population_tmp;
 
-vacuum analyze osm_object_count_grid_h3_with_population;
-create index on osm_object_count_grid_h3_with_population using gist (geom, zoom);
+vacuum analyze osm_object_count_grid_h3_with_population_tmp2;
+create index on osm_object_count_grid_h3_with_population_tmp2 using gist (geom, zoom);
+
+
+alter table osm_object_count_grid_h3_with_population_tmp2 add column max_population float default 46200;
+
+update osm_object_count_grid_h3_with_population_tmp2 p
+    set max_population = 0
+    from osm_unused b
+    where  ST_Intersects(p.geom, b.geom);
+
+update osm_object_count_grid_h3_with_population_tmp2 p
+    set max_population = 0
+    from osm_water_polygons w
+    where  ST_Intersects(p.geom, w.geom);
+
+drop table if exists osm_pop_tmp;
+create table osm_pop_tmp (
+    h3         h3index,
+    population float,
+    resolution integer
+)
+    tablespace pg_default;
+
+
+do
+$$
+    declare
+        carry   float;
+        cur_pop float;
+        max_pop float;
+        cur_row record;
+    begin
+        carry = 0;
+        for cur_row in ( select *
+                         from osm_object_count_grid_h3_with_population_tmp2
+                         where resolution = 8
+                         order by h3 )
+            loop
+                cur_pop = cur_row.population + carry;
+                max_pop = cur_row.max_population;
+                if (max_pop <= 0)
+                then
+                    cur_pop = 0;
+                end if;
+                if cur_row.building_count > 0 and cur_pop < 1
+                then
+                    cur_pop = 1;
+                    if (max_pop <= 0)
+                    then
+                        max_pop = 46200;
+                    end if;
+                end if;
+                if (cur_row.building_count/2) > cur_pop
+                then
+                    cur_pop = cur_row.building_count / 2;
+                end if;
+                if cur_pop < 0
+                then
+                    cur_pop = 0;
+                end if;
+                -- Population density of Manila is 46178 people/km2 and that's highest on planet
+                if (cur_pop / cur_row.area_km2) > max_pop
+                then
+                    cur_pop = max_pop * cur_row.area_km2;
+                end if;
+
+                cur_pop = floor(cur_pop);
+
+                carry = cur_row.population + carry - cur_pop;
+                if cur_pop > 0
+                then
+                    insert into osm_pop_tmp (h3, population, resolution)
+                    values (cur_row.h3, cur_pop, 8);
+                end if;
+                --         raise notice '% pop, % new pop, % carry, % buildings ', cur_row.population, cur_pop, carry, cur_row.building_count;
+            end loop;
+        raise notice 'unprocessed carry %', carry;
+    end;
+$$;
+
+
+do
+$$
+    declare
+        res   integer;
+    begin
+        res = 8;
+        while res > 0
+            loop
+                insert into osm_pop_tmp (h3, population, resolution) 
+                    select h3_to_parent(h3) as h3, sum(population) as population, (res - 1) as resolution from osm_pop_tmp where resolution = res group by 1;
+                res = res - 1;
+            end loop;
+    end;
+$$;
+
+
+alter table osm_object_count_grid_h3_with_population_tmp2 rename column population to population_raw;
+
+drop table if exists osm_object_count_grid_h3_with_population;
+create table osm_object_count_grid_h3_with_population as (
+    select a.*,
+           p.population as population
+    from osm_object_count_grid_h3_with_population_tmp2 a
+        full outer join osm_pop_tmp p on p.h3 = a.h3
+);
+
+drop table osm_object_count_grid_h3_with_population_tmp2;
+drop table if exists osm_pop_tmp;
+

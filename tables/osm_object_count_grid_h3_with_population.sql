@@ -14,13 +14,17 @@ create table osm_object_count_grid_h3_with_population_tmp as (
            coalesce(population, 0)              as population,
            avg_ts                               as avg_ts,
            max_ts                               as max_ts,
-           p90_ts                               as p90_ts
+           p90_ts                               as p90_ts,
+	   false as has_water,
+	   false as probably_unpopulated
     from osm_object_count_grid_h3 a
              full join population_grid_h3 b on a.resolution = b.resolution and a.h3 = b.h3
              left join osm_user_count_grid_h3_normalized c on a.resolution = c.resolution and a.h3 = c.h3
              left join osm_users_hex d on a.resolution = d.resolution and a.h3 = d.h3
     order by 1, 2
 );
+
+alter table osm_object_count_grid_h3_with_population_tmp set (parallel_workers=32);
 
 drop table if exists osm_object_count_grid_h3_with_population_tmp2;
 create table osm_object_count_grid_h3_with_population_tmp2 as (
@@ -30,33 +34,42 @@ create table osm_object_count_grid_h3_with_population_tmp2 as (
     from osm_object_count_grid_h3_with_population_tmp a
              join ST_HexagonFromH3(h3) hex on true
 );
+alter table osm_object_count_grid_h3_with_population_tmp2 set (parallel_workers=32);
 
 drop table osm_object_count_grid_h3_with_population_tmp;
+create index on osm_object_count_grid_h3_with_population_tmp2 (zoom);
+create index on osm_object_count_grid_h3_with_population_tmp2 (h3);
 
-vacuum analyze osm_object_count_grid_h3_with_population_tmp2;
-create index on osm_object_count_grid_h3_with_population_tmp2 using gist (geom, zoom);
-
-
-alter table osm_object_count_grid_h3_with_population_tmp2 add column max_population float default 46200;
-
-update osm_object_count_grid_h3_with_population_tmp2 p
-    set max_population = 0
-    from osm_unused b
-    where  ST_Intersects(p.geom, b.geom);
+drop table if exists zero_pop_h3;
+create table zero_pop_h3 as (
+	select h3 from osm_object_count_grid_h3_with_population_tmp2 p where exists(select from osm_water_polygons w where ST_Intersects(p.geom, w.geom)) and p.zoom=8
+);
 
 update osm_object_count_grid_h3_with_population_tmp2 p
-    set max_population = 0
-    from osm_water_polygons w
-    where  ST_Intersects(p.geom, w.geom);
+    set has_water = true, probably_unpopulated=true
+    from zero_pop_h3 z
+    where z.h3=p.h3;
+
+
+drop table if exists zero_pop_h3;
+create table zero_pop_h3 as (
+        select h3 from osm_object_count_grid_h3_with_population_tmp2 p where exists(select from osm_unused z where ST_Intersects(p.geom, z.geom)) and p.zoom=8 and not p.probably_unpopulated
+);
+
+update osm_object_count_grid_h3_with_population_tmp2 p
+    set probably_unpopulated=false
+    from zero_pop_h3 z
+    where z.h3=p.h3;
+
+drop table if exists zero_pop_h3;
+
 
 drop table if exists osm_pop_tmp;
 create table osm_pop_tmp (
     h3         h3index,
     population float,
     resolution integer
-)
-    tablespace pg_default;
-
+);
 
 do
 $$
@@ -73,18 +86,16 @@ $$
                          order by h3 )
             loop
                 cur_pop = cur_row.population + carry;
-                max_pop = cur_row.max_population;
-                if (max_pop <= 0)
+                -- Population density of Manila is 46178 people/km2 and that's highest on planet
+                max_pop = 46200;
+
+                if (cur_row.probably_unpopulated and cur_row.building_count=0)
                 then
-                    cur_pop = 0;
+                    max_pop = 0;
                 end if;
                 if cur_row.building_count > 0 and cur_pop < 1
                 then
                     cur_pop = 1;
-                    if (max_pop <= 0)
-                    then
-                        max_pop = 46200;
-                    end if;
                 end if;
                 if (cur_row.building_count/2) > cur_pop
                 then
@@ -94,7 +105,6 @@ $$
                 then
                     cur_pop = 0;
                 end if;
-                -- Population density of Manila is 46178 people/km2 and that's highest on planet
                 if (cur_pop / cur_row.area_km2) > max_pop
                 then
                     cur_pop = max_pop * cur_row.area_km2;
@@ -136,7 +146,7 @@ alter table osm_object_count_grid_h3_with_population_tmp2 rename column populati
 drop table if exists osm_object_count_grid_h3_with_population;
 create table osm_object_count_grid_h3_with_population as (
     select a.*,
-           p.population as population
+           coalesce(p.population,0) as population
     from osm_object_count_grid_h3_with_population_tmp2 a
         full outer join osm_pop_tmp p on p.h3 = a.h3
 );
@@ -144,3 +154,6 @@ create table osm_object_count_grid_h3_with_population as (
 drop table osm_object_count_grid_h3_with_population_tmp2;
 drop table if exists osm_pop_tmp;
 
+create index on osm_object_count_grid_h3_with_population using gist (geom, zoom);
+
+vacuum osm_object_count_grid_h3_with_population;

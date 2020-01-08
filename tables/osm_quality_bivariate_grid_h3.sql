@@ -7,7 +7,7 @@ create table osm_quality_bivariate_grid_h3_meta as (
            round(percentile_cont(0.75) within group (order by population / area_km2)) as population_23,
            ceil(max(population / area_km2))                                           as population_max
     from osm_object_count_grid_h3_with_population
-    where (population > 0 or count > 0)
+    where population > 0
       and zoom = 6
 );
 analyse osm_quality_bivariate_grid_h3_meta;

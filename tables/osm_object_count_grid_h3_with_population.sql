@@ -57,7 +57,7 @@ create table zero_pop_h3 as (
 );
 
 update osm_object_count_grid_h3_with_population_tmp2 p
-    set probably_unpopulated=false
+    set probably_unpopulated=true
     from zero_pop_h3 z
     where z.h3=p.h3;
 

@@ -35,7 +35,7 @@ begin
                              LIMIT 1
                          ), 8) as tile_resolution,
                    i           as zoom_lvl
-            from generate_series(8, 10) i;
+            from generate_series(8, 12) i;
     end if;
 end;
 $func$;

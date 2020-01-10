@@ -8,6 +8,7 @@ create table osm_object_count_grid_h3_with_population_tmp as (
            coalesce(highway_length, 0)          as highway_length,
            coalesce(amenity_count, 0)           as amenity_count,
            coalesce(osm_users, 0)               as osm_users,
+           coalesce(osm_local_users, 0)         as osm_local_users,
            coalesce(c.user_count, 0)            as osm_users_recent,
            d.osm_user                           as top_user,
            d.count                              as top_user_objects,

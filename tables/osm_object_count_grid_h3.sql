@@ -1,5 +1,5 @@
-drop table if exists osm_object_count_grid_h3;
-create table osm_object_count_grid_h3 as (
+drop table if exists osm_object_count_grid_h3_tmp;
+create table osm_object_count_grid_h3_tmp as (
     select resolution,
            h3,
            count(*)                                              as count,
@@ -27,4 +27,18 @@ create table osm_object_count_grid_h3 as (
          ) z
     group by 1, 2
 );
+
+
+drop table if exists osm_object_count_grid_h3;
+create table osm_object_count_grid_h3 as (
+    select tmp.*,
+           coalesce(users_count, 0) as osm_local_users
+    from osm_object_count_grid_h3_tmp tmp
+             left join (select h3, resolution, count(distinct osm_user) as users_count
+                        from osm_local_user_h3
+                        group by h3, resolution) as uh on tmp.h3 = uh.h3 and tmp.resolution = uh.resolution
+);
+
 create index on osm_object_count_grid_h3 (h3, resolution);
+
+drop table if exists osm_object_count_grid_h3_tmp;

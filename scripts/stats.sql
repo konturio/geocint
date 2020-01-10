@@ -6,6 +6,7 @@ copy (
                     highway_length,
                     amenity_count,
                     osm_users,
+                    osm_local_users,
                     osm_users_recent,
                     top_user_objects,
                     population,

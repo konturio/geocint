@@ -28,6 +28,8 @@ create table osm_object_count_grid_h3_tmp as (
     group by 1, 2
 );
 
+create index on osm_object_count_grid_h3_tmp (h3);
+
 
 drop table if exists osm_object_count_grid_h3;
 create table osm_object_count_grid_h3 as (
@@ -36,9 +38,9 @@ create table osm_object_count_grid_h3 as (
     from osm_object_count_grid_h3_tmp tmp
              left join (select h3, resolution, count(distinct osm_user) as users_count
                         from osm_local_user_h3
-                        group by h3, resolution) as uh on tmp.h3 = uh.h3 and tmp.resolution = uh.resolution
+                        group by h3, resolution) as uh on tmp.h3 = uh.h3
 );
 
-create index on osm_object_count_grid_h3 (h3, resolution);
+create index on osm_object_count_grid_h3 (h3);
 
 drop table if exists osm_object_count_grid_h3_tmp;

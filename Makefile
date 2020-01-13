@@ -120,7 +120,10 @@ db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
 
 db/table/osm_user_count_grid_h3: db/table/osm db/function/h3
 	psql -f tables/osm_user_count_grid_h3.sql
-	psql -f tables/osm_users_scatter.sql
+	touch $@
+
+db/table/osm_users_hex: db/table/osm_user_count_grid_h3
+	psql -f tables/osm_users_hex.sql
 	touch $@
 
 db/procedure: | db
@@ -354,7 +357,7 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_loca
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/osm_unused db/table/osm_water_polygons db/function/h3 | db/table
+db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/osm_users_hex db/table/osm_unused db/table/osm_water_polygons db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3_with_population.sql
 	touch $@
 
@@ -388,7 +391,7 @@ deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint
 	mv /var/www/tiles/stats /var/www/tiles/stats_old; mv /var/www/tiles/stats_new /var/www/tiles/stats
 	touch $@
 
-data/tiles/users_tiles.tar.bz2: db/table/osm_user_count_grid_h3 db/table/osm_meta db/function/calculate_h3_res | data/tiles
+data/tiles/users_tiles.tar.bz2: db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res | data/tiles
 	bash ./scripts/generate_tiles.sh users | parallel --eta
 	cd data/tiles/users/; tar cjvf ../users_tiles.tar.bz2 ./
 

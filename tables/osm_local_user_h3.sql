@@ -15,4 +15,4 @@ from (select osm_user,
      ST_H3Bucket(home_point) as hex
 ;
 
-create index on osm_local_user_h3 (h3, resolution);
+create index on osm_local_user_h3 (h3);

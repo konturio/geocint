@@ -29,7 +29,6 @@ create table osm_quality_bivariate_grid_h3 as (
            count,
            area_km2,
            zoom,
-           resolution,
            case
                when (count / area_km2) <= count_ab then 'A'
                when (count / area_km2) <= count_bc then 'B'

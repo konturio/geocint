@@ -5,7 +5,7 @@ create table osm_users_hex_in as (
     order by h3, count desc, osm_user
 );
 create index osm_users_hex_in_h3_osm_user on osm_users_hex_in (h3, osm_user);
-create index osm_users_hex_in_osm_user_count_h3 on osm_users_hex_in (osm_user, count desc, h3);
+create index osm_users_hex_in_osm_user_resolution_hours on osm_users_hex_in (osm_user, resolution, hours desc);
 
 drop table if exists osm_users_hex_out;
 create table osm_users_hex_out
@@ -35,23 +35,20 @@ $$
                         if cur_hex is not null then
                             insert into osm_users_hex_out (h3, osm_user, resolution, count, hours)
                             values (cur_hex.h3, cur_user, cur_hex.resolution, cur_hex.count, cur_hex.hours);
-                            delete from osm_users_hex_in where h3 = cur_hex.h3 and resolution = z;
+                            delete from osm_users_hex_in where h3 = cur_hex.h3;
                             delete from osm_users_hex_in using h3_k_ring(cur_hex.h3, 3) r
-                                where h3 = r and osm_user = cur_user and resolution = z;
-                            --raise notice '%s %s', cur_hex, cur_user;
+                                where h3 = r and osm_user = cur_user;
                         end if;
                     end loop;
             end loop;
     end;
 $$;
 
-drop index osm_users_hex_in_osm_user_count_h3;
-vacuum full osm_users_hex_in;
-vacuum analyse osm_users_hex_in;
-create index osm_users_hex_in_count_h3_osm_user_idx on osm_users_hex_in (count desc, h3, osm_user);
-cluster osm_users_hex_in using osm_users_hex_in_count_h3_osm_user_idx;
---drop index osm_users_hex_in_count_h3_osm_user_idx;
-vacuum osm_users_hex_in;
+drop index osm_users_hex_in_osm_user_resolution_hours;
+
+create index osm_users_hex_in_resolution_hours_h3 on osm_users_hex_in (resolution, hours desc, h3);
+cluster osm_users_hex_in using osm_users_hex_in_resolution_hours_h3;
+vacuum analyze osm_users_hex_in;
 
 create or replace procedure trim_osm_users_h3()
     language plpgsql
@@ -61,9 +58,15 @@ declare
     cur_rec   record;
     counter   integer;
     total_rec integer;
+    dead_rec  integer;
     last_seen timestamptz;
+    last_cluster timestamptz;
+    cluster_time interval;
 begin
     counter = 0;
+    dead_rec = 0;
+    last_cluster = clock_timestamp();
+    cluster_time = '2 min';
     total_rec = (
         select count(*)
         from osm_users_hex_in
@@ -81,12 +84,12 @@ begin
 -- CLUSTER renumbers all physical identifiers, so the loop has to be restarted and CLUSTER has to be performed outside of it.
     while true
         loop
-
             for cur_rec in (
-                select h3, osm_user, ctid, resolution, count, hours from osm_users_hex_in order by hours desc, h3 limit 100000
+                select h3, osm_user, ctid, resolution, count, hours from osm_users_hex_in order by resolution, hours desc, h3 limit 500000
             )
                 loop
                     if not exists(select from osm_users_hex_in where ctid = cur_rec.ctid) then
+			dead_rec = dead_rec + 1;
                         continue;
                     end if;
                     counter = counter + 1;
@@ -104,15 +107,20 @@ begin
                       and osm_user = cur_rec.osm_user;
                     --raise notice '%s %s', cur_rec.osm_user, cur_rec.h3;
                 end loop;
-
-            raise warning 'clustering...';
-            cluster osm_users_hex_in;
-            raise warning 'clustered in %', clock_timestamp() - last_seen;
-            last_seen = clock_timestamp();
-            total_rec = (
-                            select count(*)
-                            from osm_users_hex_in
-                        ) + counter;
+	    if dead_rec > 250000 and (clock_timestamp() - last_cluster > cluster_time) then
+		    dead_rec = 0;
+	            raise warning 'clustering...';
+		    last_cluster = clock_timestamp();
+        	    cluster osm_users_hex_in;
+		    cluster_time = clock_timestamp() - last_cluster;
+		    last_cluster = clock_timestamp();
+	            raise warning 'clustered in %', cluster_time;
+	            last_seen = clock_timestamp();
+	            total_rec = (
+	                            select count(*)
+	                            from osm_users_hex_in
+	                        ) + counter;
+	    end if;
             if total_rec = counter then exit;
             end if;
         end loop;

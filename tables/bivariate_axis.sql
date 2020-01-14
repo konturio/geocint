@@ -48,7 +48,7 @@ drop table if exists bivariate_axis;
 create table bivariate_axis as (
     with axis_parameters as (
         select UNNEST(ARRAY ['count', 'area_km2', 'population', 'building_count', 'highway_length', 'amenity_count',
-            'osm_users', 'osm_users_recent', 'top_user_objects', 'avg_ts', 'max_ts', 'p90_ts']) as parameter
+            'osm_users', 'avg_ts', 'max_ts', 'p90_ts']) as parameter
     )
     select a.parameter as numerator, b.parameter as denominator, f.*
     from axis_parameters a,

@@ -1,6 +1,6 @@
 weekly: deploy/geocint/isochrone_tables
 
-daily: deploy/_all db/table/osm_population_split data/population/population_api_tables.sqld.gz db/table/osm_unused
+daily: deploy/_all data/population/population_api_tables.sqld.gz db/table/osm_unused
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -114,10 +114,6 @@ db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
 	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using gist (seg_geom) tablespace bcache;"
 	touch $@
 
-db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
-	psql -f tables/osm_population_raw.sql
-	touch $@
-
 db/table/osm_user_count_grid_h3: db/table/osm db/function/h3
 	psql -f tables/osm_user_count_grid_h3.sql
 	touch $@
@@ -128,27 +124,6 @@ db/table/osm_users_hex: db/table/osm_user_count_grid_h3
 
 db/procedure: | db
 	mkdir -p $@
-
-db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population_raw | db/procedure
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=2
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=3
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=4
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=5
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=6
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=7
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=8
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=9
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=10
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
-	touch $@
-
-db/procedure/trim_water_in_osm_population_raw: db/procedure/decimate_admin_level_in_osm_population_raw db/table/osm_water_polygons | db/procedure
-	psql -f procedures/trim_water_in_osm_population_raw.sql
-	touch $@
-
-db/table/osm_population_split: db/procedure/trim_water_in_osm_population_raw | db/table
-	psql -f tables/osm_population_split.sql
-	touch $@
 
 data/population_hrsl: | data
 	mkdir -p $@
@@ -357,7 +332,7 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_loca
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/osm_users_hex db/table/osm_unused db/table/osm_water_polygons db/function/h3 | db/table
+db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_unused db/table/osm_water_polygons db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3_with_population.sql
 	touch $@
 

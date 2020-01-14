@@ -8,9 +8,6 @@ create table osm_object_count_grid_h3_with_population_tmp as (
            coalesce(amenity_count, 0)   as amenity_count,
            coalesce(osm_users, 0)       as osm_users,
            coalesce(osm_local_users, 0) as osm_local_users,
-           coalesce(c.user_count, 0)    as osm_users_recent,
-           d.osm_user                   as top_user,
-           d.count                      as top_user_objects,
            coalesce(population, 0)      as population,
            avg_ts                       as avg_ts,
            max_ts                       as max_ts,
@@ -19,8 +16,6 @@ create table osm_object_count_grid_h3_with_population_tmp as (
            false                        as probably_unpopulated
     from osm_object_count_grid_h3 a
              full join population_grid_h3 b on a.h3 = b.h3
-             left join osm_user_count_grid_h3_normalized c on a.h3 = c.h3
-             left join osm_users_hex d on a.h3 = d.h3
 );
 
 alter table osm_object_count_grid_h3_with_population_tmp set (parallel_workers=32);

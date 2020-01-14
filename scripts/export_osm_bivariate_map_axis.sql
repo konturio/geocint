@@ -14,41 +14,53 @@ copy (select jsonb_build_object('axis', ba.axis,
                                                                    'area_km2', 'Area',
                                                                    '1', '1'
                                     ),
-                                'meta', jsonb_build_object('name', 'Kontur OpenStreetMap Coverage Map',
-                                                           'description',
-                                                           'This map shows relative distribution of OpenStreetMap object ' ||
-                                                           'count and Population. Last updated ' ||
-                                                           (select meta -> 'data' -> 'timestamp' ->> 'last' from osm_meta) ||
-                                                           '.',
-                                                           'attribution', 'Map Object Density © OpenStreetMap contributors, https://www.openstreetmap.org/copyright. Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe.
-Dataset: Schiavina, Marcello; Freire, Sergio; MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio; MacManus, Kytt; Pesaresi, Martino; Doxsey-Whitfield, Erin; Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World; Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016.
-',
-                                                           'max_zoom', 8,
+                                'meta', jsonb_build_object('max_zoom', 8,
                                                            'min_zoom', 0),
                                 'initAxis',
-                                jsonb_build_object('x', jsonb_build_object('quotient',
+                                jsonb_build_object('x', jsonb_build_object('label', x.label, 'quotient',
                                                                            jsonb_build_array(x.numerator, x.denominator),
                                                                            'steps',
-                                                                           jsonb_build_array(x.min, x.p25, x.p75, x.max)),
-                                                   'y', jsonb_build_object('quotient',
+                                                                           jsonb_build_array(
+                                                                                   jsonb_build_object('value', x.min, 'label', x.min_label),
+                                                                                   jsonb_build_object('value', x.p25, 'label', x.p25_label),
+                                                                                   jsonb_build_object('value', x.p75, 'label', x.p75_label),
+                                                                                   jsonb_build_object('value', x.max, 'label', x.max_label))),
+                                                   'y', jsonb_build_object('label', y.label, 'quotient',
                                                                            jsonb_build_array(y.numerator, y.denominator),
                                                                            'steps',
-                                                                           jsonb_build_array(y.min, y.p25, y.p75, y.max))
+                                                                           jsonb_build_array(
+                                                                                   jsonb_build_object('value', y.min, 'label', y.min_label),
+                                                                                   jsonb_build_object('value', y.p25, 'label', y.p25_label),
+                                                                                   jsonb_build_object('value', y.p75, 'label', y.p75_label),
+                                                                                   jsonb_build_object('value', y.max, 'label', y.max_label)))
                                     ),
-                                'overlays', ov.overlay
+                                'overlays', ov.overlay,
+                                'copyrights', copyrights.copyrights
                  )
-      from (select json_agg(jsonb_build_object('quotient', jsonb_build_array(numerator, denominator),
-                                               'steps', jsonb_build_array(min, p25, p75, max))) as axis
+      from (select json_agg(jsonb_build_object('label', label, 'quotient', jsonb_build_array(numerator, denominator),
+                                               'steps', jsonb_build_array(
+                                                       jsonb_build_object('value', min, 'label', min_label),
+                                                       jsonb_build_object('value', p25, 'label', p25_label),
+                                                       jsonb_build_object('value', p75, 'label', p75_label),
+                                                       jsonb_build_object('value', max, 'label', max_label)))) as axis
             from bivariate_axis) ba,
-           (select json_agg(jsonb_build_object('name', o.name, 'active', o.active,
-                                               'x', jsonb_build_object('quotient',
+           (select json_agg(jsonb_build_object('name', o.name, 'active', o.active, 'description', o.description,
+                                               'x', jsonb_build_object('label', ax.label, 'quotient',
                                                                        jsonb_build_array(ax.numerator, ax.denominator),
                                                                        'steps',
-                                                                       jsonb_build_array(ax.min, ax.p25, ax.p75, ax.max)),
-                                               'y', jsonb_build_object('quotient',
+                                                                       jsonb_build_array(
+                                                                               jsonb_build_object('value', ax.min, 'label', ax.min_label),
+                                                                               jsonb_build_object('value', ax.p25, 'label', ax.p25_label),
+                                                                               jsonb_build_object('value', ax.p75, 'label', ax.p75_label),
+                                                                               jsonb_build_object('value', ax.max, 'label', ax.max_label))),
+                                               'y', jsonb_build_object('label', ay.label, 'quotient',
                                                                        jsonb_build_array(ay.numerator, ay.denominator),
                                                                        'steps',
-                                                                       jsonb_build_array(ay.min, ay.p25, ay.p75, ay.max)))) as overlay
+                                                                       jsonb_build_array(
+                                                                               jsonb_build_object('value', ay.min, 'label', ay.min_label),
+                                                                               jsonb_build_object('value', ay.p25, 'label', ay.p25_label),
+                                                                               jsonb_build_object('value', ay.p75, 'label', ay.p75_label),
+                                                                               jsonb_build_object('value', ay.max, 'label', ay.max_label))))) as overlay
             from bivariate_axis ax,
                  bivariate_axis ay,
                  bivariate_overlays o
@@ -57,7 +69,8 @@ Dataset: Schiavina, Marcello; Freire, Sergio; MacManus, Kytt (2019): GHS populat
               and ay.denominator = o.y_denominator
               and ay.numerator = o.y_numerator) ov,
            bivariate_axis x,
-           bivariate_axis y
+           bivariate_axis y,
+           (select json_agg(jsonb_build_object(param_id, copyrights)) as copyrights from bivariate_copyrights) as copyrights
       where x.numerator = 'count'
         and x.denominator = 'area_km2'
         and y.numerator = 'population'

@@ -50,15 +50,61 @@ create table bivariate_axis as (
         select UNNEST(ARRAY ['count', 'area_km2', 'population', 'building_count', 'highway_length', 'amenity_count',
             'osm_users', 'avg_ts', 'max_ts', 'p90_ts']) as parameter
     )
-    select a.parameter as numerator, b.parameter as denominator, f.*
+    select a.parameter as numerator, b.parameter as denominator, f.*,
+           '' as min_label, '' as p25_label, '' as p75_label, '' as max_label, '' as label
     from axis_parameters a,
          axis_parameters b,
          calculate_axis_stops(a.parameter, b.parameter) f
     where a.parameter != b.parameter
       and a.parameter not in ('area_km2')
     UNION
-    select a.parameter as numerator, '1' as denominator, f.*
+    select a.parameter as numerator, '1' as denominator, f.*,
+           '' as min_label, '' as p25_label, '' as p75_label, '' as max_label, '' as label
     from axis_parameters a,
          calculate_axis_stops(a.parameter) f);
 
 analyse bivariate_axis;
+
+update bivariate_axis
+set label = 'Highway length (km/km²)'
+where numerator = 'highway_length'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set label = 'Population (ppl/km²)'
+where numerator = 'population'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set label = 'OSM objects (n/km²)'
+where numerator = 'count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set label = 'Buildings (n/km²)'
+where numerator = 'building_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
+    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY HH24:MI:SS'),
+    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY HH24:MI:SS'),
+    max_label = to_char(to_timestamp(max), 'DD Mon YYYY HH24:MI:SS')
+where numerator = 'max_ts'
+  and denominator = '1';
+
+update bivariate_axis
+set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
+    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY HH24:MI:SS'),
+    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY HH24:MI:SS'),
+    max_label = to_char(to_timestamp(max), 'DD Mon YYYY HH24:MI:SS')
+where numerator = 'p90_ts'
+  and denominator = '1';
+
+update bivariate_axis
+set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
+    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY HH24:MI:SS'),
+    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY HH24:MI:SS'),
+    max_label = to_char(to_timestamp(max), 'DD Mon YYYY HH24:MI:SS')
+where numerator = 'avg_ts'
+  and denominator = '1';

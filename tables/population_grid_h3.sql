@@ -9,3 +9,5 @@ create table population_grid_h3 as (
     order by 1, 2
 
 );
+
+create index on population_grid_h3 (h3);

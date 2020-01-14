@@ -31,16 +31,6 @@ create table osm_user_object_count as (
     group by osm_user, resolution
 );
 
-drop table if exists osm_user_grid_h3;
-create table osm_user_grid_h3 as (
-    select distinct on (resolution, h3) resolution,
-                                        h3,
-                                        osm_user,
-                                        count
-    from osm_user_count_grid_h3
-    order by resolution, h3, count desc
-);
-
 drop table if exists osm_user_count_grid_h3_normalized;
 create table osm_user_count_grid_h3_normalized as (
     select g.resolution,
@@ -52,5 +42,8 @@ create table osm_user_count_grid_h3_normalized as (
         and g.resolution = u.resolution
     group by 1, 2
 );
+
+create index on osm_user_count_grid_h3_normalized (h3);
+
 alter table osm_user_count_grid_h3_normalized
     set (parallel_workers = 32);

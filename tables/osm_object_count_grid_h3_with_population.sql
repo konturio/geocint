@@ -1,28 +1,26 @@
 drop table if exists osm_object_count_grid_h3_with_population_tmp;
 create table osm_object_count_grid_h3_with_population_tmp as (
-    select coalesce(a.resolution, b.resolution) as resolution,
-           coalesce(a.resolution, b.resolution) as zoom,
-           coalesce(a.h3, b.h3)                 as h3,
-           coalesce(a.count, 0)                 as count,
-           coalesce(building_count, 0)          as building_count,
-           coalesce(highway_length, 0)          as highway_length,
-           coalesce(amenity_count, 0)           as amenity_count,
-           coalesce(osm_users, 0)               as osm_users,
-           coalesce(osm_local_users, 0)         as osm_local_users,
-           coalesce(c.user_count, 0)            as osm_users_recent,
-           d.osm_user                           as top_user,
-           d.count                              as top_user_objects,
-           coalesce(population, 0)              as population,
-           avg_ts                               as avg_ts,
-           max_ts                               as max_ts,
-           p90_ts                               as p90_ts,
-	   false as has_water,
-	   false as probably_unpopulated
+    select a.resolution                 as zoom,
+           coalesce(a.h3, b.h3)         as h3,
+           coalesce(a.count, 0)         as count,
+           coalesce(building_count, 0)  as building_count,
+           coalesce(highway_length, 0)  as highway_length,
+           coalesce(amenity_count, 0)   as amenity_count,
+           coalesce(osm_users, 0)       as osm_users,
+           coalesce(osm_local_users, 0) as osm_local_users,
+           coalesce(c.user_count, 0)    as osm_users_recent,
+           d.osm_user                   as top_user,
+           d.count                      as top_user_objects,
+           coalesce(population, 0)      as population,
+           avg_ts                       as avg_ts,
+           max_ts                       as max_ts,
+           p90_ts                       as p90_ts,
+           false                        as has_water,
+           false                        as probably_unpopulated
     from osm_object_count_grid_h3 a
-             full join population_grid_h3 b on a.resolution = b.resolution and a.h3 = b.h3
-             left join osm_user_count_grid_h3_normalized c on a.resolution = c.resolution and a.h3 = c.h3
-             left join osm_users_hex d on a.resolution = d.resolution and a.h3 = d.h3
-    order by 1, 2
+             full join population_grid_h3 b on a.h3 = b.h3
+             left join osm_user_count_grid_h3_normalized c on a.h3 = c.h3
+             left join osm_users_hex d on a.h3 = d.h3
 );
 
 alter table osm_object_count_grid_h3_with_population_tmp set (parallel_workers=32);
@@ -69,7 +67,7 @@ drop table if exists osm_pop_tmp;
 create table osm_pop_tmp (
     h3         h3index,
     population float,
-    resolution integer
+    zoom integer
 );
 
 do
@@ -83,7 +81,7 @@ $$
         carry = 0;
         for cur_row in ( select *
                          from osm_object_count_grid_h3_with_population_tmp2
-                         where resolution = 8
+                         where zoom = 8
                          order by h3 )
             loop
                 cur_pop = cur_row.population + carry;
@@ -116,7 +114,7 @@ $$
                 carry = cur_row.population + carry - cur_pop;
                 if cur_pop > 0
                 then
-                    insert into osm_pop_tmp (h3, population, resolution)
+                    insert into osm_pop_tmp (h3, population, zoom)
                     values (cur_row.h3, cur_pop, 8);
                 end if;
                 --         raise notice '% pop, % new pop, % carry, % buildings ', cur_row.population, cur_pop, carry, cur_row.building_count;
@@ -134,8 +132,8 @@ $$
         res = 8;
         while res > 0
             loop
-                insert into osm_pop_tmp (h3, population, resolution) 
-                    select h3_to_parent(h3) as h3, sum(population) as population, (res - 1) as resolution from osm_pop_tmp where resolution = res group by 1;
+                insert into osm_pop_tmp (h3, population, zoom)
+                    select h3_to_parent(h3) as h3, sum(population) as population, (res - 1) as resolution from osm_pop_tmp where zoom = res group by 1;
                 res = res - 1;
             end loop;
     end;

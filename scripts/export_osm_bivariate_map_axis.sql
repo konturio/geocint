@@ -70,7 +70,7 @@ copy (select jsonb_build_object('axis', ba.axis,
               and ay.numerator = o.y_numerator) ov,
            bivariate_axis x,
            bivariate_axis y,
-           (select json_agg(jsonb_build_object(param_id, copyrights)) as copyrights from bivariate_copyrights) as copyrights
+           (select json_object_agg(param_id, copyrights) as copyrights from bivariate_copyrights) as copyrights
       where x.numerator = 'count'
         and x.denominator = 'area_km2'
         and y.numerator = 'population'

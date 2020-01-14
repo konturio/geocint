@@ -43,7 +43,5 @@ create table osm_user_count_grid_h3_normalized as (
     group by 1, 2
 );
 
-create index on osm_user_count_grid_h3_normalized (h3);
-
 alter table osm_user_count_grid_h3_normalized
     set (parallel_workers = 32);

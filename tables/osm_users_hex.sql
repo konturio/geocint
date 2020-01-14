@@ -138,5 +138,4 @@ create table osm_users_hex as (
     order by geom
 );
 
-create index on osm_users_hex (h3);
 create index on osm_users_hex using gist (resolution, geom);

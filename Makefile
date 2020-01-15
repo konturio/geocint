@@ -1,6 +1,6 @@
 weekly: deploy/geocint/isochrone_tables
 
-daily: deploy/_all data/population/population_api_tables.sqld.gz db/table/osm_unused
+daily: deploy/_all data/population/population_api_tables.sqld.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -328,7 +328,7 @@ db/table/osm_local_user_h3: db/function/h3 db/table/osm_user_count_grid_h3 | db/
 	psql -f tables/osm_local_user_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_local_user_h3 | db/table db/index/osm_tags_idx
+db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_local_user_h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 

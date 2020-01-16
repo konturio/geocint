@@ -55,7 +55,7 @@ deploy/dollar:
 deploy/geocint:
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/osm_quality_bivariate_tiles deploy/lima/osm_quality_bivariate_tiles deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/stats_tiles deploy/geocint/users_tiles db/table/countries_info
+deploy/_all: deploy/geocint/osm_quality_bivariate_tiles deploy/lima/osm_quality_bivariate_tiles deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles db/table/countries_info
 	touch $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx
@@ -370,6 +370,23 @@ deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint
 	mv /var/www/tiles/stats /var/www/tiles/stats_old; mv /var/www/tiles/stats_new /var/www/tiles/stats
 	touch $@
 
+deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima
+	ansible lima_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
+	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		mkdir -p "$$HOME/public_html/tiles/stats"; \
+		tar -cjf "$$HOME/tmp/stats_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/stats" . ; \
+		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
+		function on_exit { rm -rf "$$TMPDIR"; }; \
+		trap on_exit EXIT; \
+		tar -xf "$$HOME/tmp/stats_tiles.tar.bz2" -C "$$TMPDIR"; \
+		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
+		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
+		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/stats"; \
+	'
+	touch $@
+
 data/tiles/users_tiles.tar.bz2: db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res | data/tiles
 	bash ./scripts/generate_tiles.sh users | parallel --eta
 	cd data/tiles/users/; tar cjvf ../users_tiles.tar.bz2 ./
@@ -380,6 +397,23 @@ deploy/geocint/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/geocint
 	cp -a data/tiles/users/. /var/www/tiles/users_new/
 	rm -rf /var/www/tiles/users_old
 	mv /var/www/tiles/users /var/www/tiles/users_old; mv /var/www/tiles/users_new /var/www/tiles/users
+	touch $@
+
+deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
+	ansible lima_live_dashboard -m copy -a 'src=data/tiles/users_tiles.tar.bz2 dest=$$HOME/tmp/users_tiles.tar.bz2'
+	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		mkdir -p "$$HOME/public_html/tiles/users"; \
+		tar -cjf "$$HOME/tmp/users_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/users" . ; \
+		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
+		function on_exit { rm -rf "$$TMPDIR"; }; \
+		trap on_exit EXIT; \
+		tar -xf "$$HOME/tmp/users_tiles.tar.bz2" -C "$$TMPDIR"; \
+		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
+		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
+		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/users"; \
+	'
 	touch $@
 
 data/population/population_api_tables.sqld.gz: db/table/population_vector db/table/ghs_globe_residential_vector | data/population
@@ -398,7 +432,8 @@ deploy/lima/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
 		set -e; \
 		set -o pipefail; \
-		tar -cjf "$$HOME/tmp/osm_quality_bivariate_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/osm_quality_bivariate/" . ; \
+		mkdir -p "$$HOME/public_html/tiles/osm_quality_bivariate" ; \
+		tar -cjf "$$HOME/tmp/osm_quality_bivariate_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/osm_quality_bivariate" . ; \
 		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
 		function on_exit { rm -rf "$$TMPDIR"; }; \
 		trap on_exit EXIT; \

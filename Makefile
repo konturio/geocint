@@ -374,13 +374,13 @@ data/tiles/users_tiles.tar.bz2: db/table/osm_users_hex db/table/osm_meta db/func
 	bash ./scripts/generate_tiles.sh users | parallel --eta
 	cd data/tiles/users/; tar cjvf ../users_tiles.tar.bz2 ./
 
-deploy/geocint/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/geocint
-	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles
-	rm -rf /var/www/tiles/users_new; mkdir -p /var/www/tiles/users_new
-	cp -a data/tiles/users/. /var/www/tiles/users_new/
-	rm -rf /var/www/tiles/users_old
-	mv /var/www/tiles/users /var/www/tiles/users_old; mv /var/www/tiles/users_new /var/www/tiles/users
-	touch $@
+#deploy/geocint/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/geocint
+#	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles
+#	rm -rf /var/www/tiles/users_new; mkdir -p /var/www/tiles/users_new
+#	cp -a data/tiles/users/. /var/www/tiles/users_new/
+#	rm -rf /var/www/tiles/users_old
+#	mv /var/www/tiles/users /var/www/tiles/users_old; mv /var/www/tiles/users_new /var/www/tiles/users
+#	touch $@
 
 data/population/population_api_tables.sqld.gz: db/table/population_vector db/table/ghs_globe_residential_vector | data/population
 	pg_dump -t population_vector -t ghs_globe_residential_vector | pigz > $@

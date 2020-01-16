@@ -6,7 +6,7 @@ copy (
                h3,
                resolution,
                zoom.zoom_lvl
-        from osm_users_hex_in2_remove,
+        from osm_users_hex,
              calculate_h3_res(:z) zoom
         where resolution = zoom.tile_resolution
           and geom && ST_TileEnvelope(:z, :x, :y)

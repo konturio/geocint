@@ -23,7 +23,7 @@ $$
         for z in (select distinct resolution from osm_users_hex_in)
             loop
                 for cur_user in (
-                    select osm_user from osm_user_object_count where count > 20 and resolution = z order by max_hours desc, hex_count
+                    select osm_user from osm_user_object_count where resolution = z order by max_hours desc, hex_count
                 )
                     loop
                         select h3, resolution, count, hours
@@ -36,7 +36,7 @@ $$
                             insert into osm_users_hex_out (h3, osm_user, resolution, count, hours)
                             values (cur_hex.h3, cur_user, cur_hex.resolution, cur_hex.count, cur_hex.hours);
                             delete from osm_users_hex_in where h3 = cur_hex.h3;
-                            delete from osm_users_hex_in using h3_k_ring(cur_hex.h3, 3) r
+                            delete from osm_users_hex_in using h3_k_ring(cur_hex.h3, 1) r
                                 where h3 = r and osm_user = cur_user;
                         end if;
                     end loop;
@@ -102,7 +102,7 @@ begin
                     values (cur_rec.h3, cur_rec.osm_user, cur_rec.resolution, cur_rec.count, cur_rec.hours);
                     delete from osm_users_hex_in where h3 = cur_rec.h3;
                     delete
-                    from osm_users_hex_in using h3_k_ring(cur_rec.h3, 3) r
+                    from osm_users_hex_in using h3_k_ring(cur_rec.h3, 1) r
                     where h3 = r
                       and osm_user = cur_rec.osm_user;
                     --raise notice '%s %s', cur_rec.osm_user, cur_rec.h3;

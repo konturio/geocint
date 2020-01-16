@@ -23,7 +23,7 @@ $$
         for z in (select distinct resolution from osm_users_hex_in)
             loop
                 for cur_user in (
-                    select osm_user from osm_user_object_count where resolution = z order by max_hours desc, hex_count
+                    select osm_user from osm_user_object_count where count > 20 and resolution = z order by max_hours desc, hex_count
                 )
                     loop
                         select h3, resolution, count, hours

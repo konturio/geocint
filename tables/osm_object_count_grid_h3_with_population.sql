@@ -134,6 +134,14 @@ $$
     end;
 $$;
 
+drop table if exists h3_gdp_tmp;
+create table h3_gdp_tmp as (
+    select h.h3, sum(c.gdp * h.population * ST_Area(ST_Intersection(c.geom, h.geom)) / ST_Area(h.geom) / c.population)  as gdp_h3
+      from osm_object_count_grid_h3_with_population_tmp2 h
+        left outer join countries_info c on ST_Intersects(c.geom, h.geom)
+      where ST_Intersects(c.geom, h.geom) and h.zoom = 8 and h.population > 0
+      group by h.h3
+);
 
 alter table osm_object_count_grid_h3_with_population_tmp2 rename column population to population_raw;
 
@@ -141,12 +149,15 @@ drop table if exists osm_object_count_grid_h3_with_population;
 create table osm_object_count_grid_h3_with_population as (
     select a.*,
            coalesce(p.population,0) as population
+           coalesce(g.gdp_h3,0) as gdp_h3
     from osm_object_count_grid_h3_with_population_tmp2 a
         full outer join osm_pop_tmp p on p.h3 = a.h3
+        full outer join h3_gdp_tmp g on g.h3 = a.h3
 );
 
 drop table osm_object_count_grid_h3_with_population_tmp2;
 drop table if exists osm_pop_tmp;
+drop table if exists h3_gdp_tmp;
 
 create index on osm_object_count_grid_h3_with_population using gist (geom, zoom);
 

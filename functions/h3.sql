@@ -86,3 +86,35 @@ from ST_Dimension(geog::geometry) dim,
                          else ST_PointOnSurface(geog::geometry) end::point as pt) as point,
      generate_series(0, max_resolution) res
 $function$;
+
+
+drop function if exists ST_H3Fill(geom geometry, max_resolution integer);
+
+create or replace function ST_H3Fill(geom geometry, max_resolution integer default 8)
+    returns table
+            (
+                h3         h3index,
+                resolution integer
+            )
+    language plpgsql
+    immutable strict parallel safe
+as
+$function$
+declare
+    z            integer;
+    polyfills    h3index[];
+    result_array h3index[];
+begin
+    for z in (select generate_series(0, max_resolution))
+        loop
+            select ARRAY(select h3_polyfill(ST_Transform(geom, 4326), z)) into polyfills;
+            if COALESCE(array_length(polyfills, 1), 0) = 0 then
+                select ARRAY(select h3_geo_to_h3(ST_Transform(ST_PointOnSurface(geom), 4326), z)) into polyfills;
+                result_array = result_array || polyfills;
+            else
+                result_array = result_array || polyfills;
+            end if;
+        end loop;
+    return query select u, h3_get_resolution(u) from unnest(result_array) u;
+end;
+$function$;

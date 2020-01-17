@@ -292,7 +292,7 @@ db/table/wb_gdp: data/wb/gdp/wb_gdp.xml | db/table
 	psql -c "drop table if exists temp_xml;"
 	touch $@
 
-db/table/countries_info: db/table/wb_gdp db/table/population_vector
+db/table/countries_info: db/table/wb_gdp db/table/osm_object_count_grid_h3_with_population_step1
 	psql -f tables/countries_info.sql
 	touch $@
 
@@ -332,7 +332,11 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_loca
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_unused db/table/osm_water_polygons db/function/h3 | db/table
+db/table/osm_object_count_grid_h3_with_population_step1: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_unused db/table/osm_water_polygons db/function/h3 | db/table
+	psql -f tables/osm_object_count_grid_h3_with_population_step1.sql
+	touch $@
+
+db/table/osm_object_count_grid_h3_with_population: db/table/countries_info | db/table
 	psql -f tables/osm_object_count_grid_h3_with_population.sql
 	touch $@
 

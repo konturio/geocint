@@ -306,6 +306,7 @@ data/water_polygons.shp: data/water-polygons-split-3857.zip
 db/table/water_polygons_vector: data/water_polygons.shp | db/table
 	psql -c "drop table if exists water_polygons_vector"
 	shp2pgsql -I -s 3857 data/water-polygons-split-3857/water_polygons.shp water_polygons_vector | psql -q
+	psql -f tables/water_polygons_vector.sql
 	touch $@
 
 db/table/osm_water_lines: db/index/osm_tags_idx | db/table

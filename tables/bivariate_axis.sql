@@ -12,13 +12,12 @@ begin
                    'percentile_disc(0.33) within group (order by ' || parameter1 || ' / ' || parameter2 || '::double precision)::double precision as p25, ' ||
                    'percentile_disc(0.66) within group (order by ' || parameter1 || ' / ' || parameter2 || '::double precision)::double precision as p75, ' ||
                    'ceil(max(' || parameter1 || ' / ' || parameter2 || '::double precision))   as max ' ||
-                   'from osm_object_count_grid_h3_with_population ' ||
+                   'from stat_h3 ' ||
                    'where ' || parameter1 || ' != 0 and ' || parameter2 || ' != 0 and population >= 1 and zoom = 6';
 
     RETURN QUERY execute select_query;
 end;
-$$
-;
+$$;
 
 drop function if exists calculate_axis_stops(text);
 
@@ -34,7 +33,7 @@ begin
                    'percentile_disc(0.33) within group (order by ' || parameter1 || ' )::double precision as p25, ' ||
                    'percentile_disc(0.66) within group (order by ' || parameter1 || ' )::double precision as p75, ' ||
                    'ceil(max(' || parameter1 || ' ))   as max ' ||
-                   'from osm_object_count_grid_h3_with_population ' ||
+                   'from stat_h3 ' ||
                    'where population >= 1 and zoom = 6';
 
     RETURN QUERY execute select_query;
@@ -47,8 +46,8 @@ drop table if exists bivariate_axis;
 
 create table bivariate_axis as (
     with axis_parameters as (
-        select UNNEST(ARRAY ['count', 'area_km2', 'population', 'building_count', 'highway_length', 'amenity_count',
-            'osm_users', 'avg_ts', 'max_ts', 'p90_ts']) as parameter
+        select UNNEST(ARRAY ['count', 'area_km2', 'population', 'building_count', 'highway_length',
+            'osm_users', 'gdp', 'avg_ts', 'max_ts', 'p90_ts']) as parameter
     )
     select a.parameter as numerator, b.parameter as denominator, f.*,
            '' as min_label, '' as p25_label, '' as p75_label, '' as max_label, '' as label

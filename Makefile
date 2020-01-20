@@ -113,7 +113,7 @@ db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_r
 	touch $@
 
 db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
-	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using brin (seg_geom) tablespace bcache;"
+	psql -c "create index osm_road_segments_seg_geom_walk_time_idx on osm_road_segments using brin (seg_geom, walk_time) tablespace bcache;"
 	touch $@
 
 db/table/osm_user_count_grid_h3: db/table/osm db/function/h3

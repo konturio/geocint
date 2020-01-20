@@ -1,0 +1,34 @@
+drop table if exists stat_h3_in;
+create table stat_h3_in as (
+    select
+        coalesce(a.resolution, b.resolution, c.resolution) as resolution,
+        coalesce(a.resolution, b.resolution, c.resolution) as zoom,
+        coalesce(a.h3, b.h3, c.h3) as h3,
+        coalesce(a.count, 0) as count,
+        coalesce(a.building_count, 0) as building_count,
+        coalesce(a.highway_length, 0) as highway_length,
+        coalesce(a.osm_users, 0) as osm_users,
+        coalesce(b.population, 0) as population,
+        coalesce(c.gdp, 0) as gdp,
+        coalesce(a.avg_ts, 0) as avg_ts,
+        coalesce(a.max_ts, 0) as max_ts,
+        coalesce(a.p90_ts, 0) as p90_ts
+    from
+        osm_object_count_grid_h3       a
+        full join kontur_population_h3 b on a.h3 = b.h3
+        full join gdp_h3               c on b.h3 = c.h3
+);
+drop table if exists stat_h3;
+create table stat_h3 as (
+    select
+        a.*,
+        hex.area / 1000000.0 as area_km2,
+        hex.geom as geom
+    from
+        stat_h3_in           a,
+        ST_HexagonFromH3(h3) hex
+);
+vacuum analyze stat_h3;
+create index on stat_h3 using gist (geom, zoom);
+
+

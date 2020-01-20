@@ -1,3 +1,5 @@
+all: weekly daily
+
 weekly: deploy/geocint/isochrone_tables
 
 daily: deploy/_all data/population/population_api_tables.sqld.gz
@@ -55,7 +57,7 @@ deploy/dollar:
 deploy/geocint:
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/osm_quality_bivariate_tiles deploy/lima/osm_quality_bivariate_tiles deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles db/table/countries_info
+deploy/_all: deploy/geocint/osm_quality_bivariate_tiles deploy/lima/osm_quality_bivariate_tiles deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles
 	touch $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx
@@ -76,7 +78,7 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
-	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb) tablespace bcache;alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
+	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
 	psql -c "vacuum analyze osm;"
 	psql -c "alter table osm set (parallel_workers=16);"
 	touch $@
@@ -111,14 +113,14 @@ db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_r
 	touch $@
 
 db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
-	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using gist (seg_geom) tablespace bcache;"
+	psql -c "create index osm_road_segments_seg_geom_idx on osm_road_segments using brin (seg_geom) tablespace bcache;"
 	touch $@
 
 db/table/osm_user_count_grid_h3: db/table/osm db/function/h3
 	psql -f tables/osm_user_count_grid_h3.sql
 	touch $@
 
-db/table/osm_users_hex: db/table/osm_user_count_grid_h3
+db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_active_users
 	psql -f tables/osm_users_hex.sql
 	touch $@
 
@@ -174,8 +176,8 @@ db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_popula
 	psql -f tables/population_vector.sql
 	touch $@
 
-db/table/osm_unused: db/index/osm_tags_idx | db/table
-	psql -f tables/osm_unused.sql
+db/table/osm_unpopulated: db/index/osm_tags_idx | db/table
+	psql -f tables/osm_unpopulated.sql
 	touch $@
 
 db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 | db/table
@@ -292,8 +294,12 @@ db/table/wb_gdp: data/wb/gdp/wb_gdp.xml | db/table
 	psql -c "drop table if exists temp_xml;"
 	touch $@
 
-db/table/countries_info: db/table/wb_gdp db/table/population_vector
-	psql -f tables/countries_info.sql
+db/table/wb_gadm_gdp_countries: db/table/wb_gdp db/table/gadm_countries_boundary
+	psql -f tables/wb_gadm_gdp_countries.sql
+	touch $@
+
+db/table/gdp_h3: db/table/kontur_population_h3 db/table/wb_gadm_gdp_countries
+	psql -f tables/gdp_h3.sql
 	touch $@
 
 data/water-polygons-split-3857.zip: | data
@@ -306,6 +312,7 @@ data/water_polygons.shp: data/water-polygons-split-3857.zip
 db/table/water_polygons_vector: data/water_polygons.shp | db/table
 	psql -c "drop table if exists water_polygons_vector"
 	shp2pgsql -I -s 3857 data/water-polygons-split-3857/water_polygons.shp water_polygons_vector | psql -q
+	psql -f tables/water_polygons_vector.sql
 	touch $@
 
 db/table/osm_water_lines: db/index/osm_tags_idx | db/table
@@ -324,23 +331,27 @@ db/table/population_grid_h3: db/table/population_vector db/function/h3 | db/tabl
 	psql -f tables/population_grid_h3.sql
 	touch $@
 
-db/table/osm_local_user_h3: db/function/h3 db/table/osm_user_count_grid_h3 | db/table
-	psql -f tables/osm_local_user_h3.sql
+db/table/osm_local_active_users: db/function/h3 db/table/osm_user_count_grid_h3 | db/table
+	psql -f tables/osm_local_active_users.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_local_user_h3 | db/table
+db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3_with_population: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_unused db/table/osm_water_polygons db/function/h3 | db/table
-	psql -f tables/osm_object_count_grid_h3_with_population.sql
+db/table/kontur_population_h3: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 | db/table
+	psql -f tables/kontur_population_h3.sql
 	touch $@
 
-db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/table/osm_object_count_grid_h3_with_population db/function/h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/kontur_population_h3 db/table/gdp_h3 | db/table
+	psql -f tables/stat_h3.sql
+	touch $@
+
+db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/table/stat_h3 db/function/h3 | db/table
 	psql -f tables/osm_quality_bivariate_grid_h3.sql
 	touch $@
 
-db/table/bivariate_axis: db/table/osm_object_count_grid_h3_with_population | data/tiles/stat
+db/table/bivariate_axis: db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis.sql
 	touch $@
 
@@ -357,7 +368,7 @@ data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_g
 	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
 	cd data/tiles/osm_quality_bivariate/; tar cjvf ../osm_quality_bivariate_tiles.tar.bz2 ./
 
-data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_copyrights db/table/osm_object_count_grid_h3_with_population db/table/osm_meta | data/tiles
+data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_copyrights db/table/stat_h3 db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh stats | parallel --eta
 	psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stats/stat.json
 	cd data/tiles/stats/; tar cjvf ../stats_tiles.tar.bz2 ./

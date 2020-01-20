@@ -24,7 +24,7 @@ create table osm_water_polygons as (
     select 
       'oceans' as osm_type, 
       gid as osm_id, 
-      ST_Subdivide(geom, 100) as geom 
+      geom
     from 
       water_polygons_vector
 

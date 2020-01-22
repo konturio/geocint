@@ -12,36 +12,25 @@ create table stat_h3_in as (
         coalesce(c.gdp, 0) as gdp,
         coalesce(a.avg_ts, 0) as avg_ts,
         coalesce(a.max_ts, 0) as max_ts,
-        coalesce(a.p90_ts, 0) as p90_ts
+        coalesce(a.p90_ts, 0) as p90_ts,
+        coalesce(u.local_hours, 0) as local_hours,
+        coalesce(u.total_hours, 0) as total_hours
     from
         osm_object_count_grid_h3       a
         full join kontur_population_h3 b on a.h3 = b.h3
         full join gdp_h3               c on b.h3 = c.h3
+        left join user_hours_h3        u on u.h3 = a.h3
 );
+
 drop table if exists stat_h3;
 create table stat_h3 as (
     select
         a.*,
-        h.area / 1000000.0 as area_km2,
-        h.geom as geom,
-        h.local_hours,
-        h.total_hours
-    from stat_h3_in a,
-        (select s.h3,
-             hex.area,
-             hex.geom,
-             count(uc.hours) FILTER (
-                 WHERE exists(select
-                              from osm_local_active_users au
-                              where au.osm_user = uc.osm_user
-                                and ST_DWithin(geog, ST_Transform(hex.geom, 4326)::geography, 50000))) as local_hours,
-             count(uc.hours)   as total_hours
-         from stat_h3_in s,
-             osm_user_count_grid_h3 uc,
-             ST_HexagonFromH3(s.h3) hex
-         where uc.h3 = s.h3
-         group by s.h3, hex.area, hex.geom) as h
-    where a.h3 = h.h3
+        hex.area / 1000000.0 as area_km2,
+        hex.geom as geom
+    from
+        stat_h3_in           a,
+        ST_HexagonFromH3(h3) hex
 );
 vacuum analyze stat_h3;
 create index on stat_h3 using gist (geom, zoom);

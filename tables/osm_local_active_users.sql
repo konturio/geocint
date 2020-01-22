@@ -45,4 +45,3 @@ update osm_local_active_users set geog = ST_Transform(ST_Force2D(geom),4326);
 vacuum full osm_local_active_users;
 vacuum analyse osm_local_active_users;
 create index on osm_local_active_users (osm_user);
-create index on osm_local_active_users using gist (osm_user, geog);

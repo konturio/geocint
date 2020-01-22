@@ -18,4 +18,6 @@ create table osm_user_count_grid_h3 as (
     group by 1, 2, 3
 );
 
+create index on osm_user_count_grid_h3 (h3);
+
 alter table osm_user_count_grid_h3 set (parallel_workers = 32);

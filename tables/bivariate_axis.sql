@@ -46,8 +46,7 @@ drop table if exists bivariate_axis;
 
 create table bivariate_axis as (
     with axis_parameters as (
-        select UNNEST(ARRAY ['count', 'area_km2', 'population', 'building_count', 'highway_length',
-            'osm_users', 'gdp', 'avg_ts', 'max_ts', 'p90_ts']) as parameter
+        select param_id as parameter from bivariate_copyrights where param_id not in ('1', 'top_user')
     )
     select a.parameter as numerator, b.parameter as denominator, f.*,
            '' as min_label, '' as p25_label, '' as p75_label, '' as max_label, '' as label
@@ -82,6 +81,16 @@ where numerator = 'count'
 update bivariate_axis
 set label = 'Buildings (n/km²)'
 where numerator = 'building_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set label = 'Edits by active locals (h/km²)'
+where numerator = 'local_hours'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set label = 'Edits by all mappers (h/km²)'
+where numerator = 'total_hours'
   and denominator = 'area_km2';
 
 update bivariate_axis

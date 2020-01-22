@@ -355,7 +355,7 @@ db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/tab
 	psql -f tables/osm_quality_bivariate_grid_h3.sql
 	touch $@
 
-db/table/bivariate_axis: db/table/stat_h3 | data/tiles/stat
+db/table/bivariate_axis: db/table/bivariate_copyrights db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis.sql
 	touch $@
 

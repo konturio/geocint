@@ -84,12 +84,12 @@ where numerator = 'building_count'
   and denominator = 'area_km2';
 
 update bivariate_axis
-set label = 'Hours spent by local users (h/km²)'
+set label = 'Edits by active locals (h/km²)'
 where numerator = 'local_hours'
   and denominator = 'area_km2';
 
 update bivariate_axis
-set label = 'Total hours spent (h/km²)'
+set label = 'Edits by all mappers (h/km²)'
 where numerator = 'total_hours'
   and denominator = 'area_km2';
 

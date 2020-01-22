@@ -43,3 +43,14 @@ select 'Highway length and population map',
        'This map shows relative distribution of Highway length and Population. Last updated  ' ||
        json_extract_path_text(meta::json, 'header', 'option', 'timestamp')
 from osm_meta;
+
+insert into bivariate_overlays (name, x_numerator, x_denominator, y_numerator, y_denominator, active, description)
+select 'OpenStreetMap Mapping Activity',
+       'local_hours',
+       'area_km2',
+       'total_hours',
+       'area_km2',
+       false,
+       'This layer shows how active mapping in the area in last two years is. All mapping hours are mapped and shown against mapping hours we can surely attribute to an active local user. Mapper is considered active if they contributed  more than 30 mapping hours during last two years. Position of active mapper is estimated by region of their highest activity. A mapping hour is a hour in which an user uploaded at least one tagged object. Last updated  ' ||
+       json_extract_path_text(meta::json, 'header', 'option', 'timestamp')
+from osm_meta;

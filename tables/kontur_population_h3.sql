@@ -1,7 +1,7 @@
 drop table if exists kontur_population_in;
 create table kontur_population_in as (
     select
-        a.resolution as resolution,
+        coalesce(a.resolution, b.resolution) as resolution,
         coalesce(a.h3, b.h3) as h3,
         coalesce(a.count, 0) as count,
         coalesce(building_count, 0) as building_count,
@@ -12,8 +12,8 @@ create table kontur_population_in as (
         osm_object_count_grid_h3     a
         full join population_grid_h3 b on a.h3 = b.h3
     where
-          a.resolution = 8
-      and b.resolution = 8
+         a.resolution = 8
+      or b.resolution = 8
 );
 
 alter table kontur_population_in

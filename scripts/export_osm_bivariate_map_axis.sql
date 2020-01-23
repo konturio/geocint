@@ -41,7 +41,7 @@ copy (select jsonb_build_object('axis', ba.axis,
                                                        jsonb_build_object('value', p75, 'label', p75_label),
                                                        jsonb_build_object('value', max, 'label', max_label)))) as axis
             from bivariate_axis) ba,
-           (select json_agg(jsonb_build_object('name', o.name, 'active', o.active, 'description', o.description,
+           (select json_agg(jsonb_build_object('name', o.name, 'active', o.active, 'description', o.description, 'colors', o.colors,
                                                'x', jsonb_build_object('label', ax.label, 'quotient',
                                                                        jsonb_build_array(ax.numerator, ax.denominator),
                                                                        'steps',
@@ -64,7 +64,7 @@ copy (select jsonb_build_object('axis', ba.axis,
             where ax.denominator = o.x_denominator
               and ax.numerator = o.x_numerator
               and ay.denominator = o.y_denominator
-              and ay.numerator = o.y_numerator) ov,
+              and ay.numerator = o.y_numerator orser by order) ov,
            bivariate_axis x,
            bivariate_axis y,
            (select json_object_agg(param_id, copyrights) as copyrights from bivariate_copyrights) as copyrights

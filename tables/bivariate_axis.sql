@@ -94,25 +94,35 @@ where numerator = 'total_hours'
   and denominator = 'area_km2';
 
 update bivariate_axis
-set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
-    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY HH24:MI:SS'),
-    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY HH24:MI:SS'),
-    max_label = to_char(to_timestamp(max), 'DD Mon YYYY HH24:MI:SS')
-where numerator = 'max_ts'
+set label = 'OpenStreetMap Contibutors (n)'
+where numerator = 'osm_users'
   and denominator = 'one';
 
 update bivariate_axis
-set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
-    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY HH24:MI:SS'),
-    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY HH24:MI:SS'),
-    max_label = to_char(to_timestamp(max), 'DD Mon YYYY HH24:MI:SS')
+set label = '90% mapped before (date)'
 where numerator = 'p90_ts'
   and denominator = 'one';
 
 update bivariate_axis
-set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
-    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY HH24:MI:SS'),
-    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY HH24:MI:SS'),
-    max_label = to_char(to_timestamp(max), 'DD Mon YYYY HH24:MI:SS')
+set min_label = to_char(to_timestamp(min), 'DD Mon YYYY'),
+    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY'),
+    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY'),
+    max_label = to_char(to_timestamp(max), 'DD Mon YYYY')
+where numerator = 'max_ts'
+  and denominator = 'one';
+
+update bivariate_axis
+set min_label = to_char(to_timestamp(min), 'DD Mon YYYY'),
+    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY'),
+    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY'),
+    max_label = to_char(to_timestamp(max), 'DD Mon YYYY')
+where numerator = 'p90_ts'
+  and denominator = 'one';
+
+update bivariate_axis
+set min_label = to_char(to_timestamp(min), 'DD Mon YYYY'),
+    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY'),
+    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY'),
+    max_label = to_char(to_timestamp(max), 'DD Mon YYYY')
 where numerator = 'avg_ts'
   and denominator = 'one';

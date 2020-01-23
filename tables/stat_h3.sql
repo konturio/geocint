@@ -13,8 +13,8 @@ create table stat_h3_in as (
         coalesce(a.avg_ts, 0) as avg_ts,
         coalesce(a.max_ts, 0) as max_ts,
         coalesce(a.p90_ts, 0) as p90_ts,
-        coalesce(u.local_hours, 0) as local_hours,
-        coalesce(u.total_hours, 0) as total_hours
+        coalesce(u.local_hours, 0)::float as local_hours,
+        coalesce(u.total_hours, 0)::float as total_hours
     from
         osm_object_count_grid_h3       a
         full join kontur_population_h3 b on a.h3 = b.h3
@@ -32,6 +32,7 @@ create table stat_h3 as (
         stat_h3_in           a,
         ST_HexagonFromH3(h3) hex
 );
+drop table stat_h3_in;
 vacuum analyze stat_h3;
 create index on stat_h3 using gist (geom, zoom);
 

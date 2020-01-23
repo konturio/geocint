@@ -54,3 +54,14 @@ select 'OpenStreetMap Mapping Activity',
        'This layer shows how active mapping in the area in last two years is. All mapping hours are mapped and shown against mapping hours we can surely attribute to an active local user. Mapper is considered active if they contributed  more than 30 mapping hours during last two years. Position of active mapper is estimated by region of their highest activity. A mapping hour is a hour in which an user uploaded at least one tagged object. Last updated  ' ||
        json_extract_path_text(meta::json, 'header', 'option', 'timestamp')
 from osm_meta;
+
+insert into bivariate_overlays (name, x_numerator, x_denominator, y_numerator, y_denominator, active, description)
+select 'OpenStreetMap Age',
+       'p90_ts',
+       'one',
+       'osm_users',
+       'one',
+       false,
+       'This is DataAge overlay test' ||
+       json_extract_path_text(meta::json, 'header', 'option', 'timestamp')
+from osm_meta;

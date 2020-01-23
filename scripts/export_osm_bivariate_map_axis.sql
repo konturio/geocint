@@ -64,7 +64,7 @@ copy (select jsonb_build_object('axis', ba.axis,
             where ax.denominator = o.x_denominator
               and ax.numerator = o.x_numerator
               and ay.denominator = o.y_denominator
-              and ay.numerator = o.y_numerator orser by order) ov,
+              and ay.numerator = o.y_numerator order by ord) ov,
            bivariate_axis x,
            bivariate_axis y,
            (select json_object_agg(param_id, copyrights) as copyrights from bivariate_copyrights) as copyrights

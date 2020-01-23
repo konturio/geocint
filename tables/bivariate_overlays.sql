@@ -2,7 +2,7 @@ drop table if exists bivariate_overlays;
 
 create table bivariate_overlays
 (
-    order         float,
+    ord           float,
     name          text,
     description   text,
     x_numerator   text,
@@ -13,7 +13,7 @@ create table bivariate_overlays
     colors        jsonb
 );
 
-insert into bivariate_overlays (order, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
+insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 1, 
        'Kontur OpenStreetMap Quantity',
        'count',
@@ -23,10 +23,10 @@ select 1,
        true,
        'This map shows relative distribution of OpenStreetMap objects and Population. Last updated ' ||
        json_extract_path_text(meta::json, 'header', 'option', 'timestamp'),
-       '[{id:"A1",color:"rgb(232,232,157)"},{id:"A2",color:"rgb(228,127,129)"},{id:"A3",color:"rgb(228,26,28)"},{id:"B1",color:"rgb(173,228,191)"},{id:"B2",color:"rgb(173,173,108)"},{"id:"B3",color:"rgb(140,98,98)"},{id:"C1",color:"rgb(90,200,127)"},{id:"C2",color:"rgb(77,175,74)"},{id:"C3",color:"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
-insert into bivariate_overlays (order, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
+insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 2,
        'Kontur OpenStreetMap Building Quantity',
        'building_count',
@@ -36,10 +36,10 @@ select 2,
        false,
        'This map shows whether all populated houses are mapped in OpenStreetMap. Last updated  ' ||
        json_extract_path_text(meta::json, 'header', 'option', 'timestamp'),
-       '[{id:"A1",color:"rgb(232,232,157)"},{id:"A2",color:"rgb(228,127,129)"},{id:"A3",color:"rgb(228,26,28)"},{id:"B1",color:"rgb(173,228,191)"},{id:"B2",color:"rgb(173,173,108)"},{"id:"B3",color:"rgb(140,98,98)"},{id:"C1",color:"rgb(90,200,127)"},{id:"C2",color:"rgb(77,175,74)"},{id:"C3",color:"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
-insert into bivariate_overlays (order, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
+insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 3,
        'Kontur OpenStreetMap Road Length',
        'highway_length',
@@ -48,11 +48,11 @@ select 3,
        'area_km2',
        false,
        'This map shows whether populated places have roads to visit them or escape. Last updated  ' ||
-       json_extract_path_text(meta::json, 'header', 'option', 'timestamp')
-       '[{id:"A1",color:"rgb(232,232,157)"},{id:"A2",color:"rgb(228,127,129)"},{id:"A3",color:"rgb(228,26,28)"},{id:"B1",color:"rgb(173,228,191)"},{id:"B2",color:"rgb(173,173,108)"},{"id:"B3",color:"rgb(140,98,98)"},{id:"C1",color:"rgb(90,200,127)"},{id:"C2",color:"rgb(77,175,74)"},{id:"C3",color:"rgb(83,152,106)"}]'
+       json_extract_path_text(meta::json, 'header', 'option', 'timestamp'),
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
-insert into bivariate_overlays (order, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
+insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 5,
        'Kontur OpenStreetMap Mapping Activity',
        'local_hours',
@@ -62,10 +62,10 @@ select 5,
        false,
        'This map shows how active mapping in the area in last two years is. All mapping hours are shown against mapping hours we can surely attribute to an active local user. Mapper is considered active if they contributed more than 30 mapping hours during last two years. Position of active mapper is estimated by region of their highest activity. A mapping hour is a hour in which an user uploaded at least one tagged object. Last updated  ' ||
        json_extract_path_text(meta::json, 'header', 'option', 'timestamp'),
-       '[{id:"A1",color:"rgb(232,232,157)"},{id:"A2",color:"rgb(228,127,129)"},{id:"A3",color:"rgb(228,26,28)"},{id:"B1",color:"rgb(173,228,191)"},{id:"B2",color:"rgb(173,173,108)"},{"id:"B3",color:"rgb(140,98,98)"},{id:"C1",color:"rgb(90,200,127)"},{id:"C2",color:"rgb(77,175,74)"},{id:"C3",color:"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
-insert into bivariate_overlays (order, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
+insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 4,
        'Kontur OpenStreetMap Data Age',
        'p90_ts',
@@ -75,5 +75,5 @@ select 4,
        false,
        'This map shows how old is OpenSteetMap in particular region and how big is group of users that created it. Explore to find import, mapping parties and large local communities. Last updated ' ||
        json_extract_path_text(meta::json, 'header', 'option', 'timestamp'),
-       '[{id:"A1",color:"rgb(232,232,157)"},{id:"A2",color:"rgb(228,127,129)"},{id:"A3",color:"rgb(228,26,28)"},{id:"B1",color:"rgb(173,228,191)"},{id:"B2",color:"rgb(173,173,108)"},{"id:"B3",color:"rgb(140,98,98)"},{id:"C1",color:"rgb(90,200,127)"},{id:"C2",color:"rgb(77,175,74)"},{id:"C3",color:"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;

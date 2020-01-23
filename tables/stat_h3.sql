@@ -22,6 +22,8 @@ create table stat_h3_in as (
         left join user_hours_h3        u on u.h3 = a.h3
 );
 
+alter table stat_h3_in set (parallel_workers=32);
+
 drop table if exists stat_h3;
 create table stat_h3 as (
     select

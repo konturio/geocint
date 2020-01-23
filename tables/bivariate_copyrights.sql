@@ -11,6 +11,9 @@ insert into bivariate_copyrights (param_id, copyrights)
 values ('1', '[]'::json);
 
 insert into bivariate_copyrights (param_id, copyrights)
+values ('one', '[]'::json);
+
+insert into bivariate_copyrights (param_id, copyrights)
 values ('area_km2', '[]'::json);
 
 insert into bivariate_copyrights (param_id, copyrights)

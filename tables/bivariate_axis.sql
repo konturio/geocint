@@ -46,7 +46,7 @@ drop table if exists bivariate_axis;
 
 create table bivariate_axis as (
     with axis_parameters as (
-        select param_id as parameter from bivariate_copyrights where param_id not in ('1', 'top_user')
+        select param_id as parameter from bivariate_copyrights where param_id not in ('1', 'top_user', 'one')
     )
     select a.parameter as numerator, b.parameter as denominator, f.*,
            '' as min_label, '' as p25_label, '' as p75_label, '' as max_label, '' as label
@@ -55,8 +55,8 @@ create table bivariate_axis as (
          calculate_axis_stops(a.parameter, b.parameter) f
     where a.parameter != b.parameter
       and a.parameter not in ('area_km2')
-    UNION
-    select a.parameter as numerator, '1' as denominator, f.*,
+    UNION ALL
+    select a.parameter as numerator, 'one' as denominator, f.*,
            '' as min_label, '' as p25_label, '' as p75_label, '' as max_label, '' as label
     from axis_parameters a,
          calculate_axis_stops(a.parameter) f);
@@ -99,7 +99,7 @@ set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
     p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY HH24:MI:SS'),
     max_label = to_char(to_timestamp(max), 'DD Mon YYYY HH24:MI:SS')
 where numerator = 'max_ts'
-  and denominator = '1';
+  and denominator = 'one';
 
 update bivariate_axis
 set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
@@ -107,7 +107,7 @@ set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
     p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY HH24:MI:SS'),
     max_label = to_char(to_timestamp(max), 'DD Mon YYYY HH24:MI:SS')
 where numerator = 'p90_ts'
-  and denominator = '1';
+  and denominator = 'one';
 
 update bivariate_axis
 set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
@@ -115,4 +115,4 @@ set min_label = to_char(to_timestamp(min), 'DD Mon YYYY HH24:MI:SS'),
     p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY HH24:MI:SS'),
     max_label = to_char(to_timestamp(max), 'DD Mon YYYY HH24:MI:SS')
 where numerator = 'avg_ts'
-  and denominator = '1';
+  and denominator = 'one';

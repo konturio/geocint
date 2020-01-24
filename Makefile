@@ -347,7 +347,7 @@ db/table/kontur_population_h3: db/table/osm db/table/population_grid_h3 db/table
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/kontur_population_h3 db/table/gdp_h3 db/table/user_hours_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/kontur_population_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/ghs_globe_residential_vector | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -431,8 +431,8 @@ deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
 	'
 	touch $@
 
-data/population/population_api_tables.sqld.gz: db/table/population_vector db/table/ghs_globe_residential_vector | data/population
-	pg_dump -t population_vector -t ghs_globe_residential_vector | pigz > $@
+data/population/population_api_tables.sqld.gz: db/table/stat_h3 | data/population
+	pg_dump -t stat_h3 | pigz > $@
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint
 	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles

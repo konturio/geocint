@@ -1,3 +1,12 @@
+drop table if exists residential_pop_h3;
+create table residential_pop_h3 as (
+    select p.h3, sum(ST_Area(ST_Intersection(p.geom, r.geom)) / ST_Area(p.geom)) as residential
+    from kontur_population_h3 p
+      join ghs_globe_residential_vector r on ST_Intersects(p.geom, r.geom)
+    group by p.h3
+);
+update residential_pop_h3 set residential = 1 where residential > 1;
+
 drop table if exists stat_h3_in;
 create table stat_h3_in as (
     select
@@ -9,6 +18,7 @@ create table stat_h3_in as (
         coalesce(a.highway_length, 0) as highway_length,
         coalesce(a.osm_users, 0) as osm_users,
         coalesce(b.population, 0) as population,
+        coalesce(r.residential, 0) as residential,
         coalesce(c.gdp, 0) as gdp,
         coalesce(a.avg_ts, 0) as avg_ts,
         coalesce(a.max_ts, 0) as max_ts,
@@ -20,6 +30,7 @@ create table stat_h3_in as (
         full join kontur_population_h3 b on a.h3 = b.h3
         full join gdp_h3               c on b.h3 = c.h3
         left join user_hours_h3        u on u.h3 = a.h3
+        full join residential_pop_h3   r on r.h3 = b.h3
 );
 
 alter table stat_h3_in set (parallel_workers=32);

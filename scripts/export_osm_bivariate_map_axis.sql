@@ -57,14 +57,14 @@ copy (select jsonb_build_object('axis', ba.axis,
                                                                                jsonb_build_object('value', ay.min, 'label', ay.min_label),
                                                                                jsonb_build_object('value', ay.p25, 'label', ay.p25_label),
                                                                                jsonb_build_object('value', ay.p75, 'label', ay.p75_label),
-                                                                               jsonb_build_object('value', ay.max, 'label', ay.max_label))))) as overlay
+                                                                               jsonb_build_object('value', ay.max, 'label', ay.max_label)))) order by ord) as overlay
             from bivariate_axis ax,
                  bivariate_axis ay,
                  bivariate_overlays o
             where ax.denominator = o.x_denominator
               and ax.numerator = o.x_numerator
               and ay.denominator = o.y_denominator
-              and ay.numerator = o.y_numerator order by ord) ov,
+              and ay.numerator = o.y_numerator) ov,
            bivariate_axis x,
            bivariate_axis y,
            (select json_object_agg(param_id, copyrights) as copyrights from bivariate_copyrights) as copyrights

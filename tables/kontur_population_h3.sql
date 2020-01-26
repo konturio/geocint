@@ -53,7 +53,8 @@ create table zero_pop_h3 as (
     from
         kontur_population_mid1 p
     where
-          exists(select from osm_unpopulated z where ST_Intersects(p.geom, z.geom))
+-- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,,0) for now.
+          exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
       and not p.probably_unpopulated
 );
 update kontur_population_mid1 p set probably_unpopulated = true from zero_pop_h3 z where z.h3 = p.h3;

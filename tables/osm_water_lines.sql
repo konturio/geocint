@@ -4,7 +4,8 @@ create table osm_water_lines as (
   select
     osm_type,
     osm_id,
-    ST_Transform(geog::geometry, 3857) as geom
+    ST_Transform(geog::geometry, 3857) as geom,
+    tags
   from
     osm
   where

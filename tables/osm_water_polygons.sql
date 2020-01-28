@@ -41,5 +41,3 @@ create table osm_water_polygons as (
 
 vacuum osm_water_polygons;
 create index on osm_water_polygons using gist (geom);
-
-drop table if exists osm_water_lines;

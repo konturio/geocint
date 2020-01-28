@@ -347,7 +347,11 @@ db/table/kontur_population_h3: db/table/osm db/table/population_grid_h3 db/table
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/kontur_population_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/ghs_globe_residential_vector | db/table
+db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_residential_vector | db/table
+	psql -f tables/residential_pop_h3.sql
+	touch $@
+
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

@@ -64,7 +64,7 @@ create table bivariate_axis as (
 analyse bivariate_axis;
 
 update bivariate_axis
-set label = 'Highway length (km/km²)'
+set label = 'Highway length (m/km²)'
 where numerator = 'highway_length'
   and denominator = 'area_km2';
 

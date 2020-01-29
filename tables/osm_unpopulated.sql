@@ -7,17 +7,19 @@ create table osm_unpopulated as (
         tags ->> 'natural' as natural,
         tags ->> 'landuse' as landuse,
         tags ->> 'population' as population,
-        ST_Transform(geog::geometry, 3857) as geom
+        tags ->> 'highway' as highway,
+        ST_Transform(ST_ClipByBox2D(geog::geometry, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857) as geom
     from
         osm
     where
-          (
-                  (tags ->> 'natural') in ('wood', 'glacier', 'wetland', 'sand')
-                  or (tags ->> 'landuse') in ('forest', 'quarry', 'farmland')
-                  or tags @> '{"population":"0"}'
-              )
-      and ST_GeometryType(geog::geometry) != 'ST_Point'
-      and ST_GeometryType(geog::geometry) != 'ST_LineString'
+        (tags?'natural' or tags?'landuse' or tags?'population' or tags?'highway')
+	and
+	(
+	        (tags ->> 'natural') in ('wood', 'glacier', 'wetland', 'sand')
+	        or (tags ->> 'landuse') in ('forest', 'quarry', 'farmland')
+	        or tags @> '{"population":"0"}'
+	        or (tags ->> 'highway') in ('motorway','trunk', 'primary', 'secondary', 'tertiary')
+	)
 );
 
 create index on osm_unpopulated using gist (geom);

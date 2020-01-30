@@ -1,12 +1,15 @@
 ---use more osm_local_avtive_uaers
 
 drop table if exists osm_users_hex_in;
-create table osm_users_hex_in as ( select * from osm_user_count_grid_h3 order by h3, count desc, osm_user );
+create table osm_users_hex_in as (select *
+                                  from osm_user_count_grid_h3
+                                  order by h3, count desc, osm_user);
 create index osm_users_hex_in_h3_osm_user on osm_users_hex_in (h3, osm_user);
 create index osm_users_hex_in_osm_user_resolution_hours on osm_users_hex_in (osm_user, resolution, hours desc);
 
 drop table if exists osm_users_hex_out;
-create table osm_users_hex_out (
+create table osm_users_hex_out
+(
     h3         h3index,
     osm_user   text,
     resolution integer,
@@ -21,40 +24,34 @@ $$
         cur_user record;
         cur_hex  record;
     begin
-        for z in ( select distinct resolution from osm_users_hex_in )
-        loop
-            for cur_user in (
-                select osm_user, geom
-                from
-                    osm_local_active_users
-                order by hours desc, ST_Z(geom) desc
-            )
+        for z in (select distinct resolution from osm_users_hex_in)
             loop
-                select a.h3, a.resolution, a.count, a.hours
-                into cur_hex
-                from
-                    osm_users_hex_in     a
-                where
-                      osm_user = cur_user.osm_user
-                  and resolution = z
-                order by hours desc
-                limit 1;
-                if cur_hex is not null then
-                    insert into
-                        osm_users_hex_out (h3, osm_user, resolution, count, hours)
-                    values (cur_hex.h3, cur_user.osm_user, cur_hex.resolution, cur_hex.count, cur_hex.hours);
-                    delete from osm_users_hex_in where h3 = cur_hex.h3;
-                    delete
-                    from
-                        osm_users_hex_in using h3_k_ring(cur_hex.h3, 3) r
-                    where
-                          h3 = r
-                      and osm_user = cur_user.osm_user;
-                    raise notice 'added % %', cur_user.osm_user, z;
-                end if;
-                raise notice 'finished % %', cur_user.osm_user, z;
+                for cur_user in (
+                    select osm_user, geom
+                    from osm_local_active_users
+                    order by hours desc, ST_Z(geom) desc
+                )
+                    loop
+                        select a.h3, a.resolution, a.count, a.hours
+                        into cur_hex
+                        from osm_users_hex_in a
+                        where osm_user = cur_user.osm_user
+                          and resolution = z
+                        order by hours desc
+                        limit 1;
+                        if cur_hex is not null then
+                            insert into osm_users_hex_out (h3, osm_user, resolution, count, hours)
+                            values (cur_hex.h3, cur_user.osm_user, cur_hex.resolution, cur_hex.count, cur_hex.hours);
+                            delete from osm_users_hex_in where h3 = cur_hex.h3;
+                            delete
+                            from osm_users_hex_in using h3_k_ring(cur_hex.h3, 3) r
+                            where h3 = r
+                              and osm_user = cur_user.osm_user;
+                            raise notice 'added % %', cur_user.osm_user, z;
+                        end if;
+                        raise notice 'finished % %', cur_user.osm_user, z;
+                    end loop;
             end loop;
-        end loop;
     end;
 $$;
 
@@ -83,8 +80,7 @@ begin
     cluster_time = '2 min';
     total_rec = (
         select count(*)
-        from
-            osm_users_hex_in
+        from osm_users_hex_in
     );
     last_seen = clock_timestamp();
     -- This whole loop is a trick.
@@ -98,69 +94,75 @@ begin
     -- CLUSTER, which is internally same as VACUUM FULL with a sort by index, is luckily allowed.
     -- CLUSTER renumbers all physical identifiers, so the loop has to be restarted and CLUSTER has to be performed outside of it.
     while true
-    loop
-        for cur_rec in (
-            select h3, osm_user, ctid, resolution, count, hours
-            from
-                osm_users_hex_in
-            order by resolution, hours desc, h3
-            limit 500000
-        )
         loop
-            if not exists(select from osm_users_hex_in where ctid = cur_rec.ctid) then
-                dead_rec = dead_rec + 1;
-                continue;
-            end if;
-            counter = counter + 1;
-            if counter % 10000 = 0 then
-                raise warning '% %% - % of % (% per block, % left)', 100.0 * counter / total_rec, counter, total_rec, clock_timestamp() - last_seen, (clock_timestamp() - last_seen) * (total_rec - counter) / 10000;
+            for cur_rec in (
+                select h3, osm_user, ctid, resolution, count, hours
+                from osm_users_hex_in
+                order by resolution, hours desc, h3
+                limit 500000
+            )
+                loop
+                    if not exists(select from osm_users_hex_in where ctid = cur_rec.ctid) then
+                        dead_rec = dead_rec + 1;
+                        continue;
+                    end if;
+                    counter = counter + 1;
+                    if counter % 10000 = 0 then
+                        raise warning '% %% - % of % (% per block, % left)', 100.0 * counter / total_rec, counter, total_rec, clock_timestamp() - last_seen, (clock_timestamp() - last_seen) * (total_rec - counter) / 10000;
+                        last_seen = clock_timestamp();
+                        commit;
+                    end if;
+                    insert into osm_users_hex_out (h3, osm_user, resolution, count, hours)
+                    values (cur_rec.h3, cur_rec.osm_user, cur_rec.resolution, cur_rec.count, cur_rec.hours);
+                    delete from osm_users_hex_in where h3 = cur_rec.h3;
+                    delete
+                    from osm_users_hex_in using h3_k_ring(cur_rec.h3, 3) r
+                    where h3 = r
+                      and osm_user = cur_rec.osm_user;
+                    --raise notice '%s %s', cur_rec.osm_user, cur_rec.h3;
+                end loop;
+            if dead_rec > 250000 and (clock_timestamp() - last_cluster > cluster_time) then
+                dead_rec = 0;
+                raise warning 'clustering...';
+                last_cluster = clock_timestamp();
+                cluster osm_users_hex_in;
+                cluster_time = clock_timestamp() - last_cluster;
+                last_cluster = clock_timestamp();
+                raise warning 'clustered in %', cluster_time;
                 last_seen = clock_timestamp();
-                commit;
+                total_rec = (
+                                select count(*)
+                                from osm_users_hex_in
+                            ) + counter;
             end if;
-            insert into osm_users_hex_out (h3, osm_user, resolution, count, hours)
-            values (cur_rec.h3, cur_rec.osm_user, cur_rec.resolution, cur_rec.count, cur_rec.hours);
-            delete from osm_users_hex_in where h3 = cur_rec.h3;
-            delete
-            from
-                osm_users_hex_in using h3_k_ring(cur_rec.h3, 3) r
-            where
-                  h3 = r
-              and osm_user = cur_rec.osm_user;
-            --raise notice '%s %s', cur_rec.osm_user, cur_rec.h3;
+            if total_rec = counter then
+                exit;
+            end if;
         end loop;
-        if dead_rec > 250000 and (clock_timestamp() - last_cluster > cluster_time) then
-            dead_rec = 0;
-            raise warning 'clustering...';
-            last_cluster = clock_timestamp();
-            cluster osm_users_hex_in;
-            cluster_time = clock_timestamp() - last_cluster;
-            last_cluster = clock_timestamp();
-            raise warning 'clustered in %', cluster_time;
-            last_seen = clock_timestamp();
-            total_rec = (
-                            select count(*)
-                            from
-                                osm_users_hex_in
-                        ) + counter;
-        end if;
-        if total_rec = counter then
-            exit;
-        end if;
-    end loop;
 end;
 $$;
 call trim_osm_users_h3();
 
 drop table if exists osm_users_hex;
 create table osm_users_hex as (
-    select
-        a.*,
-        hex.area / 1000000.0 as area_km2,
-        hex.geom as geom
-    from
-        osm_users_hex_out         a
-        join ST_HexagonFromH3(h3) hex on true
+    select a.*,
+           hex.area / 1000000.0 as area_km2,
+           hex.geom             as geom,
+           false                as is_local
+    from osm_users_hex_out a
+             join ST_HexagonFromH3(h3) hex on true
     order by geom
 );
 
 create index on osm_users_hex using gist (resolution, geom);
+
+create index on osm_users_hex using btree (osm_user);
+
+update osm_users_hex ouh
+set is_local = true
+from osm_local_active_users olau
+where ouh.osm_user = olau.osm_user
+  and ST_Intersects(
+        ST_Transform(ST_Buffer(olau.geog, 50000)::geometry, 3857),
+        ouh.geom
+    );

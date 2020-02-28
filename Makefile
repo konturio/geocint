@@ -451,12 +451,10 @@ endef
 
 data/population/population_api_tables.sqld.gz: db/table/stat_h3 | data/population
 	$(eval TMP_DIR := $(shell mktemp -d))
-	$(eval TMP_DIR := $(shell mktemp -d))
 	$(file >$(TMP_DIR)/header.sql,$(STAT_H3_HEADER))
 	$(file >$(TMP_DIR)/footer.sql,$(STAT_H3_FOOTER))
 # crafting production friendly SQL dump
 	bash -c "cat $(TMP_DIR)/header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3_geom_zoom_idx.*//;') $(TMP_DIR)/footer.sql | pigz" > $@
-
 	rm -rf $(TMP_DIR)
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint

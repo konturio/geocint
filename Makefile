@@ -284,7 +284,7 @@ data/wb/gdp/wb_gdp.zip: | data/wb/gdp
 data/wb/gdp/wb_gdp.xml: data/wb/gdp/wb_gdp.zip
 	cd data/wb/gdp; unzip -o wb_gdp.zip
 	cat data/wb/gdp/API_NY*.xml | tr -d '\n\r\t' | sed 's/^.\{1\}//' >> data/wb/gdp/wb_gdp.xml
-	touch $@	
+	touch $@
 
 db/table/wb_gdp: data/wb/gdp/wb_gdp.xml | db/table
 	psql -c "drop table if exists temp_xml;"
@@ -327,7 +327,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3: db/table/population_vector db/function/h3 | db/table 
+db/table/population_grid_h3: db/table/population_vector db/function/h3 | db/table
 	psql -f tables/population_grid_h3.sql
 	touch $@
 
@@ -435,8 +435,29 @@ deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
 	'
 	touch $@
 
+define STAT_H3_HEADER
+  SET statement_timeout = 0; SET lock_timeout = 0; SET idle_in_transaction_session_timeout = 0; SET client_encoding = 'UTF8'; SET standard_conforming_strings = on; SELECT pg_catalog.set_config('search_path', '', false); SET check_function_bodies = false; SET xmloption = content; SET client_min_messages = warning; SET row_security = off; SET default_tablespace = ''; SET default_table_access_method = heap;
+  BEGIN;
+  DROP TABLE IF EXISTS public.stat_h3__new;
+  ALTER INDEX public.stat_h3_geom_zoom_idx RENAME TO stat_h3_geom_zoom_idx__old;
+endef
+define STAT_H3_FOOTER
+  ALTER TABLE public.stat_h3 RENAME TO stat_h3__old;
+  ALTER TABLE public.stat_h3__new RENAME TO stat_h3;
+  DROP TABLE public.stat_h3__old;
+  CREATE INDEX stat_h3_geom_zoom_idx ON public.stat_h3 USING gist (geom, zoom);
+  COMMIT;
+endef
+
 data/population/population_api_tables.sqld.gz: db/table/stat_h3 | data/population
-	pg_dump -t stat_h3 | pigz > $@
+	$(eval TMP_DIR := $(shell mktemp -d))
+	$(eval TMP_DIR := $(shell mktemp -d))
+	$(file >$(TMP_DIR)/header.sql,$(STAT_H3_HEADER))
+	$(file >$(TMP_DIR)/footer.sql,$(STAT_H3_FOOTER))
+# crafting production friendly SQL dump
+	bash -c "cat $(TMP_DIR)/header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3_geom_zoom_idx.*//;') $(TMP_DIR)/footer.sql | pigz" > $@
+
+	rm -rf $(TMP_DIR)
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint
 	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles

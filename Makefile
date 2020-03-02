@@ -51,6 +51,10 @@ deploy:
 deploy/lima:
 	mkdir -p $@
 
+# We use sonic.kontur.io as a staging server to test the software before setting it live at lima.kontur.io.
+deploy/sonic:
+	mkdir -p $@
+
 deploy/dollar:
 	mkdir -p $@
 
@@ -458,6 +462,21 @@ data/population/population_api_tables.sqld.gz: db/table/stat_h3 | data/populatio
 # crafting production friendly SQL dump
 	bash -c "cat $(TMP_DIR)/header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3_geom_zoom_idx.*//;') $(TMP_DIR)/footer.sql | pigz" > $@
 	rm -rf $(TMP_DIR)
+	touch $@
+
+deploy/sonic/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/sonic
+	ansible sonic_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible sonic_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible sonic_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
+# we do not remove $$HOME/tmp/population_api_tables.sqld.gz on the staging server intentionally
+	touch $@
+
+deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/lima
+	ansible lima_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible lima_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible lima_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint

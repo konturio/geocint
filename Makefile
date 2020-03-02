@@ -456,6 +456,7 @@ data/population/population_api_tables.sqld.gz: db/table/stat_h3 | data/populatio
 # crafting production friendly SQL dump
 	bash -c "cat $(TMP_DIR)/header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3_geom_zoom_idx.*//;') $(TMP_DIR)/footer.sql | pigz" > $@
 	rm -rf $(TMP_DIR)
+	touch $@
 
 deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint
 	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles

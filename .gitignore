@@ -1,3 +1,7 @@
-.idea
-.DS_Store
 /.project
+.DS_Store
+.idea
+data
+db
+deploy
+make_profile.db

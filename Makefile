@@ -390,6 +390,7 @@ deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint
 	touch $@
 
 deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima
+	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
 		set -e; \
@@ -419,6 +420,7 @@ deploy/geocint/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/geocint
 	touch $@
 
 deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
+	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_live_dashboard -m copy -a 'src=data/tiles/users_tiles.tar.bz2 dest=$$HOME/tmp/users_tiles.tar.bz2'
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
 		set -e; \
@@ -467,6 +469,7 @@ deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_til
 	touch $@
 
 deploy/lima/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/lima
+	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_live_dashboard -m copy -a 'src=data/tiles/osm_quality_bivariate_tiles.tar.bz2 dest=$$HOME/tmp/osm_quality_bivariate_tiles.tar.bz2'
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
 		set -e; \

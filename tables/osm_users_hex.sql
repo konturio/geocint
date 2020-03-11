@@ -130,11 +130,11 @@ begin
                 last_cluster = clock_timestamp();
                 raise warning 'clustered in %', cluster_time;
                 last_seen = clock_timestamp();
-                total_rec = (
-                                select count(*)
-                                from osm_users_hex_in
-                            ) + counter;
             end if;
+            total_rec = (
+                            select count(*)
+                            from osm_users_hex_in
+                        ) + counter;
             if total_rec = counter then
                 exit;
             end if;

@@ -1,3 +1,5 @@
+set enable_hashjoin = off;
+set enable_indexscan = off;
 drop table if exists stat_h3_in;
 create table stat_h3_in as (
     select
@@ -21,7 +23,7 @@ create table stat_h3_in as (
         full join kontur_population_h3 b on a.h3 = b.h3
         full join gdp_h3               c on b.h3 = c.h3
         left join user_hours_h3        u on u.h3 = a.h3
-        full join residential_pop_h3   r on r.h3 = b.h3
+        left join residential_pop_h3   r on r.h3 = b.h3
 );
 
 alter table stat_h3_in set (parallel_workers=32);

@@ -61,7 +61,7 @@ deploy/dollar:
 deploy/geocint:
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/osm_quality_bivariate_tiles deploy/lima/osm_quality_bivariate_tiles deploy/dollar/osm_quality_bivariate_tiles deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles
+deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables
 	touch $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx
@@ -84,7 +84,6 @@ db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
 	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
 	psql -c "vacuum analyze osm;"
-	psql -c "alter table osm set (parallel_workers=16);"
 	touch $@
 
 db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
@@ -359,10 +358,6 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 	psql -f tables/stat_h3.sql
 	touch $@
 
-db/table/osm_quality_bivariate_grid_h3: db/table/osm_object_count_grid_h3 db/table/stat_h3 db/function/h3 | db/table
-	psql -f tables/osm_quality_bivariate_grid_h3.sql
-	touch $@
-
 db/table/bivariate_axis: db/table/bivariate_copyrights db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis.sql
 	touch $@
@@ -374,11 +369,6 @@ db/table/bivariate_overlays: db/table/osm_meta | db/table
 db/table/bivariate_copyrights: | db/table
 	psql -f tables/bivariate_copyrights.sql
 	touch $@
-
-data/tiles/osm_quality_bivariate_tiles.tar.bz2: db/table/osm_quality_bivariate_grid_h3 db/table/osm_meta | data/tiles
-	bash ./scripts/generate_tiles.sh osm_quality_bivariate | parallel --eta
-	psql -q -X -f scripts/export_osm_quality_bivariate_map_legend.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/osm_quality_bivariate/legend.json
-	cd data/tiles/osm_quality_bivariate/; tar cvf ../osm_quality_bivariate_tiles.tar.bz2  --use-compress-prog=pbzip2 ./
 
 data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_copyrights db/table/stat_h3 db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh stats | parallel --eta
@@ -477,40 +467,4 @@ deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz
 	ansible lima_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
-	touch $@
-
-deploy/geocint/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/geocint
-	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles
-	rm -rf /var/www/tiles/osm_quality_bivariate_new; mkdir -p /var/www/tiles/osm_quality_bivariate_new
-	cp -a data/tiles/osm_quality_bivariate/. /var/www/tiles/osm_quality_bivariate_new/
-	rm -rf /var/www/tiles/osm_quality_bivariate_old
-	mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old; mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate
-	touch $@
-
-deploy/lima/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/lima
-	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible lima_live_dashboard -m copy -a 'src=data/tiles/osm_quality_bivariate_tiles.tar.bz2 dest=$$HOME/tmp/osm_quality_bivariate_tiles.tar.bz2'
-	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		mkdir -p "$$HOME/public_html/tiles/osm_quality_bivariate" ; \
-		tar -cjf "$$HOME/tmp/osm_quality_bivariate_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/osm_quality_bivariate" . ; \
-		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
-		function on_exit { rm -rf "$$TMPDIR"; }; \
-		trap on_exit EXIT; \
-		tar -xf "$$HOME/tmp/osm_quality_bivariate_tiles.tar.bz2" -C "$$TMPDIR"; \
-		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
-		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
-		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/osm_quality_bivariate"; \
-	'
-	touch $@
-
-deploy/dollar/osm_quality_bivariate_tiles: data/tiles/osm_quality_bivariate_tiles.tar.bz2 | deploy/dollar
-	ssh root@dollar.disaster.ninja -C "rm -f osm_quality_bivariate_tiles.tar.bz2"
-	scp data/tiles/osm_quality_bivariate_tiles.tar.bz2 root@dollar.disaster.ninja:
-	ssh root@dollar.disaster.ninja -C "rm -rf /var/www/tiles/osm_quality_bivariate_new; mkdir -p /var/www/tiles/osm_quality_bivariate_new"
-	ssh root@dollar.disaster.ninja -C "tar xvf osm_quality_bivariate_tiles.tar.bz2 -C /var/www/tiles/osm_quality_bivariate_new"
-	ssh root@dollar.disaster.ninja -C "rm -rf /var/www/tiles/osm_quality_bivariate_old"
-	ssh root@dollar.disaster.ninja -C "mv /var/www/tiles/osm_quality_bivariate /var/www/tiles/osm_quality_bivariate_old; mv /var/www/tiles/osm_quality_bivariate_new /var/www/tiles/osm_quality_bivariate"
-	# TODO: remove old when we're sure we don't want to go back
 	touch $@

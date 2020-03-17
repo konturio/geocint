@@ -431,27 +431,10 @@ deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
 	'
 	touch $@
 
-define STAT_H3_HEADER
-  SET statement_timeout = 0; SET lock_timeout = 0; SET idle_in_transaction_session_timeout = 0; SET client_encoding = 'UTF8'; SET standard_conforming_strings = on; SELECT pg_catalog.set_config('search_path', '', false); SET check_function_bodies = false; SET xmloption = content; SET client_min_messages = warning; SET row_security = off; SET default_tablespace = ''; SET default_table_access_method = heap;
-  BEGIN;
-  DROP TABLE IF EXISTS public.stat_h3__new;
-  ALTER INDEX public.stat_h3_geom_zoom_idx RENAME TO stat_h3_geom_zoom_idx__old;
-endef
-define STAT_H3_FOOTER
-  ALTER TABLE public.stat_h3 RENAME TO stat_h3__old;
-  ALTER TABLE public.stat_h3__new RENAME TO stat_h3;
-  DROP TABLE public.stat_h3__old;
-  CREATE INDEX stat_h3_geom_zoom_idx ON public.stat_h3 USING gist (geom, zoom);
-  COMMIT;
-endef
-
 data/population/population_api_tables.sqld.gz: db/table/stat_h3 | data/population
-	$(eval TMP_DIR := $(shell mktemp -d))
-	$(file >$(TMP_DIR)/header.sql,$(STAT_H3_HEADER))
-	$(file >$(TMP_DIR)/footer.sql,$(STAT_H3_FOOTER))
 # crafting production friendly SQL dump
-	bash -c "cat $(TMP_DIR)/header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3_geom_zoom_idx.*//;') $(TMP_DIR)/footer.sql | pigz" > $@
-	rm -rf $(TMP_DIR)
+	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3_geom_zoom_idx.*//;') scripts/population_api_dump_footer.sql | pigz" > $@__TMP
+	mv $@__TMP $@
 	touch $@
 
 deploy/sonic/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/sonic

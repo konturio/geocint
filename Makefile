@@ -2,7 +2,7 @@ all: weekly daily
 
 weekly: deploy/geocint/isochrone_tables
 
-daily: deploy/_all data/population/population_api_tables.sqld.gz
+daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -353,6 +353,12 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 db/table/kontur_population_h3: db/table/population_grid_h3_r8 db/table/osm_building_count_grid_h3_r8 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 | db/table
 	psql -f tables/kontur_population_h3.sql
 	touch $@
+
+data/kontur_population.gpkg.gz: db/table/kontur_population_h3
+	rm $@
+	rm data/kontur_population.gpkg
+	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and zoom=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
+	cd data/; pigz data/kontur_population.gpkg
 
 db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_residential_vector | db/table
 	psql -f tables/residential_pop_h3.sql

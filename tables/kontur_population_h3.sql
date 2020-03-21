@@ -1,19 +1,15 @@
 drop table if exists kontur_population_in;
 create table kontur_population_in as (
     select
-        coalesce(a.resolution, b.resolution) as resolution,
+        8 as resolution,
         coalesce(a.h3, b.h3) as h3,
-        coalesce(a.count, 0) as count,
         coalesce(building_count, 0) as building_count,
         coalesce(population, 0) as population,
         false as has_water,
         false as probably_unpopulated
     from
-        osm_object_count_grid_h3     a
-        full join population_grid_h3 b on a.h3 = b.h3
-    where
-         a.resolution = 8
-      or b.resolution = 8
+        osm_building_count_grid_h3     a
+        full join population_grid_h3_r8 b on a.h3 = b.h3
 );
 
 alter table kontur_population_in
@@ -53,7 +49,7 @@ create table zero_pop_h3 as (
     from
         kontur_population_mid1 p
     where
--- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,,0) for now.
+-- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now.
           exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
       and not p.probably_unpopulated
 );

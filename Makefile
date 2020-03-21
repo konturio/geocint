@@ -88,7 +88,7 @@ db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 
 db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm_meta;"
-	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb);copy osm_meta from stdin freeze;'
+	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
 	touch $@
 
 db/function/osm_way_nodes_to_segments: | db/function
@@ -263,6 +263,10 @@ db/table/fb_population_raster: data/population_fb/unzip | db/table
 	psql -c "alter table fb_population_raster set (parallel_workers=32)"
 	touch $@
 
+db/table/osm_building_count_grid_h3_r8: db/index/osm_tags_idx
+	psql -f tables/osm_building_count_grid_h3_r8.sql
+	touch $@
+
 db/table/fb_population_vector: db/table/fb_population_raster | db/table
 	psql -f tables/fb_population_vector.sql
 	touch $@
@@ -330,8 +334,8 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3: db/table/population_vector db/function/h3 | db/table
-	psql -f tables/population_grid_h3.sql
+db/table/population_grid_h3_r8: db/table/population_vector | db/table
+	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 
 db/table/osm_local_active_users: db/function/h3 db/table/osm_user_count_grid_h3 | db/table
@@ -346,7 +350,7 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm db/table/population_grid_h3 db/table/osm_object_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 | db/table
+db/table/kontur_population_h3: db/table/population_grid_h3_r8 db/table/osm_building_count_grid_h3_r8 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 | db/table
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 

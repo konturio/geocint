@@ -73,7 +73,10 @@ data/planet-latest.osm.pbf: | data
 	touch $@
 
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
-	pyosmium-up-to-date -s 50000 -o data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf || true
+	rm data/planet-diff.osc
+	pyosmium-get-changes -s 50000 -f data/planet-latest.seq -O data/planet-latest.osm.pbf -o data/planet-diff.osc
+	rm data/planet-latest-updated.osm.pbf data/planet-latest-updated.osm.pbf.meta.json
+	osmium apply-changes data/planet-latest.osm.pbf data/planet-diff.osc -f pbf,pbf_compression=false -o data/planet-latest-updated.osm.pbf
 	osmium fileinfo data/planet-latest-updated.osm.pbf -ej > data/planet-latest-updated.osm.pbf.meta.json
 	# TODO: smoke check correctness of file
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf

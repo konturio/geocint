@@ -73,7 +73,7 @@ data/planet-latest.osm.pbf: | data
 	touch $@
 
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
-	pyosmium-up-to-date -s 10000 -o data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf || true
+	pyosmium-up-to-date -s 50000 -o data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf || true
 	osmium fileinfo data/planet-latest-updated.osm.pbf -ej > data/planet-latest-updated.osm.pbf.meta.json
 	# TODO: smoke check correctness of file
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf

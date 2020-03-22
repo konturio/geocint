@@ -143,6 +143,7 @@ create table kontur_population_h3 as (
     select
         p.resolution,
         h.geom,
+        h.area,
         p.h3,
         p.population as population
     from

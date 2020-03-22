@@ -89,6 +89,8 @@ db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 
 db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm_meta;"
+	rm -f data/planet-latest-updated.osm.pbf
+	osmium fileinfo data/planet-latest.osm.pbf -ej > data/planet-latest.osm.pbf.meta.json
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
 	touch $@
 

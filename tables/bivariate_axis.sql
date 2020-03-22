@@ -13,7 +13,7 @@ begin
                    'percentile_disc(0.66) within group (order by ' || parameter1 || ' / ' || parameter2 || '::double precision)::double precision as p75, ' ||
                    'ceil(max(' || parameter1 || ' / ' || parameter2 || '::double precision))   as max ' ||
                    'from stat_h3 ' ||
-                   'where ' || parameter1 || ' != 0 and ' || parameter2 || ' != 0 and population > 0 and zoom = 7'; -- population > 0 is needed because stat_h3 has 65% of hexagons in unpopulated areas that skew generated histogram to be less interesting in humanitarian context.
+                   'where ' || parameter1 || ' != 0 and ' || parameter2 || ' != 0 and population > 0'; -- population > 0 is needed because stat_h3 has 65% of hexagons in unpopulated areas that skew generated histogram to be less interesting in humanitarian context.
 
     RETURN QUERY execute select_query;
 end;
@@ -34,7 +34,7 @@ begin
                    'percentile_disc(0.66) within group (order by ' || parameter1 || ' )::double precision as p75, ' ||
                    'ceil(max(' || parameter1 || ' ))::double precision   as max ' ||
                    'from stat_h3 ' ||
-                   'where population > 0 and zoom = 7'; -- population > 0 is needed because stat_h3 has 65% of hexagons in unpopulated areas that skew generated histogram to be less interesting in humanitarian context.
+                   'where population > 0'; -- population > 0 is needed because stat_h3 has 65% of hexagons in unpopulated areas that skew generated histogram to be less interesting in humanitarian context.
 
     RETURN QUERY execute select_query;
 end;

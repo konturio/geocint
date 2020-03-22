@@ -6,7 +6,7 @@ daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_pop
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
-	profile_make_clean data/planet-latest-updated.osm.pbf
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv
 	psql -f scripts/clean.sql
 
 data:
@@ -73,14 +73,12 @@ data/planet-latest.osm.pbf: | data
 	touch $@
 
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
-	rm data/planet-diff.osc
+	rm -f data/planet-diff.osc
 	pyosmium-get-changes -s 50000 -f data/planet-latest.seq -O data/planet-latest.osm.pbf -o data/planet-diff.osc
-	rm data/planet-latest-updated.osm.pbf data/planet-latest-updated.osm.pbf.meta.json
+	rm -f data/planet-latest-updated.osm.pbf data/planet-latest-updated.osm.pbf.meta.json
 	osmium apply-changes data/planet-latest.osm.pbf data/planet-diff.osc -f pbf,pbf_compression=false -o data/planet-latest-updated.osm.pbf
-	osmium fileinfo data/planet-latest-updated.osm.pbf -ej > data/planet-latest-updated.osm.pbf.meta.json
 	# TODO: smoke check correctness of file
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
-	cp -lf data/planet-latest-updated.osm.pbf.meta.json data/planet-latest.osm.pbf.meta.json
 	touch $@
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table

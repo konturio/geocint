@@ -1,14 +1,14 @@
+
 drop table if exists kontur_population_in;
 create table kontur_population_in as (
     select
-        8 as resolution,
         coalesce(a.h3, b.h3) as h3,
         coalesce(building_count, 0) as building_count,
         coalesce(population, 0) as population,
         false as has_water,
         false as probably_unpopulated
     from
-        osm_building_count_grid_h3     a
+        osm_building_count_grid_h3_r8     a
         full join population_grid_h3_r8 b on a.h3 = b.h3
 );
 
@@ -29,7 +29,6 @@ alter table kontur_population_mid1
     set (parallel_workers=32);
 
 drop table kontur_population_in;
-create index on kontur_population_mid1 (resolution);
 create index on kontur_population_mid1 (h3);
 
 drop table if exists zero_pop_h3;
@@ -72,12 +71,7 @@ $$
         cur_row record;
     begin
         carry = 0;
-        for cur_row in ( select *
-                         from
-                             kontur_population_mid1
-                         where
-                             resolution = 8
-                         order by h3 )
+        for cur_row in ( select * from kontur_population_mid1 order by h3 )
         loop
             cur_pop = cur_row.population + carry;
             -- Population density of Manila is 46178 people/km2 and that's highest on planet

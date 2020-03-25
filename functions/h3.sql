@@ -75,7 +75,7 @@ $function$
 select h3_to_parent(hex, res), res
 from
     ( select h3_geo_to_h3(ST_Transform(ST_PointOnSurface(geom), 4326)::point, max_resolution) as hex ) hex,
-    generate_series(0, max_resolution)                                                          res
+    generate_series(0, max_resolution)                                                                 res
 $function$;
 
 create or replace function ST_H3Bucket(geog geography, max_resolution integer default 8)
@@ -90,6 +90,20 @@ as
 $function$
 select h3_to_parent(hex, res), res
 from
-    ( select h3_geo_to_h3(ST_PointOnSurface(geog::geometry)::point, max_resolution) as hex ) hex,
-    generate_series(0, max_resolution)                                                res
+    ( select
+          h3_geo_to_h3(
+              case
+                  when ST_Dimension(geog::geometry) = 0 then geog::geometry
+                  when ST_Dimension(geog::geometry) = 1 then ST_StartPoint(geog::geometry)
+                  else ST_PointOnSurface(geog::geometry)
+              end::point, max_resolution) as hex ) hex,
+    generate_series(0, max_resolution)             res
 $function$;
+
+
+( select
+      case
+          when dim = 0 then geog::geometry
+          when dim = 1 then ST_StartPoint(geog::geometry)
+          else ST_PointOnSurface(geog::geometry)
+      end::point as pt )

@@ -17,7 +17,7 @@ from
 update covid19_admin set geog = 'SRID=4326;POINT(  15.3136   -4.3276)' where country like 'Congo%';
 update covid19_admin set geog = 'SRID=4326;POINT(  -144.2731 -16.4381 )' where province like '%Polynesia';
 
-
+drop table if exists tmp_all_admin;
 create table tmp_all_admin as ( select tags, geog from osm where tags @> '{"boundary":"administrative"}' );
 create index on tmp_all_admin using gist (geog);
 create index on tmp_all_admin using gin (tags);
@@ -80,6 +80,7 @@ vacuum full covid19_admin_subdivided;
 alter table kontur_population_h3
     set (parallel_workers=32);
 analyse kontur_population_h3;
+drop table if exists covid19_population_h3_r6;
 create table covid19_population_h3_r6 as
     (
         select *,
@@ -202,3 +203,4 @@ $$
     end;
 $$;
 create index on covid19_dithered using gist (date, geom);
+drop table if exists tmp_all_admin;

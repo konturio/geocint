@@ -74,7 +74,7 @@ data/planet-latest.osm.pbf: | data
 
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	rm -f data/planet-diff.osc
-	pyosmium-get-changes -s 50000 -f data/planet-latest.seq -O data/planet-latest.osm.pbf -o data/planet-diff.osc
+	if [ -f data/planet-latest.seq ]; then pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -f data/planet-latest.seq -o data/planet-diff.osc; else pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -O data/planet-latest.osm.pbf -f data/planet-latest.seq -o data/planet-diff.osc; fi
 	rm -f data/planet-latest-updated.osm.pbf data/planet-latest-updated.osm.pbf.meta.json
 	osmium apply-changes data/planet-latest.osm.pbf data/planet-diff.osc -f pbf,pbf_compression=false -o data/planet-latest-updated.osm.pbf
 	# TODO: smoke check correctness of file
@@ -100,6 +100,7 @@ db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_t
 	cat data/covid19/time_series-ncov-Recovered.csv | tail -n +2 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
 	psql -c "update covid19_in set status='recovered' where status is null;"
 	psql -f tables/covid19.sql
+	touch $@
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
@@ -109,7 +110,7 @@ db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 
 db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm_meta;"
-	rm -f data/planet-latest-updated.osm.pbf
+	rm -f data/planet-latest-updated.osm.pbf.meta.json
 	osmium fileinfo data/planet-latest.osm.pbf -ej > data/planet-latest.osm.pbf.meta.json
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
 	touch $@
@@ -135,11 +136,11 @@ db/index/osm_tags_idx: db/table/osm | db/index
 	touch $@
 
 db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments | db/index
-	psql -c "create index osm_road_segments_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments (seg_id, node_from, node_to, seg_geom) tablespace bcache;"
+	psql -c "create index osm_road_segments_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments (seg_id, node_from, node_to, seg_geom);"
 	touch $@
 
 db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
-	psql -c "create index osm_road_segments_seg_geom_walk_time_idx on osm_road_segments using brin (seg_geom, walk_time) tablespace bcache;"
+	psql -c "create index osm_road_segments_seg_geom_walk_time_idx on osm_road_segments using brin (seg_geom, walk_time);"
 	touch $@
 
 db/table/osm_user_count_grid_h3: db/table/osm db/function/h3
@@ -378,10 +379,10 @@ db/table/kontur_population_h3: db/table/population_grid_h3_r8 db/table/osm_build
 	touch $@
 
 data/kontur_population.gpkg.gz: db/table/kontur_population_h3
-	rm $@
-	rm data/kontur_population.gpkg
-	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and zoom=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
-	cd data/; pigz data/kontur_population.gpkg
+	rm -f $@
+	rm -f data/kontur_population.gpkg
+	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
+	cd data/; pigz kontur_population.gpkg
 
 db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_residential_vector | db/table
 	psql -f tables/residential_pop_h3.sql

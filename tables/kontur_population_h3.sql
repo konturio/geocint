@@ -55,6 +55,19 @@ create table zero_pop_h3 as (
 update kontur_population_mid1 p set probably_unpopulated = true from zero_pop_h3 z where z.h3 = p.h3;
 drop table if exists zero_pop_h3;
 
+drop table if exists nonzero_pop_h3;
+create table nonzero_pop_h3 as (
+    select h3
+    from
+        kontur_population_mid1 p
+    where
+-- TODO: osm_residential_landuse has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now.
+          exists(select from osm_residential_landuse z where ST_DWithin(p.geom, z.geom, 0))
+      and p.probably_unpopulated
+);
+update kontur_population_mid1 p set probably_unpopulated = false from nonzero_pop_h3 z where z.h3 = p.h3;
+drop table if exists nonzero_pop_h3;
+
 drop table if exists kontur_population_mid2;
 create table kontur_population_mid2 (
     h3         h3index,

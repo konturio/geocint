@@ -278,6 +278,10 @@ data/population_fb/unzip: data/population_fb/download
 	cd data/population_fb; ls *zip | parallel "unzip -o {}"
 	touch $@
 
+db/table/osm_residential_landuse: db/index/osm_tags_idx
+	psql -f tables/osm_residential_landuse.sql
+	touch $@
+
 db/table/fb_population_raster: data/population_fb/unzip | db/table
 	psql -c "drop table if exists fb_population_raster"
 	raster2pgsql -p -M -Y -s 4326 data/population_fb/*.tif -t auto fb_population_raster | psql -q
@@ -373,7 +377,7 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/kontur_population_h3: db/table/population_grid_h3_r8 db/table/osm_building_count_grid_h3_r8 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 | db/table
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/osm_building_count_grid_h3_r8 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 | db/table
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 

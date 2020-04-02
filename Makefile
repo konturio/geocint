@@ -2,7 +2,7 @@ all: weekly daily
 
 weekly: deploy/geocint/isochrone_tables
 
-daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19
+daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/osm_building_minsk
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles

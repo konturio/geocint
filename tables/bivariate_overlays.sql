@@ -22,7 +22,7 @@ select 1,
        'area_km2',
        true,
        'This map shows relative distribution of OpenStreetMap objects and Population. Last updated ' ||
-       json_extract_path_text(meta::json, 'header', 'option', 'timestamp'),
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
@@ -35,7 +35,7 @@ select 2,
        'area_km2',
        false,
        'This map shows whether all populated houses are mapped in OpenStreetMap. Last updated  ' ||
-       json_extract_path_text(meta::json, 'header', 'option', 'timestamp'),
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
@@ -48,7 +48,7 @@ select 3,
        'area_km2',
        false,
        'This map shows whether populated places have roads to visit them or escape in time of disaster. Last updated  ' ||
-       json_extract_path_text(meta::json, 'header', 'option', 'timestamp'),
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
@@ -61,7 +61,7 @@ select 5,
        'area_km2',
        false,
        'Greener - stronger local community, darker - more active mapping. This map shows how active mapping in the area in last two years is. All mapping hours are shown against mapping hours we can surely attribute to an active local user. Mapper is considered active if they contributed more than 30 mapping hours during last two years. Position of active mapper is estimated by region of their highest activity. A mapping hour is a hour in which an user uploaded at least one tagged object. Last updated  ' ||
-       json_extract_path_text(meta::json, 'header', 'option', 'timestamp'),
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id": "A1","color": "#ada9c8"},{"id": "A2","color": "#7a71b2"},{"id": "A3","color": "#5d5398"},{"id": "B1","color": "#9db7b5"},{"id": "B2","color": "#768e9f"},{"id": "B3","color": "#587681"},{"id": "C1","color": "#89c89e"},{"id": "C2","color": "#71b287"},{"id": "C3","color": "rgb(83,152,106)"}]'
 from osm_meta;
 
@@ -74,6 +74,6 @@ select 4,
        'one',
        false,
        'This map shows how old is OpenStreetMap in particular region and how big is group of users that created it. Explore to find import, mapping parties and large local communities. Last updated ' ||
-       json_extract_path_text(meta::json, 'header', 'option', 'timestamp'),
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id":"A1","color":"#e49da1"},{"id":"A2","color":"#e46265"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"#e8e89f"},{"id":"B2","color":"#e9d799"},{"id":"B3","color":"#eac392"},{"id":"C1","color":"#89c89e"},{"id":"C2","color":"#71b287"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;

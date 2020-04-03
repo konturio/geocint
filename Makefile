@@ -388,7 +388,7 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
 
-db/table/osm_buildings_minsk: db/table/osm_tags_idx | db/table
+db/table/osm_buildings_minsk: db/table/osm_buildings_geom_idx | db/table
 	psql -f osm_buildings_minsk.sql
 	touch $@
 

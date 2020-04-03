@@ -1,4 +1,5 @@
 drop table if exists osm_buildings;
+drop table if exists osm_buildings_minsk;
 
 create table osm_buildings as (
     select osm_type,

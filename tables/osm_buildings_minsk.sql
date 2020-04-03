@@ -7,7 +7,7 @@ create table osm_buildings_minsk as (
            tags ->> 'addr:street' as street,
            tags ->> 'addr:housenumber' as hno,
            ST_Transform(geog::geometry, 3857) as geom
-    from osm
+    from osm_buildings
     where tags ? 'building'
       and ST_DWithin(
             osm.geog,

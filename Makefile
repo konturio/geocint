@@ -291,7 +291,7 @@ db/table/fb_population_raster: data/population_fb/unzip | db/table
 	psql -c "alter table fb_population_raster set (parallel_workers=32)"
 	touch $@
 
-db/table/osm_building_count_grid_h3_r8: db/index/osm_tags_idx
+db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
@@ -388,14 +388,14 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
 
-db/table/osm_buildings_minsk: db/table/osm_tags_idx | db/table
+db/table/osm_buildings_minsk: db/table/osm_buildings | db/table
 	psql -f osm_buildings_minsk.sql
 	touch $@
 
 data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings
 	rm -f $@
 	rm -f data/osm_buildings_minsk.gpkg
-	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select building from osm_buildings where ST_DWithin(osm_buildings.geom,(select ST_Expand(geometry, 0) from osm_buildings where tags @> '{"name":"Минск"} and osm_id = 59195 and osm_type = 'relation'), 0)"-lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
+	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select building from osm_buildings where (ST_DWithin(osm_buildings.geom,(select ST_Transform(ST_Expand(geometry, 0) from osm_buildings where tags @> \'{\"name\":\"Минск\"}\' and osm_id = 59195 and osm_type = \'relation\'), 3857), 0)" -lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.gpkg
 
 db/table/osm_buildings: db/table/osm_tags_idx | db/table

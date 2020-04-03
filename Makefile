@@ -392,11 +392,15 @@ db/table/osm_buildings_minsk: db/table/osm_buildings | db/table
 	psql -f osm_buildings_minsk.sql
 	touch $@
 
-data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings
+data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings_minsk
 	rm -f $@
 	rm -f data/osm_buildings_minsk.gpkg
-	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select building from osm_buildings where (ST_DWithin(osm_buildings.geom,(select ST_Transform(ST_Expand(geometry, 0) from osm_buildings where tags @> \'{\"name\":\"Минск\"}\' and osm_id = 59195 and osm_type = \'relation\'), 3857), 0)" -lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
+	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select building from osm_buildings_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.gpkg
+
+db/index/osm_buildings: db/table/osm_buildings | db/index
+	psql -c "create index on osm_buildings using gist (geom)"
+	touch $@
 
 db/table/osm_buildings: db/table/osm_tags_idx | db/table
 	psql -f osm_buildings.sql

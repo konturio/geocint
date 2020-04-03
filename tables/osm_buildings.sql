@@ -15,5 +15,3 @@ create table osm_buildings as (
     from osm
     where tags ? 'building'
 );
-
-create index on osm_buildings using gist (geom);

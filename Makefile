@@ -388,7 +388,7 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	cd data/; pigz kontur_population.gpkg
 
 db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx | db/table
-	psql -f osm_buildings_minsk.sql
+	psql -f tables/osm_buildings_minsk.sql
 	touch $@
 
 data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings_minsk
@@ -402,7 +402,7 @@ db/index/osm_buildings_geom_idx: db/table/osm_buildings | db/index
 	touch $@
 
 db/table/osm_buildings: db/index/osm_tags_idx | db/table
-	psql -f osm_buildings.sql
+	psql -f tables/osm_buildings.sql
 	touch $@
 
 db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_residential_vector | db/table

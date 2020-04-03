@@ -9,7 +9,8 @@ create table osm_buildings_minsk as (
            height,
            use,
            name,
-           geom
+           geom,
+           ST_Transform(:geometry, 3857)
     from osm_buildings
     where ST_DWithin(
                   osm_buildings.geom,

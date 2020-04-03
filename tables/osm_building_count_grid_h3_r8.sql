@@ -5,7 +5,7 @@ create table osm_building_count_grid_h3_r8 as (
         8 as resolution,
         count(*) as building_count
     from
-        osm
+        osm_buildings
     where
         tags ? 'building'
     group by 1

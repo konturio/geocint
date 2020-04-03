@@ -2,7 +2,7 @@ all: weekly daily
 
 weekly: deploy/geocint/isochrone_tables
 
-daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/osm_building_minsk
+daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.gpkg.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -265,7 +265,7 @@ db/table/fb_country_codes: data/population_fb/unzip | db/table
 	cd data/population_fb; ls *tif | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
 	touch $@
 
-data/population_fb: |data
+data/population_fb: | data
 	mkdir -p $@
 
 data/population_fb/download: | data/population_fb
@@ -388,15 +388,19 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
 
-db/table/osm_building_minsk: db/table/osm_tags_idx | db/table
-	psql -f osm_building_minsk.sql
+db/table/osm_buildings_minsk: db/table/osm_tags_idx | db/table
+	psql -f osm_buildings_minsk.sql
 	touch $@
 
-data/osm_building_minsk.gpkg.gz: db/table/osm_building_minsk
+data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings
 	rm -f $@
-	rm -f data/osm_building_minsk.gpkg
-	ogr2ogr -f GPKG data/osm_building_minsk.gpkg PG:'dbname=gis' -sql "select * from osm_building_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_building_minsk
-	cd data/; pigz osm_building_minsk.gpkg
+	rm -f data/osm_buildings_minsk.gpkg
+	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select building from osm_buildings where ST_DWithin(osm_buildings.geom,(select ST_Expand(geometry, 0) from osm_buildings where tags @> '{"name":"Минск"} and osm_id = 59195 and osm_type = 'relation'), 0)"-lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
+	cd data/; pigz osm_buildings_minsk.gpkg
+
+db/table/osm_buildings: db/table/osm_tags_idx | db/table
+	psql -f osm_buildings.sql
+	touch $@
 
 db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_residential_vector | db/table
 	psql -f tables/residential_pop_h3.sql

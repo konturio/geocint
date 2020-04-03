@@ -2,7 +2,7 @@ all: weekly daily
 
 weekly: deploy/geocint/isochrone_tables
 
-daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19
+daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.gpkg.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -264,7 +264,7 @@ db/table/fb_country_codes: data/population_fb/unzip | db/table
 	cd data/population_fb; ls *tif | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
 	touch $@
 
-data/population_fb: |data
+data/population_fb: | data
 	mkdir -p $@
 
 data/population_fb/download: | data/population_fb
@@ -290,7 +290,7 @@ db/table/fb_population_raster: data/population_fb/unzip | db/table
 	psql -c "alter table fb_population_raster set (parallel_workers=32)"
 	touch $@
 
-db/table/osm_building_count_grid_h3_r8: db/index/osm_tags_idx
+db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
@@ -386,6 +386,24 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	rm -f data/kontur_population.gpkg
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
+
+db/table/osm_buildings_minsk: db/table/osm_buildings_geom_idx | db/table
+	psql -f osm_buildings_minsk.sql
+	touch $@
+
+data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings_minsk
+	rm -f $@
+	rm -f data/osm_buildings_minsk.gpkg
+	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select * from osm_buildings_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
+	cd data/; pigz osm_buildings_minsk.gpkg
+
+db/index/osm_buildings_geom_idx: db/table/osm_buildings | db/index
+	psql -c "create index on osm_buildings using gist (geom)"
+	touch $@
+
+db/table/osm_buildings: db/table/osm_tags_idx | db/table
+	psql -f osm_buildings.sql
+	touch $@
 
 db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_residential_vector | db/table
 	psql -f tables/residential_pop_h3.sql

@@ -135,16 +135,15 @@ db/index/osm_tags_idx: db/table/osm | db/index
 	touch $@
 
 db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments_new | db/index
-	psql -c "create index osm_road_segments_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments_new (seg_id, node_from, node_to, seg_geom);"
+	psql -c "create index osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments_new (seg_id, node_from, node_to, seg_geom);"
 	touch $@
 
 db/index/osm_road_segments_new_seg_geom_idx: db/table/osm_road_segments_new | db/index
-	psql -c "create index osm_road_segments_seg_geom_walk_time_idx on osm_road_segments_new using brin (seg_geom, walk_time);"
+	psql -c "create index osm_road_segments_new_seg_geom_walk_time_idx on osm_road_segments_new using brin (seg_geom, walk_time);"
 	touch $@
 
 db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_geom_idx db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx | db/table
-	pqsl -c "drop table if exists osm_road_segments;"
-	psql -c "alter table osm_road_segments_new rename to osm_road_segments;"
+	pqsl -l -c "drop table if exists osm_road_segments; alter table osm_road_segments_new rename to osm_road_segments;"
 	touch $@
 
 db/table/osm_user_count_grid_h3: db/table/osm db/function/h3

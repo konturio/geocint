@@ -66,10 +66,3 @@ create table osm_road_segments_new as (
 );
 
 vacuum osm_road_segments_new;
-
-drop table if exists osm_road_segments;
-
-alter table osm_road_segments_new
-    rename to osm_road_segments;
-
-

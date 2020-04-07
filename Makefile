@@ -144,7 +144,8 @@ db/index/osm_road_segments_new_seg_geom_idx: db/table/osm_road_segments_new | db
 	touch $@
 
 db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_geom_idx db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx | db/table
-	pqsl -c "drop table if exists osm_road_segments_new;"
+	pqsl -c "drop table if exists osm_road_segments;"
+	psql -c "alter table osm_road_segments_new rename to osm_road_segments;"
 	touch $@
 
 db/table/osm_user_count_grid_h3: db/table/osm db/function/h3

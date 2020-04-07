@@ -74,7 +74,7 @@ data/planet-latest.osm.pbf: | data
 
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	rm -f data/planet-diff.osc
-	if [ -f data/planet-latest.seq ]; then pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -f data/planet-latest.seq -o data/planet-diff.osc; else pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -O data/planet-latest.osm.pbf -f data/planet-latest.seq -o data/planet-diff.osc; fi
+	if [ -f data/planet-latest.seq ]; then pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -f data/planet-latest.seq -o data/planet-diff.osc; else pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -O data/planet-latest.osm.pbf -f data/planet-latest.seq -o data/planet-diff.osc; fi ||true
 	rm -f data/planet-latest-updated.osm.pbf data/planet-latest-updated.osm.pbf.meta.json
 	osmium apply-changes data/planet-latest.osm.pbf data/planet-diff.osc -f pbf,pbf_compression=false -o data/planet-latest-updated.osm.pbf
 	# TODO: smoke check correctness of file
@@ -104,8 +104,7 @@ db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_t
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
-	osmium export -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
-	psql -c "vacuum analyze osm;"
+	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=100 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=100 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=100 OSMIUM_MAX_WORK_QUEUE_SIZE=100 numactl --preferred=1 -N 1 osmium export -i dense_mmap_array -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
 	touch $@
 
 db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
@@ -392,8 +391,8 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
 
-db/table/osm_buildings_minsk: db/table/osm_buildings_geom_idx | db/table
-	psql -f osm_buildings_minsk.sql
+db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx | db/table
+	psql -f tables/osm_buildings_minsk.sql
 	touch $@
 
 data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings_minsk
@@ -406,8 +405,8 @@ db/index/osm_buildings_geom_idx: db/table/osm_buildings | db/index
 	psql -c "create index on osm_buildings using gist (geom)"
 	touch $@
 
-db/table/osm_buildings: db/table/osm_tags_idx | db/table
-	psql -f osm_buildings.sql
+db/table/osm_buildings: db/index/osm_tags_idx | db/table
+	psql -f tables/osm_buildings.sql
 	touch $@
 
 db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_residential_vector | db/table

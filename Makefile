@@ -64,7 +64,7 @@ deploy/geocint:
 deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables
 	touch $@
 
-deploy/geocint/isochrone_tables: db/table/osm_road_segments db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_seg_geom_idx
+deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx
 	touch $@
 
 data/planet-latest.osm.pbf: | data
@@ -127,7 +127,7 @@ db/function/calculate_h3_res: | db/function/h3
 	psql -f functions/calculate_h3_res.sql
 	touch $@
 
-db/table/osm_road_segments: db/table/osm db/function/osm_way_nodes_to_segments
+db/table/osm_road_segments_new: db/table/osm db/function/osm_way_nodes_to_segments
 	psql -f tables/osm_road_segments.sql
 	touch $@
 
@@ -135,12 +135,16 @@ db/index/osm_tags_idx: db/table/osm | db/index
 	psql -c "create index osm_tags_idx on osm using gin (tags);"
 	touch $@
 
-db/index/osm_road_segments_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments | db/index
-	psql -c "create index osm_road_segments_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments (seg_id, node_from, node_to, seg_geom);"
+db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments_new | db/index
+	psql -c "create index osm_road_segments_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments_new (seg_id, node_from, node_to, seg_geom);"
 	touch $@
 
-db/index/osm_road_segments_seg_geom_idx: db/table/osm_road_segments | db/index
-	psql -c "create index osm_road_segments_seg_geom_walk_time_idx on osm_road_segments using brin (seg_geom, walk_time);"
+db/index/osm_road_segments_new_seg_geom_idx: db/table/osm_road_segments_new | db/index
+	psql -c "create index osm_road_segments_seg_geom_walk_time_idx on osm_road_segments_new using brin (seg_geom, walk_time);"
+	touch $@
+
+db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_geom_idx db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx | db/table
+	pqsl -c "drop table if exists osm_road_segments_new;"
 	touch $@
 
 db/table/osm_user_count_grid_h3: db/table/osm db/function/h3

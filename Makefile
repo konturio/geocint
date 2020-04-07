@@ -126,7 +126,7 @@ db/function/calculate_h3_res: | db/function/h3
 	psql -f functions/calculate_h3_res.sql
 	touch $@
 
-db/table/osm_road_segments_new: db/table/osm db/function/osm_way_nodes_to_segments
+db/table/osm_road_segments_new: db/table/osm db/function/osm_way_nodes_to_segments db/index/osm_tags_idx
 	psql -f tables/osm_road_segments.sql
 	touch $@
 

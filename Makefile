@@ -2,7 +2,7 @@ all: weekly daily
 
 weekly: deploy/geocint/isochrone_tables
 
-daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.gpkg.gz
+daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.gpkg.gz data/osm_addresses_minsk.gpkg.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -401,9 +401,23 @@ data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings_minsk
 	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select * from osm_buildings_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.gpkg
 
-db/table/osm_addresses_minsk: db/table/osm db/index/osm_tags_idx | db/table
+db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
+	psql -f tables/osm_addresses.sql
+	touch $@
+
+db/index/osm_addresses_geom_idx: db/table/osm_addresses | db/index
+	psql -c "create index on osm_addresses using gist (geom)"
+	touch $@
+
+db/table/osm_addresses_minsk: db/index/osm_addresses_geom_idx db/table/osm_addresses | db/table
 	psql -f tables/osm_addresses_minsk.sql
 	touch $@
+
+data/osm_addresses_minsk.gpkg.gz: db/table/osm_addresses_minsk
+	rm -f $@
+	rm -f data/osm_addresses_minsk.gpkg
+	ogr2ogr -f GPKG data/osm_addresses_minsk.gpkg PG:'dbname=gis' -sql "select * from osm_addresses_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_addresses_minsk
+	cd data/; pigz osm_addresses_minsk.gpkg
 
 db/index/osm_buildings_geom_idx: db/table/osm_buildings | db/index
 	psql -c "create index on osm_buildings using gist (geom)"

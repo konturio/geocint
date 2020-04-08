@@ -1,14 +1,11 @@
 drop table if exists osm_addresses_minsk;
 
 create table osm_addresses_minsk as (
-    select osm_type,
-           osm_id,
-           tags ->> 'addr:street'      as street,
-           tags ->> 'addr:housenumber' as hno,
-           tags ->> 'name'             as name,
-           geog::geometry              as geom
-    from osm
-    where (tags ? 'addr:street' or tags ? 'addr:housenumber' or tags ? 'name')
+    select *
+    from osm_addresses
+    where (tags ? 'addr:street' and tags ? 'addr:housenumber' or tags ? 'name')
+          --     could the query below be correctly than above one?
+          --     where (street is not null and hno is not null or tags ? 'name')
       and ST_DWithin(
             osm.geog::geometry,
             (
@@ -21,3 +18,5 @@ create table osm_addresses_minsk as (
             0
         )
 );
+
+create index on osm_addresses_minsk using gist (geom);

@@ -8,15 +8,16 @@ create table osm_addresses_minsk as (
            tags ->> 'name'             as name,
            geog::geometry              as geom
     from osm
-    where ST_DWithin(
-                  osm.geog::geometry,
-                  (
-                      select geog::geometry
-                      from osm
-                      where tags @> '{"name":"Минск", "boundary":"administrative"}'
-                        and osm_id = 59195
-                        and osm_type = 'relation'
-                  ),
-                  0
-              )
+    where (tags ? 'addr:street' or tags ? 'addr:housenumber' or tags ? 'name')
+      and ST_DWithin(
+            osm.geog::geometry,
+            (
+                select geog::geometry
+                from osm
+                where tags @> '{"name":"Минск", "boundary":"administrative"}'
+                  and osm_id = 59195
+                  and osm_type = 'relation'
+            ),
+            0
+        )
 );

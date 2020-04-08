@@ -391,7 +391,7 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
 
-db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx | db/table
+db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx db/table/osm_addresses_minsk | db/table
 	psql -f tables/osm_buildings_minsk.sql
 	touch $@
 
@@ -401,7 +401,7 @@ data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings_minsk
 	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select * from osm_buildings_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.gpkg
 
-db/table/osm_addresses_minsk: db/table/osm | db/table
+db/table/osm_addresses_minsk: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_addresses_minsk.sql
 	touch $@
 

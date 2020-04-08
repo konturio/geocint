@@ -143,7 +143,7 @@ db/index/osm_road_segments_new_seg_geom_idx: db/table/osm_road_segments_new | db
 	touch $@
 
 db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_geom_idx db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx | db/table
-	pqsl -1 -c "drop table if exists osm_road_segments; alter table osm_road_segments_new rename to osm_road_segments;"
+	psql -1 -c "drop table if exists osm_road_segments; alter table osm_road_segments_new rename to osm_road_segments;"
 	touch $@
 
 db/table/osm_user_count_grid_h3: db/table/osm db/function/h3
@@ -400,6 +400,10 @@ data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings_minsk
 	rm -f data/osm_buildings_minsk.gpkg
 	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select * from osm_buildings_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.gpkg
+
+db/table/osm_addresses_minsk: db/table/osm | db/table
+	psql -f tables/osm_addresses_minsk.sql
+	touch $@
 
 db/index/osm_buildings_geom_idx: db/table/osm_buildings | db/index
 	psql -c "create index on osm_buildings using gist (geom)"

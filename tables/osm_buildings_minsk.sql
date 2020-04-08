@@ -6,7 +6,7 @@ create table osm_buildings_minsk as (
     where ST_DWithin(
                   osm_buildings.geom,
                   (
-                      select geog
+                      select geog::geometry
                       from osm
                       where tags @> '{"name":"Минск", "boundary":"administrative"}'
                         and osm_id = 59195

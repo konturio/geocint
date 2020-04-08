@@ -8,7 +8,5 @@ create table osm_addresses as (
            tags ->> 'name'             as name,
            geog::geometry              as geom
     from osm
-    where (tags ? 'addr:street' and tags ? 'addr:housenumber' or tags ? 'name')
---  could query below be correctly?
-    --     where ('addr:street' is not null and 'addr:housenumber' is not null or tags ? 'name')
+    where tags ? 'addr:housenumber'
 );

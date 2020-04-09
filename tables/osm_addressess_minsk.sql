@@ -4,7 +4,7 @@ create table osm_addresses_minsk as (
     select *
     from osm_addresses
     where ST_DWithin(
-                  osm.geog::geometry,
+                  osm_addresses.geog::geometry,
                   (
                       select geog::geometry
                       from osm

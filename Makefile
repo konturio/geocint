@@ -1,8 +1,4 @@
-all: weekly daily
-
-weekly: deploy/geocint/isochrone_tables
-
-daily: deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.gpkg.gz data/osm_addresses_minsk.gpkg.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.gpkg.gz data/osm_addresses_minsk.gpkg.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -48,17 +44,14 @@ data/wb/gdp: | data/wb
 deploy:
 	mkdir -p $@
 
-deploy/lima:
+deploy/lima: | deploy
 	mkdir -p $@
 
 # We use sonic.kontur.io as a staging server to test the software before setting it live at lima.kontur.io.
-deploy/sonic:
+deploy/sonic: | deploy
 	mkdir -p $@
 
-deploy/dollar:
-	mkdir -p $@
-
-deploy/geocint:
+deploy/geocint: | deploy
 	mkdir -p $@
 
 deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables
@@ -122,7 +115,7 @@ db/function/h3: | db/function
 	psql -f functions/h3.sql
 	touch $@
 
-db/function/calculate_h3_res: | db/function/h3
+db/function/calculate_h3_res: db/function/h3
 	psql -f functions/calculate_h3_res.sql
 	touch $@
 
@@ -371,7 +364,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/population_vector | db/table
+db/table/population_grid_h3_r8: db/table/population_vector db/function/h3 | db/table
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 

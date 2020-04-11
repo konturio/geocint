@@ -1,5 +1,5 @@
-drop table if exists osm_road_segments_new;
-create table osm_road_segments_new as (
+drop table if exists osm_road_segments_new_unsorted;
+create table osm_road_segments_new_unsorted as (
     select
         seg_id,
         node_from,
@@ -25,7 +25,14 @@ create table osm_road_segments_new as (
     where
          walk_speed is not null
       or drive_speed is not null
-    -- TODO: investigate why ordering by two-point geometries consumes memory,
-    -- hope for now is that clustering from osm_roads narually travels into this table too.
-    -- order by seg_geom
 );
+
+drop table if exists osm_road_segments_new;
+create table osm_road_segments_new as (
+    select *
+    from osm_road_segments_new_unsorted
+    -- ordering by segment geometry is required for BRIN index to work.
+    order by seg_geom
+);
+
+drop table osm_road_segments_new_unsorted;

@@ -15,5 +15,3 @@ create table osm_landuses_minsk as (
                   0
               )
 );
-
-create index on osm_buildings_minsk using gist (geom);

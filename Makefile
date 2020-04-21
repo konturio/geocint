@@ -85,12 +85,12 @@ data/covid19/_csv: | data/covid19
 
 db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_tags_idx
 	psql -c 'drop table if exists covid19_in;'
-	psql -c 'create table covid19_in (province text, country text, lat float, lon float, date timestamptz, value int, country code, region code, subregion code, int region code);'
-	cat data/covid19/time_series_confirmed.csv | tail -n +2 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value, country code, region code, subregion code, int region code) from stdin with csv header;"
+	psql -c 'create table covid19_in (province text, country text, lat float, lon float, date timestamptz, value int, country_code text, region_code int, subregion_code int, region_code int);'
+	cat data/covid19/time_series_confirmed.csv | tail -n +2 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value, country_code, region_code, subregion_code, region_code) from stdin with csv header;"
 	psql -c "update covid19_in set status='confirmed' where status is null;"
-	cat data/covid19/time_series_deaths.csv | tail -n +2 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value, country code, region code, subregion code, int region code) from stdin with csv header;"
+	cat data/covid19/time_series_deaths.csv | tail -n +2 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value, country_code, region_code, subregion_code, region_code) from stdin with csv header;"
 	psql -c "update covid19_in set status='dead' where status is null;"
-	cat data/covid19/time_series_recovered.csv | tail -n +2 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value, country code, region code, subregion code, int region code) from stdin with csv header;"
+	cat data/covid19/time_series_recovered.csv | tail -n +2 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value, country_code, region_code, subregion_code, region_code) from stdin with csv header;"
 	psql -c "update covid19_in set status='recovered' where status is null;"
 	psql -f tables/covid19.sql
 	touch $@

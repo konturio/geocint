@@ -4,7 +4,7 @@ create table osm_landuses as (
     select osm_id,
            osm_type,
            tags ->> 'landuse'   as landuse,
-           tags ->> 'amenity'   as anemity,
+           tags ->> 'amenity'   as amenity,
            tags ->> 'leisure'   as leisure,
            tags ->> 'landcover' as landcover,
            tags ->> 'tourism'   as tourism,

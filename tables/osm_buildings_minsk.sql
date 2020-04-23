@@ -19,120 +19,29 @@ create table osm_buildings_minsk as (
 create index on osm_buildings_minsk using gist (geom);
 
 update osm_buildings_minsk b
-set use = 'kindergarten'
+set use = amenity
 from osm_landuses_minsk o
 where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'kindergarten'
+  and o.amenity in ('school', 'kindergarten', 'college', 'university', 'cinema', 'theatre', 'marketplace', 'hospital', 'clinic', 'fuel')
   and use is null;
 
 update osm_buildings_minsk b
-set use = 'bank'
+set use = 'house'
 from osm_landuses_minsk o
 where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'bank'
+  and o.landuse = '{"residential":"rural"}'
   and use is null;
 
 update osm_buildings_minsk b
-set use = 'school'
+set use = 'apartments'
 from osm_landuses_minsk o
 where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'school'
+  and o.landuse = '{"residential":"urban"}'
   and use is null;
 
 update osm_buildings_minsk b
-set use = 'driving_school'
+set use = landuse
 from osm_landuses_minsk o
 where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'driving_school'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'college'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'college'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'university'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'university'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'cinema'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'cinema'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'theatre'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'theatre'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'marketplace'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'marketplace'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'clinic'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'clinic'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'hospital'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'hospital'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'bus_station'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'bus_station'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'fuel'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.amenity = 'fuel'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'garages'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.landuse = 'garages'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'commercial'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.landuse = 'commercial'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'industrial'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.landuse = 'industrial'
-  and use is null;
-
-update osm_buildings_minsk b
-set use = 'residential'
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.landuse = 'residential'
+  and o.landuse in ('garages', 'retail', 'commercial', 'industrial')
   and use is null;

@@ -49,12 +49,10 @@ where ST_Intersects(o.geom, b.geom)
 
 update osm_buildings_minsk
 set use = 'house'
-from osm_buildings_minsk
 where building = 'house'
 and use is null;
 
 update osm_buildings_minsk
 set use = 'apartments'
-from osm_buildings_minsk
 where building = 'apartments'
 and use is null;

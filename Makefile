@@ -406,7 +406,7 @@ db/index/osm_landuses_minsk_geom_idx: db/table/osm_landuses_minsk | db/index
 	psql -c "create index on osm_landuses_minsk using gist (geom)"
 	touch $@
 
-db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx | db/table
+db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx db/table/osm_landuses_minsk db/index/osm_landuses_minsk_geom_idx | db/table
 	psql -f tables/osm_buildings_minsk.sql
 	touch $@
 

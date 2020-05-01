@@ -9,8 +9,9 @@ create table osm_buildings as (
            tags ->> 'building:levels'  as levels,
            tags ->> 'height'           as height,
            tags ->> 'building:use'     as use,
-           tags ->> 'name'             as name,
+           tags ->> 'name'             as "name",
+           tags,
            geog::geometry              as geom
-    from osm
+    from osm o
     where tags ? 'building'
 );

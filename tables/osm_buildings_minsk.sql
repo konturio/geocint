@@ -16,4 +16,45 @@ create table osm_buildings_minsk as (
               )
 );
 
-create index on osm_buildings_minsk using gist (geom);
+update osm_buildings_minsk b
+set use = amenity
+from osm_landuses_minsk o
+where ST_Intersects(o.geom, b.geom)
+  and o.amenity in
+      ('school', 'kindergarten', 'college', 'university', 'cinema', 'theatre', 'marketplace', 'hospital', 'clinic')
+  and use is null;
+
+update osm_buildings_minsk b
+set use = landuse
+from osm_landuses_minsk o
+where ST_Intersects(o.geom, b.geom)
+  and o.landuse in ('garage', 'retail', 'commercial', 'industrial', 'construction', 'military', 'railway', 'service')
+  and use is null;
+
+update osm_buildings_minsk b
+set use = 'house'
+from osm_landuses_minsk o
+where ST_Intersects(o.geom, b.geom)
+  and o.landuse = 'residential'
+  and o.residential = 'rural'
+  and use is null;
+
+update osm_buildings_minsk b
+set use = 'apartments'
+from osm_landuses_minsk o
+where ST_Intersects(o.geom, b.geom)
+  and o.landuse = 'residential'
+  and o.residential = 'urban'
+  and use is null;
+
+update osm_buildings_minsk
+set use = 'house'
+from osm_buildings_minsk
+where building = 'house'
+and use is null;
+
+update osm_buildings_minsk
+set use = 'apartments'
+from osm_buildings_minsk
+where building = 'apartments'
+and use is null;

@@ -41,6 +41,13 @@ where ST_Intersects(o.geom, b.geom)
   and use is null;
 
 update osm_buildings_minsk b
+set use = leisure
+from osm_landuses_minsk o
+where ST_Intersects(o.geom, b.geom)
+  and leisure = 'sports_centre'
+  and use is null;
+
+update osm_buildings_minsk b
 set use = 'house'
 from osm_landuses_minsk o
 where ST_Intersects(o.geom, b.geom)
@@ -67,7 +74,8 @@ update osm_buildings_minsk
 set use = building
 where building in ('apartments', 'public', 'retail', 'house', 'sports_hall', 'stadium', 'parking', 'office', 'garages',
                    '"greenhouse"', 'transportation', 'dormitory', 'government', 'hotel', 'hospital', 'school',
-                   'commercial', 'church', 'sports_centre', 'prison', 'train_station', 'residential')
+                   'university', 'commercial', 'church', 'sports_centre', 'prison', 'train_station', 'residential',
+                   'college', 'construction', 'service')
   and use is null;
 
 update osm_buildings_minsk

@@ -73,7 +73,7 @@ where ST_Intersects(o.geom, b.geom)
 update osm_buildings_minsk
 set use = building
 where building in ('apartments', 'public', 'retail', 'house', 'sports_hall', 'stadium', 'parking', 'office', 'garages',
-                   '"greenhouse"', 'transportation', 'dormitory', 'government', 'hotel', 'hospital', 'school',
+                   'greenhouse', 'transportation', 'dormitory', 'government', 'hotel', 'hospital', 'school',
                    'university', 'commercial', 'church', 'sports_centre', 'prison', 'train_station', 'residential',
                    'college', 'construction', 'service')
   and use is null;

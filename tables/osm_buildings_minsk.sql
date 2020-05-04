@@ -30,7 +30,7 @@ from osm_landuses_minsk o
 where ST_Intersects(o.geom, b.geom)
   and o.landuse in
       ('garages', 'retail', 'commercial', 'industrial', 'construction', 'military', 'railway', 'service', 'allotments',
-       '"railway"')
+       'railway')
   and use is null;
 
 update osm_buildings_minsk b

@@ -21,7 +21,7 @@ set use = amenity
 from osm_landuses_minsk o
 where ST_Intersects(o.geom, b.geom)
   and o.amenity in
-      ('school', 'kindergarten', 'college', 'university', 'cinema', 'theatre', 'marketplace', 'hospital', 'clinic')
+      ('school', 'kindergarten', 'college', 'university', 'cinema', 'theatre', 'marketplace', 'hospital')
   and use is null;
 
 update osm_buildings_minsk b
@@ -75,10 +75,10 @@ set use = building
 where building in ('apartments', 'public', 'retail', 'house', 'sports_hall', 'stadium', 'parking', 'office', 'garages',
                    'greenhouse', 'transportation', 'dormitory', 'government', 'hotel', 'hospital', 'school',
                    'university', 'commercial', 'church', 'sports_centre', 'prison', 'train_station', 'residential',
-                   'college', 'construction', 'service')
+                   'college', 'construction', 'service', 'clinic')
   and use is null;
 
 update osm_buildings_minsk
 set use = 'industrial'
-where building in ('factory', 'warehouse', 'hangar')
+where building in ('factory', 'warehouse', 'hangar', 'industrial')
   and use is null;

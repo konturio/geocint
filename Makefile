@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.gpkg.gz data/osm_addresses_minsk.gpkg.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.geojson.gz data/osm_addresses_minsk.gpkg.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -54,8 +54,11 @@ deploy/sonic: | deploy
 deploy/geocint: | deploy
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables
+deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk
 	touch $@
+
+deploy/s3:
+	mkdir -p $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx
 	touch $@
@@ -406,11 +409,15 @@ db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx db/table/osm_landu
 	psql -f tables/osm_buildings_minsk.sql
 	touch $@
 
-data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings_minsk
+data/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk
 	rm -f $@
-	rm -f data/osm_buildings_minsk.gpkg
-	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select * from osm_buildings_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
-	cd data/; pigz osm_buildings_minsk.gpkg
+	rm -f data/osm_buildings_minsk.geojson*
+	ogr2ogr -f GeoJSON data/osm_buildings_minsk.geojson PG:'dbname=gis' -sql "select * from osm_buildings_minsk" -nln osm_buildings_minsk
+	cd data/; pigz osm_buildings_minsk.geojson
+
+deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3
+	cd data/; aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_addresses.sql

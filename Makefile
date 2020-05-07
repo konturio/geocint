@@ -54,11 +54,11 @@ deploy/sonic: | deploy
 deploy/geocint: | deploy
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3
+deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk
 	touch $@
 
-deploy/s3: deploy/s3/osm_buildings_minsk
-	touch $@
+deploy/s3:
+	mkdir -p $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx
 	touch $@

@@ -415,8 +415,9 @@ data/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk
 	ogr2ogr -f GeoJSON data/osm_buildings_minsk.geojson PG:'dbname=gis' -sql "select * from osm_buildings_minsk" -nln osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.geojson
 
-deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz
-	cd data/; aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers 
+deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3
+	cd data/; aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_addresses.sql

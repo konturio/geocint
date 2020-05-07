@@ -15,6 +15,23 @@ create table osm_buildings_minsk as (
                   0
               )
 );
+update osm_buildings_minsk
+set use = building
+where building in ('apartments', 'public', 'retail', 'house', 'sports_hall', 'stadium', 'parking', 'office', 'garages',
+                   'greenhouse', 'transportation', 'dormitory', 'government', 'hotel', 'hospital', 'school',
+                   'university', 'commercial', 'church', 'sports_centre', 'prison', 'train_station', 'residential',
+                   'college', 'construction', 'service', 'clinic', 'chapel', 'cathedral', 'civic', 'kiosk', 'kindergarten')
+  and use is null;
+
+update osm_buildings_minsk
+set use = 'industrial'
+where building in ('factory', 'warehouse', 'hangar', 'industrial')
+  and use is null;
+
+update osm_buildings_minsk b
+set use = 'garages'
+where building = 'garage'
+  and use is null;
 
 update osm_buildings_minsk b
 set use = amenity
@@ -68,17 +85,4 @@ set use = 'residential'
 from osm_landuses_minsk o
 where ST_Intersects(o.geom, b.geom)
   and o.landuse = 'residential'
-  and use is null;
-
-update osm_buildings_minsk
-set use = building
-where building in ('apartments', 'public', 'retail', 'house', 'sports_hall', 'stadium', 'parking', 'office', 'garages',
-                   'greenhouse', 'transportation', 'dormitory', 'government', 'hotel', 'hospital', 'school',
-                   'university', 'commercial', 'church', 'sports_centre', 'prison', 'train_station', 'residential',
-                   'college', 'construction', 'service', 'clinic')
-  and use is null;
-
-update osm_buildings_minsk
-set use = 'industrial'
-where building in ('factory', 'warehouse', 'hangar', 'industrial')
   and use is null;

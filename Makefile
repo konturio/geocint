@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.gpkg.gz data/osm_addresses_minsk.gpkg.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.geojson.gz data/osm_addresses_minsk.gpkg.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -406,7 +406,7 @@ db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx db/table/osm_landu
 	psql -f tables/osm_buildings_minsk.sql
 	touch $@
 
-data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings_minsk
+data/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk
 	rm -f $@
 	rm -f data/osm_buildings_minsk.geojson*
 	ogr2ogr -f GeoJSON data/osm_buildings_minsk.geojson PG:'dbname=gis' -sql "select * from osm_buildings_minsk" -nln osm_buildings_minsk

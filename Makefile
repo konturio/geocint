@@ -408,9 +408,10 @@ db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx db/table/osm_landu
 
 data/osm_buildings_minsk.gpkg.gz: db/table/osm_buildings_minsk
 	rm -f $@
-	rm -f data/osm_buildings_minsk.gpkg
-	ogr2ogr -f GPKG data/osm_buildings_minsk.gpkg PG:'dbname=gis' -sql "select * from osm_buildings_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_buildings_minsk
-	cd data/; pigz osm_buildings_minsk.gpkg
+	rm -f data/osm_buildings_minsk.geojson*
+	ogr2ogr -f GeoJSON data/osm_buildings_minsk.geojson PG:'dbname=gis' -sql "select * from osm_buildings_minsk" -nln osm_buildings_minsk
+	cd data/; pigz osm_buildings_minsk.geojson
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body ~/geocint/data/osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers 
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_addresses.sql

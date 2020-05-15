@@ -15,12 +15,14 @@ create table osm_buildings_minsk as (
                   0
               )
 );
+
 update osm_buildings_minsk
 set use = building
-where building in ('apartments', 'public', 'retail', 'house', 'sports_hall', 'stadium', 'parking', 'office', 'garages',
-                   'greenhouse', 'transportation', 'dormitory', 'government', 'hotel', 'hospital', 'school',
-                   'university', 'commercial', 'church', 'sports_centre', 'prison', 'train_station', 'residential',
-                   'college', 'construction', 'service', 'clinic', 'chapel', 'cathedral', 'civic', 'kiosk', 'kindergarten')
+where building in
+      ('apartments', 'cathedral', 'chapel', 'church', 'civic', 'clinic', 'college', 'commercial', 'construction',
+       'dormitory', 'fire_station', 'garages', 'government', 'greenhouse', 'hospital', 'hotel', 'house', 'kindergarten',
+       'kiosk', 'office', 'parking', 'prison', 'public', 'residential', 'retail', 'school', 'service', 'sports_centre',
+       'sports_hall', 'stadium', 'train_station', 'transportation', 'university')
   and use is null;
 
 update osm_buildings_minsk
@@ -34,20 +36,25 @@ where building = 'garage'
   and use is null;
 
 update osm_buildings_minsk b
-set use = amenity
-from osm_landuses_minsk o
-where ST_Intersects(o.geom, b.geom)
-  and o.amenity in
-      ('school', 'kindergarten', 'college', 'university', 'cinema', 'theatre', 'marketplace', 'hospital')
-  and use is null;
-
-update osm_buildings_minsk b
 set use = landuse
 from osm_landuses_minsk o
 where ST_Intersects(o.geom, b.geom)
   and o.landuse in
       ('garages', 'retail', 'commercial', 'industrial', 'construction', 'military', 'railway', 'service', 'allotments',
-       'railway')
+       'railway', 'religious', 'brownfield')
+  and use is null;
+
+update osm_buildings_minsk b
+set use = amenity
+from osm_landuses_minsk o
+where ST_Intersects(o.geom, b.geom)
+  and o.amenity in
+      ('bank', 'bus_station', 'cafe', 'car_wash', 'casino', 'childcare', 'cinema', 'clinic', 'college',
+       'community_centre', 'courthouse', 'dentist', 'driving_school', 'embassy', 'fast_food',
+       'fire_station', 'fire_station', 'fuel', 'hospital', 'kindergarten', 'library', 'marketplace', 'nightclub',
+       'parking', 'place_of_worship', 'planetarium', 'police', 'police', 'prison', 'prison', 'pub', 'recycling',
+       'register_office', 'restaurant', 'school', 'social_facility', 'studio', 'theatre', 'toilets', 'townhall',
+       'tram_station', 'university')
   and use is null;
 
 update osm_buildings_minsk b

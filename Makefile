@@ -412,7 +412,7 @@ db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx db/table/osm_landu
 data/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk
 	rm -f $@
 	rm -f data/osm_buildings_minsk.geojson*
-	ogr2ogr -f GeoJSON data/osm_buildings_minsk.geojson PG:'dbname=gis' -sql "select building, street, hno, levels, height, use, "name\\", geom from osm_buildings_minsk" -nln osm_buildings_minsk
+	ogr2ogr -f GeoJSON data/osm_buildings_minsk.geojson PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_minsk' -nln osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.geojson
 
 deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3

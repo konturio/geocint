@@ -423,6 +423,10 @@ db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_addresses.sql
 	touch $@
 
+db/table/geocoder_addresses_vianova: db/table/osm db/index/osm_tags_idx | db/table
+	psql -f tables/geocoder_addresses_vianova.sql
+	touch $@
+
 db/index/osm_addresses_geom_idx: db/table/osm_addresses | db/index
 	psql -c "create index on osm_addresses using gist (geom)"
 	touch $@

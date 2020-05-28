@@ -3,15 +3,16 @@ drop table if exists osm_addresses_kosovo;
 create table osm_addresses_kosovo as (
     select osm_type,
            osm_id,
-           tags ->> 'municipality'     as municipality,
-           tags ->> 'city'             as city,
-           tags ->> 'town'             as town,
-           tags ->> 'village'          as village,
-           tags ->> 'suburb'           as suburb,
-           tags ->> 'addr:street'      as street,
-           tags ->> 'addr:housenumber' as hno,
-           tags ->> 'name'             as name,
-           geog::geometry              as geom
+           tags ->> 'place:municipality' as municipality,
+           tags ->> 'addr:city'          as city,
+           tags ->> 'addr:town'          as town,
+           tags ->> 'addr:village'       as village,
+           tags ->> 'addr:suburb'        as suburb,
+           tags ->> 'addr:street'        as street,
+           tags ->> 'addr:housenumber'   as hno,
+           tags ->> 'name'               as "name",
+           tags,
+           geog::geometry                as geom
     from osm
     where tags ? 'addr:housenumber'
       and ST_DWithin(
@@ -25,7 +26,21 @@ create table osm_addresses_kosovo as (
             ),
             0
         )
-);
+)
+    limit 10;
+
+drop function if exists geocode(address_field text);
+create or replace function geocode(address_field text)
+    returns table
+            (
+                address_field text,
+                geom          geometry
+            )
+    language sql
+as
+$$
+select
+$$
 
 select city, lower(city) <-> replace(lower(' Gjakove'), ' ', ''), geom
 from osm_addresses_kosovo

@@ -1,6 +1,7 @@
 drop table if exists vianova_geocoded_addresses;
 
-create OR REPLACE function addr_processing(s text) returns text as $$
+create OR REPLACE function addr_processing(s text) returns text as
+    $$
     begin
     return trim(ltrim(replace(replace(lower(s), 'rr.', ''), 'rruga', ''), 'rr'));
     end;
@@ -23,7 +24,7 @@ set pg_trgm.similarity_threshold = 0.1;
 drop table if exists osm_addr_preproc;
 create temporary table osm_addr_preproc as
     (
-        select osm_id, lower(o.street || ' ' || o.hno) as addr_concat -- other templates for addresses
+        select osm_id, lower(o.city || ' ' ||  o.street || ' ' || o.hno) as addr_concat -- other templates for addresses
         from osm_addresses_kosovo o
     );
 

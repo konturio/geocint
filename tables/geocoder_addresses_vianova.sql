@@ -1,46 +1,70 @@
-drop table if exists osm_addresses_kosovo;
+drop table if exists vianova_geocoded_addresses;
 
-create table osm_addresses_kosovo as (
-    select osm_type,
-           osm_id,
-           tags ->> 'place:municipality' as municipality,
-           tags ->> 'addr:city'          as city,
-           tags ->> 'addr:town'          as town,
-           tags ->> 'addr:village'       as village,
-           tags ->> 'addr:suburb'        as suburb,
-           tags ->> 'addr:street'        as street,
-           tags ->> 'addr:housenumber'   as hno,
-           tags ->> 'name'               as "name",
-           tags,
-           geog::geometry                as geom
-    from osm
-    where tags ? 'addr:housenumber'
-      and ST_DWithin(
-            geog::geometry,
-            (
-                select geog::geometry
-                from osm
-                where tags @> '{"name:en":"Kosovo", "boundary":"administrative"}'
-                  and osm_id = 2088990
-                  and osm_type = 'relation'
-            ),
-            0
-        )
-)
-    limit 10;
+create OR REPLACE function addr_processing(s text) returns text as $$
+    begin
+    return trim(ltrim(replace(replace(lower(s), 'rr.', ''), 'rruga', ''), 'rr'));
+    end;
+    $$
+    LANGUAGE plpgsql;
 
-drop function if exists geocode(address_field text);
-create or replace function geocode(address_field text)
-    returns table
-            (
-                address_field text,
-                geom          geometry
-            )
-    language sql
-as
-$$
-select
-$$
+-- select addr_processing(address_field) from vianova_geocoded_addresses LIMIT 1000;
+
+create table vianova_geocoded_addresses as (
+    select distinct (
+        addr_processing(address_field)) as address_field
+    from kosovo_covid_vianova
+    where address_field is not null and
+          lower(address_field) not in ('test') and
+          length(address_field) > 3
+);
+
+set pg_trgm.similarity_threshold = 0.1;
+
+drop table if exists osm_addr_preproc;
+create temporary table osm_addr_preproc as
+    (
+        select osm_id, lower(o.street || ' ' || o.hno) as addr_concat -- other templates for addresses
+        from osm_addresses_kosovo o
+    );
+
+drop table if exists osm_addr_dists;
+create temporary table osm_addr_dists as
+    (
+        select similarity(address_field, o.addr_concat) as sim, va.address_field, o.osm_id, o.addr_concat
+        from vianova_geocoded_addresses as va
+                 join osm_addr_preproc as o
+                      on va.address_field % o.addr_concat
+        order by sim desc
+    );
+
+drop table if exists osm_addr_dists_grouped;
+create temporary table osm_addr_dists_grouped as
+    (
+        select max(sim) as sim, address_field
+        from osm_addr_dists
+        GROUP BY address_field
+    );
+
+select v.sim, v.address_field, o.osm_id, o.addr_concat
+from osm_addr_dists_grouped as v
+         join osm_addr_dists as o on o.address_field = v.address_field and o.sim = v.sim
+order by v.sim desc;
+
+
+
+
+alter table vianova_geocoded_addresses
+    add column dist float;
+
+alter table kosovo_covid_vianova
+    add column addr_valid geometry;
+
+update kosovo_vianova_copy
+set addr_valid = osm_id
+from osm_addresses_kosovo
+where (
+    select min(lower(city) <-> replace(lower('Pejë'), 'ë', 'e'))
+          from osm_addresses_kosovo);
 
 select city, lower(city) <-> replace(lower(' Gjakove'), ' ', ''), geom
 from osm_addresses_kosovo
@@ -52,7 +76,7 @@ from osm_addresses_kosovo
 order by 3, 2, 1
 limit 10;
 
-select city, name, lower(city || '' || name) <-> lower('Ferizaj Bondsteel'), geom
+select city, name, lower(city || '' || name) <-> lower('Ferizaj Bondsteel'), geom, osm_id
 from osm_addresses_kosovo
 order by 3, 2, 1
 limit 10;
@@ -147,10 +171,8 @@ from osm_addresses_kosovo
 order by 3, 2, 1
 limit 10;
 
-select street, lower(street) <-> lower('15 shkurti'), geom
-from osm_addresses_kosovo
-order by 3, 2, 1
-limit 10;
+select min(lower(street) <-> lower('15 shkurti'))
+from osm_addresses_kosovo;
 
 select street, lower(street) <-> replace(lower('Rr. Muharrem Fejza'), 'Pr.', ''), geom
 from osm_addresses_kosovo
@@ -224,11 +246,5 @@ from osm_addresses_kosovo
 order by 3, 2, 1
 limit 10;
 
-select street,
-       village,
-       municipality,
-       lower(street || ' ' || village || ' ' || municipality) <-> lower('Rruga Mustaf Qorri, Pemishtë Skenderaj'),
-       geom
-from osm_addresses_kosovo
-order by 3, 2, 1
-limit 10;
+select min(lower(street || ' ' || village || ' ' || municipality) <-> lower('Rruga Mustaf Qorri, Pemishtë Skenderaj'))
+from osm_addresses_kosovo;

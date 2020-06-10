@@ -19,7 +19,7 @@ create table vianova_geocoded_addresses as (
       and length(address_field) > 3
 );
 
-set pg_trgm.similarity_threshold = 0.1;
+set pg_trgm.similarity_threshold = 0.45;
 
 drop table if exists osm_addr_preproc;
 create temporary table osm_addr_preproc as
@@ -45,12 +45,14 @@ create temporary table osm_addr_dists as
         order by sim desc
     );
 
+alter table osm_addr_dists add column id SERIAL;
+
 drop table if exists osm_addr_dists_grouped;
 create temporary table osm_addr_dists_grouped as
     (
-        select max(sim) as sim, address_valid, patient_id
+        select max(sim) as sim, address_valid, patient_id, id
         from osm_addr_dists
-        group by address_valid, patient_id
+        group by address_valid, patient_id, id
     );
 
 drop table if exists geocoded_vianova;
@@ -58,7 +60,7 @@ create table geocoded_vianova as (
     select v.sim, v.address_valid, v.patient_id, o.osm_id, o.addr_concat, o.geom
     from osm_addr_dists_grouped as v
              join osm_addr_dists as o
-                  on o.address_valid = v.address_valid and o.sim = v.sim
+                  on o.id = v.id
     order by v.sim desc);
 
 drop table if exists kosovo_covid_geocoded;

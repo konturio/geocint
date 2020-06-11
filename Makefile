@@ -54,11 +54,11 @@ deploy/sonic: | deploy
 deploy/geocint: | deploy
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk
+deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk
 	touch $@
 
 deploy/s3:
-	mkdir -p $@
+	mkdir -p $@/test
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx
 	touch $@
@@ -436,6 +436,22 @@ data/osm_addresses_minsk.gpkg.gz: db/table/osm_addresses_minsk
 	rm -f data/osm_addresses_minsk.gpkg
 	ogr2ogr -f GPKG data/osm_addresses_minsk.gpkg PG:'dbname=gis' -sql "select * from osm_addresses_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_addresses_minsk
 	cd data/; pigz osm_addresses_minsk.gpkg
+
+data/osm_addresses_minsk.geojson.gz: db/table/osm_addresses_minsk
+	rm -vf data/osm_addresses_minsk.geojson*
+	ogr2ogr -f GeoJSON data/osm_addresses_minsk.geojson PG:'dbname=gis' -sql "select * from osm_addresses_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_addresses_minsk
+	pigz data/osm_addresses_minsk.geojson
+	touch $@
+
+deploy/s3/test/osm_addresses_minsk: data/osm_addresses_minsk.geojson.gz | deploy/s3
+	aws s3api copy-object --copy-source geodata-us-east-1-kontur/public/geocint/test/osm_addresses_minsk.geojson.gz --bucket geodata-us-east-1-kontur --key public/geocint/test/osm_addresses_minsk.geojson.gz.bak --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/test/osm_addresses_minsk.geojson.gz --body data/osm_addresses_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
+
+deploy/s3/osm_addresses_minsk: data/osm_addresses_minsk.geojson.gz | deploy/s3
+	aws s3api copy-object --copy-source geodata-us-east-1-kontur/public/geocint/osm_addresses_minsk.geojson.gz --bucket geodata-us-east-1-kontur --key public/geocint/osm_addresses_minsk.geojson.gz.bak --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_addresses_minsk.geojson.gz --body data/osm_addresses_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
 
 db/index/osm_buildings_geom_idx: db/table/osm_buildings | db/index
 	psql -c "create index on osm_buildings using gist (geom)"

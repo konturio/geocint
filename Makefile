@@ -441,7 +441,7 @@ data/osm_addresses_kosovo: db/table/osm_addresses db/index/osm_addresses_geom_id
 	psql -f tables/osm_addresses_kosovo.sql
 	touch $@
 
-db/table/geocoder_addresses_vianova: db/table/osm_addresses | db/table
+db/table/geocoder_addresses_vianova: db/table/osm_addresses_kosovo db/table/osm_addresses | db/table
 	psql -f table/geocoder_addresses_vianova.sql
 	touch $@
 

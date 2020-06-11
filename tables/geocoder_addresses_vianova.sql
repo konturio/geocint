@@ -8,7 +8,6 @@ end;
 $$
     LANGUAGE plpgsql;
 
--- create table with preprocessed addresses from kosovo_covid_vianova table
 
 create table vianova_geocoded_addresses as (
     select distinct (
@@ -22,8 +21,6 @@ create table vianova_geocoded_addresses as (
 
 set pg_trgm.similarity_threshold = 0.45;
 
--- table for preprocessed addresses from osm_kosovo_addresses
-
 drop table if exists osm_addr_preproc;
 create temporary table osm_addr_preproc as
     (
@@ -32,8 +29,6 @@ create temporary table osm_addr_preproc as
                lower(o.street || ' ' || o.hno || ' ' || o.city) as addr_concat -- other templates for addresses
         from osm_addresses_kosovo o
     );
-
--- find similarity between vianova and osm addresses and join on similarity result if it's greater than 0.45
 
 drop table if exists osm_addr_dists;
 create temporary table osm_addr_dists as
@@ -50,9 +45,8 @@ create temporary table osm_addr_dists as
         order by sim desc
     );
 
-alter table osm_addr_dists add column id SERIAL;
-
--- group by adresses from vianova table and patiend_id
+alter table osm_addr_dists
+    add column id SERIAL;
 
 drop table if exists osm_addr_dists_grouped;
 create temporary table osm_addr_dists_grouped as
@@ -62,8 +56,6 @@ create temporary table osm_addr_dists_grouped as
         group by address_valid, patient_id, id
     );
 
--- join all geom and osm_id for geocoding
-
 drop table if exists geocoded_vianova;
 create table geocoded_vianova as (
     select v.sim, v.address_valid, v.patient_id, o.osm_id, o.addr_concat, o.geom
@@ -71,8 +63,6 @@ create table geocoded_vianova as (
              join osm_addr_dists as o
                   on o.id = v.id
     order by v.sim desc);
-
--- join osm addresses with vianova addresses on patient_id
 
 drop table if exists kosovo_covid_geocoded;
 create table kosovo_covid_geocoded as (select k.patient_id,
@@ -106,6 +96,6 @@ create table kosovo_covid_geocoded as (select k.patient_id,
                                               addr_concat,
                                               osm_id,
                                               v.geom as valid_geom --k.geom as invalid_geom
-                                       from kosovo_vianova_copy as k
+                                       from kosovo_covid_vianova as k
                                                 join geocoded_vianova as v
                                                      on v.patient_id = k.patient_id);

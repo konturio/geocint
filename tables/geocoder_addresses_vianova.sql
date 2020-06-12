@@ -15,7 +15,11 @@ create table vianova_geocoded_addresses as (
                     patient_id
     from kosovo_covid_vianova
     where address_field is not null
-      and lower(address_field) not in ('test')
+      and lower(address_field) not in
+          ('test', '12323 sasdasd', 'Abcd', 'Aaaaaaa', 'aaaaaaaaaaaaaaaaaaaaa', 'Dhdjcjzjxgkcjjxcj',
+           'Dont need to give it', 'Ne fud te rruges',
+           'hahahahaah', 'Neusidel de zya', 'Në mahallë', 'Nuk dua te jap adresen', 'Null', 'Prdjg', 'Skam',
+           'sjsjsjjsjsj', 'skom', 'ssss', 'te shpija', 'test test', 'Uhhh', 'Vjigfigog')
       and length(address_field) > 3
 );
 

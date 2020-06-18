@@ -93,3 +93,6 @@ from osm_landuses_minsk o
 where ST_Intersects(o.geom, b.geom)
   and o.landuse = 'residential'
   and use is null;
+
+delete from osm_buildings_minsk
+where building = 'no';

@@ -14,5 +14,5 @@ create table osm_buildings as (
            geog::geometry              as geom
     from osm o
     where tags ? 'building'
-      and tags != '{"building":"no"}'
+      and not (tags ->> 'building') = 'no'
 );

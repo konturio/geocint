@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.geojson.gz data/osm_addresses_minsk.gpkg.gz data/osm_admin_boundaries.geojson.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
@@ -453,7 +453,7 @@ deploy/s3/osm_addresses_minsk: data/osm_addresses_minsk.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_addresses_minsk.geojson.gz --body data/osm_addresses_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table
+db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_admin_boundaries.sql
 	touch $@
 
@@ -464,7 +464,7 @@ db/index/osm_admin_boundaries_geom_idx: db/table/osm_admin_boundaries | db/index
 data/osm_admin_boundaries.geojson.gz: db/table/osm_admin_boundaries
 	rm -vf data/osm_admin_boundaries.geojson*
 	ogr2ogr -f GeoJSON data/osm_admin_boundaries.geojson PG:'dbname=gis' -sql "select * from osm_admin_boundaries" -lco "SPATIAL_INDEX=NO" -nln osm_admin_boundaries
-	pigz data/osm_addresses_minsk.geojson
+	pigz data/osm_admin_boundaries.geojson
 	touch $@
 
 deploy/s3/osm_admin_boundaries: data/osm_admin_boundaries.geojson.gz | deploy/s3

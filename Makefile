@@ -431,12 +431,6 @@ db/table/osm_addresses_minsk: db/index/osm_addresses_geom_idx db/table/osm_addre
 	psql -f tables/osm_addresses_minsk.sql
 	touch $@
 
-data/osm_addresses_minsk.gpkg.gz: db/table/osm_addresses_minsk
-	rm -f $@
-	rm -f data/osm_addresses_minsk.gpkg
-	ogr2ogr -f GPKG data/osm_addresses_minsk.gpkg PG:'dbname=gis' -sql "select * from osm_addresses_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_addresses_minsk
-	cd data/; pigz osm_addresses_minsk.gpkg
-
 data/osm_addresses_minsk.geojson.gz: db/table/osm_addresses_minsk
 	rm -vf data/osm_addresses_minsk.geojson*
 	ogr2ogr -f GeoJSON data/osm_addresses_minsk.geojson PG:'dbname=gis' -sql "select * from osm_addresses_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_addresses_minsk

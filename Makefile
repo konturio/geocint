@@ -1,8 +1,8 @@
 all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.geojson.gz data/osm_addresses_minsk.gpkg.gz
 
 clean:
-	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv
+	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/_download data/index.html...
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download
 	psql -f scripts/clean.sql
 
 data:
@@ -64,7 +64,7 @@ deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_se
 	touch $@
 
 data/planet-latest.osm.pbf: | data
-	wget -t inf https://planet.bopenstreetmap.org/pbf/planet-latest.osm.pbf -O $@
+	wget -t inf https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
 	# TODO: smoke check correctness of file
 	touch $@
 
@@ -465,12 +465,17 @@ db/table/bivariate_copyrights: | db/table
 	psql -f tables/bivariate_copyrights.sql
 	touch $@
 
-data/tile_logs: data
-	mkdir -p tile_logs && cd tile_logs
-	wget -A xz -r -l 1 -nd -np https://planet.openstreetmap.org/tile_logs/; rm !(*.xz); unxz *.xz
-	psql -f tile_logs.sql
-	for f in tile*.txt; do python3 scripts/import_osm_tile_log.py $f | psql -c "copy tile_logs from stdin with csv"; done
+data/tile_logs: | data
+	mkdir -p $@
 
+data/tile_logs/_download: | data/tile_logs data
+	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np https://planet.openstreetmap.org/tile_logs/
+	touch $@
+
+db/table/tile_logs: data/tile_logs/_download | db/table
+	psql -f tile_logs.sql
+	ls data/tile_logs/*.xz | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
+	touch $@
 
 data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_copyrights db/table/stat_h3 db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh stats | parallel --eta

@@ -64,7 +64,7 @@ deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_se
 	touch $@
 
 data/planet-latest.osm.pbf: | data
-	wget -t inf https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
+	wget -t inf https://planet.bopenstreetmap.org/pbf/planet-latest.osm.pbf -O $@
 	# TODO: smoke check correctness of file
 	touch $@
 
@@ -464,6 +464,13 @@ db/table/bivariate_overlays: db/table/osm_meta | db/table
 db/table/bivariate_copyrights: | db/table
 	psql -f tables/bivariate_copyrights.sql
 	touch $@
+
+data/tile_logs: data
+	mkdir -p tile_logs && cd tile_logs
+	wget -A xz -r -l 1 -nd -np https://planet.openstreetmap.org/tile_logs/; rm !(*.xz); unxz *.xz
+	psql -f tile_logs.sql
+	for f in tile*.txt; do python3 scripts/import_osm_tile_log.py $f | psql -c "copy tile_logs from stdin with csv"; done
+
 
 data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_copyrights db/table/stat_h3 db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh stats | parallel --eta

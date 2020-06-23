@@ -7,10 +7,10 @@ create table osm_admin_boundaries as (
            tags ->> 'name'        as "name",
            tags,
            geog::geometry         as geom,
-           st_geometrytype(geog::geometry) as types
+           st_dimension(geog::geometry) as dimension
     from osm
     where tags ? 'admin_level'
       and tags @>
           '{"boundary":"administrative"}'
-    and st_geometrytype(geog::geometry) = 'ST_MultiPolygon'
+    and st_dimension(geog::geometry) = 2
 );

@@ -473,8 +473,9 @@ data/tile_logs/_download: | data/tile_logs data
 	touch $@
 
 db/table/tile_logs: data/tile_logs/_download | db/table
-	psql -f tile_logs.sql
+	psql -f tables/tile_logs.sql
 	ls data/tile_logs/*.xz | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
+	psql -f tables/tile_logs_h3.sql
 	touch $@
 
 data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_copyrights db/table/stat_h3 db/table/osm_meta | data/tiles

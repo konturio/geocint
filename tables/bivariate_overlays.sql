@@ -77,3 +77,16 @@ select 4,
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id":"A1","color":"#e49da1"},{"id":"A2","color":"#e46265"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"#e8e89f"},{"id":"B2","color":"#e9d799"},{"id":"B3","color":"#eac392"},{"id":"C1","color":"#89c89e"},{"id":"C2","color":"#71b287"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
+
+insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
+select 6,
+       'Kontur OpenStreetMap Quantity-2',
+       'count',
+       'area_km2',
+       'view_count',
+       'area_km2',
+       true,
+       'This map shows relative distribution of OpenStreetMap objects and Population. Last updated ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+from osm_meta;

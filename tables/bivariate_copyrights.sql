@@ -20,6 +20,9 @@ insert into bivariate_copyrights (param_id, copyrights)
 values ('count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
 insert into bivariate_copyrights (param_id, copyrights)
+values ('view_count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
+
+insert into bivariate_copyrights (param_id, copyrights)
 values ('avg_ts', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
 insert into bivariate_copyrights (param_id, copyrights)

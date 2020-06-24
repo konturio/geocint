@@ -1,7 +1,7 @@
 all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.geojson.gz data/osm_addresses_minsk.gpkg.gz
 
 clean:
-	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/_download data/index.html...
+	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/_download data/index.html robots.txt.tmp
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download
 	psql -f scripts/clean.sql
 
@@ -449,7 +449,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

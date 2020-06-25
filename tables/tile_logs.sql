@@ -5,5 +5,6 @@ create table tile_logs
     z          int,
     x          int,
     y          int,
-    view_count int
+    view_count int,
+    geom geometry generated always as (st_transform(ST_TileEnvelope(z, x, y), 4326)) stored
 );

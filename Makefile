@@ -474,7 +474,7 @@ data/tile_logs/_download: | data/tile_logs data
 
 db/table/tile_logs: data/tile_logs/_download | db/table
 	psql -f tables/tile_logs.sql
-	ls data/tile_logs/*.xz | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
+	ls data/tile_logs/*.xz -t | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
 	psql -f tables/tile_logs_h3.sql
 	touch $@
 

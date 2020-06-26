@@ -16,7 +16,7 @@ alter table tile_logs_h3_r8
 create index on tile_logs_h3_r8 (h3);
 
 drop table if exists tile_logs_h3;
-create table tile_logs_h3 as (
+create table tile_logs_h3 (
     h3 h3index,
     view_count float,
     resolution int
@@ -39,3 +39,5 @@ $$
             end loop;
     end;
 $$;
+
+select pg_size_pretty(pg_relation_size('tile_logs'));

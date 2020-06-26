@@ -1,7 +1,7 @@
 all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.geojson.gz data/osm_addresses_minsk.gpkg.gz
 
 clean:
-	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/_download data/index.html robots.txt.tmp
+	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/_download data/tile_logs/index.html data/tile_logs/robots.txt.tmp data/tile_logs/robots.txt.tmp data/tile_logs/robots.txt.tmp.1 data/tile_logs/robots.txt.tmp.2
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download
 	psql -f scripts/clean.sql
 
@@ -474,7 +474,7 @@ data/tile_logs/_download: | data/tile_logs data
 
 db/table/tile_logs: data/tile_logs/_download | db/table
 	psql -f tables/tile_logs.sql
-	ls data/tile_logs/*.xz -t | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
+	ls data/tile_logs/*.xz | sort -r -k2 -k3 -k4 | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
 	psql -f tables/tile_logs_h3.sql
 	touch $@
 

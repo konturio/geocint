@@ -94,7 +94,7 @@ where numerator = 'total_hours'
   and denominator = 'area_km2';
 
 update bivariate_axis
-set label = 'OpenStreetMap Contibutors (n)'
+set label = 'OpenStreetMap Contributors (n)'
 where numerator = 'osm_users'
   and denominator = 'one';
 

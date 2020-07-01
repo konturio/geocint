@@ -43,5 +43,3 @@ create table stat_h3 as (
 drop table stat_h3_in;
 vacuum analyze stat_h3;
 create index on stat_h3 using gist (geom, zoom);
-
-

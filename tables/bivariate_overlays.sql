@@ -80,13 +80,13 @@ from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 6,
-       'Kontur OpenStreetMap Quantity-2',
+       'Kontur OpenStreetMap Data ',
        'count',
        'area_km2',
        'view_count',
        'area_km2',
        true,
-       'This map shows relative distribution of OpenStreetMap objects and Population. Last updated ' ||
+       'This map shows map view data of OpenStreetMap. Last updated ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+       '[{"id": "A1","color": "#ada9c8"},{"id": "A2","color": "#7a71b2"},{"id": "A3","color": "#5d5398"},{"id": "B1","color": "#9db7b5"},{"id": "B2","color": "#768e9f"},{"id": "B3","color": "#587681"},{"id": "C1","color": "#89c89e"},{"id": "C2","color": "#71b287"},{"id": "C3","color": "rgb(83,152,106)"}]'
 from osm_meta;

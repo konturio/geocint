@@ -9,7 +9,8 @@ copy (select jsonb_build_object('axis', ba.axis,
                                                                    'max_ts', 'Max time stamp',
                                                                    'p90_ts', '90 Percentile time stamp',
                                                                    'area_km2', 'Area',
-                                                                   '1', '1'
+                                                                   'view_count', 'Map data view'
+                                                                       '1', '1'
                                     ),
                                 'meta', jsonb_build_object('max_zoom', 8,
                                                            'min_zoom', 0),
@@ -41,7 +42,8 @@ copy (select jsonb_build_object('axis', ba.axis,
                                                        jsonb_build_object('value', p75, 'label', p75_label),
                                                        jsonb_build_object('value', max, 'label', max_label)))) as axis
             from bivariate_axis) ba,
-           (select json_agg(jsonb_build_object('name', o.name, 'active', o.active, 'description', o.description, 'colors', o.colors,
+           (select json_agg(jsonb_build_object('name', o.name, 'active', o.active, 'description', o.description,
+                                               'colors', o.colors,
                                                'x', jsonb_build_object('label', ax.label, 'quotient',
                                                                        jsonb_build_array(ax.numerator, ax.denominator),
                                                                        'steps',
@@ -57,7 +59,8 @@ copy (select jsonb_build_object('axis', ba.axis,
                                                                                jsonb_build_object('value', ay.min, 'label', ay.min_label),
                                                                                jsonb_build_object('value', ay.p25, 'label', ay.p25_label),
                                                                                jsonb_build_object('value', ay.p75, 'label', ay.p75_label),
-                                                                               jsonb_build_object('value', ay.max, 'label', ay.max_label)))) order by ord) as overlay
+                                                                               jsonb_build_object('value', ay.max, 'label', ay.max_label))))
+                            order by ord) as overlay
             from bivariate_axis ax,
                  bivariate_axis ay,
                  bivariate_overlays o

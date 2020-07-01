@@ -1,7 +1,7 @@
 all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.geojson.gz data/osm_addresses_minsk.gpkg.gz
 
 clean:
-	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/_download data/tile_logs/index.html data/tile_logs/robots.txt.tmp data/tile_logs/robots.txt.tmp data/tile_logs/robots.txt.tmp.1 data/tile_logs/robots.txt.tmp.2
+	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download
 	psql -f scripts/clean.sql
 

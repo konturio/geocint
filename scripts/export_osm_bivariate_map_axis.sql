@@ -9,7 +9,6 @@ copy (select jsonb_build_object('axis', ba.axis,
                                                                    'max_ts', 'Max time stamp',
                                                                    'p90_ts', '90 Percentile time stamp',
                                                                    'area_km2', 'Area',
-                                                                   'view_count', 'Map data view'
                                                                        '1', '1'
                                     ),
                                 'meta', jsonb_build_object('max_zoom', 8,

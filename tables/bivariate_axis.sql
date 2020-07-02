@@ -121,7 +121,7 @@ where numerator = 'total_hours'
   and denominator = 'area_km2';
 
 update bivariate_axis
-set label = 'Tile views (n/km²)'
+set label = 'Map views in last month (n/km²)'
 where numerator = 'view_count'
   and denominator = 'area_km2';
 

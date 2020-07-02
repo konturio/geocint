@@ -3,13 +3,14 @@ copy (select jsonb_build_object('axis', ba.axis,
                                                                    'building_count', 'Building count',
                                                                    'highway_length', 'Highway length',
                                                                    'amenity_count', 'Amenity count',
+                                                                   'view_count', 'Map views',
                                                                    'osm_users', 'OSM users',
                                                                    'population', 'Population',
                                                                    'avg_ts', 'Average time stamp',
                                                                    'max_ts', 'Max time stamp',
                                                                    'p90_ts', '90 Percentile time stamp',
                                                                    'area_km2', 'Area',
-                                                                       '1', '1'
+                                                                   '1', '1'
                                     ),
                                 'meta', jsonb_build_object('max_zoom', 8,
                                                            'min_zoom', 0),
@@ -72,6 +73,6 @@ copy (select jsonb_build_object('axis', ba.axis,
            (select json_object_agg(param_id, copyrights) as copyrights from bivariate_copyrights) as copyrights
       where x.numerator = 'count'
         and x.denominator = 'area_km2'
-        and y.numerator = 'population'
+        and y.numerator = 'view_count'
         and y.denominator = 'area_km2'
     ) to stdout;

@@ -80,13 +80,13 @@ from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 6,
-       'Kontur OpenStreetMap Data ',
+       'Kontur OpenStreetMap Data',
        'count',
        'area_km2',
        'view_count',
        'area_km2',
        true,
-       'This map shows map view data of OpenStreetMap. Last updated ' ||
+       'This map shows how often people look in particular region of OpenStreetMap during last month. Last updated ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id": "A1","color": "#ada9c8"},{"id": "A2","color": "#7a71b2"},{"id": "A3","color": "#5d5398"},{"id": "B1","color": "#9db7b5"},{"id": "B2","color": "#768e9f"},{"id": "B3","color": "#587681"},{"id": "C1","color": "#89c89e"},{"id": "C2","color": "#71b287"},{"id": "C3","color": "rgb(83,152,106)"}]'
 from osm_meta;

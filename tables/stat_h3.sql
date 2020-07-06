@@ -18,7 +18,7 @@ create table stat_h3_in as (
         coalesce(a.p90_ts, 0) as p90_ts,
         coalesce(u.local_hours, 0)::float as local_hours,
         coalesce(u.total_hours, 0)::float as total_hours,
-        coalesce(t.view_count, 0) as view_count
+        coalesce(t.view_count, 0)::float as view_count
     from
         osm_object_count_grid_h3       a
         full join kontur_population_h3 b on a.h3 = b.h3

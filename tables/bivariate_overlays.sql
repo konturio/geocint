@@ -85,8 +85,8 @@ select 6,
        'area_km2',
        'view_count',
        'area_km2',
-       true,
-       'This map shows how often people look in particular region of OpenStreetMap during last month. Last updated ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+       false,
+       'This map shows relation between OSM objects and views of particular regions of OpenStreetMap for the last 30 days. Explore to see the most viewed places of OpenStreetMap. Last updated ' ||
+        max(tile_date),
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
-from osm_meta;
+from tile_logs;

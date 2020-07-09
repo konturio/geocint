@@ -81,8 +81,8 @@ from osm_meta;
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 6,
        'Kontur OpenStreetMap Data View',
-       'count',
-       'area_km2',
+       'p90_ts',
+       'one',
        'view_count',
        'area_km2',
        false,

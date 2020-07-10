@@ -53,7 +53,7 @@ select 3,
 from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
-select 5,
+select 4,
        'Kontur OpenStreetMap Mapping Activity',
        'local_hours',
        'area_km2',
@@ -66,27 +66,14 @@ select 5,
 from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
-select 4,
-       'Kontur OpenStreetMap Data Age',
-       'p90_ts',
-       'one',
-       'osm_users',
-       'one',
-       false,
-       'This map shows how old is OpenStreetMap in particular region and how big is group of users that created it. Explore to find import, mapping parties and large local communities. Last updated ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
-       '[{"id":"A1","color":"#e49da1"},{"id":"A2","color":"#e46265"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"#e8e89f"},{"id":"B2","color":"#e9d799"},{"id":"B3","color":"#eac392"},{"id":"C1","color":"#89c89e"},{"id":"C2","color":"#71b287"},{"id":"C3","color":"rgb(83,152,106)"}]'
-from osm_meta;
-
-insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
-select 6,
-       'Kontur OpenStreetMap Data View',
+select 5,
+       'Kontur OpenStreetMap Age Interest',
        'p90_ts',
        'one',
        'view_count',
        'area_km2',
        false,
-       'This map shows relation between OSM objects and views of particular regions of OpenStreetMap for the last 30 days. Explore to see the most viewed places of OpenStreetMap. Last updated ' ||
+       'This map shows how old is OpenStreetMap and how many times users view in particular region of OpenStreetMap for the last 30 days. Explore to see the most old viewed places of OpenStreetMap. Last updated ' ||
         max(tile_date),
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from tile_logs;

@@ -13,9 +13,9 @@ create table stat_h3_in as (
         coalesce(b.population, 0) as population,
         coalesce(r.residential, 0) as residential,
         coalesce(c.gdp, 0) as gdp,
-        coalesce(a.avg_ts, 0) as avg_ts,
-        coalesce(a.max_ts, 0) as max_ts,
-        coalesce(a.p90_ts, 0) as p90_ts,
+        a.avg_ts as avg_ts,
+        a.max_ts as max_ts,
+        a.p90_ts as p90_ts,
         coalesce(u.local_hours, 0)::float as local_hours,
         coalesce(u.total_hours, 0)::float as total_hours,
         coalesce(t.view_count, 0)::float as view_count

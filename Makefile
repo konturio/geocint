@@ -1,8 +1,8 @@
 all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19
 
 clean:
-	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv
+	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download
 	psql -f scripts/clean.sql
 
 data:
@@ -477,7 +477,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -491,6 +491,20 @@ db/table/bivariate_overlays: db/table/osm_meta | db/table
 
 db/table/bivariate_copyrights: | db/table
 	psql -f tables/bivariate_copyrights.sql
+	touch $@
+
+data/tile_logs: | data
+	mkdir -p $@
+
+data/tile_logs/_download: | data/tile_logs data
+	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np https://planet.openstreetmap.org/tile_logs/
+	touch $@
+
+db/table/tile_logs: data/tile_logs/_download | db/table
+	psql -f tables/tile_logs.sql
+	ls data/tile_logs/*.xz | sort -r -k2 -k3 -k4 | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
+	psql -f tables/tile_stats.sql
+	psql -f tables/tile_logs_h3.sql
 	touch $@
 
 data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_copyrights db/table/stat_h3 db/table/osm_meta | data/tiles

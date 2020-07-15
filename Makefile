@@ -393,6 +393,23 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
 
+db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
+	psql -f tables/osm_population_raw.sql
+	touch $@
+
+db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population_raw | db/procedure
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=2
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=3
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=4
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=5
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=6
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=7
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=8
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=9
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=10
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
+	touch $@
+
 db/table/osm_landuses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_landuses.sql
 	touch $@

@@ -410,13 +410,10 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
 	touch $@
 
-<<<<<<< HEAD
-=======
 db/table/osm_population: db/procedure/decimate_admin_level_in_osm_population_raw | db/procedure
 	psql -f table/osm_population_h3.sql
 	touch $@
 
->>>>>>> 155c37613b4e5e9e9d2298b14144f3df0af6c6b5
 db/table/osm_landuses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_landuses.sql
 	touch $@

@@ -5,7 +5,7 @@
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://192.168.1.201:5432/gis</jdbc-url>
+      <jdbc-url>jdbc:postgresql://192.168.100.6:5432/gis</jdbc-url>
     </data-source>
     <data-source source="LOCAL" name="root@localhost" uuid="2c386521-7811-4e7d-a82c-d492a6a2c5b6">
       <driver-ref>postgresql</driver-ref>

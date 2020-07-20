@@ -21,11 +21,14 @@ create table kontur_population_mid as (
              join ST_HexagonFromH3(h3) hex on true
 );
 
+alter table kontur_population_mid
+    set (parallel_workers=32);
+
 drop table if exists kontur_population_mid1;
 create table kontur_population_mid1 as (
     select k.population * o.population * ST_Area(k.geom) / sum(k.population) * ST_Area(ST_Intersection(o.geom, k.geom)) as population_new,
            k.*
-    from kontur_population_mid1 k
+    from kontur_population_mid k
              join osm_population_raw o on ST_Intersects(o.geom, k.geom)
     group by k.h3, k.building_count, k.population, k.has_water, k.probably_unpopulated, k.area_km2, k.geom,
              o.population, o.geom

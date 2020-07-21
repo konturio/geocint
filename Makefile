@@ -416,7 +416,7 @@ data/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.geojson
 
 deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3
-	cd data/; aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body data/osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
@@ -462,7 +462,7 @@ data/osm_admin_boundaries.geojson.gz: db/table/osm_admin_boundaries db/index/osm
 	touch $@
 
 deploy/s3/osm_admin_boundaries: data/osm_admin_boundaries.geojson.gz | deploy/s3
-	cd data/; aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body osm_admin_boundaries --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/osm_admin_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
 db/index/osm_buildings_geom_idx: db/table/osm_buildings | db/index

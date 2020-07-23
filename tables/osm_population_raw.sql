@@ -1,6 +1,6 @@
 drop table if exists osm_population_raw;
 create table osm_population_raw as (
-    select ST_Transform(geog::geometry, 3857) as geom,
+    select ST_Transform(geog::geometry, 4326) as geom,
            osm_type,
            osm_id,
            ST_Area(geog)                      as area,
@@ -21,11 +21,11 @@ create table osm_population_raw as (
                 else null
                end)                           as admin_level
     from osm
-    where
-        ST_Dimension(geog::geometry) = 2
+    where ST_Dimension(geog::geometry) = 2
       and tags ? 'population'
-    and tags ->> 'admin_level' is not null
+      and tags ->> 'admin_level' is not null
     order by 1
 );
+
 create index on osm_population_raw using gist (geom);
 create index on osm_population_raw using gist (ST_PointOnSurface(geom));

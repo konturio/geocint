@@ -410,6 +410,9 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
 	touch $@
 
+db/table/osm_population_raw_idx: db/table/osm_population_raw
+	psql -c "create index on osm_population_raw using gist(geom)"
+
 db/table/osm_population: db/procedure/decimate_admin_level_in_osm_population_raw | db/procedure
 	psql -f table/osm_population_h3.sql
 	touch $@

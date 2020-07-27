@@ -11,6 +11,8 @@ create index on population_grid_h3_r8_points using gist (geom);
 
 -- TODO: add osm_type to osm_id
 
+-- subdividing osm_population_raw polygons into smaller ones from easier intersections later
+
 drop table if exists osm_population_raw_subdivided;
 create table osm_population_raw_subdivided as (
     select osm_id,
@@ -24,6 +26,8 @@ create index on osm_population_raw_subdivided using gist (geom);
 alter table population_grid_h3_r8_points
     set (parallel_workers = 32);
 
+-- osm_id for every h3 polygon
+
 drop table if exists population_grid_h3_r8_new;
 create table population_grid_h3_r8_new as (
     select p.*,
@@ -33,7 +37,7 @@ create table population_grid_h3_r8_new as (
                        on ST_Intersects(p.geom, o.geom)
 );
 
--- groups on osm_id by with sum_population
+-- groups by osm_id by with sum_population
 
 drop table if exists osm_population_raw_sum;
 create table osm_population_raw_sum as (
@@ -43,6 +47,8 @@ create table osm_population_raw_sum as (
 );
 
 create index on osm_population_raw_sum (osm_id) include (population);
+
+-- h3 knows his full sum population from every osm_population_raw polygon he intersects
 
 drop table if exists population_grid_h3_upd;
 create table population_grid_h3_upd as (
@@ -58,6 +64,8 @@ create index on population_grid_h3_upd using gist (geom);
 
 alter table population_grid_h3_upd
     set (parallel_workers = 32);
+
+-- put osm_population_raw into population_grid_h3_r8 model
 
 drop table if exists population_grid_h3_r8_osm_scaled;
 create table population_grid_h3_r8_osm_scaled as (

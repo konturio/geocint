@@ -8,19 +8,12 @@ create table population_grid_h3_r8_points as (
 create index on population_grid_h3_r8_points using gist (geom);
 
 -- сheck duplicates osm_id  from osm_population_raw
---
--- select osm_id, count(*)
--- from osm_population_raw
--- group by 1
--- having count(*) > 1;
 
 -- TODO: add osm_type to osm_id
 
 -- see max vertices in osm_population_raw polygons
 
--- select max(st_npoints(geom))
---     from osm_population_raw;
-
+drop table if exists osm_population_raw_subdivided;
 create table osm_population_raw_subdivided as (
     select osm_id,
            osm_type,
@@ -33,6 +26,7 @@ create index on osm_population_raw_subdivided using gist (geom);
 alter table population_grid_h3_r8_points
     set (parallel_workers = 32);
 
+drop table if exists population_grid_h3_r8_new;
 create table population_grid_h3_r8_new as (
     select p.*,
            osm_id
@@ -43,6 +37,7 @@ create table population_grid_h3_r8_new as (
 
 -- groups on osm_id by with sum_population
 
+drop table if exists osm_population_raw_sum;
 create table osm_population_raw_sum as (
     select osm_id, sum(population) as population
     from population_grid_h3_r8_new
@@ -58,7 +53,7 @@ create table population_grid_h3_upd as (
            o_sum.population as sum_population_h3
     from population_grid_h3_r8_new p
              left join osm_population_raw_sum as o_sum on p.osm_id = o_sum.osm_id
-             left join osm_population_raw opr on o_sum.osm_id = opr.osm_id
+             left join osm_population_raw opr on p.osm_id = opr.osm_id
 );
 
 create index on population_grid_h3_upd using gist (geom);
@@ -71,9 +66,7 @@ create table population_grid_h3 as (
     select p.h3,
            p.resolution,
            p.geom,
-           p.population::float * pu.population::float * ST_Area(pu.geom)::float / pu.sum_population_h3::float *
-           ST_Area(ST_Intersection(pu.geom, p.geom))::float as population_new
-    from population_grid_h3_r8_points p
-             left join population_grid_h3_upd pu on ST_Intersects(pu.geom, p.geom)
---      group by p.h3, p.resolution, p.geom
+           p.population::float * o.population::float / p.sum_population_h3::float as population_new
+    from population_grid_h3_upd p
+             join osm_population_raw o on p.osm_id = o.osm_id
 );

@@ -7,11 +7,9 @@ create table population_grid_h3_r8_points as (
 
 create index on population_grid_h3_r8_points using gist (geom);
 
--- сheck duplicates osm_id  from osm_population_raw
+-- сheck duplicates osm_id from osm_population_raw
 
 -- TODO: add osm_type to osm_id
-
--- see max vertices in osm_population_raw polygons
 
 drop table if exists osm_population_raw_subdivided;
 create table osm_population_raw_subdivided as (
@@ -32,7 +30,7 @@ create table population_grid_h3_r8_new as (
            osm_id
     from population_grid_h3_r8_points p
              left join osm_population_raw_subdivided o
-                       on st_intersects(p.geom, o.geom)
+                       on ST_Intersects(p.geom, o.geom)
 );
 
 -- groups on osm_id by with sum_population
@@ -61,12 +59,14 @@ create index on population_grid_h3_upd using gist (geom);
 alter table population_grid_h3_upd
     set (parallel_workers = 32);
 
-drop table if exists population_grid_h3;
-create table population_grid_h3 as (
-    select p.h3,
-           p.resolution,
-           p.geom,
-           p.population::float * o.population::float / p.sum_population_h3::float as population_new
-    from population_grid_h3_upd p
-             join osm_population_raw o on p.osm_id = o.osm_id
+drop table if exists population_grid_h3_r8_osm_scaled;
+create table population_grid_h3_r8_osm_scaled as (
+    select pop.h3,
+           pop.resolution,
+           pop.geom,
+           pop.population::float * osm.population::float / pop.sum_population_h3::float as population
+    from population_grid_h3_upd pop
+             join osm_population_raw osm on pop.osm_id = osm.osm_id
 );
+
+create index on population_grid_h3_r8_osm_scaled using gist (geom);

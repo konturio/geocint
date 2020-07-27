@@ -383,7 +383,7 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/osm_building_count_grid_h3_r8 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 | db/table
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8_osm_scaled db/table/osm_building_count_grid_h3_r8 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 | db/table
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 
@@ -412,9 +412,10 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw
 	psql -c "create index on osm_population_raw using gist(geom)"
+	touch $@
 
-db/table/osm_population: db/procedure/decimate_admin_level_in_osm_population_raw | db/procedure
-	psql -f table/osm_population_h3.sql
+db/table/population_grid_h3_r8_osm_scaled: db/table/population_grid_h3_r8
+	psql -f table/population_grid_h3_r8_osm_scaled.sql
 	touch $@
 
 db/table/osm_landuses: db/table/osm db/index/osm_tags_idx | db/table

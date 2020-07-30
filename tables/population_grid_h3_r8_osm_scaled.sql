@@ -1,8 +1,19 @@
-drop table if exists population_grid_h3_r8_points;
-create table population_grid_h3_r8_points as (
+drop table if exists population_grid_h3_r8_geom;
+create table population_grid_h3_r8_geom as (
     select p.*,
            h3_to_geometry(h3) as geom
     from population_grid_h3_r8 p
+);
+
+create index on population_grid_h3_r8_geom using gist (geom);
+
+-- create one more h3 population grid
+
+drop table if exists population_grid_h3_r8_points;
+create table population_grid_h3_r8_points as (
+    select p.*,
+           h3_geo_to_h3(ST_PointOnSurface(geom), 8) as h3_population
+    from population_grid_h3_r8_geom p
 );
 
 create index on population_grid_h3_r8_points using gist (geom);
@@ -41,14 +52,37 @@ create table population_grid_h3_r8_new as (
 
 drop table if exists osm_population_raw_sum;
 create table osm_population_raw_sum as (
-    select osm_id, sum(population) as population
+    select osm_id,
+           sum(population) as population
     from population_grid_h3_r8_new
     group by 1
 );
 
-create index on osm_population_raw_sum (osm_id) include (population);
+-- count h3 for every population polygon
 
--- h3 knows his full sum population from every osm_population_raw polygon he intersects
+drop table if exists osm_population_raw_h3;
+create table osm_population_raw_h3 as (
+    select o.osm_id,
+           count(h3) as h3_count
+    from osm_population_raw_sum o
+             join population_grid_h3_r8_new as p on o.osm_id = p.osm_id
+    group by 1
+);
+
+-- create table with unique osm_id, sum population and counted h3 for every polygon with population
+
+drop table if exists osm_population_raw_sum_h3;
+create table osm_population_raw_sum_h3 as (
+    select sum.osm_id,
+           sum.population,
+           h3.h3_count
+    from osm_population_raw_sum as sum
+             join osm_population_raw_h3 as h3 on sum.osm_id = h3.osm_id
+);
+
+create index on osm_population_raw_sum_h3 (osm_id) include (population);
+
+-- h3 knows his full sum population from every osm_population_raw polygon that he intersects
 
 drop table if exists population_grid_h3_upd;
 create table population_grid_h3_upd as (
@@ -56,7 +90,7 @@ create table population_grid_h3_upd as (
            o_sum.osm_id     as osm_id_sum,
            o_sum.population as sum_population_h3
     from population_grid_h3_r8_new p
-             left join osm_population_raw_sum as o_sum on p.osm_id = o_sum.osm_id
+             left join osm_population_raw_sum_h3 as o_sum on p.osm_id = o_sum.osm_id
              left join osm_population_raw opr on p.osm_id = opr.osm_id
 );
 
@@ -78,3 +112,11 @@ create table population_grid_h3_r8_osm_scaled as (
 );
 
 create index on population_grid_h3_r8_osm_scaled using gist (geom);
+
+
+-- кроме суммы населения в регионе по шестиугольникам считаешь ещё что в регионе >0 шестиугольников
+-- 1. узнать сколько шестиугольников есть в регионе
+-- 2. кейс: если ш > 0, то как население оставить как есть
+--          если ш = 0, то население соответствующее h3_geo_to_h3(ST_PointOnSurface(geom))
+-- если шестиугольников =0, то к региону надо приписать тот, который geo_to_h3(ST_PointOnSurface(geom))
+-- этот шестиугольник с ST_PointOnSurface от каждого региона в таблицу с шестиугольниками вставить заранее, с каким-нибудь населением 0.01, если там его ещё нет

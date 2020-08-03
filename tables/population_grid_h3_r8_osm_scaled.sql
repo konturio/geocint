@@ -1,9 +1,13 @@
 drop table if exists population_grid_h3_r8_geom;
 create table population_grid_h3_r8_geom as (
-    select p.*,
+    select resolution,
+           h3,
+           population,
            h3_to_geometry(h3) as geom
     from population_grid_h3_r8 p
 );
+
+-- удали все звездочки, а то у Дорофея звездочки из глаз летят смотря на все это +++++
 
 create index on population_grid_h3_r8_geom using gist (geom);
 
@@ -11,7 +15,10 @@ create index on population_grid_h3_r8_geom using gist (geom);
 
 drop table if exists population_grid_h3_r8_points;
 create table population_grid_h3_r8_points as (
-    select p.*,
+    select resolution,
+           h3,
+           population,
+           geom,
            h3_geo_to_h3(ST_PointOnSurface(geom), 8) as h3_population
     from population_grid_h3_r8_geom p
 );
@@ -28,7 +35,7 @@ drop table if exists osm_population_raw_subdivided;
 create table osm_population_raw_subdivided as (
     select osm_id,
            osm_type,
-           st_subdivide(geom, 100) as geom
+           ST_Subdivide(geom, 100) as geom
     from osm_population_raw
 );
 
@@ -41,7 +48,11 @@ alter table population_grid_h3_r8_points
 
 drop table if exists population_grid_h3_r8_new;
 create table population_grid_h3_r8_new as (
-    select p.*,
+    select resolution,
+           h3,
+           population,
+           p.geom,
+           h3_population,
            osm_id
     from population_grid_h3_r8_points p
              left join osm_population_raw_subdivided o
@@ -86,7 +97,12 @@ create index on osm_population_raw_sum_h3 (osm_id) include (population);
 
 drop table if exists population_grid_h3_upd;
 create table population_grid_h3_upd as (
-    select p.*,
+    select resolution,
+           h3,
+           p.population,
+           p.geom,
+           h3_population,
+           p.osm_id,
            o_sum.osm_id     as osm_id_sum,
            o_sum.population as sum_population_h3
     from population_grid_h3_r8_new p

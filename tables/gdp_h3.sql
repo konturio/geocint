@@ -1,6 +1,11 @@
 drop table if exists countries_info;
 create table countries_info as (
-    select c.*,
+    select gid,
+           code,
+           name,
+           gdp,
+           gdp_year,
+           geom,
            (
                select sum(a.population)
                from kontur_population_h3 a

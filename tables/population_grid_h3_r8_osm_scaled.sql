@@ -7,8 +7,6 @@ create table population_grid_h3_r8_geom as (
     from population_grid_h3_r8 p
 );
 
--- удали все звездочки, а то у Дорофея звездочки из глаз летят смотря на все это +++++
-
 create index on population_grid_h3_r8_geom using gist (geom);
 
 -- create one more h3 population grid

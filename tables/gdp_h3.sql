@@ -37,5 +37,3 @@ create table gdp_h3 as (
              join countries_info c on ST_Intersects(c.geom, h.geom)
     group by h.h3, h.resolution, h.geom
 );
-
-drop table if exists gdp_h3;

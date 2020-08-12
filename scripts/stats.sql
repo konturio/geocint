@@ -16,7 +16,7 @@ copy (
                 local_hours,
                 total_hours,
                 view_count,
-                1 :: double precision as one,
+                one,
                 ST_AsMVTGeom(geom, ST_TileEnvelope(:z, :x, :y), 8192, 64, true) as geom
             from
                 stat_h3

@@ -508,6 +508,7 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 
 db/table/bivariate_axis: db/table/bivariate_copyrights db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis.sql
+	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
 
 db/table/bivariate_overlays: db/table/osm_meta | db/table

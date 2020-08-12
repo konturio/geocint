@@ -1,7 +1,13 @@
-drop function if exists axis_correlation(text, text, text, text);
-drop function if exists axis_correlation(text, text, text, text, text);
-drop function if exists correlate_bivariate_axes(text, text, text, text, text);
-create or replace function correlate_bivariate_axes(table_name text, x_num text, x_den text, y_num text, y_den text)
+drop function if exists axis_correlation(text, text, text, text
+);
+drop function if exists axis_correlation(text, text, text, text, text
+);
+drop function if exists correlate_bivariate_axes(text, text, text, text, text
+);
+create or replace function correlate_bivariate_axes
+(
+    table_name text, x_num text, x_den text, y_num text, y_den text
+)
     returns float
 as
 $$
@@ -18,17 +24,16 @@ $$
 drop table if exists bivariate_axis_correlation;
 create table bivariate_axis_correlation as (
     select
-        x_num.param_id as x_num,
-        x_den.param_id as x_den,
-        y_num.param_id as y_num,
-        y_den.param_id as y_den,
-        correlate_bivariate_axes('stat_h3', x_num.param_id, x_den.param_id, y_num.param_id, y_den.param_id)
+        x.numerator as x_num,
+        x.denominator as x_den,
+        y.numerator as y_num,
+        y.denominator as y_den,
+        correlate_bivariate_axes('stat_h3', x.numerator, x.denominator, y.numerator, y.denominator) as correlation,
+        1 - ((1 - x.quality) * (1 - y.quality)) as quality
     from
-        bivariate_copyrights x_num,
-        bivariate_copyrights x_den,
-        bivariate_copyrights y_num,
-        bivariate_copyrights y_den
+        bivariate_axis x,
+        bivariate_axis y
     where
-        (x_num.param_id != y_num.param_id or x_den.param_id != y_den.param_id)
+         x.numerator != y.numerator
+      or x.denominator != y.denominator
 );
-

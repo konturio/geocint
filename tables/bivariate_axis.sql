@@ -30,6 +30,57 @@ begin
 end;
 $$;
 
+drop table if exists stat_h3_quality;
+create table stat_h3_quality as (
+    select *
+    from
+        (
+            select
+                h3_to_parent(a.h3) as h3_parent,
+                avg(a.count) as agg_count,
+                avg(a.building_count) as agg_building_count,
+                avg(a.highway_length) as agg_highway_length,
+                avg(a.osm_users) as agg_osm_users,
+                avg(a.population) as agg_population,
+                avg(a.residential) as agg_residential,
+                avg(a.gdp) as agg_gdp,
+                avg(a.avg_ts) as agg_avg_ts,
+                avg(a.max_ts) as agg_max_ts,
+                avg(a.p90_ts) as agg_p90_ts,
+                avg(a.local_hours) as agg_local_hours,
+                avg(a.total_hours) as agg_total_hours,
+                avg(a.view_count) as agg_view_count,
+                avg(a.area_km2) as agg_area_km2,
+                avg(a.one) as agg_one
+            from
+                stat_h3 a
+            where
+                a.resolution between 1 and 6
+            group by 1 ) a
+    join stat_h3 b on a.h3_parent = b.h3
+);
+
+create or replace function estimate_bivariate_axis_quality (parameter1 text, parameter2 text)
+    returns float
+    language plpgsql
+as
+$$
+declare
+    quality float;
+begin
+
+    execute 'select 1.0::float-avg(
+            abs(('||parameter1||' / nullif('||parameter2||', 0)) - (agg_'||parameter1||' / nullif(agg_'||parameter2||', 0)))
+            /
+            nullif(('||parameter1||' / nullif('||parameter2||', 0)) + (agg_'||parameter1||' / nullif(agg_'||parameter2||', 0)), 0))' ||
+        'from stat_h3_quality' into quality;
+    return quality;
+end;
+$$;
+
+alter table bivariate_axis add column quality float;
+update bivariate_axis set quality = estimate_bivariate_axis_quality(numerator, denominator);
+select * from bivariate_axis order by quality desc;
 
 drop table if exists bivariate_axis;
 create table bivariate_axis as (
@@ -43,6 +94,7 @@ create table bivariate_axis as (
         a.parameter as numerator,
         b.parameter as denominator,
         f.*,
+        q as quality,
         '' as min_label,
         '' as p25_label,
         '' as p75_label,
@@ -51,9 +103,11 @@ create table bivariate_axis as (
     from
         axis_parameters                                a,
         axis_parameters                                b,
-        calculate_axis_stops(a.parameter, b.parameter) f
+        calculate_axis_stops(a.parameter, b.parameter) f,
+        estimate_bivariate_axis_quality(a.parameter, b.parameter) q
     where
-        a.parameter != b.parameter;
+        a.parameter != b.parameter
+);
 
 analyse bivariate_axis;
 

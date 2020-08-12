@@ -415,7 +415,7 @@ db/table/osm_population_raw_idx: db/table/osm_population_raw
 	touch $@
 
 db/table/population_grid_h3_r8_osm_scaled: db/table/population_grid_h3_r8
-	psql -f table/population_grid_h3_r8_osm_scaled.sql
+	psql -f tables/population_grid_h3_r8_osm_scaled.sql
 	touch $@
 
 db/table/osm_landuses: db/table/osm db/index/osm_tags_idx | db/table

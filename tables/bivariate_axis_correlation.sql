@@ -20,7 +20,7 @@ drop table if exists tmp_bivariate_copyrights;
 create table tmp_bivariate_copyrights as (
     select param_id
     from bivariate_copyrights
-    where param_id not in ('1', 'one')
+    where param_id != '1'
 );
 
 alter table tmp_bivariate_copyrights
@@ -28,10 +28,10 @@ alter table tmp_bivariate_copyrights
 
 drop table if exists axis_combinations;
 create table axis_combinations as (
-    select b1.param_id as parameter1,
-           b2.param_id as parameter2,
-           b3.param_id as parameter3,
-           b4.param_id as parameter4
+    select b1.param_id as x_numerator,
+           b2.param_id as x_denominator,
+           b3.param_id as y_numerator,
+           b4.param_id as y_denominator
     from tmp_bivariate_copyrights b1,
          tmp_bivariate_copyrights b2,
          tmp_bivariate_copyrights b3,
@@ -43,14 +43,14 @@ alter table axis_combinations
 
 drop table if exists axis_correlation_new;
 create table axis_correlation_new as (
-    select parameter1,
-           parameter2,
-           parameter3,
-           parameter4,
-           axis_correlation('stat_h3', parameter1, parameter2, parameter3, parameter4)
+    select x_numerator,
+           x_denominator,
+           y_numerator,
+           y_denominator,
+           axis_correlation('stat_h3', x_numerator, x_denominator, y_numerator, y_denominator)
     from axis_combinations
-    where (parameter1 != parameter2 and parameter3 != parameter4)
-      and ((parameter1 = parameter3 and parameter2 != parameter4) or
-           (parameter1 != parameter3 and parameter2 = parameter4))
+    where (x_numerator != x_denominator and y_numerator != y_denominator)
+      and ((x_numerator = y_numerator and x_denominator != y_denominator) or
+           (x_numerator != y_numerator and x_denominator = y_denominator))
 );
 

@@ -18,7 +18,8 @@ create table stat_h3_in as (
         a.p90_ts as p90_ts,
         coalesce(u.local_hours, 0)::float as local_hours,
         coalesce(u.total_hours, 0)::float as total_hours,
-        coalesce(t.view_count, 0)::float as view_count
+        coalesce(t.view_count, 0)::float as view_count,
+        1::float as one
     from
         osm_object_count_grid_h3       a
         full join kontur_population_h3 b on a.h3 = b.h3
@@ -28,7 +29,8 @@ create table stat_h3_in as (
         full join tile_logs_h3         t on a.h3 = t.h3
 );
 
-alter table stat_h3_in set (parallel_workers=32);
+alter table stat_h3_in
+    set (parallel_workers=32);
 
 drop table if exists stat_h3;
 create table stat_h3 as (

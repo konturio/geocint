@@ -6,9 +6,8 @@ create table bivariate_copyrights
     copyrights json
 );
 
-
-insert into bivariate_copyrights (param_id, copyrights)
-values ('1', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json);
+alter table bivariate_copyrights
+    set (parallel_workers = 32);
 
 insert into bivariate_copyrights (param_id, copyrights)
 values ('one', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json);

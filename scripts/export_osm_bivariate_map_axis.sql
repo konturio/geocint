@@ -11,8 +11,8 @@ copy (
                                                               'avg_ts', 'Average time stamp',
                                                               'max_ts', 'Max time stamp',
                                                               'p90_ts', '90 Percentile time stamp',
-                                                              'area_km2', 'Area',
-                                                              '1', '1'
+                                                              'area_km2', 'Area'
+                                                              'one', '1'
                                ),
                            'meta', jsonb_build_object('max_zoom', 8,
                                                       'min_zoom', 0),

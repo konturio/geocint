@@ -19,16 +19,16 @@ copy (
                            'correlationRates', (
                                select
                                    jsonb_agg(jsonb_build_object(
-                                                 'x', jsonb_build_object('label', parameter1,
+                                                 'x', jsonb_build_object('label', x_num,
                                                                          'quotient',
-                                                                         jsonb_build_array(parameter1, parameter2)),
-                                                 'y', jsonb_build_object('label', parameter3,
+                                                                         jsonb_build_array(x_num, x_den)),
+                                                 'y', jsonb_build_object('label', y_num,
                                                                          'quotient',
-                                                                         jsonb_build_array(parameter3, parameter4)),
+                                                                         jsonb_build_array(y_num, y_den)),
                                                  'rate', axis_correlation)
                                              order by abs(axis_correlation) desc)
                                from
-                                   axis_correlation
+                                   bicariate_axis_correlation
                            ),
                            'initAxis',
                            jsonb_build_object('x', jsonb_build_object('label', x.label, 'quotient',

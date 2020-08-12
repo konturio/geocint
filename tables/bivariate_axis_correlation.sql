@@ -1,40 +1,34 @@
 drop function if exists axis_correlation(text, text, text, text);
 drop function if exists axis_correlation(text, text, text, text, text);
-drop function if exists bivariate_axis_correlation(text, text, text, text, text);
-create or replace function bivariate_axis_correlation(table_name text,
-                                                      parameter1 text,
-                                                      parameter2 text,
-                                                      parameter3 text,
-                                                      parameter4 text)
+drop function if exists correlate_bivariate_axes(text, text, text, text, text);
+create or replace function correlate_bivariate_axes(table_name text, x_num text, x_den text, y_num text, y_den text)
     returns float
 as
 $$
 declare
     select_query float;
 begin
-    execute 'select corr(' || parameter1 || '/' || parameter2 || ',' || parameter3 || '/' || parameter4 || ') ' ||
-            'from ' || table_name || ' where ' || parameter2 || '!= 0 and ' || parameter4 || ' !=0' into select_query;
+    execute 'select corr(' || x_num || '/' || x_den || ',' || y_num || '/' || y_den || ') ' ||
+            'from ' || table_name || ' where ' || x_den || '!= 0 and ' || y_den || ' != 0' into select_query;
     return select_query;
 end;
 $$
     language plpgsql;
 
-drop table if exists axis_correlation;
-create table axis_correlation as (
+drop table if exists bivariate_axis_correlation;
+create table bivariate_axis_correlation as (
     select
-        b1.param_id as x_numerator,
-        b2.param_id as x_denominator,
-        b3.param_id as y_numerator,
-        b4.param_id as y_denominator,
-        bivariate_axis_correlation('stat_h3', b1.param_id,  b2.param_id, b3.param_id, b4.param_id)
+        x_num.param_id as x_num,
+        x_den.param_id as x_den,
+        y_num.param_id as y_num,
+        y_den.param_id as y_den,
+        correlate_bivariate_axes('stat_h3', x_num.param_id, x_den.param_id, y_num.param_id, y_den.param_id)
     from
-        bivariate_copyrights b1,
-        bivariate_copyrights b2,
-        bivariate_copyrights b3,
-        bivariate_copyrights b4
+        bivariate_copyrights x_num,
+        bivariate_copyrights x_den,
+        bivariate_copyrights y_num,
+        bivariate_copyrights y_den
     where
-          (x_numerator != x_denominator and y_numerator != y_denominator)
-      and ((x_numerator = y_numerator and x_denominator != y_denominator) or
-           (x_numerator != y_numerator and x_denominator = y_denominator))
+        (x_num.param_id != y_num.param_id or x_den.param_id != y_den.param_id)
 );
 

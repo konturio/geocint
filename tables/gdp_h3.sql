@@ -27,6 +27,7 @@ where b.code = c.code;
 
 create index on countries_info using gist (geom);
 
+drop table if exists gdp_h3;
 create table gdp_h3 as (
     select h.h3,
            h.resolution,

@@ -414,8 +414,8 @@ db/table/osm_population_raw_idx: db/table/osm_population_raw
 	psql -c "create index on osm_population_raw using gist(geom)"
 	touch $@
 
-db/table/population_grid_h3_r8_osm_scaled: db/table/population_grid_h3_r8
-	psql -f table/population_grid_h3_r8_osm_scaled.sql
+db/table/population_grid_h3_r8_osm_scaled: db/table/population_grid_h3_r8 db/procedure/decimate_admin_level_in_osm_population_raw db/table/osm_population_raw_idx
+	psql -f tables/population_grid_h3_r8_osm_scaled.sql
 	touch $@
 
 db/table/osm_landuses: db/table/osm db/index/osm_tags_idx | db/table

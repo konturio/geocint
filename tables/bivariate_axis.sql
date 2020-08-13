@@ -78,10 +78,6 @@ begin
 end;
 $$;
 
-alter table bivariate_axis add column quality float;
-update bivariate_axis set quality = estimate_bivariate_axis_quality(numerator, denominator);
-select * from bivariate_axis order by quality desc;
-
 drop table if exists bivariate_axis;
 create table bivariate_axis as (
     with

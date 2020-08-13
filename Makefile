@@ -515,7 +515,7 @@ db/table/bivariate_overlays: db/table/osm_meta | db/table
 	psql -f tables/bivariate_overlays.sql
 	touch $@
 
-db/table/bivariate_copyrights: | db/table
+db/table/bivariate_copyrights: db/table/stat_h3 | db/table
 	psql -f tables/bivariate_copyrights.sql
 	touch $@
 

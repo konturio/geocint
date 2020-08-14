@@ -11,7 +11,7 @@ copy (
                                                               'avg_ts', 'Average time stamp',
                                                               'max_ts', 'Max time stamp',
                                                               'p90_ts', '90 Percentile time stamp',
-                                                              'area_km2', 'Area'
+                                                              'area_km2', 'Area',
                                                               'one', '1'
                                ),
                            'meta', jsonb_build_object('max_zoom', 8,
@@ -25,10 +25,13 @@ copy (
                                                  'y', jsonb_build_object('label', y_num,
                                                                          'quotient',
                                                                          jsonb_build_array(y_num, y_den)),
-                                                 'rate', axis_correlation)
-                                             order by abs(axis_correlation) desc)
+                                                 'rate', correlation, -- TODO: remove after frontend
+                                                 'correlation', correlation,
+                                                 'quality', quality
+                                                 )
+                                             order by abs(correlation) * quality nulls last, abs(correlation) desc)
                                from
-                                   bicariate_axis_correlation
+                                   bivariate_axis_correlation
                            ),
                            'initAxis',
                            jsonb_build_object('x', jsonb_build_object('label', x.label, 'quotient',
@@ -53,12 +56,14 @@ copy (
             )
     from
         ( select
-              json_agg(jsonb_build_object('label', label, 'quotient', jsonb_build_array(numerator, denominator),
-                                          'steps', jsonb_build_array(
-                                              jsonb_build_object('value', min, 'label', min_label),
-                                              jsonb_build_object('value', p25, 'label', p25_label),
-                                              jsonb_build_object('value', p75, 'label', p75_label),
-                                              jsonb_build_object('value', max, 'label', max_label)))) as axis
+              json_agg(
+                  jsonb_build_object('label', label, 'quotient', jsonb_build_array(numerator, denominator), 'quality',
+                                     quality,
+                                     'steps', jsonb_build_array(
+                                         jsonb_build_object('value', min, 'label', min_label),
+                                         jsonb_build_object('value', p25, 'label', p25_label),
+                                         jsonb_build_object('value', p75, 'label', p75_label),
+                                         jsonb_build_object('value', max, 'label', max_label)))) as axis
           from
               bivariate_axis )                                                                      ba,
         ( select

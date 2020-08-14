@@ -508,13 +508,14 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 
 db/table/bivariate_axis: db/table/bivariate_copyrights db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis.sql
+	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
 
 db/table/bivariate_overlays: db/table/osm_meta | db/table
 	psql -f tables/bivariate_overlays.sql
 	touch $@
 
-db/table/bivariate_copyrights: | db/table
+db/table/bivariate_copyrights: db/table/stat_h3 | db/table
 	psql -f tables/bivariate_copyrights.sql
 	touch $@
 
@@ -522,7 +523,7 @@ data/tile_logs: | data
 	mkdir -p $@
 
 data/tile_logs/_download: | data/tile_logs data
-	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np https://planet.openstreetmap.org/tile_logs/
+	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np -nc https://planet.openstreetmap.org/tile_logs/
 	touch $@
 
 db/table/tile_logs: data/tile_logs/_download | db/table

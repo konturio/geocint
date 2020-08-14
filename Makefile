@@ -523,7 +523,7 @@ data/tile_logs: | data
 	mkdir -p $@
 
 data/tile_logs/_download: | data/tile_logs data
-	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np https://planet.openstreetmap.org/tile_logs/
+	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np -nc https://planet.openstreetmap.org/tile_logs/
 	touch $@
 
 db/table/tile_logs: data/tile_logs/_download | db/table

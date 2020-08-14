@@ -28,12 +28,13 @@ create table bivariate_axis_correlation as (
         x.denominator as x_den,
         y.numerator as y_num,
         y.denominator as y_den,
-        correlate_bivariate_axes('stat_h3', x.numerator, x.denominator, y.numerator, y.denominator) as correlation,
+        correlate_bivariate_axes('stat_h3_quality', x.numerator, x.denominator, y.numerator, y.denominator) as correlation,
         1 - ((1 - x.quality) * (1 - y.quality)) as quality
     from
         bivariate_axis x,
         bivariate_axis y
     where
-         x.numerator != y.numerator
-      or x.denominator != y.denominator
+          (x.numerator != y.numerator or x.denominator != y.denominator)
+      and x.quality > 0.5
+      and y.quality > 0.5
 );

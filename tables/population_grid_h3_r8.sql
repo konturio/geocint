@@ -37,6 +37,11 @@ create table population_grid_h3_r8 as (
         ) z
     group by 1
 );
+update population_grid_h3_r8 p
+set
+    ghs_pop = 0
+where ghs_pop is null;
+
 create index on population_grid_h3_r8 using gist (centroid, hrsl_pop, fb_africa_pop, fb_pop);
 
 update population_grid_h3_r8 p

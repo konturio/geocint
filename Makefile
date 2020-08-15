@@ -64,7 +64,10 @@ deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_se
 	touch $@
 
 data/planet-latest.osm.pbf: | data
-	wget -t inf https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
+	rm data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
+	cd data; aria2c https://osm.cquest.org/torrents/planet-latest.osm.pbf.torrent --seed-time=0
+	mv data/planet-*.osm.pbf $@
+	rm data/planet-latest.osm.pbf.torrent
 	# TODO: smoke check correctness of file
 	touch $@
 

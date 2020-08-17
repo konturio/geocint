@@ -1,8 +1,9 @@
 -- subdividing osm_population_raw polygons into smaller ones from easier intersections later
 
-
+drop table if exists osm_population_raw_centroid;
 create table osm_population_raw_centroid as (
-    select osm_id, osm_type,
+    select osm_id,
+           osm_type,
            population,
            h3_geo_to_h3(ST_PointOnSurface(geom),8) as h3,
            ST_PointOnSurface(geom) as geom
@@ -27,11 +28,11 @@ create table population_grid_h3_r8_new as (
     select resolution,
            h3,
            population,
-           p.geom,
+           p.centroid as geom,
            osm_id
     from population_grid_h3_r8                   p
          left join osm_population_raw_subdivided o
-                   on ST_Intersects(p.geom, o.geom)
+                   on ST_Intersects(p.centroid, o.geom)
 );
 
 -- groups by osm_id by with sum_population

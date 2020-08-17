@@ -125,6 +125,10 @@ db/function/calculate_h3_res: db/function/h3
 	psql -f functions/calculate_h3_res.sql
 	touch $@
 
+db/function/h3_raster_sum_to_h3: | db/function
+	psql -f functions/h3_raster_sum_to_h3.sql
+	touch $@
+
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx
 	psql -f tables/osm_roads.sql
 	touch $@
@@ -191,8 +195,8 @@ db/table/hrsl_population_raster: data/population_hrsl/unzip | db/table
 	ls data/population_hrsl/tiled_*pop.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -M -Y -s 4326 {} -t 256x256 hrsl_population_raster | psql -q'
 	touch $@
 
-db/table/hrsl_population_vector: db/table/hrsl_population_raster
-	psql -f tables/hrsl_population_vector.sql
+db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3
+	psql -f tables/hrsl_population_grid_h3_r8.sql
 	touch $@
 
 db/table/hrsl_population_boundary: | db/table
@@ -207,16 +211,12 @@ db/table/fb_population_boundary: db/table/gadm_countries_boundary db/table/fb_co
 	psql -f tables/fb_population_boundary.sql
 	touch $@
 
-db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_population_boundary db/table/ghs_globe_population_vector db/table/fb_africa_population_vector db/table/fb_africa_population_boundary db/table/fb_population_vector db/table/fb_population_boundary | db/table
-	psql -f tables/population_vector.sql
-	touch $@
-
 db/table/osm_unpopulated: db/index/osm_tags_idx | db/table
 	psql -f tables/osm_unpopulated.sql
 	touch $@
 
-db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 | db/table
-	psql -f tables/ghs_globe_population_vector.sql
+db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table
+	psql -f tables/ghs_globe_population_grid_h3_r8.sql
 	touch $@
 
 data/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip: | data
@@ -244,7 +244,7 @@ db/table/ghs_globe_residential_raster: data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_
 	raster2pgsql -M -Y -s 54009 data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif -t 256x256 ghs_globe_residential_raster | psql -q
 	touch $@
 
-db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 | db/table
+db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table
 	psql -f tables/ghs_globe_residential_vector.sql
 	touch $@
 
@@ -263,8 +263,8 @@ db/table/fb_africa_population_raster: data/population_africa_2018-10-01/populati
 	psql -c "alter table fb_africa_population_raster set (parallel_workers=32)"
 	touch $@
 
-db/table/fb_africa_population_vector: db/table/fb_africa_population_raster | db/table
-	psql -f tables/fb_africa_population_vector.sql
+db/table/fb_africa_population_grid_h3_r8: db/table/fb_africa_population_raster db/function/h3_raster_sum_to_h3 | db/table
+	psql -f tables/fb_africa_population_grid_h3_r8.sql
 	touch $@
 
 db/table/fb_country_codes: data/population_fb/unzip | db/table
@@ -303,8 +303,8 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
-db/table/fb_population_vector: db/table/fb_population_raster | db/table
-	psql -f tables/fb_population_vector.sql
+db/table/fb_population_grid_h3_r8: db/table/fb_population_raster db/function/h3_raster_sum_to_h3 | db/table
+	psql -f tables/fb_population_grid_h3_r8.sql
 	touch $@
 
 data/gadm/gadm36_levels_shp.zip: | data/gadm
@@ -370,7 +370,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/population_vector db/function/h3 | db/table
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/fb_africa_population_grid_h3_r8 db/table/fb_africa_population_boundary db/table/fb_population_grid_h3_r8 db/table/fb_population_boundary  | db/table
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 

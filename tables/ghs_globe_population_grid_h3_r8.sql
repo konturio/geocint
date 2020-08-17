@@ -1,6 +1,7 @@
 alter table ghs_globe_population_raster
     set (parallel_workers = 32);
 
+drop table if exists ghs_globe_population_grid_h3_r8;
 create table ghs_globe_population_grid_h3_r8 as (
     select
         h3,

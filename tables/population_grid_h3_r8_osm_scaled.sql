@@ -100,10 +100,7 @@ create table population_grid_h3_r8_osm_scaled as (
     select pop.h3,
            pop.resolution,
            pop.geom,
-           (case
-                when pop.sum_population_h3::float = 0
-                    then (pop.population::float * osm.population::float / pop.count::float)
-               end) as population
+           coalesce(pop.population::float * osm.population / nullif(pop.sum_population_h3, 0), pop.population::float * osm.population / pop.count) as population
     from population_grid_h3_upd pop
              join osm_population_raw osm on pop.osm_id = osm.osm_id
 );

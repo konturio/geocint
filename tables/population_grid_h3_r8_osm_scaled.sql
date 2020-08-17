@@ -40,7 +40,8 @@ create table population_grid_h3_r8_new as (
 drop table if exists osm_population_raw_sum;
 create table osm_population_raw_sum as (
     select osm_id,
-           sum(population) as population
+           sum(population) as population,
+           count(*) as count
     from population_grid_h3_r8_new
     group by 1
 );
@@ -61,6 +62,7 @@ create table osm_population_raw_h3 as (
 drop table if exists osm_population_raw_sum_h3;
 create table osm_population_raw_sum_h3 as (
     select sum.osm_id,
+           sum.count,
            sum.population,
            h3.h3_count
     from osm_population_raw_sum     as sum
@@ -78,6 +80,7 @@ create table population_grid_h3_upd as (
            p.population,
            p.geom,
            p.osm_id,
+           o_sum.count,
            o_sum.osm_id as osm_id_sum,
            o_sum.population as sum_population_h3
     from population_grid_h3_r8_new              p
@@ -97,9 +100,9 @@ create table population_grid_h3_r8_osm_scaled as (
     select pop.h3,
            pop.resolution,
            pop.geom,
-           pop.population::float * osm.population::float / pop.sum_population_h3::float as population
-    from population_grid_h3_upd  pop
-         join osm_population_raw osm on pop.osm_id = osm.osm_id
+           coalesce(pop.population::float * osm.population / nullif(pop.sum_population_h3, 0), pop.population::float * osm.population / pop.count) as population
+    from population_grid_h3_upd pop
+             join osm_population_raw osm on pop.osm_id = osm.osm_id
 );
 
 create index on population_grid_h3_r8_osm_scaled using gist (geom);

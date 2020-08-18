@@ -1,8 +1,8 @@
 all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled
 
 clean:
-	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download
+	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html data/belarus-latest.osm.pbf
+	profile_make_clean data/planet-latest-updated.osm.pbf data/belarus-latest.osm.pbf data/covid19/_csv data/tile_logs/_download
 	psql -f scripts/clean.sql
 
 data:
@@ -80,7 +80,7 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
 	touch $@
 
-data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf
+data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf | data
 	rm -f data/belarus_boundary.json
 	psql -q -X -c "\copy (select * from belarus_boundary) to stdout" | jq -c . > data/belarus_boundary.json
 	osmium extract -v -s smart -p data/belarus_boundary.json data/planet-latest-updated.osm.pbf -f pbf,pbf_compression=false -o ~/public_html/belarus-latest.osm.pbf --overwrite

@@ -80,6 +80,12 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
 	touch $@
 
+data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf
+	rm -f data/belarus_boundary.json
+	psql -q -X -c "\copy (select * from belarus_boundary) to stdout" | jq -c . > data/belarus_boundary.json
+	osmium extract -v -s smart -p data/belarus_boundary.json data/planet-latest-updated.osm.pbf -f pbf,pbf_compression=false -o ~/public_html/belarus-latest.osm.pbf --overwrite
+	touch $@
+
 data/covid19: | data
 	mkdir -p $@
 

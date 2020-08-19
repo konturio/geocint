@@ -1,8 +1,8 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/belarus-latest.osm.pbf
 
 clean:
-	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html data/belarus-latest.osm.pbf
-	profile_make_clean data/planet-latest-updated.osm.pbf data/belarus-latest.osm.pbf data/covid19/_csv data/tile_logs/_download
+	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download
 	psql -f scripts/clean.sql
 
 data:
@@ -80,10 +80,11 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
 	touch $@
 
-data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf | data
-	rm -f data/belarus_boundary.json
-	psql -q -X -c "\copy (select * from belarus_boundary) to stdout" | jq -c . > data/belarus_boundary.json
-	osmium extract -v -s smart -p data/belarus_boundary.json data/planet-latest-updated.osm.pbf -f pbf,pbf_compression=false -o ~/public_html/belarus-latest.osm.pbf --overwrite
+data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf db/table/belarus_boundary | data
+	rm -f data/belarus_boundary.geojson
+	psql -q -X -c "\copy (select * from belarus_boundary) to stdout" | jq -c . > data/belarus_boundary.geojson
+	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -f pbf -o ~/public_html/belarus-latest.osm.pbf --overwrite
+	cp ~/public_html/belarus-latest.osm.pbf data/belarus-latest.osm.pbf
 	touch $@
 
 data/covid19: | data
@@ -479,6 +480,10 @@ deploy/s3/test/osm_addresses_minsk: data/osm_addresses_minsk.geojson.gz | deploy
 deploy/s3/osm_addresses_minsk: data/osm_addresses_minsk.geojson.gz | deploy/s3
 	aws s3api copy-object --copy-source geodata-us-east-1-kontur/public/geocint/osm_addresses_minsk.geojson.gz --bucket geodata-us-east-1-kontur --key public/geocint/osm_addresses_minsk.geojson.gz.bak --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_addresses_minsk.geojson.gz --body data/osm_addresses_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
+
+db/table/belarus_boundary: db/table/osm db/index/osm_tags_idx | db/table
+	psql -f tables/belarus_boundary.sql
 	touch $@
 
 db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table

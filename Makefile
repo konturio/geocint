@@ -486,13 +486,6 @@ deploy/s3/osm_addresses_minsk: data/osm_addresses_minsk.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_addresses_minsk.geojson.gz --body data/osm_addresses_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/table/belarus_boundary: db/table/osm db/index/osm_tags_idx | db/table
-	psql -f tables/belarus_boundary.sql
-	touch $@
-
-db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table
-	psql -f tables/osm_admin_boundaries.sql
-	touch $@
 
 db/index/osm_admin_boundaries_geom_idx: db/table/osm_admin_boundaries | db/index
 	psql -c "create index on osm_admin_boundaries using gist (geom)"

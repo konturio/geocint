@@ -54,7 +54,10 @@ deploy/sonic: | deploy
 deploy/geocint: | deploy
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries
+deploy/geocint/belarus-latest: | deploy
+	mkdir -p $@
+
+deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/belarus-latest
 	touch $@
 
 deploy/s3:
@@ -82,9 +85,10 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 
 data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf db/table/belarus_boundary | data
 	rm -f data/belarus_boundary.geojson
+	psql -c "drop table if exists belarus_boundary; create table belarus_boundary as (select ST_AsGeoJSON(belarus) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 59065 and tags @> '{\"boundary\":\"administrative\"}') belarus);"
 	psql -q -X -c "\copy (select * from belarus_boundary) to stdout" | jq -c . > data/belarus_boundary.geojson
-	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -f pbf -o ~/public_html/belarus-latest.osm.pbf --overwrite
-	cp ~/public_html/belarus-latest.osm.pbf data/belarus-latest.osm.pbf
+	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o ~/public_html/belarus-latest.osm.pbf --overwrite
+	cp ~/public_html/belarus-latest.osm.pbf deploy/geocint/belarus-latest/belarus-latest.osm.pbf
 	touch $@
 
 data/covid19: | data

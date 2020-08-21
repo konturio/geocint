@@ -479,11 +479,7 @@ db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_admin_boundaries.sql
 	touch $@
 
-db/index/osm_admin_boundaries_geom_idx: db/table/osm_admin_boundaries | db/index
-	psql -c "create index on osm_admin_boundaries using gist (geom)"
-	touch $@
-
-data/osm_admin_boundaries.geojson.gz: db/table/osm_admin_boundaries db/index/osm_admin_boundaries_geom_idx
+data/osm_admin_boundaries.geojson.gz: db/table/osm_admin_boundaries
 	rm -vf data/osm_admin_boundaries.geojson*
 	ogr2ogr -f GeoJSON data/osm_admin_boundaries.geojson PG:'dbname=gis' -sql "select * from osm_admin_boundaries" -lco "SPATIAL_INDEX=NO" -nln osm_admin_boundaries
 	pigz data/osm_admin_boundaries.geojson

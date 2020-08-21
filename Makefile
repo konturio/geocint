@@ -54,10 +54,6 @@ deploy/sonic: | deploy
 deploy/geocint: | deploy
 	mkdir -p $@
 
-deploy/geocint/belarus-latest.osm.pbf: | deploy/geocint
-	cp data/belarus-latest.osm.pbf ~/public_html/belarus-latest.osm.pbf
-	mkdir -p $@
-
 deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/belarus-latest.osm.pbf
 	touch $@
 
@@ -65,6 +61,10 @@ deploy/s3:
 	mkdir -p $@/test
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx
+	touch $@
+
+deploy/geocint/belarus-latest.osm.pbf: | deploy/geocint
+	cp data/belarus-latest.osm.pbf ~/public_html/belarus-latest.osm.pbf
 	touch $@
 
 data/planet-latest.osm.pbf: | data
@@ -84,7 +84,7 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
 	touch $@
 
-data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf db/table/belarus_boundary | data
+data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
 	touch $@
 
@@ -121,7 +121,7 @@ db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
 	touch $@
 
-db/table/belarus_boundary: db/table/osm db/table/osm_tags_idx | db/table
+data/belarus_boundary.geojson: db/table/osm db/table/osm_tags_idx
 	psql -q -X -c "\copy (select ST_AsGeoJSON(belarus) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 59065 and tags @> '{\"boundary\":\"administrative\"}') belarus) to stdout" | jq -c . > data/belarus_boundary.geojson
 	touch $@
 

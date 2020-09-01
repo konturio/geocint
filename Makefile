@@ -121,7 +121,7 @@ db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
 	touch $@
 
-data/belarus_boundary.geojson: db/table/osm db/idx/osm_tags_idx
+data/belarus_boundary.geojson: db/table/osm db/index/osm_tags_idx
 	psql -q -X -c "\copy (select ST_AsGeoJSON(belarus) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 59065 and tags @> '{\"boundary\":\"administrative\"}') belarus) to stdout" | jq -c . > data/belarus_boundary.geojson
 	touch $@
 

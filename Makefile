@@ -64,8 +64,14 @@ deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_se
 	touch $@
 
 deploy/geocint/belarus-latest.osm.pbf: | deploy/geocint
-	cp data/belarus-latest.osm.pbf ~/public_html/belarus-latest.osm.pbf
-	touch $@
+	# We distribute this .pbf file when there is no published version,
+	# or it is at least two days older than ours.
+	set -e; \
+	if [ ! -f ~/public_html/belarus-latest.osm.pbf ] \
+		|| expr \( -2 \* 24 \* 3600 + `stat -c %Y data/belarus-latest.osm.pbf` - `stat -c %Y ~/public_html/belarus-latest.osm.pbf` \) \> 0 >/dev/null; then \
+		cp -vp data/belarus-latest.osm.pbf ~/public_html/belarus-latest.osm.pbf; \
+		aws sqs send-message --output json --region eu-central-1 --queue-url https://sqs.eu-central-1.amazonaws.com/001426858141/PuppetmasterInbound.fifo --message-body '{"jsonrpc":"2.0","method":"rebuildDockerImage","params":{"imageName":"kontur-osrm-backend-by-car","osmPbfUrl":"https://geocint.kontur.io/gis/belarus-latest.osm.pbf"},"id":"'`uuid`'"}' --message-group-id rebuildDockerImage--kontur-osrm-backend-by-car; \
+	fi
 
 data/planet-latest.osm.pbf: | data
 	rm data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
@@ -121,7 +127,7 @@ db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
 	touch $@
 
-data/belarus_boundary.geojson: db/table/osm db/table/osm_tags_idx
+data/belarus_boundary.geojson: db/table/osm db/index/osm_tags_idx
 	psql -q -X -c "\copy (select ST_AsGeoJSON(belarus) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 59065 and tags @> '{\"boundary\":\"administrative\"}') belarus) to stdout" | jq -c . > data/belarus_boundary.geojson
 	touch $@
 

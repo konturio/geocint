@@ -578,6 +578,7 @@ deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima
 		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
 		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
 		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/stats"; \
+		rm -f "$$HOME/tmp/stats_tiles.tar.bz2"; \
 	'
 	touch $@
 
@@ -608,6 +609,7 @@ deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
 		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
 		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
 		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/users"; \
+		rm -f "$$HOME/tmp/users_tiles.tar.bz2"; \
 	'
 	touch $@
 

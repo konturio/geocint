@@ -27,6 +27,29 @@ alter table kontur_population_mid1
 drop table kontur_population_in;
 create index on kontur_population_mid1 (h3);
 
+create index on kontur_population_mid1 using gist (geom);
+
+update kontur_population_mid1
+set probably_unpopulated = true
+where ST_Intersects(
+              geom,
+              (
+                  select ST_Transform(
+                                 (select geog::geometry
+                                  from osm
+                                  where tags @> '{"admin_level":"2"}'
+                                    and osm_id = 3630439
+                                    and osm_type = 'relation'
+                                 ), 3857
+                             )
+              )
+          );
+
+update kontur_population_mid1 a
+set probably_unpopulated = false
+from morocco_urban_pixel_mask_h3 b
+where a.h3 = b.h3;
+
 drop table if exists zero_pop_h3;
 create table zero_pop_h3 as (
     select h3

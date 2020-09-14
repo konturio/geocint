@@ -404,7 +404,15 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/osm_building_count_grid_h3_r8 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 | db/table
+data/morocco_urban_pixel_mask.gpkg: | data
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg
+	touch $@
+
+db/table/morocco_urban_pixel_mask_h3: data/morocco_urban_pixel_mask
+	psql -f tables/morocco_urban_pixel_mask_h3.sql
+	touch $@
+
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/osm_building_count_grid_h3_r8 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 | db/table
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 

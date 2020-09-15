@@ -404,11 +404,11 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/morocco_urban_pixel_mask: db/table data/morocco_urban_pixel_mask.gpkg
+db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg
 	touch $@
 
-db/table/morocco_urban_pixel_mask_h3: data/morocco_urban_pixel_mask
+db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
 	psql -f tables/morocco_urban_pixel_mask_h3.sql
 	touch $@
 

@@ -5,7 +5,7 @@ create table kontur_population_in as (
            coalesce(population, 0)     as population,
            false                       as has_water,
            false                       as probably_unpopulated
-    from osm_building_count_grid_h3_r8 a
+    from building_count_grid_h3_r8 a
              full join population_grid_h3_r8 b on a.h3 = b.h3
 );
 

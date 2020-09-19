@@ -480,6 +480,7 @@ data/us_buildings/download: data/us_buildings
 	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/WestVirginia.zip
 	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wisconsin.zip
 	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wyoming.zip
+	touch $@
 
 data/us_buildings/unzip: data/us_buildings/download
 	cd data/us_buildings; ls *zip | parallel "unzip {}"

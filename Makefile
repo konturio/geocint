@@ -291,6 +291,21 @@ db/table/fb_country_codes: data/population_fb/unzip | db/table
 	cd data/population_fb; ls *tif | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
 	touch $@
 
+data/copernicus_landcover: | data
+	mkdir -p $@
+
+data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif: data/copernicus_landcover
+	cd data/copernicus_landcover; wget -c -nc https://zenodo.org/record/3939050/files/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif
+
+db/table/copernicus_landcover_raster: data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif | db/table
+	psql -c "drop table if exists copernicus_landcover_raster"
+	raster2pgsql -M -Y -s 4326 data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif -t auto copernicus_landcover_raster | psql -q
+	touch $@
+
+db/table/copernicus_builtup_raster_h3_r8: db/table/copernicus_landcover_raster | db/table
+	psql -f tables/copernicus_builtup_raster_h3_r8.sql
+	touch $@
+
 data/population_fb: | data
 	mkdir -p $@
 
@@ -321,7 +336,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
-db/table/building_count_grid_h3_r8: db/table/osm_building_count_grid_h3_r8 db/table/us_microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 | db/table
+db/table/building_count_grid_h3_r8: db/table/osm_building_count_grid_h3_r8 db/table/us_microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_raster_h3_r8 | db/table
 	psql -f tables/building_count_grid_h3_r8.sql
 	touch $@
 
@@ -392,7 +407,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/fb_africa_population_grid_h3_r8 db/table/fb_africa_population_boundary db/table/fb_population_grid_h3_r8 db/table/fb_population_boundary  | db/table
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/fb_africa_population_grid_h3_r8 db/table/fb_africa_population_boundary db/table/fb_population_grid_h3_r8 db/table/fb_population_boundary | db/table
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 

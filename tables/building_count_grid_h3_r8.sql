@@ -15,6 +15,9 @@ create table building_count_grid_h3_r8 as (
              union all
              select h3, building_count
              from osm_building_count_grid_h3_r8
+             union all
+             select h3, count as building_count
+             from copernicus_builtup_raster_h3_r8
          ) z
     group by 1
 );

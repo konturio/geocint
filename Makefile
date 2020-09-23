@@ -336,7 +336,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
-db/table/building_count_grid_h3_r8: db/table/osm_building_count_grid_h3_r8 db/table/us_microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_raster_h3_r8 | db/table
+db/table/building_count_grid_h3_r8: db/table/osm_building_count_grid_h3_r8 db/table/us_microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_raster_h3_r8 db/table/canada_microsoft_buildings_h3 db/table/africa_microsoft_buildings_h3 | db/table
 	psql -f tables/building_count_grid_h3_r8.sql
 	touch $@
 
@@ -438,6 +438,61 @@ db/table/morocco_buildings: data/morocco_results_fixed.gpkg | db/table
 
 db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table
 	psql -f tables/morocco_buildings_h3.sql
+	touch $@
+
+data/africa_buildings: | data
+	mkdir -p $@
+
+data/africa_buildings/download: data/africa_buildings
+	cd data/africa_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/tanzania-uganda-buildings/Uganda_2019-09-16.zip
+	cd data/africa_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/tanzania-uganda-buildings/Tanzania_2019-09-16.zip
+	touch $@
+
+data/africa_buildings/unzip: data/africa_buildings/download
+	cd data/africa_buildings; ls *zip | parallel "unzip {}"
+	touch $@
+
+db/table/africa_microsoft_buildings: data/africa_buildings/unzip | db/table
+	psql -c "drop table if exists africa_microsoft_buildings"
+	psql -c "create table africa_microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
+	cd data/africa_buildings; ls *geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln africa_microsoft_buildings'
+	touch $@
+
+db/table/africa_microsoft_buildings_h3: db/table/africa_microsoft_buildings | db/table
+	psql -f tables/africa_microsoft_buildings_h3.sql
+	touch $@
+
+data/canada_buildings: | data
+	mkdir -p $@
+
+data/canada_buildings/download: data/canada_buildings
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Alberta.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/BritishColumbia.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Manitoba.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NewBrunswick.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NewfoundlandAndLabrador.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NorthwestTerritories.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NovaScotia.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Nunavut.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Ontario.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/PrinceEdwardIsland.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Quebec.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Saskatchewan.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/YukonTerritory.zip
+	touch $@
+
+data/canada_buildings/unzip: data/canada_buildings/download
+	cd data/canada_buildings; ls *zip | parallel "unzip {}"
+	touch $@
+
+db/table/canada_microsoft_buildings: data/canada_buildings/unzip | db/table
+	psql -c "drop table if exists canada_microsoft_buildings"
+	psql -c "create table canada_microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
+	cd data/canada_buildings; ls *geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln canada_microsoft_buildings'
+	touch $@
+
+db/table/canada_microsoft_buildings_h3: db/table/canada_microsoft_buildings | db/table
+	psql -f tables/canada_microsoft_buildings_h3.sql
 	touch $@
 
 data/us_buildings: | data

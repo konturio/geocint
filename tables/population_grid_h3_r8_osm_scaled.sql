@@ -15,7 +15,7 @@ drop table if exists osm_population_raw_subdivided;
 create table osm_population_raw_subdivided as (
     select osm_id,
            osm_type,
-           ST_Subdivide(geom, 100) as geom
+           ST_Subdivide(geom, 100) as geom_subdiv
     from osm_population_raw
 );
 
@@ -28,11 +28,11 @@ create table population_grid_h3_r8_new as (
     select resolution,
            h3,
            population,
-           p.centroid as geom,
+           p.geom,
            osm_id
     from population_grid_h3_r8                   p
          left join osm_population_raw_subdivided o
-                   on ST_Intersects(p.centroid, o.geom)
+                   on ST_Intersects(p.geom, o.geom_subdiv)
 );
 
 -- groups by osm_id by with sum_population

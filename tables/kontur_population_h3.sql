@@ -1,12 +1,24 @@
 drop table if exists kontur_population_in;
 create table kontur_population_in as (
-    select coalesce(a.h3, b.h3)        as h3,
-           coalesce(building_count, 0) as building_count,
-           coalesce(population, 0)     as population,
-           false                       as has_water,
-           false                       as probably_unpopulated
-    from building_count_grid_h3_r8 a
-             full join population_grid_h3_r8 b on a.h3 = b.h3
+    select h3,
+           8                                as resolution,
+           coalesce(max(building_count), 0) as building_count,
+           coalesce(max(population), 0)     as population,
+           false                            as has_water,
+           false                            as probably_unpopulated
+    from (
+             select h3,
+                    building_count as building_count,
+                    null::float    as population
+             from building_count_grid_h3_r8
+             union all
+             select h3,
+                    null::float as building_count,
+                    population  as population
+             from population_grid_h3_r8
+             order by 1
+         ) z
+    group by 1
 );
 
 alter table kontur_population_in

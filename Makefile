@@ -202,7 +202,7 @@ data/population_hrsl/download: | data/population_hrsl
 
 data/population_hrsl/unzip: data/population_hrsl/download
 	rm -rf *tif
-	cd data/population_hrsl; ls *zip | parallel "unzip -o {}"
+	cd data/population_hrsl; ls *.zip | parallel "unzip -o {}"
 	cd data/population_hrsl; ls *pop.tif | parallel 'gdal_translate -co "TILED=YES" -co "COMPRESS=DEFLATE" {} tiled_{}'
 	touch $@
 
@@ -288,7 +288,7 @@ db/table/fb_africa_population_grid_h3_r8: db/table/fb_africa_population_raster d
 db/table/fb_country_codes: data/population_fb/unzip | db/table
 	psql -c "drop table if exists fb_country_codes"
 	psql -c "create table fb_country_codes (code varchar(3) not null, primary key (code))"
-	cd data/population_fb; ls *tif | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
+	cd data/population_fb; ls *.tif | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
 	touch $@
 
 data/copernicus_landcover: | data
@@ -315,9 +315,9 @@ data/population_fb/download: | data/population_fb
 	touch $@
 
 data/population_fb/unzip: data/population_fb/download
-	cd data/population_fb; rm -rf *tif
-	cd data/population_fb; rm -rf *xml
-	cd data/population_fb; ls *zip | parallel "unzip -o {}"
+	cd data/population_fb; rm -rf *.tif
+	cd data/population_fb; rm -rf *.xml
+	cd data/population_fb; ls *.zip | parallel "unzip -o {}"
 	touch $@
 
 db/table/osm_residential_landuse: db/index/osm_tags_idx
@@ -449,13 +449,13 @@ data/africa_buildings/download: data/africa_buildings
 	touch $@
 
 data/africa_buildings/unzip: data/africa_buildings/download
-	cd data/africa_buildings; ls *zip | parallel "unzip {}"
+	cd data/africa_buildings; ls *.zip | parallel "unzip {}"
 	touch $@
 
 db/table/africa_microsoft_buildings: data/africa_buildings/unzip | db/table
 	psql -c "drop table if exists africa_microsoft_buildings"
 	psql -c "create table africa_microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
-	cd data/africa_buildings; ls *geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln africa_microsoft_buildings'
+	cd data/africa_buildings; ls *.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln africa_microsoft_buildings'
 	touch $@
 
 db/table/africa_microsoft_buildings_h3: db/table/africa_microsoft_buildings | db/table
@@ -482,13 +482,13 @@ data/canada_buildings/download: data/canada_buildings
 	touch $@
 
 data/canada_buildings/unzip: data/canada_buildings/download
-	cd data/canada_buildings; ls *zip | parallel "unzip {}"
+	cd data/canada_buildings; ls *.zip | parallel "unzip {}"
 	touch $@
 
 db/table/canada_microsoft_buildings: data/canada_buildings/unzip | db/table
 	psql -c "drop table if exists canada_microsoft_buildings"
 	psql -c "create table canada_microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
-	cd data/canada_buildings; ls *geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln canada_microsoft_buildings'
+	cd data/canada_buildings; ls *.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln canada_microsoft_buildings'
 	touch $@
 
 db/table/canada_microsoft_buildings_h3: db/table/canada_microsoft_buildings | db/table
@@ -553,13 +553,13 @@ data/us_buildings/download: data/us_buildings
 	touch $@
 
 data/us_buildings/unzip: data/us_buildings/download
-	cd data/us_buildings; ls *zip | parallel "unzip {}"
+	cd data/us_buildings; ls *.zip | parallel "unzip {}"
 	touch $@
 
 db/table/us_microsoft_buildings: data/us_buildings/unzip | db/table
 	psql -c "drop table if exists us_microsoft_buildings"
 	psql -c "create table us_microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
-	cd data/us_buildings; ls *geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln us_microsoft_buildings'
+	cd data/us_buildings; ls *.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln us_microsoft_buildings'
 	touch $@
 
 db/table/us_microsoft_buildings_h3: db/table/us_microsoft_buildings | db/table

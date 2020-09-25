@@ -449,7 +449,7 @@ data/africa_buildings/download: data/africa_buildings
 	touch $@
 
 data/africa_buildings/unzip: data/africa_buildings/download
-	cd data/africa_buildings; ls *.zip | parallel "unzip {}"
+	cd data/africa_buildings; ls *.zip | parallel "unzip -o {}"
 	touch $@
 
 db/table/africa_microsoft_buildings: data/africa_buildings/unzip | db/table
@@ -482,7 +482,7 @@ data/canada_buildings/download: data/canada_buildings
 	touch $@
 
 data/canada_buildings/unzip: data/canada_buildings/download
-	cd data/canada_buildings; ls *.zip | parallel "unzip {}"
+	cd data/canada_buildings; ls *.zip | parallel "unzip -o {}"
 	touch $@
 
 db/table/canada_microsoft_buildings: data/canada_buildings/unzip | db/table
@@ -553,7 +553,7 @@ data/us_buildings/download: data/us_buildings
 	touch $@
 
 data/us_buildings/unzip: data/us_buildings/download
-	cd data/us_buildings; ls *.zip | parallel "unzip {}"
+	cd data/us_buildings; ls *.zip | parallel "unzip -o {}"
 	touch $@
 
 db/table/us_microsoft_buildings: data/us_buildings/unzip | db/table

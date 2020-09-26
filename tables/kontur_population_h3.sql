@@ -57,11 +57,6 @@ where ST_Intersects(
               )
           );
 
-update kontur_population_mid1 a
-set probably_unpopulated = false
-from morocco_urban_pixel_mask_h3 b
-where a.h3 = b.h3;
-
 drop table if exists zero_pop_h3;
 create table zero_pop_h3 as (
     select h3

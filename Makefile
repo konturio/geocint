@@ -443,7 +443,7 @@ db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table
 data/africa_buildings: | data
 	mkdir -p $@
 
-data/africa_buildings/download: data/africa_buildings
+data/africa_buildings/download: | data/africa_buildings
 	cd data/africa_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/tanzania-uganda-buildings/Uganda_2019-09-16.zip
 	cd data/africa_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/tanzania-uganda-buildings/Tanzania_2019-09-16.zip
 	touch $@

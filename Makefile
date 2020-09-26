@@ -465,7 +465,7 @@ db/table/africa_microsoft_buildings_h3: db/table/africa_microsoft_buildings | db
 data/canada_buildings: | data
 	mkdir -p $@
 
-data/canada_buildings/download: data/canada_buildings
+data/canada_buildings/download: | data/canada_buildings
 	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Alberta.zip
 	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/BritishColumbia.zip
 	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Manitoba.zip
@@ -498,7 +498,7 @@ db/table/canada_microsoft_buildings_h3: db/table/canada_microsoft_buildings | db
 data/us_buildings: | data
 	mkdir -p $@
 
-data/us_buildings/download: data/us_buildings
+data/us_buildings/download: | data/us_buildings
 	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Alabama.zip
 	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Alaska.zip
 	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Arizona.zip

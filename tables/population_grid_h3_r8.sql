@@ -31,7 +31,7 @@ update population_grid_h3_r8 p
 set ghs_pop = 0
 where ghs_pop is null;
 
-create index on population_grid_h3_r8 using gist (geom, hrsl_pop, fb_africa_pop, fb_pop);
+create index population_grid_h3_r8_geom_hrsl_pop_fb_africa_pop_fb_pop_idx on population_grid_h3_r8 using gist (geom, hrsl_pop, fb_africa_pop, fb_pop);
 
 update population_grid_h3_r8 p
 set hrsl_pop = 0
@@ -53,7 +53,7 @@ from fb_population_boundary b
 where ST_Intersects(ST_Transform(b.geom, 4326), p.geom)
   and fb_pop is null;
 
-drop index population_grid_h3_r8_centroid_hrsl_pop_fb_africa_pop_fb_po_idx;
+drop index population_grid_h3_r8_geom_hrsl_pop_fb_africa_pop_fb_pop_idx;
 vacuum population_grid_h3_r8;
 update population_grid_h3_r8 p set population = coalesce(fb_pop, fb_africa_pop, hrsl_pop, ghs_pop);
 vacuum full population_grid_h3_r8;

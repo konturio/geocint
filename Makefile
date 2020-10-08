@@ -593,7 +593,57 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
 	touch $@
 
-# add pipeline for IoU metrics calculations
+db/table/agadir: data/agadir.geojson | db/table
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/agadir.geojson
+	touch $@
+
+db/table/casablanca: data/casablanca.geojson | db/table
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/casablanca.geojson
+	touch $@
+
+db/table/chefchaouen: data/chefchaouen.geojson | db/table
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/chefchaouen.geojson
+	touch $@
+
+db/table/fes: data/fes.geojson | db/table
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/fes.geojson
+	touch $@
+
+db/table/meknes: data/agadir.geojson | db/table
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/meknes.geojson
+	touch $@
+
+db/table/agadir_morocco_buildings_iou: db/table/agadir db/table/morocco_buildings db/table/morocco_buildings_valid
+	psql -f tables/agadir_morocco_buildings_iou.sql
+	touch $@
+
+db/table/casablanca_morocco_buildings_iou: db/table/casablanca db/table/morocco_buildings db/table/morocco_buildings_valid
+	psql -f tables/casablanca_morocco_buildings_iou.sql
+	touch $@
+
+db/table/chefchaouen_morocco_buildings_iou: db/table/chefchaouen db/table/morocco_buildings db/table/morocco_buildings_valid
+	psql -f tables/chefchaouen_morocco_buildings_iou.sql
+	touch $@
+
+db/table/fes_morocco_buildings_iou: db/table/fes db/table/morocco_buildings db/table/morocco_buildings_valid
+	psql -f tables/fes_morocco_buildings_iou.sql
+	touch $@
+
+db/table/meknes_morocco_buildings_iou: db/table/meknes db/table/morocco_buildings db/table/morocco_buildings_valid
+	psql -f tables/meknes_morocco_buildings_iou.sql
+	touch $@
+
+db/table/morocco_buildings_manual: db/table/agadir_morocco_buildings_iou db/table/casablanca_morocco_buildings_iou db/table/chefchaouen_morocco_buildings_iou db/table/fes_morocco_buildings_iou db/table/meknes_morocco_buildings_iou
+	psql -f tables/morocco_buildings_manual.sql
+	touch $@
+
+db/table/morocco_buildings_iou: db/table/morocco_buildings_manual db/table/morocco_buildings
+	psql -f tables/morocco_buildings_iou.sql
+	touch $@
+
+db/table/morocco_buildings_valid: db/table/morocco_buildings
+	psql -f tables/morocco_buildings_valid.sql
+	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw
 	psql -c "create index on osm_population_raw using gist(geom)"

@@ -593,57 +593,41 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
 	touch $@
 
-db/table/agadir: data/agadir.geojson | db/table
+db/table/morocco_buildings_benchmark: data/morocco_buildings/agadir.geojson data/morocco_buildings/casablanca.geojson data/morocco_buildings/chefchaouen.geojson data/morocco_buildings/fes.geojson data/morocco_buildings/meknes.geojson | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/agadir.geojson
-	touch $@
-
-db/table/casablanca: data/casablanca.geojson | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/casablanca.geojson
-	touch $@
-
-db/table/chefchaouen: data/chefchaouen.geojson | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/chefchaouen.geojson
-	touch $@
-
-db/table/fes: data/fes.geojson | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/fes.geojson
-	touch $@
-
-db/table/meknes: data/agadir.geojson | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/meknes.geojson
 	touch $@
 
-db/table/agadir_morocco_buildings_iou: db/table/agadir db/table/morocco_buildings db/table/morocco_buildings_valid
-	psql -f tables/agadir_morocco_buildings_iou.sql
-	touch $@
-
-db/table/casablanca_morocco_buildings_iou: db/table/casablanca db/table/morocco_buildings db/table/morocco_buildings_valid
-	psql -f tables/casablanca_morocco_buildings_iou.sql
-	touch $@
-
-db/table/chefchaouen_morocco_buildings_iou: db/table/chefchaouen db/table/morocco_buildings db/table/morocco_buildings_valid
-	psql -f tables/chefchaouen_morocco_buildings_iou.sql
-	touch $@
-
-db/table/fes_morocco_buildings_iou: db/table/fes db/table/morocco_buildings db/table/morocco_buildings_valid
-	psql -f tables/fes_morocco_buildings_iou.sql
-	touch $@
-
-db/table/meknes_morocco_buildings_iou: db/table/meknes db/table/morocco_buildings db/table/morocco_buildings_valid
-	psql -f tables/meknes_morocco_buildings_iou.sql
-	touch $@
-
-db/table/morocco_buildings_manual: db/table/agadir_morocco_buildings_iou db/table/casablanca_morocco_buildings_iou db/table/chefchaouen_morocco_buildings_iou db/table/fes_morocco_buildings_iou db/table/meknes_morocco_buildings_iou
+db/table/morocco_buildings_manual: db/table/morocco_buildings_benchmark
 	psql -f tables/morocco_buildings_manual.sql
-	touch $@
-
-db/table/morocco_buildings_iou: db/table/morocco_buildings_manual db/table/morocco_buildings
-	psql -f tables/morocco_buildings_iou.sql
 	touch $@
 
 db/table/morocco_buildings_valid: db/table/morocco_buildings
 	psql -f tables/morocco_buildings_valid.sql
 	touch $@
+
+db/table/morocco_buildings_benchmark_corrections: db/table/morocco_buildings_benchmark db/table/morocco_buildings db/table/morocco_buildings_valid
+	psql -f tables/agadir_morocco_buildings_iou.sql
+	psql -f tables/casablanca_morocco_buildings_iou.sql
+	psql -f tables/chefchaouen_morocco_buildings_iou.sql
+	psql -f tables/fes_morocco_buildings_iou.sql
+	psql -f tables/meknes_morocco_buildings_iou.sql
+	touch $@
+
+db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buildings_benchmark_corrections
+	psql -f tables/morocco_buildings_iou.sql
+	touch $@
+
+db/table/morocco_buildings_completed: db/table/morocco_buildings_benchmark
+	psql -f tables/morocco_buildings_completed.sql
+	touch $@
+
+data/morocco_buildings/morocco_buildings_benchmark.geojson.gz: db/table/morocco_buildings_benchmark
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark.geojson PG:'dbname=gis' -sql 'select * from morocco_buildings_benchmark' -nln morocco_buildings_benchmark
+	cd data/morocco_buildings; pigz morocco_buildings_benchmark.geojson
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw
 	psql -c "create index on osm_population_raw using gist(geom)"

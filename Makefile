@@ -594,30 +594,20 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 	touch $@
 
 db/table/morocco_buildings_benchmark: data/morocco_buildings/agadir.geojson data/morocco_buildings/casablanca.geojson data/morocco_buildings/chefchaouen.geojson data/morocco_buildings/fes.geojson data/morocco_buildings/meknes.geojson | db/table
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/agadir.geojson
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/casablanca.geojson
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/chefchaouen.geojson
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/fes.geojson
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/meknes.geojson
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/agadir.geojson -nln morocco_buildings_benchmark
+	psql -c "alter table morocco_buildings_benchmark add column city text;"
+	psql -c "update morocco_buildings_benchmark set city = 'Agadir' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/casablanca.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Casablanca' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/chefchaouen.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Chefchaouen' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/fes.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Fes' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/meknes.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Meknes' where city is null;"
 	touch $@
 
-db/table/morocco_buildings_manual: db/table/morocco_buildings_benchmark
-	psql -f tables/morocco_buildings_manual.sql
-	touch $@
-
-db/table/morocco_buildings_valid: db/table/morocco_buildings
-	psql -f tables/morocco_buildings_valid.sql
-	touch $@
-
-db/table/morocco_buildings_benchmark_corrections: db/table/morocco_buildings_benchmark db/table/morocco_buildings db/table/morocco_buildings_valid
-	psql -f tables/agadir_morocco_buildings_iou.sql
-	psql -f tables/casablanca_morocco_buildings_iou.sql
-	psql -f tables/chefchaouen_morocco_buildings_iou.sql
-	psql -f tables/fes_morocco_buildings_iou.sql
-	psql -f tables/meknes_morocco_buildings_iou.sql
-	touch $@
-
-db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buildings_benchmark_corrections
+db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buildings_benchmark
 	psql -f tables/morocco_buildings_iou.sql
 	touch $@
 

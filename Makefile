@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_benchmark.geojson.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -611,7 +611,7 @@ db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buil
 	psql -f tables/morocco_buildings_iou.sql
 	touch $@
 
-data/morocco_buildings/morocco_buildings_benchmark.geojson.gz: db/table/morocco_buildings_benchmark
+data/morocco_buildings/morocco_buildings_benchmark.geojson.gz: db/table/morocco_buildings_benchmark db/table/morocco_buildings_iou
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark.geojson PG:'dbname=gis' -sql 'select * from morocco_buildings_benchmark' -nln morocco_buildings_benchmark
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark.geojson
 

@@ -95,11 +95,28 @@ set phase_2 = (
               )
 );
 
-select percentile_cont(0.5)
-       within group (order by (building_height / ST_Distance(ST_Centroid(geom), ST_Centroid(phase_2)))),
-       percentile_cont(0.5) within group (order by (ST_Distance(ST_Centroid(geom), ST_Centroid(phase_2)))),
-       percentile_cont(0.5) within group (order by (building_height /
-                                                    (ST_X(ST_Centroid(geom)) - ST_X(ST_Centroid(phase_2))))) as X,
-       percentile_cont(0.5) within group (order by (building_height /
-                                                    (ST_Y(ST_Centroid(geom)) - ST_Y(ST_Centroid(phase_2))))) as Y
-from morocco_buildings_benchmark_union b;
+-- update footprints' geometry by shifting
+update morocco_buildings_benchmark
+set footprint = ST_Translate(wkb_geometry,
+                             building_height / (select -1 * percentile_cont(0.5) within group (
+                                 order by (building_height / (ST_X(ST_Centroid(geom)) - ST_X(ST_Centroid(phase_2)))))
+                                                from morocco_buildings_benchmark_union),
+                             building_height / (select -1 * percentile_cont(0.5) within group (
+                                 order by (building_height / (ST_Y(ST_Centroid(geom)) - ST_Y(ST_Centroid(phase_2)))))
+                                                from morocco_buildings_benchmark_union)
+    )
+where city = 'Agadir';
+
+-- Step 3. IoU metrics
+-- сalculate 2D IoU for all buildings
+select ST_Area(
+               ST_Intersection(
+                           (select ST_Union(footprint) from morocco_buildings_benchmark),
+                           (select ST_Union(geom) from morocco_buildings_benchmark_phase2)
+                   )
+           ) / ST_Area(
+               ST_Union(
+                           (select ST_Union(footprint) from morocco_buildings_benchmark),
+                           (select ST_Union(geom) from morocco_buildings_benchmark_phase2)
+                   )
+           );

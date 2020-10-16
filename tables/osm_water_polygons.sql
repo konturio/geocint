@@ -15,7 +15,9 @@ create table osm_water_polygons as (
     or tags @> '{"waterway":"stream"}'
     or tags @> '{"waterway":"canal"}'
     or tags @> '{"waterway":"ditch"}'
-    or tags @> '{"waterway":"drain"}')
+    or tags @> '{"waterway":"drain"}'
+    or tags @> '{"landuse":"reservoir"}'
+    )
     and ST_GeometryType(geog::geometry) != 'ST_Point'
     and ST_GeometryType(geog::geometry) != 'ST_LineString'
 

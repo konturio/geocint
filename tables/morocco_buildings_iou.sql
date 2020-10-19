@@ -87,6 +87,13 @@ create table morocco_benchmark_shifts as (
     group by city
 );
 
+-- update footprint
+update morocco_buildings_benchmark b
+set footprint = ST_Translate(wkb_geometry, building_height / s.x, building_height / s.y)
+from (select x, y, city
+    from morocco_benchmark_shifts) s
+where b.city = s.city;
+
 -- сalculate 2D IoU for all buildings
 select ST_Area(
                ST_Intersection(
@@ -99,3 +106,18 @@ select ST_Area(
                            (select ST_Union(geom) from morocco_buildings_benchmark_phase2)
                    )
            );
+
+-- сalculate 3D IoU for all buildings
+select building_height *  ST_Area(
+               ST_Intersection(
+                           (select ST_Union(footprint) from morocco_buildings_benchmark),
+                           (select ST_Union(geom) from morocco_buildings_benchmark_phase2)
+                   )
+           ) /
+       building_height * ST_Area(
+               ST_Union(
+                           (select ST_Union(footprint) from morocco_buildings_benchmark),
+                           (select ST_Union(geom) from morocco_buildings_benchmark_phase2)
+                   )
+           )
+from morocco_buildings_benchmark;

@@ -605,6 +605,7 @@ db/table/morocco_buildings_benchmark: data/morocco_buildings/agadir.geojson data
 	psql -c "update morocco_buildings_benchmark set city = 'Fes' where city is null;"
 	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/meknes.geojson -nln morocco_buildings_benchmark
 	psql -c "update morocco_buildings_benchmark set city = 'Meknes' where city is null;"
+	psql -c "delete from morocco_buildings_benchmark where wkb_geometry is null;"
 	touch $@
 
 db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buildings_benchmark

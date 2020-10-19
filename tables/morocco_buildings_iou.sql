@@ -1,82 +1,57 @@
 -- Step 1. Area of interest for 2nd stage
--- remove constraints
-alter table morocco_buildings_benchmark
-    alter column wkb_geometry type geometry;
 
--- benchmark's area of interest
+--transform the geometry column into mercator
+alter table morocco_buildings_benchmark
+    rename column wkb_geometry to geom;
+update morocco_buildings_benchmark
+set geom = ST_Transform(ST_SetSRID(geom, 4326), 3857);
+
+-- benchmark's area of interest, per city
 drop table if exists morocco_buildings_benchmark_aoi;
 create table morocco_buildings_benchmark_aoi as (
     select city,
-           ST_Convexhull(ST_Collect(wkb_geometry)) as geom
+           ST_Convexhull(ST_Collect(geom)) as geom
     from morocco_buildings_benchmark
     group by city
 );
 
+-- clip CV-detected buildings using the convex hull of manually mapped ones
 drop table if exists morocco_buildings_benchmark_phase2;
 create table morocco_buildings_benchmark_phase2 as (
-    select building_height, v.geom, a.city
-    from morocco_buildings_valid v, morocco_buildings_benchmark_aoi a
-    where ST_Intersects(v.geom, (
-        select ST_Union(geom)
-        from morocco_buildings_benchmark_aoi
-    )
-              )
-);
-
--- geometry transformations for shift calculations
-update morocco_buildings_benchmark
-set wkb_geometry = ST_Transform(wkb_geometry, 3857);
-
-update morocco_buildings_benchmark_aoi
-set geom = ST_Transform(geom, 3857);
-
-update morocco_buildings_benchmark_phase2
-set geom = ST_Transform(geom, 3857);
-
-update morocco_buildings_benchmark_phase2
-set geom = (ST_Intersection(geom, (
-    select ST_Union(geom)
-    from morocco_buildings_benchmark_aoi)
-    )
+    select building_height,
+           ST_Intersection(ST_Transform(b.geom, 3857), a.geom) as geom,
+           a.city
+    from morocco_buildings                    b
+         join morocco_buildings_benchmark_aoi a on ST_Intersects(b.geom, ST_Transform(a.geom, 4326))
 );
 
 
 -- Step 2. Convert roofprints to footprints
--- add footprint geometry column
-alter table morocco_buildings_benchmark
-    add column footprint geometry;
 
-update morocco_buildings_benchmark
-set footprint = wkb_geometry;
-
+-- stitch together blocks of the same height to match them to similar blocks in other dataset
 drop table if exists morocco_buildings_benchmark_union;
 create table morocco_buildings_benchmark_union as (
-    select (ST_Dump(ST_Union(wkb_geometry))).geom as geom,
+    select (ST_Dump(ST_Union(geom))).geom as geom,
            building_height,
            city
     from morocco_buildings_benchmark
     group by building_height, city
 );
 
-drop table if exists morocco_buildings_benchmark_phase2_union;
-create table morocco_buildings_benchmark_phase2_union as (
-    select (ST_Dump(
-            ST_Union(geom))).geom as geom,
-           building_height
-    from morocco_buildings_benchmark_phase2
-    group by building_height
-);
-
 alter table morocco_buildings_benchmark_union
     add column phase_2 geometry;
 
+-- match manually mapped roofprints cluster to a set of footprints right under it.
+-- only constider a match if representative point of footprint is inside roofprint cluster.
 update morocco_buildings_benchmark_union a
 set phase_2 = (
     select ST_Union(geom)
     from morocco_buildings_benchmark_phase2 b
-    where ST_Intersects(a.geom, b.geom)
+    where a.geom && b.geom
+      and ST_Intersects(a.geom, ST_PointOnSurface(b.geom))
 );
 
+-- shift the roofprints to the corresponding centers of mass of computer-detected footprints
 drop table if exists morocco_benchmark_shifts;
 create table morocco_benchmark_shifts as (
     select city,
@@ -85,27 +60,65 @@ create table morocco_benchmark_shifts as (
            -1 * percentile_cont(0.5) within group (
                order by (building_height / (ST_Y(ST_Centroid(geom)) - ST_Y(ST_Centroid(phase_2))))) as Y
     from morocco_buildings_benchmark_union
+    where phase_2 is not null
+      and building_height > 10 -- low heights have higher uncertainty
     group by city
 );
 
+drop table morocco_buildings_benchmark_union;
 -- update footprint
 update morocco_buildings_benchmark b
-set footprint = ST_Translate(wkb_geometry, building_height / s.x, building_height / s.y)
-from (select x, y, city
-    from morocco_benchmark_shifts) s
+set footprint = ST_Translate(geom, building_height / s.x, building_height / s.y)
+from ( select x, y, city
+       from morocco_benchmark_shifts ) s
 where b.city = s.city;
 
--- сalculate 2D IoU for all buildings: 0.65
-select ST_Area(
-               ST_Intersection(
-                           (select ST_Union(footprint) from morocco_buildings_benchmark),
-                           (select ST_Union(geom) from morocco_buildings_benchmark_phase2)
-                   )
-           ) / ST_Area(
-               ST_Union(
-                           (select ST_Union(footprint) from morocco_buildings_benchmark),
-                           (select ST_Union(geom) from morocco_buildings_benchmark_phase2)
-                   )
-           );
+
+-- benchmark's area of interest, per city, now using footprints
+drop table if exists morocco_buildings_benchmark_aoi;
+create table morocco_buildings_benchmark_aoi as (
+    select city,
+           ST_Convexhull(ST_Collect(footprint)) as geom
+    from morocco_buildings_benchmark
+    group by city
+);
+
+-- clip CV-detected buildings using the convex hull of manually mapped ones
+drop table if exists morocco_buildings_benchmark_phase2;
+create table morocco_buildings_benchmark_phase2 as (
+    select building_height,
+           ST_Intersection(ST_Transform(b.geom, 3857), a.geom) as geom,
+           a.city
+    from morocco_buildings                    b
+         join morocco_buildings_benchmark_aoi a on ST_Intersects(b.geom, ST_Transform(a.geom, 4326))
+);
+
+-- round the coordinates a little bit to make intersection/union more robust
+update morocco_buildings_benchmark
+set footprint = ST_CollectionExtract(ST_MakeValid(ST_SnapToGrid(ST_Transform(footprint, 3857), 0.01)), 3);
+update morocco_buildings_benchmark_phase2
+set geom = ST_CollectionExtract(ST_MakeValid(ST_SnapToGrid(ST_Transform(geom, 3857), 0.01)), 3);
+
+-- calculate 2D IoU for all buildings: 0.65
+-- select ST_Area(
+--            ST_Intersection(
+--                    ( select ST_Union(footprint) from morocco_buildings_benchmark ),
+--                    ( select ST_Union(geom) from morocco_buildings_benchmark_phase2 )
+--                )
+--            ) / ST_Area(
+--            ST_Union(
+--                    ( select ST_Union(footprint) from morocco_buildings_benchmark ),
+--                    ( select ST_Union(geom) from morocco_buildings_benchmark_phase2 )
+--                )
+--            );
+
+-- calculate 2D IoU for each city separately
+select humans.city as "City",
+       ST_Area(ST_Intersection(footprint, geom)) /
+       ST_Area(ST_Union(footprint, geom)) as "2D IoU"
+from ( select city, ST_Union(footprint) as footprint from morocco_buildings_benchmark group by city )   as humans
+     join ( select city, ST_Union(geom) as geom from morocco_buildings_benchmark_phase2 group by city ) as computers
+          on humans.city = computers.city;
+
 
 -- сalculate 3D IoU for all buildings

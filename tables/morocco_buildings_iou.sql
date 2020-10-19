@@ -1,23 +1,24 @@
 -- Step 1. Area of interest for 2nd stage
+-- remove constraints
+alter table morocco_buildings_benchmark
+    alter column wkb_geometry type geometry;
+
 -- benchmark's area of interest
 drop table if exists morocco_buildings_benchmark_aoi;
 create table morocco_buildings_benchmark_aoi as (
-    select ST_Convexhull(ST_Collect(wkb_geometry)) as geom
+    select city,
+           ST_Convexhull(ST_Collect(wkb_geometry)) as geom
     from morocco_buildings_benchmark
     group by city
 );
 
-drop table if exists morocco_buildings_benchmark_aoi_union;
-create table morocco_buildings_benchmark_aoi_union as (
-    select ST_Union(geom) from morocco_buildings_benchmark_aoi);
-
 drop table if exists morocco_buildings_benchmark_phase2;
 create table morocco_buildings_benchmark_phase2 as (
-    select *
-    from morocco_buildings_valid
-    where ST_Intersects(geom, (
-        select geom
-        from morocco_buildings_benchmark_aoi_union
+    select building_height, v.geom, a.city
+    from morocco_buildings_valid v, morocco_buildings_benchmark_aoi a
+    where ST_Intersects(v.geom, (
+        select ST_Union(geom)
+        from morocco_buildings_benchmark_aoi
     )
               )
 );
@@ -34,9 +35,10 @@ set geom = ST_Transform(geom, 3857);
 
 update morocco_buildings_benchmark_phase2
 set geom = (ST_Intersection(geom, (
-    select geom
-    from morocco_buildings_benchmark_aoi_union)
-    ));
+    select ST_Union(geom)
+    from morocco_buildings_benchmark_aoi)
+    )
+);
 
 
 -- Step 2. Convert roofprints to footprints
@@ -72,8 +74,7 @@ update morocco_buildings_benchmark_union a
 set phase_2 = (
     select ST_Union(geom)
     from morocco_buildings_benchmark_phase2 b
-    where ST_Intersects(a.geom, ST_PointOnSurface(b.geom)
-              )
+    where ST_Intersects(a.geom, b.geom)
 );
 
 drop table if exists morocco_benchmark_shifts;
@@ -94,7 +95,7 @@ from (select x, y, city
     from morocco_benchmark_shifts) s
 where b.city = s.city;
 
--- сalculate 2D IoU for all buildings
+-- сalculate 2D IoU for all buildings: 0.65
 select ST_Area(
                ST_Intersection(
                            (select ST_Union(footprint) from morocco_buildings_benchmark),
@@ -108,16 +109,3 @@ select ST_Area(
            );
 
 -- сalculate 3D IoU for all buildings
-select building_height *  ST_Area(
-               ST_Intersection(
-                           (select ST_Union(footprint) from morocco_buildings_benchmark),
-                           (select ST_Union(geom) from morocco_buildings_benchmark_phase2)
-                   )
-           ) /
-       building_height * ST_Area(
-               ST_Union(
-                           (select ST_Union(footprint) from morocco_buildings_benchmark),
-                           (select ST_Union(geom) from morocco_buildings_benchmark_phase2)
-                   )
-           )
-from morocco_buildings_benchmark;

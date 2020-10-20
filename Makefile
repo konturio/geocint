@@ -615,11 +615,11 @@ db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buil
 	psql -f tables/morocco_buildings_iou.sql
 	touch $@
 
-data/morocco_buildings/morocco_buildings_benchmark.geojson.gz: db/table/morocco_buildings_benchmark db/table/morocco_buildings_iou
+data/morocco_buildings/morocco_buildings_benchmark.geojson.gz: db/table/morocco_buildings_benchmark_footprints
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark.geojson PG:'dbname=gis' -sql 'select * from morocco_buildings_benchmark' -nln morocco_buildings_benchmark
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark.geojson
 
-db/table/morocco_buildings_benchmark_footprints: db/table/morocco_buildings_benchmark
+db/table/morocco_buildings_benchmark_footprints: db/table/morocco_buildings_benchmark db/table/morocco_buildings
 	psql -f tables/morocco_buildings_benchmark_footprints.sql
 	touch $@
 

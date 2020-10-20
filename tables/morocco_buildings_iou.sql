@@ -5,21 +5,21 @@
 -- Import the JSON files:
 -- ogr2ogr PG:"" morocco_buildings_benchmark.geojson
 -- ogr2ogr PG:"" morocco_buildings_benchmark_aoi.geojson
-
-alter table morocco_buildings_benchmark
-    alter column footprint type geometry;
-
--- reproject and limit precision to stabilize the calculation
-update morocco_buildings_manual
-set footprint = ST_Transform(footprint, 3857);
-
--- remove constraints and tweak names
-alter table morocco_buildings_benchmark_aoi
-    alter column geom type geometry;
-
--- reproject
-update morocco_buildings_benchmark_aoi
-set geom = ST_Transform(geom, 3857);
+--
+-- alter table morocco_buildings_benchmark
+--     alter column footprint type geometry;
+--
+-- -- reproject and limit precision to stabilize the calculation
+-- update morocco_buildings_manual
+-- set footprint = ST_Transform(footprint, 3857);
+--
+-- -- remove constraints and tweak names
+-- alter table morocco_buildings_benchmark_aoi
+--     alter column geom type geometry;
+--
+-- -- reproject
+-- update morocco_buildings_benchmark_aoi
+-- set geom = ST_Transform(geom, 3857);
 
 -- clip CV-detected buildings using the convex hull of manually mapped ones
 drop table if exists morocco_buildings_benchmark_phase2;
@@ -37,13 +37,13 @@ set footprint = ST_CollectionExtract(ST_MakeValid(ST_Segmentize(ST_SnapToGrid(ST
 update morocco_buildings_benchmark_phase2
 set geom = ST_CollectionExtract(ST_MakeValid(ST_Segmentize(ST_SnapToGrid(ST_Transform(ST_Simplify(geom, 0), 3857), 0.031415926), 5)), 3);
 
--- calculate 2D IoU for each city separately
-select humans.city as "City",
-       ST_Area(ST_Intersection(footprint, geom)) /
-       ST_Area(ST_Union(footprint, geom)) as "2D IoU"
-from ( select city, ST_Union(footprint) as footprint from morocco_buildings_benchmark group by city )   as humans
-     join ( select city, ST_Union(geom) as geom from morocco_buildings_benchmark_phase2 group by city ) as computers
-          on humans.city = computers.city;
+-- -- calculate 2D IoU for each city separately
+-- select humans.city as "City",
+--        ST_Area(ST_Intersection(footprint, geom)) /
+--        ST_Area(ST_Union(footprint, geom)) as "2D IoU"
+-- from ( select city, ST_Union(footprint) as footprint from morocco_buildings_benchmark group by city )   as humans
+--      join ( select city, ST_Union(geom) as geom from morocco_buildings_benchmark_phase2 group by city ) as computers
+--           on humans.city = computers.city;
 
 -- сalculate 3D IoU for all buildings
 drop table if exists morocco_buildings_polygons_ph2;
@@ -54,9 +54,6 @@ create table morocco_buildings_polygons_ph2 as (
     select city, geom
     from morocco_buildings_benchmark_phase2
 );
-
-select distinct ST_Dimension(ST_Boundary(geom))
-    from morocco_buildings_polygons_ph2;
 
 delete
 from morocco_buildings_polygons_ph2
@@ -123,11 +120,16 @@ set min_height = least(min_height, max_height),
 
 -- Step 3. Calculate IoU in 2D and 3D
 -- 2D IoU: 0.661
-select sum(ST_Area(geom)) filter (where min_height > 0) / sum(ST_Area(geom)) as IoU
-from morocco_buildings_linework_ph2;
+select b.city, sum(ST_Area(a.geom)) filter (where min_height > 0) / sum(ST_Area(a.geom)) as IoU
+from morocco_buildings_linework_ph2 a
+join morocco_buildings_benchmark_aoi b on ST_Intersects(a.geom, b.geom)
+group by b.city;
+
 -- calculate IoU metrics for all 3D buildings: 0.478
-select sum(min_height * ST_Area(geom)) / sum(max_height * ST_Area(geom))
-from morocco_buildings_linework_ph2;
+select b.city, sum(min_height * ST_Area(a.geom)) / sum(max_height * ST_Area(a.geom))
+from morocco_buildings_linework_ph2
+join morocco_buildings_benchmark_aoi b on ST_Intersects(a.geom, b.geom)
+group by b.city;
 
 
 -- Step 4. Generate feature-to-feature IoU.
@@ -196,4 +198,12 @@ select a.city, avg(ST_Area(ST_Intersection(geom_morocco_buildings, geom_phase2))
 from morocco_buildings_iou_feature m
 join morocco_buildings_benchmark_aoi a
     on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
+group by 1;
+
+-- calculate HRMSD in metres
+
+select city, sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2)))
+from morocco_buildings_iou_feature a
+         join morocco_buildings_benchmark_aoi b on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
+where building_height_phase2 > 0 and building_height_morocco_buildings>0
 group by 1;

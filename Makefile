@@ -616,6 +616,7 @@ db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buil
 	touch $@
 
 data/morocco_buildings/morocco_buildings_manual.geojson.gz: db/table/morocco_buildings_benchmark_footprints
+	rm $@
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_manual.geojson PG:'dbname=gis' -sql 'select ST_Transform(footprint, 4326) as geom, building_height, city from morocco_buildings_benchmark' -nln morocco_buildings_manual
 	cd data/morocco_buildings; pigz morocco_buildings_manual.geojson
 
@@ -628,6 +629,7 @@ db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_f
 	touch $@
 
 data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz: db/table/morocco_buildings_benchmark db/table/morocco_buildings_benchmark_aoi
+	rm $@
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326) as geom, city from morocco_buildings_benchmark_aoi' -nln morocco_buildings_benchmark_aoi
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark_aoi.geojson
 

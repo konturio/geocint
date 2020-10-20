@@ -27,6 +27,9 @@ create table morocco_buildings_benchmark_phase2 as (
 
 
 -- Step 2. Convert roofprints to footprints
+-- add footprint geometry column
+alter table morocco_buildings_benchmark
+    add column footprint geometry;
 
 -- stitch together blocks of the same height to match them to similar blocks in other dataset
 drop table if exists morocco_buildings_benchmark_union;
@@ -99,19 +102,6 @@ set footprint = ST_CollectionExtract(ST_MakeValid(ST_SnapToGrid(ST_Transform(foo
 update morocco_buildings_benchmark_phase2
 set geom = ST_CollectionExtract(ST_MakeValid(ST_SnapToGrid(ST_Transform(geom, 3857), 0.01)), 3);
 
--- calculate 2D IoU for all buildings: 0.65
--- select ST_Area(
---            ST_Intersection(
---                    ( select ST_Union(footprint) from morocco_buildings_benchmark ),
---                    ( select ST_Union(geom) from morocco_buildings_benchmark_phase2 )
---                )
---            ) / ST_Area(
---            ST_Union(
---                    ( select ST_Union(footprint) from morocco_buildings_benchmark ),
---                    ( select ST_Union(geom) from morocco_buildings_benchmark_phase2 )
---                )
---            );
-
 -- calculate 2D IoU for each city separately
 select humans.city as "City",
        ST_Area(ST_Intersection(footprint, geom)) /
@@ -119,6 +109,5 @@ select humans.city as "City",
 from ( select city, ST_Union(footprint) as footprint from morocco_buildings_benchmark group by city )   as humans
      join ( select city, ST_Union(geom) as geom from morocco_buildings_benchmark_phase2 group by city ) as computers
           on humans.city = computers.city;
-
 
 -- сalculate 3D IoU for all buildings

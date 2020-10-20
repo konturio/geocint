@@ -6,6 +6,14 @@ alter table morocco_buildings_benchmark
 update morocco_buildings_benchmark
 set geom = ST_Transform(ST_SetSRID(geom, 4326), 3857);
 
+update morocco_buildings_benchmark
+    set building_height = 10, is_confident = false
+where building_height is null;
+
+update morocco_buildings_benchmark
+    set is_confident = false
+where is_confident is null;
+
 -- benchmark's area of interest, per city
 drop table if exists morocco_buildings_benchmark_aoi;
 create table morocco_buildings_benchmark_aoi as (

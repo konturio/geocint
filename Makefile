@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_benchmark.geojson.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_benchmark.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html

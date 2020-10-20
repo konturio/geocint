@@ -432,6 +432,7 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
 	touch $@
 
 db/table/morocco_buildings: data/morocco_results_fixed.gpkg | db/table
+	psql -c "drop table if exists morocco_buildings;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_results_fixed.gpkg -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
 	touch $@

@@ -623,7 +623,7 @@ db/table/morocco_buildings_benchmark_footprints: db/table/morocco_buildings_benc
 	psql -f tables/morocco_buildings_benchmark_footprints.sql
 	touch $@
 
-db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_footprints
+db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_footprints db/table/morocco_buildings_iou
 	psql -f tables/morocco_buildings_benchmark_aoi.sql
 	touch $@
 

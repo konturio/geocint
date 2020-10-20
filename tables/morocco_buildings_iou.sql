@@ -1,3 +1,26 @@
+-- Calculation IoU metrics for all buildings from test benchmark
+
+-- Step 1. Import data and reformat it.
+
+-- Import the JSON files:
+-- ogr2ogr PG:"" morocco_buildings_benchmark.geojson
+-- ogr2ogr PG:"" morocco_buildings_benchmark_aoi.geojson
+
+alter table morocco_buildings_benchmark
+    alter column footprint type geometry;
+
+-- reproject and limit precision to stabilize the calculation
+update morocco_buildings_manual
+set footprint = ST_Transform(footprint, 3857);
+
+-- remove constraints and tweak names
+alter table morocco_buildings_benchmark_aoi
+    alter column geom type geometry;
+
+-- reproject
+update morocco_buildings_benchmark_aoi
+set geom = ST_Transform(geom, 3857);
+
 -- clip CV-detected buildings using the convex hull of manually mapped ones
 drop table if exists morocco_buildings_benchmark_phase2;
 create table morocco_buildings_benchmark_phase2 as (

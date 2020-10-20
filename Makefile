@@ -610,12 +610,24 @@ db/table/morocco_buildings_benchmark: data/morocco_buildings/agadir.geojson data
 	psql -c "delete from morocco_buildings_benchmark where wkb_geometry is null;"
 	touch $@
 
-db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buildings_benchmark
+db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buildings_benchmark_aoi db/table/morocco_buildings_benchmark_footprints
 	psql -f tables/morocco_buildings_iou.sql
 	touch $@
 
 data/morocco_buildings/morocco_buildings_benchmark.geojson.gz: db/table/morocco_buildings_benchmark db/table/morocco_buildings_iou
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark.geojson PG:'dbname=gis' -sql 'select * from morocco_buildings_benchmark' -nln morocco_buildings_benchmark
+	cd data/morocco_buildings; pigz morocco_buildings_benchmark.geojson
+
+db/table/morocco_buildings_benchmark_footprints: db/table/morocco_buildings_benchmark
+	psql -f tables/morocco_buildings_benchmark_footprints.sql
+	touch $@
+
+db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_footprints
+	psql -f tables/morocco_buildings_benchmark_aoi.sql
+	touch $@
+
+data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz: db/table/morocco_buildings_benchmark db/table/morocco_buildings_benchmark_aoi
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_ao.geojson PG:'dbname=gis' -sql 'select * from morocco_buildings_benchmark_aoi' -nln morocco_buildings_benchmark_aoi
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark.geojson
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

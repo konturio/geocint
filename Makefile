@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_benchmark.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_benchmark.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -623,7 +623,7 @@ db/table/morocco_buildings_benchmark_footprints: db/table/morocco_buildings_benc
 	psql -f tables/morocco_buildings_benchmark_footprints.sql
 	touch $@
 
-db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_footprints db/table/morocco_buildings_iou
+db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_footprints
 	psql -f tables/morocco_buildings_benchmark_aoi.sql
 	touch $@
 

@@ -45,22 +45,6 @@ where ST_Dimension(ST_Boundary(geom)) = 2;
 
 -- generate the breakout table with polygons of all candidate pieces
 drop table if exists morocco_buildings_linework_ph2;
--- create table morocco_buildings_linework_ph2 as
--- with morocco_buildings_edges as (
---     select (ST_Dump(ST_UnaryUnion(ST_Node(ST_Collect(ST_Boundary(geom)))))).geom
---     from morocco_buildings_polygons_ph2
--- )
--- select (ST_Dump(ST_Polygonize(geom))).geom
--- from morocco_buildings_edges;
-
--- create table morocco_buildings_linework_ph2 as
--- with morocco_buildings_edges as (
---     select (ST_Dump(ST_UnaryUnion(ST_Collect(ST_Boundary(geom))))).geom
---     from morocco_buildings_polygons_ph2
--- )
---          select (ST_Dump(ST_Polygonize(ST_MakeValid(geom)))).geom
---          from morocco_buildings_edges;
-
 create table morocco_buildings_linework_ph2 as
 with morocco_buildings_edges as (
     select (ST_Dump(ST_UnaryUnion(ST_Collect(ST_Boundary(geom))))).geom

@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_benchmark.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -615,9 +615,9 @@ db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buil
 	psql -f tables/morocco_buildings_iou.sql
 	touch $@
 
-data/morocco_buildings/morocco_buildings_benchmark.geojson.gz: db/table/morocco_buildings_benchmark_footprints
-	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark.geojson PG:'dbname=gis' -sql 'select * from morocco_buildings_benchmark' -nln morocco_buildings_benchmark
-	cd data/morocco_buildings; pigz morocco_buildings_benchmark.geojson
+data/morocco_buildings/morocco_buildings_manual.geojson.gz: db/table/morocco_buildings_benchmark_footprints
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_manual.geojson PG:'dbname=gis' -sql 'select ST_Transform(footprint, 4326) as geom, is_confident, building_height, city from morocco_buildings_benchmark' -nln morocco_buildings_manual
+	cd data/morocco_buildings; pigz morocco_buildings_manual.geojson
 
 db/table/morocco_buildings_benchmark_footprints: db/table/morocco_buildings_benchmark db/table/morocco_buildings
 	psql -f tables/morocco_buildings_benchmark_footprints.sql
@@ -628,7 +628,7 @@ db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_f
 	touch $@
 
 data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz: db/table/morocco_buildings_benchmark db/table/morocco_buildings_benchmark_aoi
-	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson PG:'dbname=gis' -sql 'select * from morocco_buildings_benchmark_aoi' -nln morocco_buildings_benchmark_aoi
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson PG:'dbname=gis' -sql 'select ST_Transform(footprint, 4326) as geom, is_confident, building_height, city from morocco_buildings_benchmark_aoi' -nln morocco_buildings_benchmark_aoi
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark_aoi.geojson
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

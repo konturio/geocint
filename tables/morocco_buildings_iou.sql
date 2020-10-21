@@ -127,7 +127,7 @@ group by b.city;
 
 -- calculate IoU metrics for all 3D buildings: 0.478
 select b.city, sum(min_height * ST_Area(a.geom)) / sum(max_height * ST_Area(a.geom))
-from morocco_buildings_linework_ph2
+from morocco_buildings_linework_ph2 a
 join morocco_buildings_benchmark_aoi b on ST_Intersects(a.geom, b.geom)
 group by b.city;
 

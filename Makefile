@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled db/table/firms_fires_h3
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -421,6 +421,31 @@ db/table/user_hours_h3: db/function/h3 db/table/osm_user_count_grid_h3 db/table/
 
 db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
+	touch $@
+
+data/firms: | data
+	mkdir -p $@
+
+data/firms/download: | data/firms
+	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_V1_162053.zip
+	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_J1V-C2_162052.zip
+	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_M6_162051.zip
+	touch $@
+
+data/firms/unzip: data/firms/download
+	cd data/firms; ls *.zip | parallel "unzip -o {}"
+	touch $@
+
+db/table/firms_fires: data/firms/unzip | db/table
+	psql -c "drop table if exists firms_fires"
+	psql -c "create table firms_fires (latitude float, longitude float, brightness float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, frp float, daynight text, acq_datetime timestamptz);"
+	rm -f data/firms/*_proc.csv
+	ls data/firms/*.csv | parallel "python3 scripts/convert_firms_timestamps.py {}"
+	ls data/firms/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, satellite, instrument, confidence, version, bright_t31, frp, daynight, acq_datetime) from stdin with csv header;\" "
+	touch $@
+
+db/table/firms_fires_h3: db/table/firms_fires
+	psql -f tables/firms_fires_h3.sql
 	touch $@
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table

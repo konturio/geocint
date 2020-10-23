@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled db/table/firms_fires_h3
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -438,9 +438,13 @@ data/firms/unzip: data/firms/download
 
 db/table/firms_fires: data/firms/unzip | db/table
 	psql -c "drop table if exists firms_fires"
-	psql -c "create table firms_fires (latitude float, longitude float, brightness float, scan float, track float, satellite int, instrument text, confidence text, version text, bright_t31 float, frp float, daynight text, acq_datetime timestamptz);"
-	ls data/firms/fire_nrt_* | python3 scripts/convert_firms_timestamps.py
-	cat *_proc.csv | psql -c "set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, satellite, instrument, confidence, version, bright_t31, frp, daynight, acq_datetime) from stdin with csv header;"
+	psql -c "create table firms_fires (latitude float, longitude float, brightness float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, frp float, daynight text, acq_datetime timestamptz);"
+	ls data/firms/*.csv | python3 scripts/convert_firms_timestamps.py
+	cat data/firms/*_proc.csv | psql -c "set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, satellite, instrument, confidence, version, bright_t31, frp, daynight, acq_datetime) from stdin with csv header;"
+	touch $@
+
+db/table/firms_fires_h3: db/table/firms_fires
+	psql -f tables/firms_fires_h3.sql
 	touch $@
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table

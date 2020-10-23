@@ -5,3 +5,4 @@ create table africa_microsoft_buildings_h3 as (
     from africa_microsoft_buildings
     group by 1
 );
+

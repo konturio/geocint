@@ -1,7 +1,8 @@
 /.project
 .DS_Store
 .idea
-data
+data/*
+!data/morocco_buildings/
 db
 deploy
 make_profile.db

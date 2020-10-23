@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled db/table/firms_fires_h3
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/firms_fires_h3
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -457,6 +457,7 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
 	touch $@
 
 db/table/morocco_buildings: data/morocco_results_fixed.gpkg | db/table
+	psql -c "drop table if exists morocco_buildings;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_results_fixed.gpkg -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
 	touch $@
@@ -617,6 +618,45 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=10
 	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
 	touch $@
+
+db/table/morocco_buildings_benchmark: data/morocco_buildings/agadir.geojson data/morocco_buildings/casablanca.geojson data/morocco_buildings/chefchaouen.geojson data/morocco_buildings/fes.geojson data/morocco_buildings/meknes.geojson | db/table
+	psql -c "drop table if exists morocco_buildings_benchmark;"
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/agadir.geojson -nln morocco_buildings_benchmark
+	psql -c "alter table morocco_buildings_benchmark add column city text;"
+	psql -c "alter table morocco_buildings_benchmark alter column wkb_geometry type geometry;"
+	psql -c "update morocco_buildings_benchmark set city = 'Agadir' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/casablanca.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Casablanca' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/chefchaouen.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Chefchaouen' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/fes.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Fes' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/meknes.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Meknes' where city is null;"
+	psql -c "delete from morocco_buildings_benchmark where wkb_geometry is null;"
+	touch $@
+
+db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buildings_benchmark_aoi db/table/morocco_buildings_benchmark_footprints
+	psql -f tables/morocco_buildings_iou.sql
+	touch $@
+
+data/morocco_buildings/morocco_buildings_manual.geojson.gz: db/table/morocco_buildings_benchmark_footprints
+	rm $@
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_manual.geojson PG:'dbname=gis' -sql 'select ST_Transform(footprint, 4326) as geom, building_height, city from morocco_buildings_benchmark' -nln morocco_buildings_manual
+	cd data/morocco_buildings; pigz morocco_buildings_manual.geojson
+
+db/table/morocco_buildings_benchmark_footprints: db/table/morocco_buildings_benchmark db/table/morocco_buildings
+	psql -f tables/morocco_buildings_benchmark_footprints.sql
+	touch $@
+
+db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_footprints
+	psql -f tables/morocco_buildings_benchmark_aoi.sql
+	touch $@
+
+data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz: db/table/morocco_buildings_benchmark db/table/morocco_buildings_benchmark_aoi
+	rm $@
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326) as geom, city from morocco_buildings_benchmark_aoi' -nln morocco_buildings_benchmark_aoi
+	cd data/morocco_buildings; pigz morocco_buildings_benchmark_aoi.geojson
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw
 	psql -c "create index on osm_population_raw using gist(geom)"

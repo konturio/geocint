@@ -1,3 +1,4 @@
+-- change schema to match the one expected by consumers
 alter table morocco_buildings
     alter column geom type geometry;
 alter table morocco_buildings
@@ -14,5 +15,15 @@ alter table morocco_buildings
     rename column is_validated to manually_reviewed;
 alter table morocco_buildings
     rename column is_footprint to height_is_valid;
+
+-- convert multipolygons to polygons
 update morocco_buildings
 set geom = ST_CollectionHomogenize(geom);
+
+-- drop empty rows
+delete from morocco_buildings where geom is null;
+
+-- make geom robust to conversion to mercator
+update morocco_buildings
+set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(ST_MakeValid(ST_Transform(geom, 3857)), 4326)), 3)
+where not ST_IsValid(ST_Transform(geom, 3857));

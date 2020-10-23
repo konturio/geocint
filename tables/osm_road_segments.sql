@@ -21,7 +21,7 @@ create table osm_road_segments_new_unsorted as (
         -- typical error ratio compared to geography length is 1e-6.
         lateral (select
                          ST_Length(ST_Transform(z.seg_geom, 3857)) *
-                         cosd(ST_X(ST_StartPoint(o.geom))) as length_m) as l
+                         cosd(ST_Y(ST_StartPoint(o.geom))) as length_m) as l
     where
          walk_speed is not null
       or drive_speed is not null

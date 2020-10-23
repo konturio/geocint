@@ -1,8 +1,8 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 data/osm_buildings_minsk.geojson.gz data/osm_addresses_minsk.gpkg.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled db/table/firms_fires_h3
 
 clean:
-	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv
+	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download
 	psql -f scripts/clean.sql
 
 data:
@@ -54,7 +54,7 @@ deploy/sonic: | deploy
 deploy/geocint: | deploy
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk
+deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/belarus-latest.osm.pbf
 	touch $@
 
 deploy/s3:
@@ -63,8 +63,21 @@ deploy/s3:
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx
 	touch $@
 
+deploy/geocint/belarus-latest.osm.pbf: data/belarus-latest.osm.pbf | deploy/geocint
+	# We distribute this .pbf file when there is no published version,
+	# or it is at least two days older than ours.
+	set -e; \
+	if [ ! -f ~/public_html/belarus-latest.osm.pbf ] \
+		|| expr \( -2 \* 24 \* 3600 + `stat -c %Y data/belarus-latest.osm.pbf` - `stat -c %Y ~/public_html/belarus-latest.osm.pbf` \) \> 0 >/dev/null; then \
+		cp -vp data/belarus-latest.osm.pbf ~/public_html/belarus-latest.osm.pbf; \
+		aws sqs send-message --output json --region eu-central-1 --queue-url https://sqs.eu-central-1.amazonaws.com/001426858141/PuppetmasterInbound.fifo --message-body '{"jsonrpc":"2.0","method":"rebuildDockerImage","params":{"imageName":"kontur-osrm-backend-by-car","osmPbfUrl":"https://geocint.kontur.io/gis/belarus-latest.osm.pbf"},"id":"'`uuid`'"}' --message-group-id rebuildDockerImage--kontur-osrm-backend-by-car; \
+	fi
+
 data/planet-latest.osm.pbf: | data
-	wget -t inf https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf -O $@
+	rm data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
+	cd data; aria2c https://osm.cquest.org/torrents/planet-latest.osm.pbf.torrent --seed-time=0
+	mv data/planet-*.osm.pbf $@
+	rm data/planet-latest.osm.pbf.torrent
 	# TODO: smoke check correctness of file
 	touch $@
 
@@ -75,6 +88,10 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	osmium apply-changes data/planet-latest.osm.pbf data/planet-diff.osc -f pbf,pbf_compression=false -o data/planet-latest-updated.osm.pbf
 	# TODO: smoke check correctness of file
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
+	touch $@
+
+data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data
+	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
 	touch $@
 
 data/covid19: | data
@@ -110,6 +127,10 @@ db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
 	touch $@
 
+data/belarus_boundary.geojson: db/table/osm db/index/osm_tags_idx
+	psql -q -X -c "\copy (select ST_AsGeoJSON(belarus) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 59065 and tags @> '{\"boundary\":\"administrative\"}') belarus) to stdout" | jq -c . > data/belarus_boundary.geojson
+	touch $@
+
 db/function/osm_way_nodes_to_segments: | db/function
 	psql -f functions/osm_way_nodes_to_segments.sql
 	touch $@
@@ -120,6 +141,10 @@ db/function/h3: | db/function
 
 db/function/calculate_h3_res: db/function/h3
 	psql -f functions/calculate_h3_res.sql
+	touch $@
+
+db/function/h3_raster_sum_to_h3: | db/function
+	psql -f functions/h3_raster_sum_to_h3.sql
 	touch $@
 
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx
@@ -177,7 +202,7 @@ data/population_hrsl/download: | data/population_hrsl
 
 data/population_hrsl/unzip: data/population_hrsl/download
 	rm -rf *tif
-	cd data/population_hrsl; ls *zip | parallel "unzip -o {}"
+	cd data/population_hrsl; ls *.zip | parallel "unzip -o {}"
 	cd data/population_hrsl; ls *pop.tif | parallel 'gdal_translate -co "TILED=YES" -co "COMPRESS=DEFLATE" {} tiled_{}'
 	touch $@
 
@@ -188,8 +213,8 @@ db/table/hrsl_population_raster: data/population_hrsl/unzip | db/table
 	ls data/population_hrsl/tiled_*pop.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -M -Y -s 4326 {} -t 256x256 hrsl_population_raster | psql -q'
 	touch $@
 
-db/table/hrsl_population_vector: db/table/hrsl_population_raster
-	psql -f tables/hrsl_population_vector.sql
+db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3
+	psql -f tables/hrsl_population_grid_h3_r8.sql
 	touch $@
 
 db/table/hrsl_population_boundary: | db/table
@@ -204,16 +229,12 @@ db/table/fb_population_boundary: db/table/gadm_countries_boundary db/table/fb_co
 	psql -f tables/fb_population_boundary.sql
 	touch $@
 
-db/table/population_vector: db/table/hrsl_population_vector db/table/hrsl_population_boundary db/table/ghs_globe_population_vector db/table/fb_africa_population_vector db/table/fb_africa_population_boundary db/table/fb_population_vector db/table/fb_population_boundary | db/table
-	psql -f tables/population_vector.sql
-	touch $@
-
 db/table/osm_unpopulated: db/index/osm_tags_idx | db/table
 	psql -f tables/osm_unpopulated.sql
 	touch $@
 
-db/table/ghs_globe_population_vector: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 | db/table
-	psql -f tables/ghs_globe_population_vector.sql
+db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table
+	psql -f tables/ghs_globe_population_grid_h3_r8.sql
 	touch $@
 
 data/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip: | data
@@ -241,7 +262,7 @@ db/table/ghs_globe_residential_raster: data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_
 	raster2pgsql -M -Y -s 54009 data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif -t 256x256 ghs_globe_residential_raster | psql -q
 	touch $@
 
-db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 | db/table
+db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table
 	psql -f tables/ghs_globe_residential_vector.sql
 	touch $@
 
@@ -260,14 +281,29 @@ db/table/fb_africa_population_raster: data/population_africa_2018-10-01/populati
 	psql -c "alter table fb_africa_population_raster set (parallel_workers=32)"
 	touch $@
 
-db/table/fb_africa_population_vector: db/table/fb_africa_population_raster | db/table
-	psql -f tables/fb_africa_population_vector.sql
+db/table/fb_africa_population_grid_h3_r8: db/table/fb_africa_population_raster db/function/h3_raster_sum_to_h3 | db/table
+	psql -f tables/fb_africa_population_grid_h3_r8.sql
 	touch $@
 
 db/table/fb_country_codes: data/population_fb/unzip | db/table
 	psql -c "drop table if exists fb_country_codes"
 	psql -c "create table fb_country_codes (code varchar(3) not null, primary key (code))"
-	cd data/population_fb; ls *tif | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
+	cd data/population_fb; ls *.tif | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
+	touch $@
+
+data/copernicus_landcover: | data
+	mkdir -p $@
+
+data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif: data/copernicus_landcover
+	cd data/copernicus_landcover; wget -c -nc https://zenodo.org/record/3939050/files/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif
+
+db/table/copernicus_landcover_raster: data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif | db/table
+	psql -c "drop table if exists copernicus_landcover_raster"
+	raster2pgsql -M -Y -s 4326 data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif -t auto copernicus_landcover_raster | psql -q
+	touch $@
+
+db/table/copernicus_builtup_raster_h3_r8: db/table/copernicus_landcover_raster | db/table
+	psql -f tables/copernicus_builtup_raster_h3_r8.sql
 	touch $@
 
 data/population_fb: | data
@@ -279,9 +315,9 @@ data/population_fb/download: | data/population_fb
 	touch $@
 
 data/population_fb/unzip: data/population_fb/download
-	cd data/population_fb; rm -rf *tif
-	cd data/population_fb; rm -rf *xml
-	cd data/population_fb; ls *zip | parallel "unzip -o {}"
+	cd data/population_fb; rm -rf *.tif
+	cd data/population_fb; rm -rf *.xml
+	cd data/population_fb; ls *.zip | parallel "unzip -o {}"
 	touch $@
 
 db/table/osm_residential_landuse: db/index/osm_tags_idx
@@ -300,8 +336,12 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
-db/table/fb_population_vector: db/table/fb_population_raster | db/table
-	psql -f tables/fb_population_vector.sql
+db/table/building_count_grid_h3_r8: db/table/osm_building_count_grid_h3_r8 db/table/us_microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_raster_h3_r8 db/table/canada_microsoft_buildings_h3 db/table/africa_microsoft_buildings_h3 | db/table
+	psql -f tables/building_count_grid_h3_r8.sql
+	touch $@
+
+db/table/fb_population_grid_h3_r8: db/table/fb_population_raster db/function/h3_raster_sum_to_h3 | db/table
+	psql -f tables/fb_population_grid_h3_r8.sql
 	touch $@
 
 data/gadm/gadm36_levels_shp.zip: | data/gadm
@@ -367,7 +407,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/population_vector db/function/h3 | db/table
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/fb_africa_population_grid_h3_r8 db/table/fb_africa_population_boundary db/table/fb_population_grid_h3_r8 db/table/fb_population_boundary | db/table
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 
@@ -383,7 +423,175 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/osm_building_count_grid_h3_r8 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 | db/table
+data/firms: | data
+	mkdir -p $@
+
+data/firms/download: | data/firms
+	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_V1_162053.zip
+	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_J1V-C2_162052.zip
+	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_M6_162051.zip
+	touch $@
+
+data/firms/unzip: data/firms/download
+	cd data/firms; ls *.zip | parallel "unzip -o {}"
+	touch $@
+
+db/table/firms_fires: data/firms/unzip | db/table
+	psql -c "drop table if exists firms_fires"
+	psql -c "create table firms_fires (latitude float, longitude float, brightness float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, frp float, daynight text, acq_datetime timestamptz);"
+	rm -f data/firms/*_proc.csv
+	ls data/firms/*.csv | parallel "python3 scripts/convert_firms_timestamps.py {}"
+	ls data/firms/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, satellite, instrument, confidence, version, bright_t31, frp, daynight, acq_datetime) from stdin with csv header;\" "
+	touch $@
+
+db/table/firms_fires_h3: db/table/firms_fires
+	psql -f tables/firms_fires_h3.sql
+	touch $@
+
+db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg
+	touch $@
+
+db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
+	psql -f tables/morocco_urban_pixel_mask_h3.sql
+	touch $@
+
+db/table/morocco_buildings: data/morocco_results_fixed.gpkg | db/table
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_results_fixed.gpkg -nln morocco_buildings
+	psql -f tables/morocco_buildings.sql
+	touch $@
+
+db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table
+	psql -f tables/morocco_buildings_h3.sql
+	touch $@
+
+data/africa_buildings: | data
+	mkdir -p $@
+
+data/africa_buildings/download: | data/africa_buildings
+	cd data/africa_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/tanzania-uganda-buildings/Uganda_2019-09-16.zip
+	cd data/africa_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/tanzania-uganda-buildings/Tanzania_2019-09-16.zip
+	touch $@
+
+data/africa_buildings/unzip: data/africa_buildings/download
+	cd data/africa_buildings; ls *.zip | parallel "unzip -o {}"
+	touch $@
+
+db/table/africa_microsoft_buildings: data/africa_buildings/unzip | db/table
+	psql -c "drop table if exists africa_microsoft_buildings"
+	psql -c "create table africa_microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
+	cd data/africa_buildings; ls *.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln africa_microsoft_buildings'
+	touch $@
+
+db/table/africa_microsoft_buildings_h3: db/table/africa_microsoft_buildings | db/table
+	psql -f tables/africa_microsoft_buildings_h3.sql
+	touch $@
+
+data/canada_buildings: | data
+	mkdir -p $@
+
+data/canada_buildings/download: | data/canada_buildings
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Alberta.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/BritishColumbia.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Manitoba.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NewBrunswick.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NewfoundlandAndLabrador.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NorthwestTerritories.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NovaScotia.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Nunavut.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Ontario.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/PrinceEdwardIsland.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Quebec.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Saskatchewan.zip
+	cd data/canada_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/YukonTerritory.zip
+	touch $@
+
+data/canada_buildings/unzip: data/canada_buildings/download
+	cd data/canada_buildings; ls *.zip | parallel "unzip -o {}"
+	touch $@
+
+db/table/canada_microsoft_buildings: data/canada_buildings/unzip | db/table
+	psql -c "drop table if exists canada_microsoft_buildings"
+	psql -c "create table canada_microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
+	cd data/canada_buildings; ls *.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln canada_microsoft_buildings'
+	touch $@
+
+db/table/canada_microsoft_buildings_h3: db/table/canada_microsoft_buildings | db/table
+	psql -f tables/canada_microsoft_buildings_h3.sql
+	touch $@
+
+data/us_buildings: | data
+	mkdir -p $@
+
+data/us_buildings/download: | data/us_buildings
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Alabama.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Alaska.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Arizona.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Arkansas.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/California.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Colorado.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Connecticut.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Delaware.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/DistrictofColumbia.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Florida.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Georgia.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Hawaii.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Idaho.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Illinois.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Indiana.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Iowa.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Kansas.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Kentucky.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Louisiana.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Maine.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Maryland.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Massachusetts.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Michigan.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Minnesota.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Mississippi.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Missouri.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Montana.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Nebraska.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Nevada.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewHampshire.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewJersey.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewMexico.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewYork.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NorthCarolina.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NorthDakota.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Ohio.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Oklahoma.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Oregon.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Pennsylvania.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/RhodeIsland.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/SouthCarolina.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/SouthDakota.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Tennessee.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Texas.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Utah.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Vermont.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Virginia.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Washington.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/WestVirginia.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wisconsin.zip
+	cd data/us_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wyoming.zip
+	touch $@
+
+data/us_buildings/unzip: data/us_buildings/download
+	cd data/us_buildings; ls *.zip | parallel "unzip -o {}"
+	touch $@
+
+db/table/us_microsoft_buildings: data/us_buildings/unzip | db/table
+	psql -c "drop table if exists us_microsoft_buildings"
+	psql -c "create table us_microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
+	cd data/us_buildings; ls *.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln us_microsoft_buildings'
+	touch $@
+
+db/table/us_microsoft_buildings_h3: db/table/us_microsoft_buildings | db/table
+	psql -f tables/us_microsoft_buildings_h3.sql
+	touch $@
+
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3_r8 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx | db/table
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 
@@ -392,6 +600,31 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	rm -f data/kontur_population.gpkg
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
+
+db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
+	psql -f tables/osm_population_raw.sql
+	touch $@
+
+db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population_raw | db/procedure
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=2
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=3
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=4
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=5
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=6
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=7
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=8
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=9
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=10
+	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
+	touch $@
+
+db/table/osm_population_raw_idx: db/table/osm_population_raw
+	psql -c "create index on osm_population_raw using gist(geom)"
+	touch $@
+
+db/table/population_grid_h3_r8_osm_scaled: db/table/population_grid_h3_r8 db/procedure/decimate_admin_level_in_osm_population_raw db/table/osm_population_raw_idx
+	psql -f tables/population_grid_h3_r8_osm_scaled.sql
+	touch $@
 
 db/table/osm_landuses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_landuses.sql
@@ -416,7 +649,7 @@ data/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.geojson
 
 deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3
-	cd data/; aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body data/osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
@@ -460,6 +693,20 @@ deploy/s3/osm_addresses_minsk: data/osm_addresses_minsk.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_addresses_minsk.geojson.gz --body data/osm_addresses_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
+db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table
+	psql -f tables/osm_admin_boundaries.sql
+	touch $@
+
+data/osm_admin_boundaries.geojson.gz: db/table/osm_admin_boundaries
+	rm -vf data/osm_admin_boundaries.geojson*
+	ogr2ogr -f GeoJSON data/osm_admin_boundaries.geojson PG:'dbname=gis' -sql "select * from osm_admin_boundaries" -lco "SPATIAL_INDEX=NO" -nln osm_admin_boundaries
+	pigz data/osm_admin_boundaries.geojson
+	touch $@
+
+deploy/s3/osm_admin_boundaries: data/osm_admin_boundaries.geojson.gz | deploy/s3
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/osm_admin_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
+
 db/index/osm_buildings_geom_idx: db/table/osm_buildings | db/index
 	psql -c "create index on osm_buildings using gist (geom)"
 	touch $@
@@ -472,20 +719,35 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 
 db/table/bivariate_axis: db/table/bivariate_copyrights db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis.sql
+	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
 
 db/table/bivariate_overlays: db/table/osm_meta | db/table
 	psql -f tables/bivariate_overlays.sql
 	touch $@
 
-db/table/bivariate_copyrights: | db/table
+db/table/bivariate_copyrights: db/table/stat_h3 | db/table
 	psql -f tables/bivariate_copyrights.sql
+	touch $@
+
+data/tile_logs: | data
+	mkdir -p $@
+
+data/tile_logs/_download: | data/tile_logs data
+	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np -nc https://planet.openstreetmap.org/tile_logs/
+	touch $@
+
+db/table/tile_logs: data/tile_logs/_download | db/table
+	psql -f tables/tile_logs.sql
+	ls data/tile_logs/*.xz | sort -r -k2 -k3 -k4 | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
+	psql -f tables/tile_stats.sql
+	psql -f tables/tile_logs_h3.sql
 	touch $@
 
 data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_copyrights db/table/stat_h3 db/table/osm_meta | data/tiles
@@ -516,6 +778,7 @@ deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima
 		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
 		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
 		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/stats"; \
+		rm -f "$$HOME/tmp/stats_tiles.tar.bz2"; \
 	'
 	touch $@
 
@@ -546,6 +809,7 @@ deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
 		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
 		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
 		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/users"; \
+		rm -f "$$HOME/tmp/users_tiles.tar.bz2"; \
 	'
 	touch $@
 

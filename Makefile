@@ -426,7 +426,7 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 data/firms: | data
 	mkdir -p $@
 
-data/firms/download: data/firms
+data/firms/download: | data/firms
 	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_V1_162053.zip
 	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_J1V-C2_162052.zip
 	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_M6_162051.zip

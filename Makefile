@@ -439,9 +439,9 @@ data/firms/unzip: data/firms/download
 db/table/firms_fires: data/firms/unzip | db/table
 	psql -c "drop table if exists firms_fires"
 	psql -c "create table firms_fires (latitude float, longitude float, brightness float, scan float, track float, acq_date timestamptz, acq_time timestamptz, satellite int, instrument text, confidence text, version text, bright_t31 float, frp float, daynight text);"
-	cat data/firms/fire_nrt_J1V-C2_162052.csv | tail -n +1 | psql -c "set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, acq_date, acq_time, satellite, instrument, confidence, version, bright_t31, frp, daynight) from stdin with csv header;"
-	cat data/firms/fire_nrt_M6_162051.csv | tail -n +1 | psql -c "set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, acq_date, acq_time, satellite, instrument, confidence, version, bright_t31, frp, daynight) from stdin with csv header;"
-	cat data/firms/fire_nrt_V1_162053.csv | tail -n +1 | psql -c "set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, acq_date, acq_time, satellite, instrument, confidence, version, bright_t31, frp, daynight) from stdin with csv header;"
+	cat data/firms/fire_nrt_J1V-C2_162052.csv | psql -c "set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, acq_date, acq_time, satellite, instrument, confidence, version, bright_t31, frp, daynight) from stdin with csv header;"
+	cat data/firms/fire_nrt_M6_162051.csv | psql -c "set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, acq_date, acq_time, satellite, instrument, confidence, version, bright_t31, frp, daynight) from stdin with csv header;"
+	cat data/firms/fire_nrt_V1_162053.csv | psql -c "set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, acq_date, acq_time, satellite, instrument, confidence, version, bright_t31, frp, daynight) from stdin with csv header;"
 	touch $@
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table

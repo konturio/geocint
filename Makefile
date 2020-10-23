@@ -439,6 +439,7 @@ data/firms/unzip: data/firms/download
 db/table/firms_fires: data/firms/unzip | db/table
 	psql -c "drop table if exists firms_fires"
 	psql -c "create table firms_fires (latitude float, longitude float, brightness float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, frp float, daynight text, acq_datetime timestamptz);"
+	rm -f data/data/firms/*_proc.csv
 	ls data/firms/*.csv | python3 scripts/convert_firms_timestamps.py
 	cat data/firms/*_proc.csv | psql -c "set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, satellite, instrument, confidence, version, bright_t31, frp, daynight, acq_datetime) from stdin with csv header;"
 	touch $@

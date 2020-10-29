@@ -642,13 +642,13 @@ db/table/morocco_buildings_benchmark_geoalert: data/morocco_buildings_geoalert/a
 	psql -c "alter table morocco_buildings_benchmark_geoalert add column city text;"
 	psql -c "alter table morocco_buildings_benchmark_geoalert alter column wkb_geometry type geometry;"
 	psql -c "update morocco_buildings_benchmark_geoalert set city = 'Agadir' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/casablanca.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/casablanca.geojson -nln morocco_buildings_benchmark_geoalert
 	psql -c "update morocco_buildings_benchmark_geoalert set city = 'Casablanca' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/chefchaouen.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/chefchaouen.geojson -nln morocco_buildings_benchmark_geoalert
 	psql -c "update morocco_buildings_benchmark_geoalert set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/fes.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/fes.geojson -nln morocco_buildings_benchmark_geoalert
 	psql -c "update morocco_buildings_benchmark_geoalert set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/meknes.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/meknes.geojson -nln morocco_buildings_benchmark_geoalert
 	psql -c "update morocco_buildings_benchmark_geoalert set city = 'Meknes' where city is null;"
 	psql -c "delete from morocco_buildings_benchmark_geoalert where wkb_geometry is null;"
 	touch $@

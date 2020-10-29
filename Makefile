@@ -636,6 +636,23 @@ db/table/morocco_buildings_benchmark: data/morocco_buildings/agadir.geojson data
 	psql -c "delete from morocco_buildings_benchmark where wkb_geometry is null;"
 	touch $@
 
+db/table/morocco_buildings_benchmark_geoalert: data/morocco_buildings_geoalert/agadir.geojson data/morocco_buildings_geoalert/casablanca.geojson data/morocco_buildings_geoalert/chefchaouen.geojson data/morocco_buildings_geoalert/fes.geojson data/morocco_buildings_geoalert/meknes.geojson | db/table
+	psql -c "drop table if exists morocco_buildings_benchmark_geoalert;"
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/agadir.geojson -nln morocco_buildings_benchmark_geoalert
+	psql -c "alter table morocco_buildings_benchmark_geoalert add column city text;"
+	psql -c "alter table morocco_buildings_benchmark_geoalert alter column wkb_geometry type geometry;"
+	psql -c "update morocco_buildings_benchmark_geoalert set city = 'Agadir' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/casablanca.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark_geoalert set city = 'Casablanca' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/chefchaouen.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark_geoalert set city = 'Chefchaouen' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/fes.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark_geoalert set city = 'Fes' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/meknes.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark_geoalert set city = 'Meknes' where city is null;"
+	psql -c "delete from morocco_buildings_benchmark_geoalert where wkb_geometry is null;"
+	touch $@
+
 db/table/morocco_buildings_iou: db/table/morocco_buildings db/table/morocco_buildings_benchmark_aoi db/table/morocco_buildings_benchmark_footprints
 	psql -f tables/morocco_buildings_iou.sql
 	touch $@

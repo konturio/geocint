@@ -83,6 +83,13 @@ set min_height = (
     where ST_Intersects(ST_PointOnSurface(a.geom), b.geom)
 );
 
+-- update morocco_buildings_linework_ph2 a
+-- set min_height = p.max_height
+-- from (select max(building_height) as max_height, geom
+--     from morocco_buildings_benchmark_phase2
+--     group by geom) p
+--     where ST_Intersects(ST_PointOnSurface(a.geom), p.geom);
+
 update morocco_buildings_linework_ph2 a
 set max_height = (
     select max(building_height)
@@ -125,7 +132,8 @@ create table morocco_buildings_iou_feature as (
     select distinct footprint as geom_morocco_buildings,
            building_height as building_height_morocco_buildings,
            null::geometry as geom_phase2,
-           null::float as building_height_phase2
+           null::float as building_height_phase2,
+           is_confident
     from morocco_buildings_benchmark
 );
 
@@ -189,5 +197,15 @@ group by 1;
 select city, sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2)))
 from morocco_buildings_iou_feature a
          join morocco_buildings_benchmark_aoi b on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
-where building_height_phase2 > 0 and building_height_morocco_buildings>0
+where building_height_phase2 > 0 and building_height_morocco_buildings > 0
 group by 1;
+
+-- calculate HRMSD in metres where is_confident = true
+select city, sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2)))
+from morocco_buildings_iou_feature a
+         join morocco_buildings_benchmark_aoi b on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
+where building_height_phase2 > 0
+  and building_height_morocco_buildings > 0
+    and is_confident is true
+group by 1;
+

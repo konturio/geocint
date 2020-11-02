@@ -192,6 +192,15 @@ from morocco_buildings_iou_feature m
               on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
 group by 1;
 
+select a.city,
+       avg(ST_Area(ST_Intersection(geom_morocco_buildings, geom_phase2)) /
+           ST_Area(ST_Union(geom_morocco_buildings, geom_phase2)))
+from morocco_buildings_iou_feature m
+         join morocco_buildings_benchmark_aoi a
+              on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
+where not ST_isEmpty(geom_morocco_buildings) and not ST_isEmpty(geom_phase2)
+group by 1;
+
 
 -- Step 5. Height metrics
 -- calculate HRMSD in metres
@@ -298,4 +307,8 @@ where exists(
 select city, count(*)
 from morocco_buildings_benchmark
 where is_confident is true
+group by city;
+
+select city, count(*)
+from morocco_buildings_benchmark_phase2
 group by city;

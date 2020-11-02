@@ -42,7 +42,7 @@ alter table morocco_buildings_benchmark
 -- stitch together blocks of the same height to match them to similar blocks in other dataset
 drop table if exists morocco_buildings_benchmark_union;
 create table morocco_buildings_benchmark_union as (
-    select (ST_Dump(ST_Union(geom))).geom as geom,
+    select (ST_Dump(ST_Union(ST_MakeValid(ST_SnapToGrid(geom, 0.1))))).geom  as geom,
            building_height,
            city
     from morocco_buildings_benchmark

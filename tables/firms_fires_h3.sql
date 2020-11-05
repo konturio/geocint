@@ -5,9 +5,9 @@ create table firms_fires_h3 as (
     from firms_fires
 );
 
-drop table firms_fires_h3_r6;
-create table firms_fires_h3_r6 as (
-    select count(*) as fires,
+drop table firms_fires_h3_r8;
+create table firms_fires_h3_r8 as (
+    select count(*) as wildfires,
            h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 6) as h3
     from firms_fires
     group by 2

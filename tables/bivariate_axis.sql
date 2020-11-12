@@ -51,7 +51,8 @@ create table stat_h3_quality as (
                 avg(a.total_hours) as agg_total_hours,
                 avg(a.view_count) as agg_view_count,
                 avg(a.area_km2) as agg_area_km2,
-                avg(a.one) as agg_one
+                avg(a.one) as agg_one,
+                avg(a.total_building_count) as agg_total_building_count
             from
                 stat_h3 a
             where
@@ -155,12 +156,20 @@ set
 where
       numerator = 'view_count'
   and denominator = 'area_km2';
+
 update bivariate_axis
 set
     label = 'OpenStreetMap Contributors (n)'
 where
       numerator = 'osm_users'
   and denominator = 'one';
+
+update bivariate_axis
+set
+    label = 'Total buildings count (n/km²)'
+where
+      numerator = 'total_building_count'
+  and denominator = 'area_km2';
 
 update bivariate_axis set label = '90% mapped before (date)' where numerator = 'p90_ts' and denominator = 'one';
 

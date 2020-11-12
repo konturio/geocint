@@ -65,3 +65,10 @@ values ('population', jsonb_build_array(
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.3939050',
         'Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
+
+insert into bivariate_copyrights (param_id, copyrights)
+values ('total_building_count', jsonb_build_array(
+'© Kontur https://kontur.io/',
+        'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) [Data set]. Zenodo. http://doi.org/10.5281/zenodo.3939050',
+        'Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
+        '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));

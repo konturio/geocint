@@ -80,32 +80,28 @@ vacuum full covid19_admin_subdivided;
 alter table kontur_population_h3
     set (parallel_workers=32);
 analyse kontur_population_h3;
-drop table if exists covid19_population_h3_r6;
+
+drop table if exists covid19_population_h3_r8;
 create table covid19_population_h3_r6 as
     (
         select *,
                null::int as admin_id
-        from
-            kontur_population_h3 h
-        where
-            resolution = 6
+        from kontur_population_h3 h
+        where resolution = 8
     );
 
-create index on covid19_population_h3_r6 using gist ((h3::geometry));
-update covid19_population_h3_r6 h
-set
-    admin_id = id
-from
-    covid19_admin_subdivided a
-where
-    ST_DWithin(h.h3::geometry, a.geom, 0);
+create index on covid19_population_h3_r8 using gist ((h3::geometry));
+update covid19_population_h3_r8 h
+set admin_id = id
+from covid19_admin_subdivided a
+where ST_DWithin(h.h3::geometry, a.geom, 0);
 
-vacuum analyse covid19_population_h3_r6;
-create index on covid19_population_h3_r6 (admin_id);
+vacuum analyse covid19_population_h3_r8;
+create index on covid19_population_h3_r8 (admin_id);
 
 alter table covid19_admin
     add column population int;
-update covid19_admin set population = ( select sum(population) from covid19_population_h3_r6 where id = admin_id );
+update covid19_admin set population = ( select sum(population) from covid19_population_h3_r8 where id = admin_id );
 select country, province, population from covid19_admin order by population desc;
 
 alter table covid19_in
@@ -149,10 +145,47 @@ create table covid19_hex as (
         coalesce(c.dead::float * b.population / c.population, 0) as dead
     from
             ( select distinct date from covid19_log ) as a
-            left join covid19_population_h3_r6           b on true
+            left join covid19_population_h3_r8           b on true
             left join covid19_log                        c on c.date = a.date and b.admin_id = c.admin_id
     order by a.date, b.h3
 );
+
+drop table if exists covid19_h3;
+create table covid_h3 as (
+    select h3,
+           resolution,
+           total_population,
+           confirmed,
+           recovered,
+           dead
+    from covid19_hex
+);
+
+alter table covid19_h3
+    set (parallel_workers = 32);
+
+do
+$$
+    declare
+        res integer;
+    begin
+        res = 8;
+        while res > 0
+            loop
+                insert into covid19_hex (h3, resolution, total_population, confirmed, recovered, dead)
+                select h3_to_parent(h3)      as h3,
+                       (res - 1)             as resolution,
+                       sum(total_population) as total_population,
+                       sum(confirmed)        as confirmed,
+                       sum(recovered)        as recovered,
+                       sum(dead)             as dead
+                from covid19_h3
+                where resolution = res
+                group by 1;
+                res = res - 1;
+            end loop;
+    end;
+$$;
 
 drop table if exists covid19_dithered;
 create table covid19_dithered (

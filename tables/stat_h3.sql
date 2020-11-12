@@ -6,7 +6,7 @@ create table stat_h3_in as (
            resolution as zoom,
            coalesce(sum(count), 0) as count,
            coalesce(sum(building_count), 0) as building_count,
-           sum(total_building_count) as total_building_count,
+           coalesce(sum(total_building_count), 0) as total_building_count,
            coalesce(sum(highway_length), 0) as highway_length,
            coalesce(sum(osm_users), 0) as osm_users,
            coalesce(sum(population), 0) as population,
@@ -64,8 +64,6 @@ create table stat_h3_in as (
          ) z
     group by 2, 1
 );
-
-select avg(building_count / total_building_count) from stat_h3;
 
 alter table stat_h3_in
     set (parallel_workers=32);

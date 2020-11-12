@@ -27,3 +27,24 @@ create table building_count_grid_h3_r8 as (
          ) z
     group by 1
 );
+
+alter table building_count_grid_h3_r8
+    set (parallel_workers = 32);
+
+do
+$$
+    declare
+        res integer;
+    begin
+        res = 8;
+        while res > 0
+            loop
+                insert into building_count_grid_h3_r8 (h3, building_count, resolution)
+                select h3_to_parent(h3) as h3, sum(building_count) as building_count, (res - 1) as resolution
+                from building_count_grid_h3_r8
+                where resolution = res
+                group by 1;
+                res = res - 1;
+            end loop;
+    end;
+$$;

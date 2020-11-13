@@ -13,7 +13,8 @@ copy (
                                                               'p90_ts', '90 Percentile time stamp',
                                                               'area_km2', 'Area',
                                                               'one', '1',
-                                                              'total_building_count', 'Total building count'
+                                                              'total_building_count', 'Total building count',
+                                                              'wildfires', 'Wildfires'
                                ),
                            'meta', jsonb_build_object('max_zoom', 8,
                                                       'min_zoom', 0),

@@ -171,6 +171,13 @@ where
       numerator = 'total_building_count'
   and denominator = 'area_km2';
 
+update bivariate_axis
+set
+    label = 'Wildfires (n/km²)'
+where
+      numerator = 'wildfires'
+  and denominator = 'area_km2';
+
 update bivariate_axis set label = '90% mapped before (date)' where numerator = 'p90_ts' and denominator = 'one';
 
 update bivariate_axis

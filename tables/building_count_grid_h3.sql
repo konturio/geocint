@@ -1,5 +1,5 @@
-drop table if exists building_count_grid_h3_r8;
-create table building_count_grid_h3_r8 as (
+drop table if exists building_count_grid_h3;
+create table building_count_grid_h3 as (
     select h3,
            8 as resolution,
            max(building_count) as building_count
@@ -28,7 +28,7 @@ create table building_count_grid_h3_r8 as (
     group by 1
 );
 
-alter table building_count_grid_h3_r8
+alter table building_count_grid_h3
     set (parallel_workers = 32);
 
 do
@@ -39,9 +39,9 @@ $$
         res = 8;
         while res > 0
             loop
-                insert into building_count_grid_h3_r8 (h3, building_count, resolution)
+                insert into building_count_grid_h3 (h3, building_count, resolution)
                 select h3_to_parent(h3) as h3, sum(building_count) as building_count, (res - 1) as resolution
-                from building_count_grid_h3_r8
+                from building_count_grid_h3
                 where resolution = res
                 group by 1;
                 res = res - 1;

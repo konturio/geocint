@@ -60,7 +60,7 @@ create table stat_h3_in as (
              select h3, null::float as count, null::float as building_count, null::float as total_building_count, null::float as highway_length,
                     null::float as osm_users, null::float as population, null::float as residential, null::float as gdp,
                     null::float as avg_ts, null::float as max_ts, null::float as p90_ts, null::float as local_hours,
-                    null::float as total_hours, view_count::float as view_count, wildfires as wildfires, resolution
+                    null::float as total_hours, null::float as view_count, wildfires as wildfires, resolution
              from firms_fires_h3
          ) z
     group by 2, 1

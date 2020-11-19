@@ -4,4 +4,4 @@ csv_path = sys.argv[1]
 df = pd.read_csv(csv_path)
 df = df.melt(id_vars=['Province/State', 'Country/Region', 'Lat', 'Long'], var_name='date', value_name='value')
 df['date'] = pd.to_datetime(df.date)
-df.to_csv(csv_path.replace('_.csv', '_normalized.csv'), index=False, header=True)
+df.to_csv(csv_path.replace('.csv', '_normalized.csv'), index=False, header=True)

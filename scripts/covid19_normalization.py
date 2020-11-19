@@ -2,7 +2,6 @@ import pandas as pd
 import sys
 
 csv_path = sys.argv[1]
-print(csv_path)
 df = pd.read_csv(csv_path)
 df = df.melt(id_vars=['Province/State', 'Country/Region', 'Lat', 'Long'], var_name='date', value_name='value')
 df['date'] = pd.to_datetime(df.date)

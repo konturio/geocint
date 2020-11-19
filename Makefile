@@ -108,11 +108,11 @@ db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_t
 	psql -c 'create table covid19_in (province text, country text, lat float, lon float, date timestamptz, value int, status text);'
 	rm -f data/covid19/*_normalized.csv
 	ls data/covid19/time_series_* | parallel "python3 scripts/covid19_normalization.py {}"
-	cat data/covid19/time_series_confirmed_normalized.csv | tail -n +2 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	cat data/covid19/time_series_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
 	psql -c "update covid19_in set status='confirmed' where status is null;"
-	cat data/covid19/time_series_deaths_normalized.csv | tail -n +2 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	cat data/covid19/time_series_deaths_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
 	psql -c "update covid19_in set status='dead' where status is null;"
-	cat data/covid19/time_series_recovered_normalized.csv | tail -n +2 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	cat data/covid19/time_series_recovered_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
 	psql -c "update covid19_in set status='recovered' where status is null;"
 	psql -f tables/covid19.sql
 	touch $@

@@ -26,7 +26,7 @@ create table morocco_buildings_benchmark_aoi as (
 -- clip CV-detected buildings using the convex hull of manually mapped ones
 drop table if exists morocco_buildings_benchmark_phase2;
 create table morocco_buildings_benchmark_phase2 as (
-    select building_height,
+    select height as building_height,
            ST_Intersection(ST_Transform(b.geom, 3857), a.geom) as geom,
            a.city
     from morocco_buildings                    b

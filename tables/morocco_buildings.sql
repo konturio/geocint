@@ -12,9 +12,15 @@ alter table morocco_buildings
 alter table morocco_buildings
     drop column osm_landuse_class;
 alter table morocco_buildings
-    rename column is_validated to manually_reviewed;
+    drop column sun_azimuth;
 alter table morocco_buildings
-    rename column is_footprint to height_is_valid;
+    drop column sun_elevation;
+alter table morocco_buildings
+    drop column sat_azimuth;
+alter table morocco_buildings
+    drop column sat_elevation;
+alter table morocco_buildings
+    rename column _height_confidence to height_is_valid;
 
 -- convert multipolygons to polygons
 update morocco_buildings

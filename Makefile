@@ -458,7 +458,7 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
 
 db/table/morocco_buildings: data/geoalert_morocco_stage_2.gpkg | db/table
 	psql -c "drop table if exists morocco_buildings;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/geoalert_morocco_stage_2.gpkg "footprints" -nln morocco_buildings
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/geoalert_morocco_stage_2.gpkg "footprints" -nlt MULTISURFACE -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
 	touch $@
 

@@ -26,10 +26,15 @@ alter table morocco_buildings
 update morocco_buildings
 set geom = ST_CollectionHomogenize(geom);
 
--- drop empty rows
-delete from morocco_buildings where geom is null;
+-- drop geometry with type MultiSurface
+delete
+from morocco_buildings
+where ST_GeometryType(geom) = 'ST_MultiSurface';
 
 -- make geom robust to conversion to mercator
 update morocco_buildings
-set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(ST_MakeValid(ST_Transform(geom, 3857)), 4326)), 3)
+set geom = ST_CollectionExtract(ST_MakeValid(geom), 3)
 where not ST_IsValid(ST_Transform(geom, 3857));
+
+select count(*)
+from morocco_buildings;

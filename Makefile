@@ -653,7 +653,7 @@ db/table/morocco_buildings_benchmark_geoalert: data/morocco_buildings_geoalert/a
 	psql -c "delete from morocco_buildings_benchmark_geoalert where wkb_geometry is null;"
 	touch $@
 
-db/table/morocco_buildings_benchmark_geoalert_footprints: data/morocco_buildings_benchmark_geoalert_footprints/agadir.geojson data/morocco_buildings_benchmark_geoalert_footprints/casablanca.geojson data/morocco_buildings_benchmark_geoalert_footprints/chefchaouen.geojson data/morocco_buildings_benchmark_geoalert_footprints/fes.geojson data/morocco_buildings_benchmark_geoalert_footprints/meknes.geojson | db/table
+db/table/morocco_buildings_benchmark_geoalert_footprints: data/morocco_buildings_benchmark_geoalert_footprints/agadir_footprints.geojson data/morocco_buildings_benchmark_geoalert_footprints/casablanca_footprints.geojson data/morocco_buildings_benchmark_geoalert_footprints/casablanca_footprints.geojson data/morocco_buildings_benchmark_geoalert_footprints/fes_footprints.geojson data/morocco_buildings_benchmark_geoalert_footprints/meknes_footprints.geojson | db/table
 	psql -c "drop table if exists morocco_buildings_benchmark_geoalert_footprints;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_benchmark_geoalert_footprints/agadir_footprints.geojson -nln morocco_buildings_benchmark_geoalert
 	psql -c "alter table morocco_buildings_benchmark_geoalert_footprints add column city text;"

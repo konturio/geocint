@@ -4,6 +4,7 @@
 data/*
 !data/morocco_buildings/
 !data/morocco_buildings_geoalert/
+!data/morocco_buildings_geoalert_footprints/
 db
 deploy
 make_profile.db

@@ -36,5 +36,6 @@ update morocco_buildings
 set geom = ST_CollectionExtract(ST_MakeValid(geom), 3)
 where not ST_IsValid(ST_Transform(geom, 3857));
 
-select count(*)
-from morocco_buildings;
+select count(geom), ST_GeometryType(geom)
+from morocco_buildings
+group by 2;

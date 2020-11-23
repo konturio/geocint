@@ -19,7 +19,7 @@ create table morocco_buildings_benchmark_phase2 as (
     select height as building_height,
            ST_Intersection(ST_Transform(b.geom, 3857), a.geom) as geom,
            a.city
-    from morocco_buildings b
+    from morocco_buildings_benchmark_geoalert_footprints b
              join morocco_buildings_benchmark_aoi a on ST_Intersects(b.geom, ST_Transform(a.geom, 4326))
 );
 
@@ -76,13 +76,17 @@ set min_height = 0,
 
 create index on morocco_buildings_benchmark_phase2 using gist (geom);
 create index on morocco_buildings_benchmark using gist (footprint);
+create index on morocco_buildings_linework_ph2 using gist(geom);
 
 -- for each piece, get heights from both datasets. will swap them later.
+
+set enable_seqscan to off;
 update morocco_buildings_linework_ph2 a
 set min_height = (
     select max(building_height)
     from morocco_buildings_benchmark_phase2 b
     where ST_Intersects(ST_PointOnSurface(a.geom), b.geom)
+    and a.geom && b.geom
 );
 
 update morocco_buildings_linework_ph2 a

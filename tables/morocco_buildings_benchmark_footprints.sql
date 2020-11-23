@@ -76,7 +76,6 @@ create table morocco_benchmark_shifts as (
     group by city
 );
 
-drop table morocco_buildings_benchmark_union;
 -- update footprint
 update morocco_buildings_benchmark b
 set footprint = ST_Translate(geom, building_height / s.x, building_height / s.y)

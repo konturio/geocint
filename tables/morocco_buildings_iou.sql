@@ -226,8 +226,6 @@ group by 1;
 
 
 -- Step 6. IoU roofprints
-alter table morocco_buildings_benchmark_geoalert
-    rename column wkb_geometry to geom;
 update morocco_buildings_benchmark_geoalert
 set geom = ST_Transform(ST_SetSRID(geom, 4326), 3857);
 

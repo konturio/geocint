@@ -1,7 +1,5 @@
 -- change schema to match the one expected by consumers
 alter table morocco_buildings_geoalert_footprints
-    alter column geom type geometry;
-alter table morocco_buildings_geoalert_footprints
     drop column id;
 alter table morocco_buildings_geoalert_footprints
     drop column _block_id;

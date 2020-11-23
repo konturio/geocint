@@ -681,7 +681,7 @@ data/morocco_buildings/morocco_buildings_manual.geojson.gz: db/table/morocco_bui
 	cd data/morocco_buildings; pigz morocco_buildings_manual.geojson
 	cd data/morocco_buildings; pigz morocco_buildings_manual_roof.geojson
 
-db/table/morocco_buildings_benchmark_footprints: db/table/morocco_buildings_benchmark db/table/morocco_buildings_benchmark_geoalert_footprints
+db/table/morocco_buildings_benchmark_footprints: db/table/morocco_buildings_benchmark db/table/morocco_buildings_geoalert_footprints
 	psql -f tables/morocco_buildings_benchmark_footprints.sql
 	touch $@
 

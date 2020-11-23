@@ -670,7 +670,7 @@ db/table/morocco_buildings_geoalert_footprints: data/morocco_buildings_geoalert_
 	psql -c "delete from morocco_buildings_geoalert_footprints where wkb_geometry is null;"
 	touch $@
 
-db/table/morocco_buildings_iou: db/table/morocco_buildings_geoalert_footprints db/table/morocco_buildings_benchmark_aoi db/table/morocco_buildings_benchmark_footprints
+db/table/morocco_buildings_iou: db/table/morocco_buildings_geoalert_footprints db/table/morocco_buildings_benchmark_aoi db/table/morocco_buildings_benchmark_footprints db/table/morocco_buildings_geoalert
 	psql -f tables/morocco_buildings_iou.sql
 	touch $@
 

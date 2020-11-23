@@ -227,7 +227,7 @@ group by 1;
 
 -- Step 6. IoU roofprints
 update morocco_buildings_benchmark_geoalert
-set geom = ST_Transform(ST_SetSRID(geom, 4326), 3857);
+set geom = ST_Transform(geom, 3857);
 
 drop table if exists morocco_buildings_benchmark_geoalert_union;
 create table morocco_buildings_benchmark_geoalert_union as (

@@ -17,10 +17,10 @@
 drop table if exists morocco_buildings_benchmark_phase2;
 create table morocco_buildings_benchmark_phase2 as (
     select building_height as building_height,
-           ST_Intersection(ST_Transform(b.wkb_geometry, 3857), a.geom) as geom,
+           ST_Intersection(ST_Transform(b.geom, 3857), a.geom) as geom,
            a.city
     from morocco_buildings_geoalert_footprints b
-             join morocco_buildings_benchmark_aoi a on ST_Intersects(b.wkb_geometry, ST_Transform(a.geom, 4326))
+             join morocco_buildings_benchmark_aoi a on ST_Intersects(b.geom, ST_Transform(a.geom, 4326))
 );
 
 -- round the coordinates a little bit to make intersection/union more robust
@@ -251,62 +251,6 @@ from (
          select distinct city as ref_city
          from morocco_buildings_benchmark_union
      ) z;
-
-
--- Step 7. Roads intersection with footprints and roofprints
-drop table if exists morocco_osm_road_segments;
-create table morocco_osm_road_segments as (
-    select *
-    from osm_road_segments o
-    where ST_Intersects(seg_geom, (select ST_Transform(ST_Union(geom), 4326)
-                                   from gadm_countries_boundary
-                                   where gid_0 in ('MAR'))
-        )
-      and walk_time > 0
-);
-
-drop table if exists morocco_osm_road_segments;
-create table morocco_osm_road_segments as (
-    select *
-    from osm_road_segments o
-    where ST_Intersects(seg_geom, (select ST_Transform(ST_Union(geom), 4326)
-                                   from morocco_buildings_benchmark_aoi)
-        )
-      and walk_time > 0
-);
-
-create index on morocco_osm_road_segments using gist (seg_geom);
-
-create table morocco_buildings_roads_intersects as (
-    select *
-    from morocco_buildings_benchmark
-    where exists(
-                  select
-                  from morocco_osm_road_segments
-                  where ST_Intersects(seg_geom, ST_Transform(footprint, 4326))
-                    and walk_time > 0
-                    and seg_geom && ST_Transform(footprint, 4326))
-    group by city
-);
-
-select city, count(*)
-from morocco_buildings_benchmark
-where exists(
-              select
-              from morocco_osm_road_segments
-              where ST_Intersects(seg_geom, ST_Transform(footprint, 4326))
-                and walk_time > 0
-                and seg_geom && ST_Transform(footprint, 4326))
-group by city;
-
-select *
-from morocco_buildings_benchmark
-where exists(
-              select
-              from morocco_osm_road_segments
-              where ST_Intersects(seg_geom, ST_Transform(geom, 4326))
-                and walk_time > 0
-                and seg_geom && ST_Transform(geom, 4326));
 
 select city, count(*)
 from morocco_buildings_benchmark

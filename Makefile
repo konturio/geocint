@@ -668,6 +668,7 @@ db/table/morocco_buildings_geoalert_footprints: data/morocco_buildings_geoalert_
 	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert_footprints/meknes_footprints.geojson -nln morocco_buildings_geoalert_footprints
 	psql -c "update morocco_buildings_geoalert_footprints set city = 'Meknes' where city is null;"
 	psql -c "delete from morocco_buildings_geoalert_footprints where wkb_geometry is null;"
+	psql -f table/morocco_buildings_geoalert_footprints.sql
 	touch $@
 
 db/table/morocco_buildings_iou: db/table/morocco_buildings_geoalert_footprints db/table/morocco_buildings_benchmark_aoi db/table/morocco_buildings_benchmark_footprints db/table/morocco_buildings_geoalert

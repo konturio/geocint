@@ -19,7 +19,7 @@ create table morocco_buildings_benchmark_phase2 as (
     select height as building_height,
            ST_Intersection(ST_Transform(b.geom, 3857), a.geom) as geom,
            a.city
-    from morocco_buildings_benchmark_geoalert_footprints b
+    from morocco_buildings_geoalert_footprints b
              join morocco_buildings_benchmark_aoi a on ST_Intersects(b.geom, ST_Transform(a.geom, 4326))
 );
 

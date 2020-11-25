@@ -207,7 +207,7 @@ where ST_IsEmpty(geom_phase2)
 -- calculate average IoU metrics of every buildings: 0.286
 select a.city,
        avg(ST_Area(ST_Intersection(geom_morocco_buildings, geom_phase2)) /
-           ST_Area(ST_Union(geom_morocco_buildings, geom_phase2)))
+           ST_Area(ST_Union(geom_morocco_buildings, geom_phase2))) as "Per-segment_IoU"
 from morocco_buildings_iou_feature m
          join morocco_buildings_benchmark_aoi a
               on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
@@ -215,7 +215,7 @@ group by 1;
 
 select a.city,
        avg(ST_Area(ST_Intersection(geom_morocco_buildings, geom_phase2)) /
-           ST_Area(ST_Union(geom_morocco_buildings, geom_phase2)))
+           ST_Area(ST_Union(geom_morocco_buildings, geom_phase2))) as "Per-segment_IoU_not_matched"
 from morocco_buildings_iou_feature m
          join morocco_buildings_benchmark_aoi a
               on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
@@ -225,7 +225,7 @@ group by 1;
 
 -- Step 5. Height metrics
 -- calculate HRMSD in metres
-select city, sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2)))
+select city, sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2))) as "Height_RMSD"
 from morocco_buildings_iou_feature a
          join morocco_buildings_benchmark_aoi b on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
 where building_height_phase2 > 0
@@ -233,7 +233,7 @@ where building_height_phase2 > 0
 group by 1;
 
 -- calculate HRMSD in metres where is_confident = true
-select city, sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2)))
+select city, sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2))) as "Height_RMSD_verified"
 from morocco_buildings_iou_feature a
          join morocco_buildings_benchmark_aoi b on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
 where building_height_phase2 > 0
@@ -270,7 +270,7 @@ select ST_Area(ST_Intersection(
         (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_benchmark_union where city = ref_city))) /
        ST_Area(ST_Union(
                (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_benchmark_roofprints_union where city = ref_city),
-               (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_benchmark_union where city = ref_city)))
+               (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_benchmark_union where city = ref_city))) as "2D_IoU_roofprints"
 from (
          select distinct city as ref_city
          from morocco_buildings_benchmark_union

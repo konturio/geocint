@@ -14,11 +14,12 @@
 --     alter column geom type geometry;
 
 -- clip CV-detected buildings using the convex hull of manually mapped ones
-
+alter table morocco_buildings_manual_roofprints
+    rename column wkb_geometry to geom;
 alter table morocco_buildings_manual_roofprints
     alter column geom type geometry;
 update morocco_buildings_manual_roofprints
-set geom = ST_Transform(geom, 3857);
+set geom = ST_Transform(ST_SetSRID(geom, 4326), 3857);
 
 alter table morocco_buildings_manual
     rename column wkb_geometry to footprint;

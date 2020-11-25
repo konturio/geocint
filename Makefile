@@ -622,7 +622,7 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 	touch $@
 
 db/table/morocco_buildings_manual_roofprints: data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson
-	psql -c "drop table if exists morocco_buildings_manual;"
+	psql -c "drop table if exists morocco_buildings_manual_roofprints;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson -nln morocco_buildings_manual_roofprints
 	touch $@
 

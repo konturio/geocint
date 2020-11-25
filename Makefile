@@ -456,7 +456,7 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
 	psql -f tables/morocco_urban_pixel_mask_h3.sql
 	touch $@
 
-db/table/morocco_buildings: data/geoalert_morocco_stage_2.gpkg | db/table
+db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_2.gpkg | db/table
 	psql -c "drop table if exists morocco_buildings;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_2.gpkg "footprints" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
@@ -662,7 +662,7 @@ db/table/morocco_buildings_benchmark: data/morocco_buildings_geoalert_footprints
 	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert_footprints/fes_footprints.geojson -nln morocco_buildings_benchmark
 	psql -c "update morocco_buildings_benchmark set city = 'Fes' where city is null;"
 	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert_footprints/meknes_footprints.geojson -nln morocco_buildings_benchmark
-	psql -c "update morocco_buildings_geoalert_footprints set city = 'Meknes' where city is null;"
+	psql -c "update morocco_buildings_benchmark set city = 'Meknes' where city is null;"
 	psql -c "delete from morocco_buildings_benchmark where wkb_geometry is null;"
 	psql -f table/morocco_buildings_benchmark.sql
 	touch $@

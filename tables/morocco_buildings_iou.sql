@@ -151,6 +151,8 @@ create table morocco_buildings_iou_feature as (
     from morocco_buildings_manual
 );
 
+create index on morocco_buildings_iou_feature using gist(geom_phase2);
+create index on morocco_buildings_iou_feature using gist(geom_morocco_buildings);
 -- match geometries if representative point on one is insede other and vice versa.
 -- in case of collision take option with better IoU.
 update morocco_buildings_iou_feature a
@@ -242,11 +244,11 @@ group by 1;
 
 -- Step 6. IoU roofprints
 update morocco_buildings_benchmark_roofprints
-set wkb_geometry = ST_Transform(wkb_geometry, 3857);
+set geom = ST_Transform(geom, 3857);
 
 drop table if exists morocco_buildings_benchmark_roofprints_union;
 create table morocco_buildings_benchmark_roofprints_union as (
-    select (ST_Dump(ST_Union((wkb_geometry)))).geom as geom,
+    select (ST_Dump(ST_Union((geom)))).geom as geom,
            building_height,
            city
     from morocco_buildings_benchmark_roofprints

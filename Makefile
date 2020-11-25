@@ -460,7 +460,7 @@ db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_2.gpkg
 	psql -c "drop table if exists morocco_buildings;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_2.gpkg "footprints" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
-	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_footprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326) as footprint, height as building_height, height_is_valid, is_residential, processing_date from morocco_buildings' -nln morocco_buildings_footprints_phase2
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_footprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326) as footprint, height as building_height, height_is_valid, is_residential, imagery_vintage from morocco_building_date' -nln morocco_buildings_footprints_phase2
 	cd data/morocco_buildings; pigz morocco_buildings_footprints_phase2.geojson
 	touch $@
 
@@ -672,11 +672,11 @@ db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints 
 	touch $@
 
 data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz: db/table/morocco_buildings_benchmark
-	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, imagery_vintage, height_confidence, is_residential from morocco_buildings_benchmark' -nln morocco_buildings_benchmark
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, height_confidence, is_residential from morocco_buildings_benchmark' -nln morocco_buildings_benchmark
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark_phase2.geojson
 
 data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz: db/table/morocco_buildings_benchmark_roofprints
-	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, imagery_vintage, height_confidence, is_residential from morocco_buildings_geoalert_footprints' -nln morocco_buildings_benchmark_footprints
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, height_confidence, is_residential from morocco_buildings_geoalert_footprints' -nln morocco_buildings_benchmark_footprints
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark_roofprints_phase2.geojson
 
 db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_manual

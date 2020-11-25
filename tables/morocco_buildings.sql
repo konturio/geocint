@@ -18,7 +18,7 @@ alter table morocco_buildings
 alter table morocco_buildings
     drop column sat_elevation;
 alter table morocco_buildings
-    rename column processing_date to imagery_vintage;
+    drop column processing_date;
 alter table morocco_buildings
     rename column _height_confidence to height_confidence;
 
@@ -30,3 +30,18 @@ set geom = ST_CollectionHomogenize(geom);
 update morocco_buildings
 set geom = ST_CollectionExtract(ST_MakeValid(geom), 3)
 where not ST_IsValid(ST_Transform(geom, 3857));
+
+drop table morocco_buildings_date;
+create table morocco_buildings_date as (
+    select m.*,
+           n.date as imagery_vintage
+    from morocco_buildings m
+    join morocco_meta_finished_november_2020 n
+    on ST_Intersects(wkb_geometry, geom)
+);
+
+select count(*)
+from morocco_buildings_date;
+
+select count(*)
+from morocco_buildings;

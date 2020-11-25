@@ -672,7 +672,7 @@ db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints 
 	touch $@
 
 db/table/morocco_buildings_iou_new_dataset: db/table/morocco_buildings db/table/morocco_buildings_manual db/table/morocco_buildings_benchmark_aoi
-	psql -f tables/morocco_buildings_iou_full.sql
+	psql -f tables/morocco_buildings_benchmark_iou_full.sql
 	touch $@
 
 data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz: db/table/morocco_buildings_benchmark

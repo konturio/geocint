@@ -700,7 +700,7 @@ data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz:
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, height_confidence, is_residential from morocco_buildings_benchmark_roofprints' -nln morocco_buildings_benchmark_roofprints
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark_roofprints_phase2.geojson
 
-db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_manual
+db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_extents
 	psql -f tables/morocco_buildings_benchmark_aoi.sql
 	touch $@
 

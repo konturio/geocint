@@ -32,11 +32,19 @@ drop table if exists morocco_buildings_benchmark_manual_extent;
 create table morocco_buildings_benchmark_manual_extent as (
     select is_confident,
            building_height,
-           ST_Intersection(b.footprint, a.wkb_geometry) as footprint,
+           ST_Intersection(ST_MakeValid(b.footprint), ST_MakeValid(a.wkb_geometry)) as footprint,
            a.city
     from morocco_buildings_manual b
-             join morocco_buildings_benchmark_extents a on ST_Intersects(b.footprint, a.wkb_geometry)
+             join morocco_buildings_benchmark_extents a on ST_Intersects(ST_MakeValid(b.footprint), ST_MakeValid(a.wkb_geometry))
 );
+
+select ST_Srid(footprint)
+    from morocco_buildings_manual
+        group by 1;
+
+select ST_Srid(wkb_geometry)
+    from morocco_buildings_benchmark_extents
+        group by 1;
 
 drop table if exists morocco_buildings_benchmark_phase2;
 create table morocco_buildings_benchmark_phase2 as (
@@ -257,15 +265,15 @@ drop table if exists morocco_buildings_manual_roofprints_extent;
 create table morocco_buildings_manual_roofprints_extent as (
     select is_confident,
            building_height,
-           ST_Intersection(b.geom, a.wkb_geometry) as geom,
+           ST_Intersection(ST_MakeValid(b.geom), ST_MakeValid(a.wkb_geometry)) as geom,
            a.city
     from morocco_buildings_manual_roofprints b
-             join morocco_buildings_benchmark_extents a on ST_Intersects(b.geom, a.wkb_geometry)
+             join morocco_buildings_benchmark_extents a on ST_Intersects(ST_MakeValid(b.geom), ST_MakeValid(a.wkb_geometry))
 );
 
 drop table if exists morocco_buildings_benchmark_roofprints_union;
 create table morocco_buildings_benchmark_roofprints_union as (
-    select (ST_Dump(ST_Union((geom)))).geom as geom,
+    select (ST_Dump(ST_Union((ST_Transform(geom, 3857))))).geom as geom,
            building_height,
            city
     from morocco_buildings_benchmark_roofprints

@@ -75,7 +75,7 @@ set min_height = 0,
     max_height = 0;
 
 create index on morocco_buildings_benchmark_phase2_full using gist (geom);
-create index on morocco_buildings_manual using gist (footprint);
+create index on morocco_buildings_benchmark_manual_extent using gist (footprint);
 create index on morocco_buildings_linework_ph2 using gist(geom);
 
 -- for each piece, get heights from both datasets. will swap them later.

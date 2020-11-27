@@ -24,7 +24,7 @@ create table morocco_buildings_benchmark_phase2_full as (
 );
 
 -- round the coordinates a little bit to make intersection/union more robust
-update morocco_buildings_manual
+update morocco_buildings_benchmark_manual_extent
 set footprint = ST_CollectionExtract(
         ST_MakeValid(ST_Segmentize(ST_SnapToGrid(ST_Transform(ST_Simplify(footprint, 0), 3857), 0.031415926), 5)), 3);
 update morocco_buildings_benchmark_phase2_full
@@ -37,7 +37,7 @@ set geom = ST_CollectionExtract(
 drop table if exists morocco_buildings_polygons_ph2;
 create table morocco_buildings_polygons_ph2 as (
     select city, footprint as geom
-    from morocco_buildings_manual
+    from morocco_buildings_benchmark_manual_extent
     union all
     select city, geom
     from morocco_buildings_benchmark_phase2_full
@@ -92,7 +92,7 @@ set min_height = (
 update morocco_buildings_linework_ph2 a
 set max_height = (
     select max(building_height)
-    from morocco_buildings_manual b
+    from morocco_buildings_benchmark_manual_extent b
     where ST_Intersects(ST_PointOnSurface(a.geom), b.footprint)
     and a.geom && b.footprint
 );
@@ -134,7 +134,7 @@ create table morocco_buildings_iou_feature as (
                     null::geometry  as geom_phase2,
                     null::float     as building_height_phase2,
                     is_confident
-    from morocco_buildings_manual
+    from morocco_buildings_benchmark_manual_extent
 );
 
 create index on morocco_buildings_iou_feature using gist(geom_phase2);

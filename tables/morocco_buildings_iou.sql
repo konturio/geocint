@@ -35,20 +35,13 @@ create table morocco_buildings_benchmark_manual_extent as (
            ST_Intersection(ST_MakeValid(b.footprint), ST_MakeValid(a.wkb_geometry)) as footprint,
            a.city
     from morocco_buildings_manual b
-             join morocco_buildings_benchmark_extents a on ST_Intersects(ST_MakeValid(b.footprint), ST_MakeValid(a.wkb_geometry))
+             join morocco_buildings_benchmark_extents a
+                  on ST_Intersects(ST_MakeValid(b.footprint), ST_MakeValid(a.wkb_geometry))
 );
-
-select ST_Srid(footprint)
-    from morocco_buildings_manual
-        group by 1;
-
-select ST_Srid(wkb_geometry)
-    from morocco_buildings_benchmark_extents
-        group by 1;
 
 drop table if exists morocco_buildings_benchmark_phase2;
 create table morocco_buildings_benchmark_phase2 as (
-    select building_height as building_height,
+    select building_height                 as building_height,
            ST_Intersection(b.geom, a.geom) as geom,
            a.city
     from morocco_buildings_benchmark b
@@ -108,7 +101,7 @@ set min_height = 0,
 
 create index on morocco_buildings_benchmark_phase2 using gist (geom);
 create index on morocco_buildings_benchmark_manual_extent using gist (footprint);
-create index on morocco_buildings_linework_ph2 using gist(geom);
+create index on morocco_buildings_linework_ph2 using gist (geom);
 
 -- for each piece, get heights from both datasets. will swap them later.
 
@@ -118,7 +111,7 @@ set min_height = (
     select max(building_height)
     from morocco_buildings_benchmark_phase2 b
     where ST_Intersects(ST_PointOnSurface(a.geom), b.geom)
-    and a.geom && b.geom
+      and a.geom && b.geom
 );
 
 update morocco_buildings_linework_ph2 a
@@ -126,7 +119,7 @@ set max_height = (
     select max(building_height)
     from morocco_buildings_benchmark_manual_extent b
     where ST_Intersects(ST_PointOnSurface(a.geom), b.footprint)
-    and a.geom && b.footprint
+      and a.geom && b.footprint
 );
 
 -- replace NULLs with 0's
@@ -145,6 +138,11 @@ set min_height = least(min_height, max_height),
 
 -- Step 3. Calculate IoU in 2D and 3D
 -- 2D IoU: 0.661
+-- delete
+-- from morocco_buildings_linework_ph2
+-- where min_height = 0
+--   and max_height = 0;
+
 select b.city, sum(ST_Area(a.geom)) filter (where min_height > 0) / sum(ST_Area(a.geom)) as "2D_IoU"
 from morocco_buildings_linework_ph2 a
          join morocco_buildings_benchmark_aoi b on ST_Intersects(a.geom, b.geom)
@@ -169,8 +167,8 @@ create table morocco_buildings_iou_feature as (
     from morocco_buildings_benchmark_manual_extent
 );
 
-create index on morocco_buildings_iou_feature using gist(geom_phase2);
-create index on morocco_buildings_iou_feature using gist(geom_morocco_buildings);
+create index on morocco_buildings_iou_feature using gist (geom_phase2);
+create index on morocco_buildings_iou_feature using gist (geom_morocco_buildings);
 -- match geometries if representative point on one is insede other and vice versa.
 -- in case of collision take option with better IoU.
 update morocco_buildings_iou_feature a
@@ -237,7 +235,8 @@ select a.city,
 from morocco_buildings_iou_feature m
          join morocco_buildings_benchmark_aoi a
               on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
-where not ST_isEmpty(geom_morocco_buildings) and not ST_isEmpty(geom_phase2)
+where not ST_isEmpty(geom_morocco_buildings)
+  and not ST_isEmpty(geom_phase2)
 group by 1;
 
 
@@ -251,7 +250,8 @@ where building_height_phase2 > 0
 group by 1;
 
 -- calculate HRMSD in metres where is_confident = true
-select city, sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2))) as "Height_RMSD_verified"
+select city,
+       sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2))) as "Height_RMSD_verified"
 from morocco_buildings_iou_feature a
          join morocco_buildings_benchmark_aoi b on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
 where building_height_phase2 > 0
@@ -268,34 +268,76 @@ create table morocco_buildings_manual_roofprints_extent as (
            ST_Intersection(ST_MakeValid(b.geom), ST_MakeValid(a.wkb_geometry)) as geom,
            a.city
     from morocco_buildings_manual_roofprints b
-             join morocco_buildings_benchmark_extents a on ST_Intersects(ST_MakeValid(b.geom), ST_MakeValid(a.wkb_geometry))
+             join morocco_buildings_benchmark_extents a
+                  on ST_Intersects(ST_MakeValid(b.geom), ST_MakeValid(a.wkb_geometry))
 );
+
+alter table morocco_buildings_roofprints_ph1
+    rename column wkb_geometry to geom;
+alter table morocco_buildings_roofprints_ph1
+    alter column geom type geometry;
+update morocco_buildings_roofprints_ph1
+set geom = ST_Transform(ST_SetSRID(geom, 4326), 3857);
+
+drop table if exists morocco_buildings_benchmark_roofprints_ph1_extents;
+create table morocco_buildings_benchmark_roofprints_ph1_extents as (
+    select m.city,
+           ST_Intersection(ST_MakeValid(m.geom), ST_MakeValid(a.wkb_geometry)) as geom,
+           m.building_height
+    from morocco_buildings_roofprints_ph1 m
+             join morocco_buildings_benchmark_extents a
+                  on ST_Intersects(m.geom, a.wkb_geometry)
+);
+
+drop table if exists morocco_buildings_benchmark_roofprints_ph1_extents_union;
+create table morocco_buildings_benchmark_roofprints_ph1_extents_union as (
+    select (ST_Dump(ST_Union(geom))).geom as geom,
+           building_height,
+           city
+    from morocco_buildings_benchmark_roofprints_ph1_extents
+    group by building_height, city
+);
+
+select ST_Srid(geom)
+from morocco_buildings_benchmark_roofprints_extents;
 
 drop table if exists morocco_buildings_benchmark_roofprints_union;
 create table morocco_buildings_benchmark_roofprints_union as (
     select (ST_Dump(ST_Union((ST_Transform(geom, 3857))))).geom as geom,
            building_height,
            city
-    from morocco_buildings_benchmark_roofprints
+    from morocco_buildings_benchmark_roofprints_extents
     group by building_height, city
 );
 
 -- IoU Geoalert's roofprints vs. benchmark's roofprints
 drop table if exists morocco_buildings_manual_union;
 create table morocco_buildings_manual_union as (
-    select (ST_Dump(ST_Union(ST_MakeValid(ST_Segmentize(ST_SnapToGrid(ST_Transform(ST_Simplify(geom, 0), 3857), 0.031415926), 5))))).geom  as geom,
+    select (ST_Dump(ST_Union(ST_MakeValid(
+            ST_Segmentize(ST_SnapToGrid(ST_Transform(ST_Simplify(geom, 0), 3857), 0.031415926), 5))))).geom as geom,
            building_height,
            city
     from morocco_buildings_manual_roofprints_extent
     group by building_height, city
 );
 
+update morocco_buildings_benchmark_union a
+set geom = ST_Intersection(a.geom, (
+    select geom
+    from morocco_buildings_benchmark_aoi b
+    where a.city = b.city)
+    );
+
 select ST_Area(ST_Intersection(
         (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_benchmark_roofprints_union where city = ref_city),
         (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_benchmark_union where city = ref_city))) /
        ST_Area(ST_Union(
-               (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_benchmark_roofprints_union where city = ref_city),
-               (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_benchmark_union where city = ref_city))) as "2D_IoU_roofprints"
+               (select ST_Union(ST_MakeValid(geom))
+                from morocco_buildings_benchmark_roofprints_union
+                where city = ref_city),
+               (select ST_Union(ST_MakeValid(geom))
+                from morocco_buildings_benchmark_union
+                where city = ref_city))) as "2D_IoU_roofprints"
 from (
          select distinct city as ref_city
          from morocco_buildings_benchmark_union

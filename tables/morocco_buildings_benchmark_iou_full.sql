@@ -23,6 +23,10 @@ create table morocco_buildings_benchmark_phase2_full as (
              join morocco_buildings_benchmark_aoi a on ST_Intersects(b.geom, ST_Transform(a.geom, 4326))
 );
 
+select city, count(*)
+from morocco_buildings_benchmark_phase2_full
+group by city;
+
 -- round the coordinates a little bit to make intersection/union more robust
 update morocco_buildings_benchmark_manual_extent
 set footprint = ST_CollectionExtract(

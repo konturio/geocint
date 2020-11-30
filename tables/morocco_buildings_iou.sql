@@ -272,35 +272,6 @@ create table morocco_buildings_manual_roofprints_extent as (
                   on ST_Intersects(ST_MakeValid(b.geom), ST_MakeValid(a.wkb_geometry))
 );
 
-alter table morocco_buildings_roofprints_ph1
-    rename column wkb_geometry to geom;
-alter table morocco_buildings_roofprints_ph1
-    alter column geom type geometry;
-update morocco_buildings_roofprints_ph1
-set geom = ST_Transform(ST_SetSRID(geom, 4326), 3857);
-
-drop table if exists morocco_buildings_benchmark_roofprints_ph1_extents;
-create table morocco_buildings_benchmark_roofprints_ph1_extents as (
-    select m.city,
-           ST_Intersection(ST_MakeValid(m.geom), ST_MakeValid(a.wkb_geometry)) as geom,
-           m.building_height
-    from morocco_buildings_roofprints_ph1 m
-             join morocco_buildings_benchmark_extents a
-                  on ST_Intersects(m.geom, a.wkb_geometry)
-);
-
-drop table if exists morocco_buildings_benchmark_roofprints_ph1_extents_union;
-create table morocco_buildings_benchmark_roofprints_ph1_extents_union as (
-    select (ST_Dump(ST_Union(geom))).geom as geom,
-           building_height,
-           city
-    from morocco_buildings_benchmark_roofprints_ph1_extents
-    group by building_height, city
-);
-
-select ST_Srid(geom)
-from morocco_buildings_benchmark_roofprints_extents;
-
 drop table if exists morocco_buildings_benchmark_roofprints_union;
 create table morocco_buildings_benchmark_roofprints_union as (
     select (ST_Dump(ST_Union((ST_Transform(geom, 3857))))).geom as geom,

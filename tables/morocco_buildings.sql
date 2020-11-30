@@ -31,14 +31,29 @@ update morocco_buildings
 set geom = ST_CollectionExtract(ST_MakeValid(geom), 3)
 where not ST_IsValid(ST_Transform(geom, 3857));
 
+update morocco_buildings_date
+set imagery_vintage = '2020-08'
+where imagery_vintage is null;
+
 drop table morocco_buildings_date;
 create table morocco_buildings_date as (
     select m.*,
            n.date as imagery_vintage
     from morocco_buildings m
-    join morocco_meta_finished_november_2020 n
-    on ST_Intersects(wkb_geometry, geom)
+             left join morocco_meta_finished_november_2020 n
+                       on ST_Intersects(wkb_geometry, ST_PointOnSurface(geom))
 );
+
+alter table morocco_buildings_date
+    add column height_is_valid bool;
+update morocco_buildings_date
+set height_is_valid = true
+where height is not null;
+
+update morocco_buildings_date
+set height_is_valid = false,
+    height = 6
+where height is null;
 
 select count(*)
 from morocco_buildings_date;

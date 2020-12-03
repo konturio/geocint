@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/morocco_buildings_benchmark_geoalert data/firms_fires2/firms_fires_h3.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/morocco_buildings_benchmark_geoalert data/firms_fires/firms_fires_h3.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -425,62 +425,41 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-data/firms: | data
+data/firms_fires: | data
 	mkdir -p $@
 
-data/firms/download: | data/firms
-	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_V1_162053.zip
-	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_J1V-C2_162052.zip
-	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_M6_162051.zip
+data/firms_fires/download: | data/firms_fires
+	rm -f data/firms_fires/*.csv
+	cd data/firms_fires; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
+	cd data/firms_fires; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
+	cd data/firms_fires; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
 	touch $@
 
-data/firms/unzip: data/firms/download
-	cd data/firms; ls *.zip | parallel "unzip -o {}"
+data/firms_fires/copy_old_data: | data
+	cp data/firms/old_tables/*.csv data/firms_fires/
 	touch $@
 
-db/table/firms_fires: data/firms/unzip | db/table
-	psql -c "drop table if exists firms_fires"
-	psql -c "create table firms_fires (latitude float, longitude float, brightness float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, frp float, daynight text, acq_datetime timestamptz);"
-	rm -f data/firms/*_proc.csv
-	ls data/firms/*.csv | parallel "python3 scripts/convert_firms_timestamps.py {}"
-	ls data/firms/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, satellite, instrument, confidence, version, bright_t31, frp, daynight, acq_datetime) from stdin with csv header;\" "
+db/table/firms_fires: data/firms_fires/download data/firms_fires/copy_old_data |  db/table
+	psql -c "create table if not exists firms_fires (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text);"
+	rm -f data/firms_fires/*_proc.csv
+	ls data/firms_fires/*.csv | parallel "python3 scripts/normalize_firms_fires.py {}"
+	ls data/firms_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy firms_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
+	psql -c "DELETE FROM firms_fires a USING firms_fires b WHERE a.id < b.id AND a.hash= b.hash;"
+	rm data/firms_fires/*.csv
 	touch $@
 
-db/table/firms_fires_h3: db/table/firms_fires
-	psql -f tables/firms_fires_h3.sql
+db/table/firms_fires_h3_13_months: db/table/firms_fires
+	psql -f tables/firms_fires_h3_13_months.sql
 	touch $@
 
-data/firms_fires2: | data
-	mkdir -p $@
-
-data/firms_fires2/download: | data/firms_fires2
-	rm -f data/firms_fires2/*.csv
-	cd data/firms_fires2; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
-	cd data/firms_fires2; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
-	cd data/firms_fires2; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
+db/table/firms_fires_stat_h3: db/table/firms_fires
+	psql -f tables/firms_fires_stat_h3.sql
 	touch $@
 
-data/firms_fires2/copy_old_data: | data
-	cp data/firms/old_tables/*.csv data/firms_fires2/
-	touch $@
-
-db/table/firms_fires2: data/firms_fires2/download data/firms_fires2/copy_old_data |  db/table
-	psql -c "create table if not exists firms_fires2 (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text);"
-	rm -f data/firms_fires2/*_proc.csv
-	ls data/firms_fires2/*.csv | parallel "python3 scripts/normilize_firms_fires.py {}"
-	ls data/firms_fires2/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy firms_fires2 (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
-	psql -c "DELETE FROM firms_fires2 a USING firms_fires2 b WHERE a.id < b.id AND a.hash= b.hash;"
-	rm data/firms_fires2/*.csv
-	touch $@
-
-db/table/firms_fires2_h3: db/table/firms_fires2
-	psql -f tables/firms_fires2_h3.sql
-	touch $@
-
-data/firms_fires2/firms_fires_h3.gz: db/table/firms_fires2_h3
+data/firms_fires/firms_fires_h3_13_months.gz: db/table/firms_fires_h3_13_months
 	rm -rf $@
-	ogr2ogr -f CSV data/firms_fires2/firms_fires2_h3.csv PG:"dbname=gis" -sql "select datetime, h3 from firms_fires2_h3 where resolution = 8" -nln firms_fires2_h3
-	cd data/firms_fires2; pigz firms_fires2_h3.csv
+	ogr2ogr -f CSV data/firms_fires/firms_fires_h3_13_months.csv PG:"dbname=gis" -nln firms_fires_h3_13_months
+	cd data/firms_fires; pigz firms_fires_h3_13_months.csv
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg
@@ -799,7 +778,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/firms_fires_h3 db/table/building_count_grid_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/firms_fires_stat_h3 db/table/building_count_grid_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

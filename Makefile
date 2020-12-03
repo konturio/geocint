@@ -461,7 +461,7 @@ data/firms_fires2/download: | data/firms_fires2
 	touch $@
 
 data/firms_fires2/copy_old_data: | data
-	cp -r data/firms/old_tables/ data/firms_fires2/
+	cp data/firms/old_tables/*.csv data/firms_fires2/
 	touch $@
 
 db/table/firms_fires2: data/firms_fires2/download data/firms_fires2/copy_old_data |  db/table
@@ -479,8 +479,8 @@ db/table/firms_fires2_h3: db/table/firms_fires2
 
 data/firms_fires2/firms_fires_h3.gz: db/table/firms_fires2_h3
 	rm -rf $@
-	ogr2ogr -f CSV data/firms_fires2/firms_fires_h3.csv PG:"dbname=gis" -nln firms_fires_h3
-	cd data/firms_fires2; pigz firms_fires_h3.csv
+	ogr2ogr -f CSV data/firms_fires2/firms_fires2_h3.csv PG:"dbname=gis" -nln firms_fires2_h3
+	cd data/firms_fires2; pigz firms_fires2_h3.csv
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg

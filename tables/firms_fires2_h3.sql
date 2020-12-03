@@ -8,3 +8,6 @@ create table firms_fires2_h3 as (
     from firms_fires2
     where acq_datetime > now() - interval '13 months'
 );
+
+select count(*)
+from firms_fires2_h3;

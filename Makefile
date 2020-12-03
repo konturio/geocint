@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/morocco_buildings_benchmark_geoalert data/firms_fires/firms_fires_h3_13_months.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/morocco_buildings_benchmark_geoalert data/firms_fires/firms_fires_h3_13_months.csv.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -435,7 +435,7 @@ data/firms_fires/download: | data/firms_fires
 	cd data/firms_fires; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
 	touch $@
 
-data/firms_fires/copy_old_data: | data
+data/firms_fires/copy_old_data: | data/firms_fires
 	cp data/firms/old_tables/*.csv data/firms_fires/
 	touch $@
 
@@ -456,7 +456,7 @@ db/table/firms_fires_stat_h3: db/table/firms_fires
 	psql -f tables/firms_fires_stat_h3.sql
 	touch $@
 
-data/firms_fires/firms_fires_h3_13_months.gz: db/table/firms_fires_h3_13_months
+data/firms_fires/firms_fires_h3_13_months.csv.gz: db/table/firms_fires_h3_13_months
 	rm -rf $@
 	ogr2ogr -f CSV data/firms_fires/firms_fires_h3_13_months.csv PG:"dbname=gis" -nln firms_fires_h3_13_months
 	cd data/firms_fires; pigz firms_fires_h3_13_months.csv

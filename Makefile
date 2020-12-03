@@ -428,11 +428,15 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 data/firms_fires: | data
 	mkdir -p $@
 
-data/firms_fires/download: | data/firms_fires
-	rm -f data/firms_fires/*.csv
+data/firms_fires/new_updates: | data/firms_fires
+	mkdir -p $@
+
+data/firms_fires/download_new_updates: | data/firms_fires/new_updates
+	rm -f data/firms_fires/new_updates/*.csv
 	cd data/firms_fires; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
 	cd data/firms_fires; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
 	cd data/firms_fires; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
+	cp data/firms_fires/new_updates/*.csv data/firms_fires/
 	touch $@
 
 data/firms_fires/copy_old_data: | data/firms_fires

@@ -455,9 +455,9 @@ data/firms_fires2: | data
 
 data/firms_fires2/download: | data/firms_fires2
 	rm -f data/firms_fires2/*.csv
-	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
-	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
-	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
+	cd data/firms_fires2; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
+	cd data/firms_fires2; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
+	cd data/firms_fires2; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
 	touch $@
 
 db/table/firms_fires2: data/firms_fires2/download | db/table

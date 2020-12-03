@@ -282,8 +282,8 @@ create table morocco_buildings_benchmark_roofprints_union as (
 );
 
 -- IoU Geoalert's roofprints vs. benchmark's roofprints
-drop table if exists morocco_buildings_manual_union;
-create table morocco_buildings_manual_union as (
+drop table if exists morocco_buildings_manual_roofprints_extent_union;
+create table morocco_buildings_manual_roofprints_extent_union as (
     select (ST_Dump(ST_Union(ST_MakeValid(
             ST_Segmentize(ST_SnapToGrid(ST_Transform(ST_Simplify(geom, 0), 3857), 0.031415926), 5))))).geom as geom,
            building_height,
@@ -292,7 +292,7 @@ create table morocco_buildings_manual_union as (
     group by building_height, city
 );
 
-update morocco_buildings_benchmark_union a
+update morocco_buildings_manual_roofprints_extent_union a
 set geom = ST_Intersection(a.geom, (
     select geom
     from morocco_buildings_benchmark_aoi b
@@ -301,17 +301,17 @@ set geom = ST_Intersection(a.geom, (
 
 select ST_Area(ST_Intersection(
         (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_benchmark_roofprints_union where city = ref_city),
-        (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_benchmark_union where city = ref_city))) /
+        (select ST_Union(ST_MakeValid(geom)) from morocco_buildings_manual_roofprints_extent_union where city = ref_city))) /
        ST_Area(ST_Union(
                (select ST_Union(ST_MakeValid(geom))
                 from morocco_buildings_benchmark_roofprints_union
                 where city = ref_city),
                (select ST_Union(ST_MakeValid(geom))
-                from morocco_buildings_benchmark_union
+                from morocco_buildings_manual_roofprints_extent_union
                 where city = ref_city))) as "2D_IoU_roofprints"
 from (
          select distinct city as ref_city
-         from morocco_buildings_benchmark_union
+         from morocco_buildings_manual_roofprints_extent_union
      ) z;
 
 select city, count(*)

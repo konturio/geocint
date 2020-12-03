@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/morocco_buildings_benchmark_geoalert
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/morocco_buildings_benchmark_geoalert db/table/firms_fires2_h3
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -448,6 +448,28 @@ db/table/firms_fires: data/firms/unzip | db/table
 
 db/table/firms_fires_h3: db/table/firms_fires
 	psql -f tables/firms_fires_h3.sql
+	touch $@
+
+data/firms_fires2: | data
+	mkdir -p $@
+
+data/firms_fires2/download: | data/firms_fires2
+	rm -f data/firms_fires2/*.csv
+	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
+	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
+	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
+	touch $@
+
+db/table/firms_fires2: data/firms_fires2/download | db/table
+	psql -c "create table if not exists firms_fires2 (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text);"
+	rm -f data/firms_fires2/*_proc.csv
+	ls data/firms_fires2/*.csv | parallel "python3 scripts/convert_firms_fires.py {}"
+	ls data/firms_fires2/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy firms_fires2 (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
+	psql -c "DELETE FROM firms_fires2 a USING firms_fires2 b WHERE a.id < b.id AND a.hash= b.hash;"
+	touch $@
+
+db/table/firms_fires2_h3: db/table/firms_fires2
+	psql -f tables/firms_fires2_h3.sql
 	touch $@
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table

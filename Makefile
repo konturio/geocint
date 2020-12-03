@@ -478,9 +478,9 @@ db/table/firms_fires2_h3: db/table/firms_fires2
 	touch $@
 
 data/firms_fires2/firms_fires_h3.gz: db/table/firms_fires2_h3
-   rm -rf $@
-   ogr2ogr -f CSV data/firms_fires2/firms_fires_h3.csv PG:"dbname=gis" -nln firms_fires_h3
-   cd data/firms_fires2; pigz firms_fires_h3.csv
+	rm -rf $@
+	ogr2ogr -f CSV data/firms_fires2/firms_fires_h3.csv PG:"dbname=gis" -nln firms_fires_h3
+	cd data/firms_fires2; pigz firms_fires_h3.csv
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg

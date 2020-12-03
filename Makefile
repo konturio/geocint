@@ -463,7 +463,7 @@ data/firms_fires2/download: | data/firms_fires2
 db/table/firms_fires2: data/firms_fires2/download | db/table
 	psql -c "create table if not exists firms_fires2 (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text);"
 	rm -f data/firms_fires2/*_proc.csv
-	ls data/firms_fires2/*.csv | parallel "python3 scripts/convert_firms_fires.py {}"
+	ls data/firms_fires2/*.csv | parallel "python3 scripts/normilize_firms_fires.py {}"
 	ls data/firms_fires2/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy firms_fires2 (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
 	psql -c "DELETE FROM firms_fires2 a USING firms_fires2 b WHERE a.id < b.id AND a.hash= b.hash;"
 	touch $@

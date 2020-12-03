@@ -443,7 +443,7 @@ data/firms_fires/copy_old_data: | data/firms_fires
 	cp data/firms/old_tables/*.csv data/firms_fires/
 	touch $@
 
-db/table/firms_fires: data/firms_fires/download data/firms_fires/copy_old_data |  db/table
+db/table/firms_fires: data/firms_fires/download_new_updates data/firms_fires/copy_old_data |  db/table
 	psql -c "create table if not exists firms_fires (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text);"
 	rm -f data/firms_fires/*_proc.csv
 	ls data/firms_fires/*.csv | parallel "python3 scripts/normalize_firms_fires.py {}"

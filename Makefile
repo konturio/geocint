@@ -461,7 +461,7 @@ data/firms_fires2/download: | data/firms_fires2
 	touch $@
 
 data/firms_fires2/copy_old_data: | data
-	cp -r data/firms_fires/old_tables/ data/firms_fires2/
+	cp -r data/firms/old_tables/ data/firms_fires2/
 	touch $@
 
 db/table/firms_fires2: data/firms_fires2/download data/firms_fires2/copy_old_data |  db/table

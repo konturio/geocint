@@ -462,7 +462,7 @@ db/table/firms_fires_stat_h3: db/table/firms_fires
 
 data/firms_fires/firms_fires_h3_13_months.csv.gz: db/table/firms_fires_h3_13_months
 	rm -rf $@
-	ogr2ogr -f CSV data/firms_fires/firms_fires_h3_13_months.csv PG:"dbname=gis" -nln firms_fires_h3_13_months
+	ogr2ogr -f CSV data/firms_fires/firms_fires_h3_13_months.csv PG:"dbname=gis" -sql "select h3, datetime from firms_fires_h3_13_months"
 	cd data/firms_fires; pigz firms_fires_h3_13_months.csv
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table

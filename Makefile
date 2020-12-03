@@ -479,7 +479,7 @@ db/table/firms_fires2_h3: db/table/firms_fires2
 
 data/firms_fires2/firms_fires_h3.gz: db/table/firms_fires2_h3
 	rm -rf $@
-	ogr2ogr -f CSV data/firms_fires2/firms_fires2_h3.csv PG:"dbname=gis" -nln firms_fires2_h3
+	ogr2ogr -f CSV data/firms_fires2/firms_fires2_h3.csv PG:"dbname=gis" -sql "select datetime, h3 from firms_fires2_h3 where resolution = 8" -nln firms_fires2_h3
 	cd data/firms_fires2; pigz firms_fires2_h3.csv
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table

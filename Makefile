@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/morocco_buildings_benchmark_geoalert data/firms_fires/firms_fires_h3_13_months.csv.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/morocco_buildings_benchmark_geoalert data/global_fires/global_fires_h3_r8_13months.csv.gz
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -425,47 +425,47 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-data/firms_fires: | data
+data/global_fires: | data
 	mkdir -p $@
 
-data/firms_fires/new_updates: | data/firms_fires
+data/global_fires/new_updates: | data/global_fires
 	mkdir -p $@
 
-data/firms_fires/download_new_updates: | data/firms_fires/new_updates
-	rm -f data/firms_fires/new_updates/*.csv
-	cd data/firms_fires/new_updates; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
-	cd data/firms_fires/new_updates; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
-	cd data/firms_fires/new_updates; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
-	cp data/firms_fires/new_updates/*.csv data/firms_fires/
+data/global_fires/download_new_updates: | data/global_fires/new_updates
+	rm -f data/global_fires/new_updates/*.csv
+	cd data/global_fires/new_updates; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
+	cd data/global_fires/new_updates; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
+	cd data/global_fires/new_updates; wget -c https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
+	cp data/global_fires/new_updates/*.csv data/global_fires/
 	touch $@
 
-data/firms_fires/copy_old_data: | data/firms_fires
-	cp data/firms/old_tables/*.csv data/firms_fires/
+data/global_fires/copy_old_data: | data/global_fires
+	cp data/firms/old_tables/*.csv data/global_fires/
 	touch $@
 
-db/table/firms_fires: data/firms_fires/download_new_updates data/firms_fires/copy_old_data |  db/table
-	psql -c "create table if not exists firms_fires (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamp, hash text);"
-	rm -f data/firms_fires/*_proc.csv
-	ls data/firms_fires/*.csv | parallel "python3 scripts/normalize_firms_fires.py {}"
-	ls data/firms_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy firms_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
-	psql -c "create index on firms_fires(hash, id);"
-	psql -c "create index on firms_fires(acq_datetime);"
-	psql -c "DELETE FROM firms_fires a USING firms_fires b WHERE a.id < b.id AND a.hash= b.hash;"
-	rm data/firms_fires/*.csv
+db/table/global_fires: data/global_fires/download_new_updates data/global_fires/copy_old_data |  db/table
+	psql -c "create table if not exists global_fires (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text);"
+	rm -f data/global_fires/*_proc.csv
+	ls data/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {}"
+	ls data/global_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy global_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
+	psql -c "create index on global_fires(hash, id);"
+	psql -c "create index on global_fires(acq_datetime);"
+	psql -c "DELETE FROM global_fires a USING global_fires b WHERE a.id < b.id AND a.hash= b.hash;"
+	rm data/global_fires/*.csv
 	touch $@
 
-db/table/firms_fires_h3_13_months: db/table/firms_fires
-	psql -f tables/firms_fires_h3_13_months.sql
+db/table/global_fires_h3_r8_13months: db/table/global_fires
+	psql -f tables/global_fires_h3_r8_13months.sql
 	touch $@
 
-db/table/firms_fires_stat_h3: db/table/firms_fires
-	psql -f tables/firms_fires_stat_h3.sql
+db/table/global_fires_stat_h3: db/table/global_fires
+	psql -f tables/global_fires_stat_h3.sql
 	touch $@
 
-data/firms_fires/firms_fires_h3_13_months.csv.gz: db/table/firms_fires_h3_13_months
+data/global_fires/global_fires_h3_r8_13months.csv.gz: db/table/global_fires_h3_r8_13months
 	rm -rf $@
-	ogr2ogr -f CSV data/firms_fires/firms_fires_h3_13_months.csv PG:"dbname=gis" -sql "select h3, datetime from firms_fires_h3_13_months"
-	cd data/firms_fires; pigz firms_fires_h3_13_months.csv
+	ogr2ogr -f CSV data/global_fires/global_fires_h3_r8_13months.csv PG:"dbname=gis" -sql "select h3, datetime from global_fires_h3_r8_13months"
+	cd data/global_fires; pigz global_fires_h3_r8_13months.csv
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg
@@ -784,7 +784,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/firms_fires_stat_h3 db/table/building_count_grid_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

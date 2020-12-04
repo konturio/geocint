@@ -7,6 +7,7 @@ create table firms_fires_stat_h3 as (
            count(distinct acq_datetime)                                     as wildfires,
            8                                                                as resolution
     from firms_fires
+    where acq_datetime > now() - interval '13 months'
     group by 1
 );
 

@@ -464,8 +464,7 @@ db/table/global_fires_stat_h3: db/table/global_fires
 
 data/global_fires/global_fires_h3_r8_13months.csv.gz: db/table/global_fires_h3_r8_13months
 	rm -rf $@
-	ogr2ogr -f CSV data/global_fires/global_fires_h3_r8_13months.csv PG:"dbname=gis" -sql "select h3, datetime from global_fires_h3_r8_13months"
-	cd data/global_fires; pigz global_fires_h3_r8_13months.csv
+	psql -q -X -c 'set timezone to utc; copy (select h3, datetime from global_fires_h3_r8_13months order by 1,2) to stdout with csv;' | pigz > $@
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg

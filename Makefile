@@ -448,6 +448,8 @@ db/table/firms_fires: data/firms_fires/download_new_updates data/firms_fires/cop
 	rm -f data/firms_fires/*_proc.csv
 	ls data/firms_fires/*.csv | parallel "python3 scripts/normalize_firms_fires.py {}"
 	ls data/firms_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy firms_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
+	psql -c "create index on firms_fires(hash, id);"
+	psql -c "create index on firms_fires(acq_datetime);"
 	psql -c "DELETE FROM firms_fires a USING firms_fires b WHERE a.id < b.id AND a.hash= b.hash;"
 	rm data/firms_fires/*.csv
 	touch $@

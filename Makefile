@@ -1,4 +1,4 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/morocco_buildings_benchmark_geoalert data/global_fires/global_fires_h3_r8_13months.csv.gz
+all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_manual.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_aoi.geojson.gz db/table/morocco_buildings_iou db/table/morocco_buildings_benchmark_geoalert
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -54,7 +54,7 @@ deploy/sonic: | deploy
 deploy/geocint: | deploy
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/belarus-latest.osm.pbf
+deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/belarus-latest.osm.pbf deploy/geocint/global_fires_h3_r8_13months.csv.gz
 	touch $@
 
 deploy/s3:
@@ -465,6 +465,10 @@ db/table/global_fires_stat_h3: db/table/global_fires
 data/global_fires/global_fires_h3_r8_13months.csv.gz: db/table/global_fires_h3_r8_13months
 	rm -rf $@
 	psql -q -X -c 'set timezone to utc; copy (select h3, datetime from global_fires_h3_r8_13months order by 1,2) to stdout with csv;' | pigz > $@
+
+deploy/geocint/global_fires_h3_r8_13months.csv.gz: data/global_fires/global_fires_h3_r8_13months.csv.gz | deploy/geocint
+	cp -vp data/global_fires/global_fires_h3_r8_13months.csv.gz ~/public_html/global_fires_h3_r8_13months.csv.gz
+	touch $@
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg

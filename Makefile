@@ -428,7 +428,7 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 data/global_fires: | data
 	mkdir -p $@
 
-data/global_fires/download_new_updates: | data/global_fires/new_updates
+data/global_fires/download_new_updates: | data/global_fires
 	mkdir -p data/global_fires/new_updates
 	rm -f data/global_fires/new_updates/*.csv
 	cd data/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv

@@ -4,7 +4,7 @@ alter table global_fires
 drop table if exists global_fires_stat_h3;
 create table global_fires_stat_h3 as (
     select h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8) as h3,
-           count(distinct acq_datetime)                                     as wildfires,
+           count(distinct date_trunc('day', acq_datetime))                  as wildfires,
            8                                                                as resolution
     from global_fires
     where acq_datetime > now() - interval '13 months'

@@ -458,7 +458,7 @@ db/table/global_fires_stat_h3: db/table/global_fires
 
 data/global_fires/global_fires_h3_r8_13months.csv.gz: db/table/global_fires
 	rm -rf $@
-	psql -q -X -c "set timezone to utc; copy (select h3_r8, acq_datetime from global_fires where acq_datetime > (select max(acq_datetime) from global_fires) - interval '13 months' order by 1,2) to stdout with csv;" | pigz > $@v
+	psql -q -X -c "set timezone to utc; copy (select h3_r8, acq_datetime from global_fires where acq_datetime > (select max(acq_datetime) from global_fires) - interval '13 months' order by 1,2) to stdout with csv;" | pigz > $@
 
 deploy/geocint/global_fires_h3_r8_13months.csv.gz: data/global_fires/global_fires_h3_r8_13months.csv.gz | deploy/geocint
 	cp -vp data/global_fires/global_fires_h3_r8_13months.csv.gz ~/public_html/global_fires_h3_r8_13months.csv.gz

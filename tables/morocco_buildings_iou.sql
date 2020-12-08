@@ -317,7 +317,3 @@ from (
 select city, count(*)
 from morocco_buildings_benchmark_phase2
 group by city;
-
-select city, count(*)
-from morocco_buildings_benchmark_extents
-group by city;

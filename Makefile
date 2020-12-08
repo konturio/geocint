@@ -696,12 +696,12 @@ db/table/morocco_buildings_iou_new_dataset: db/table/morocco_buildings db/table/
 
 data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual
 	rm -f $@
-	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_manual_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(footprint, 4326), building_height, city, is_confident from morocco_buildings_benchmark_manual_extent' -nln morocco_buildings_manual_phase2
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_manual_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(footprint, 4326), building_height, city, is_confident from morocco_buildings_manual_extent' -nln morocco_buildings_manual_phase2
 	cd data/morocco_buildings; pigz morocco_buildings_manual_phase2.geojson
 
 data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual_roofprints
 	rm -f data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson
-	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, is_confident from morocco_buildings_benchmark_manual_roofprints_extent' -nln morocco_buildings_manual_roofprints_phase2
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, is_confident from morocco_buildings_manual_roofprints_extent' -nln morocco_buildings_manual_roofprints_phase2
 	cd data/morocco_buildings; pigz morocco_buildings_manual_roofprints_phase2.geojson
 
 data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz: db/table/morocco_buildings_benchmark

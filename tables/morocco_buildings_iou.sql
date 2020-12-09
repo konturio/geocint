@@ -338,7 +338,6 @@ from (
          from morocco_buildings_manual_roofprints_extent_union
      ) z;
 
-
 drop table if exists morocco_buildings_extents;
 drop table if exists morocco_buildings_manual;
 drop table if exists morocco_buildings_manual_roofprints;

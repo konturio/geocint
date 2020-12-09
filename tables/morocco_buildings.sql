@@ -28,7 +28,7 @@ set geom = ST_CollectionHomogenize(geom);
 
 -- make geom robust to conversion to mercator
 update morocco_buildings
-set geom = ST_CollectionExtract(ST_MakeValid(geom), 3)
+set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(ST_MakeValid(ST_Transform(geom, 3857)), 4326)), 3)
 where not ST_IsValid(ST_Transform(geom, 3857));
 
 update morocco_buildings_date
@@ -52,11 +52,5 @@ where height is not null;
 
 update morocco_buildings_date
 set height_is_valid = false,
-    height = 6
+    height          = 6
 where height is null;
-
-select count(*)
-from morocco_buildings_date;
-
-select count(*)
-from morocco_buildings;

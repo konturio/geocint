@@ -3,9 +3,6 @@
 .idea
 data/*
 !data/morocco_buildings/
-!data/morocco_buildings_geoalert/
-!data/morocco_buildings_geoalert_footprints/
-!data/morocco_buildings_ph1/
 db
 deploy
 make_profile.db

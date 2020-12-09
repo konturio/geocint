@@ -633,55 +633,58 @@ data/morocco_buildings/morocco_buildings_footprints_phase2.geojson.gz: db/table/
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_footprints_phase2.geojson PG:"dbname=gis" -sql "select ST_Transform(geom, 4326) as footprint, height as building_height, height_confidence, is_residential, imagery_vintage, height_is_valid from morocco_buildings_date" -nln morocco_buildings_footprints_phase2
 	cd data/morocco_buildings; pigz morocco_buildings_footprints_phase2.geojson
 
-db/table/morocco_buildings_benchmark: data/morocco_buildings_geoalert_footprints/agadir_footprints.geojson data/morocco_buildings_geoalert_footprints/casablanca_footprints.geojson data/morocco_buildings_geoalert_footprints/chefchaouen_footprints.geojson data/morocco_buildings_geoalert_footprints/fes_footprints.geojson data/morocco_buildings_geoalert_footprints/meknes_footprints.geojson | db/table
+db/table/morocco_buildings_benchmark: data/morocco_buildings/footprints/agadir_footprints.geojson data/morocco_buildings/footprints/casablanca_footprints.geojson data/morocco_buildings/footprints/chefchaouen_footprints.geojson data/morocco_buildings/footprints/fes_footprints.geojson data/morocco_buildings/footprints/meknes_footprints.geojson | db/table
 	psql -c "drop table if exists morocco_buildings_benchmark;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert_footprints/agadir_footprints.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/footprints/agadir.geojson -nln morocco_buildings_benchmark
 	psql -c "alter table morocco_buildings_benchmark add column city text;"
 	psql -c "alter table morocco_buildings_benchmark alter column wkb_geometry type geometry;"
 	psql -c "update morocco_buildings_benchmark set city = 'Agadir' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert_footprints/casablanca_footprints.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/footprints/casablanca_footprints.geojson -nln morocco_buildings_benchmark
 	psql -c "update morocco_buildings_benchmark set city = 'Casablanca' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert_footprints/chefchaouen_footprints.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/footprints/chefchaouen_footprints.geojson -nln morocco_buildings_benchmark
 	psql -c "update morocco_buildings_benchmark set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert_footprints/fes_footprints.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/footprints/fes_footprints.geojson -nln morocco_buildings_benchmark
 	psql -c "update morocco_buildings_benchmark set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert_footprints/meknes_footprints.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/footprints/meknes_footprints.geojson -nln morocco_buildings_benchmark
 	psql -c "update morocco_buildings_benchmark set city = 'Meknes' where city is null;"
 	psql -f tables/morocco_buildings_benchmark.sql -v morocco_buildings=morocco_buildings_benchmark
 	touch $@
 
-db/table/morocco_buildings_benchmark_roofprints: data/morocco_buildings_geoalert/agadir.geojson data/morocco_buildings_geoalert/casablanca.geojson data/morocco_buildings_geoalert/chefchaouen.geojson data/morocco_buildings_geoalert/fes.geojson data/morocco_buildings_geoalert/meknes.geojson | db/table
+db/table/morocco_buildings_benchmark_roofprints: data/morocco_buildings/roofprints/agadir.geojson data/morocco_buildings/roofprints/casablanca.geojson data/morocco_buildings/roofprints/chefchaouen.geojson data/morocco_buildings/roofprints/fes.geojson data/morocco_buildings/roofprints/meknes.geojson | db/table
 	psql -c "drop table if exists morocco_buildings_benchmark_roofprints;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/agadir.geojson -nln morocco_buildings_benchmark_roofprints
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/roofprints/agadir.geojson -nln morocco_buildings_benchmark_roofprints
 	psql -c "alter table morocco_buildings_benchmark_roofprints add column city text;"
 	psql -c "alter table morocco_buildings_benchmark_roofprints alter column wkb_geometry type geometry;"
 	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Agadir' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/casablanca.geojson -nln morocco_buildings_benchmark_roofprints
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/roofprints/casablanca.geojson -nln morocco_buildings_benchmark_roofprints
 	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Casablanca' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/chefchaouen.geojson -nln morocco_buildings_benchmark_roofprints
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/roofprints/chefchaouen.geojson -nln morocco_buildings_benchmark_roofprints
 	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/fes.geojson -nln morocco_buildings_benchmark_roofprints
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/roofprints/fes.geojson -nln morocco_buildings_benchmark_roofprints
 	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_geoalert/meknes.geojson -nln morocco_buildings_benchmark_roofprints
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/roofprints/meknes.geojson -nln morocco_buildings_benchmark_roofprints
 	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Meknes' where city is null;"
 	psql -f tables/morocco_buildings_benchmark.sql -v morocco_buildings=morocco_buildings_benchmark_roofprints
 	touch $@
 
-db/table/morocco_buildings_benchmark_extents: data/morocco_buildings/agadir_extents.geojson data/morocco_buildings/casablanca_extents.geojson data/morocco_buildings/chefchaouen_extents.geojson data/morocco_buildings/fes_extents.geojson data/morocco_buildings/meknes_extents.geojson | db/table
-	psql -c "drop table if exists morocco_buildings_benchmark_extents;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/agadir_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_benchmark_extents
-	psql -c "alter table morocco_buildings_benchmark_extents add column city text;"
-	psql -c "alter table morocco_buildings_benchmark_extents alter column wkb_geometry type geometry;"
-	psql -c "update morocco_buildings_benchmark_extents set city = 'Agadir' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/casablanca_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_benchmark_extents
-	psql -c "update morocco_buildings_benchmark_extents set city = 'Casablanca' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/chefchaouen_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_benchmark_extents
-	psql -c "update morocco_buildings_benchmark_extents set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/fes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_benchmark_extents
-	psql -c "update morocco_buildings_benchmark_extents set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/meknes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_benchmark_extents
-	psql -c "update morocco_buildings_benchmark_extents set city = 'Meknes' where city is null;"
-	psql -c "delete from morocco_buildings_benchmark_extents where wkb_geometry is null;"
+db/table/morocco_buildings_benchmark_extents: data/morocco_buildings/extents/agadir_extents.geojson data/morocco_buildings/extents/casablanca_extents.geojson data/morocco_buildings/extents/chefchaouen_extents.geojson data/morocco_buildings/extents/fes_extents.geojson data/morocco_buildings/extents/meknes_extents.geojson | db/table
+	psql -c "drop table if exists morocco_buildings_extents;"
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/agadir_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	psql -c "alter table morocco_buildings_extents add column city text;"
+	psql -c "alter table morocco_buildings_extents alter column wkb_geometry type geometry;"
+	psql -c "update morocco_buildings_extents set city = 'Agadir' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/casablanca_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	psql -c "update morocco_buildings_extents set city = 'Casablanca' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/chefchaouen_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	psql -c "update morocco_buildings_extents set city = 'Chefchaouen' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/fes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	psql -c "update morocco_buildings_extents set city = 'Fes' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/meknes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	psql -c "update morocco_buildings_extents set city = 'Meknes' where city is null;"
+	touch $@
+
+db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_extents
+	psql -f tables/morocco_buildings_benchmark_aoi.sql
 	touch $@
 
 db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_benchmark_aoi
@@ -711,10 +714,6 @@ data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz:
 	rm -f $@
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, height_confidence, is_residential from morocco_buildings_benchmark_roofprints' -nln morocco_buildings_benchmark_roofprints
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark_roofprints_phase2.geojson
-
-db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_extents
-	psql -f tables/morocco_buildings_benchmark_aoi.sql
-	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw
 	psql -c "create index on osm_population_raw using gist(geom)"

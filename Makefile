@@ -667,7 +667,7 @@ db/table/morocco_buildings_benchmark_roofprints: data/morocco_buildings/roofprin
 	psql -f tables/morocco_buildings_benchmark.sql -v morocco_buildings=morocco_buildings_benchmark_roofprints
 	touch $@
 
-db/table/morocco_buildings_benchmark_extents: data/morocco_buildings/extents/agadir_extents.geojson data/morocco_buildings/extents/casablanca_extents.geojson data/morocco_buildings/extents/chefchaouen_extents.geojson data/morocco_buildings/extents/fes_extents.geojson data/morocco_buildings/extents/meknes_extents.geojson | db/table
+db/table/morocco_buildings_extents: data/morocco_buildings/extents/agadir_extents.geojson data/morocco_buildings/extents/casablanca_extents.geojson data/morocco_buildings/extents/chefchaouen_extents.geojson data/morocco_buildings/extents/fes_extents.geojson data/morocco_buildings/extents/meknes_extents.geojson | db/table
 	psql -c "drop table if exists morocco_buildings_extents;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/agadir_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
 	psql -c "alter table morocco_buildings_extents add column city text;"
@@ -683,16 +683,8 @@ db/table/morocco_buildings_benchmark_extents: data/morocco_buildings/extents/aga
 	psql -c "update morocco_buildings_extents set city = 'Meknes' where city is null;"
 	touch $@
 
-db/table/morocco_buildings_benchmark_aoi: db/table/morocco_buildings_benchmark_extents
-	psql -f tables/morocco_buildings_benchmark_aoi.sql
-	touch $@
-
-db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_benchmark_aoi
+db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_extents
 	psql -f tables/morocco_buildings_iou.sql
-	touch $@
-
-db/table/morocco_buildings_iou_new_dataset: db/table/morocco_buildings db/table/morocco_buildings_manual db/table/morocco_buildings_benchmark_aoi
-	psql -f tables/morocco_buildings_benchmark_iou_full.sql
 	touch $@
 
 data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual

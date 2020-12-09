@@ -677,9 +677,9 @@ db/table/morocco_buildings_benchmark_extents: data/morocco_buildings/extents/aga
 	psql -c "update morocco_buildings_extents set city = 'Casablanca' where city is null;"
 	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/chefchaouen_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
 	psql -c "update morocco_buildings_extents set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/fes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/fes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
 	psql -c "update morocco_buildings_extents set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/meknes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/meknes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
 	psql -c "update morocco_buildings_extents set city = 'Meknes' where city is null;"
 	touch $@
 

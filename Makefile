@@ -635,7 +635,7 @@ data/morocco_buildings/morocco_buildings_footprints_phase2.geojson.gz: db/table/
 
 db/table/morocco_buildings_benchmark: data/morocco_buildings/footprints/agadir_footprints.geojson data/morocco_buildings/footprints/casablanca_footprints.geojson data/morocco_buildings/footprints/chefchaouen_footprints.geojson data/morocco_buildings/footprints/fes_footprints.geojson data/morocco_buildings/footprints/meknes_footprints.geojson | db/table
 	psql -c "drop table if exists morocco_buildings_benchmark;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/footprints/agadir.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/footprints/agadir_footprints.geojson -nln morocco_buildings_benchmark
 	psql -c "alter table morocco_buildings_benchmark add column city text;"
 	psql -c "alter table morocco_buildings_benchmark alter column wkb_geometry type geometry;"
 	psql -c "update morocco_buildings_benchmark set city = 'Agadir' where city is null;"

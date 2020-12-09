@@ -693,7 +693,7 @@ data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/moro
 	cd data/morocco_buildings; pigz morocco_buildings_manual_phase2.geojson
 
 data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual_roofprints
-	rm -f data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson
+	rm -f $@
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, is_confident from morocco_buildings_manual_roofprints_extent' -nln morocco_buildings_manual_roofprints_phase2
 	cd data/morocco_buildings; pigz morocco_buildings_manual_roofprints_phase2.geojson
 

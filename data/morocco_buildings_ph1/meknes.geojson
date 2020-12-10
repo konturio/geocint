@@ -1,7 +1,6 @@
 {
 "type": "FeatureCollection",
 "name": "meknes",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "_block_id": 228, "_iou_wall": 0.0, "class_id": "residential", "osm_landuse_class": null, "_iou_shadow": 0.0, "shape_type": "GRID_SNAP", "processing_date": "2020\/08\/31", "building_height": 6.0, "id": 154377754 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -5.502265830690425, 33.890581884914774 ], [ -5.5021672746587, 33.890574484093548 ], [ -5.502171820635639, 33.890427218149284 ], [ -5.502270539524944, 33.890429337525262 ], [ -5.502265830690425, 33.890581884914774 ] ] ] ] } },
 { "type": "Feature", "properties": { "_block_id": 360, "_iou_wall": 0.0, "class_id": "residential", "osm_landuse_class": null, "_iou_shadow": 0.0, "shape_type": "L-SHAPE", "processing_date": "2020\/08\/31", "building_height": 6.0, "id": 154378388 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -5.502762791782463, 33.890300165978495 ], [ -5.502754009018912, 33.890219172085466 ], [ -5.503113634862808, 33.890192049473796 ], [ -5.503122417960602, 33.890273043326239 ], [ -5.502762791782463, 33.890300165978495 ] ] ] ] } },

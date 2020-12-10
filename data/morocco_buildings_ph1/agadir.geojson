@@ -1,7 +1,6 @@
 {
 "type": "FeatureCollection",
 "name": "agadir",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "_block_id": 381, "_iou_wall": 0.1, "class_id": "residential", "osm_landuse_class": null, "_iou_shadow": 0.35, "shape_type": "L-SHAPE", "processing_date": "2020\/08\/31", "building_height": 7.0, "id": 154371131 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -9.572805254729998, 30.416795218889991 ], [ -9.572902834919999, 30.416840750080002 ], [ -9.572850621149998, 30.416923968549998 ], [ -9.57275304096, 30.416878437399994 ], [ -9.572805254729998, 30.416795218889991 ] ] ] ] } },
 { "type": "Feature", "properties": { "_block_id": 819, "_iou_wall": 0.43, "class_id": "residential", "osm_landuse_class": null, "_iou_shadow": 0.24, "shape_type": "RECTANGLE", "processing_date": "2020\/08\/31", "building_height": 9.0, "id": 154372850 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -9.56986638711, 30.418727852109999 ], [ -9.569759206489998, 30.41866650639999 ], [ -9.56981886786, 30.418588990419998 ], [ -9.569926048479999, 30.41865033617 ], [ -9.56986638711, 30.418727852109999 ] ] ] ] } },

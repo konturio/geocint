@@ -1,7 +1,6 @@
 {
 "type": "FeatureCollection",
 "name": "casablanca",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "_block_id": 1014, "_iou_wall": 0.04, "class_id": "residential", "osm_landuse_class": "residential", "_iou_shadow": 0.56, "shape_type": "L-SHAPE", "processing_date": "2020\/08\/31", "building_height": 10.0, "id": 154387064 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -7.63463884499, 33.584414538659992 ], [ -7.634769402179999, 33.58451330810999 ], [ -7.634655373699999, 33.584617913789991 ], [ -7.63452481651, 33.584519144460003 ], [ -7.634546912889999, 33.584498874 ], [ -7.63454728281, 33.58449853465001 ], [ -7.63463884499, 33.584414538659992 ] ] ] ] } },
 { "type": "Feature", "properties": { "_block_id": 1014, "_iou_wall": 0.04, "class_id": "residential", "osm_landuse_class": "residential", "_iou_shadow": 0.56, "shape_type": "L-SHAPE", "processing_date": "2020\/08\/31", "building_height": 10.0, "id": 154387063 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -7.634433887460002, 33.58458604498999 ], [ -7.634329354709999, 33.584506963679999 ], [ -7.634410417759999, 33.584432599239989 ], [ -7.634514950509999, 33.584511680609999 ], [ -7.634433887460002, 33.58458604498999 ] ] ] ] } },

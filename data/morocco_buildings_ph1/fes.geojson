@@ -1,7 +1,6 @@
 {
 "type": "FeatureCollection",
 "name": "fes",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "_block_id": 166, "_iou_wall": 0.0, "class_id": "residential", "osm_landuse_class": null, "_iou_shadow": 0.0, "shape_type": "GRID_SNAP", "processing_date": "2020\/08\/31", "building_height": 6.0, "id": 154368165 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -5.011284028589677, 34.042291719215811 ], [ -5.011098596643353, 34.042287194420545 ], [ -5.011102177330251, 34.042185507660058 ], [ -5.011287609054707, 34.042190032457974 ], [ -5.011284028589677, 34.042291719215811 ] ] ] ] } },
 { "type": "Feature", "properties": { "_block_id": 166, "_iou_wall": 0.0, "class_id": "residential", "osm_landuse_class": null, "_iou_shadow": 0.0, "shape_type": "GRID_SNAP", "processing_date": "2020\/08\/31", "building_height": 6.0, "id": 154368164 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -5.011516879803318, 34.042297400708982 ], [ -5.011284028589677, 34.042291719215811 ], [ -5.011287609054707, 34.042190032457974 ], [ -5.01152045998974, 34.042195713954449 ], [ -5.011516879803318, 34.042297400708982 ] ] ] ] } },

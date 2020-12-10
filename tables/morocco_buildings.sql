@@ -6,24 +6,51 @@ alter table morocco_buildings
 alter table morocco_buildings
     drop column _block_id;
 alter table morocco_buildings
-    drop column processing_date;
-alter table morocco_buildings
     drop column shape_type;
 alter table morocco_buildings
     drop column osm_landuse_class;
 alter table morocco_buildings
-    rename column is_validated to manually_reviewed;
+    drop column sun_azimuth;
 alter table morocco_buildings
-    rename column is_footprint to height_is_valid;
+    drop column sun_elevation;
+alter table morocco_buildings
+    drop column sat_azimuth;
+alter table morocco_buildings
+    drop column sat_elevation;
+alter table morocco_buildings
+    drop column processing_date;
+alter table morocco_buildings
+    rename column _height_confidence to height_confidence;
 
 -- convert multipolygons to polygons
 update morocco_buildings
 set geom = ST_CollectionHomogenize(geom);
 
--- drop empty rows
-delete from morocco_buildings where geom is null;
-
 -- make geom robust to conversion to mercator
 update morocco_buildings
 set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(ST_MakeValid(ST_Transform(geom, 3857)), 4326)), 3)
 where not ST_IsValid(ST_Transform(geom, 3857));
+
+drop table morocco_buildings_date;
+create table morocco_buildings_date as (
+    select m.*,
+           n.date as imagery_vintage
+    from morocco_buildings m
+             left join morocco_meta_finished_november_2020 n
+                       on ST_Intersects(wkb_geometry, ST_PointOnSurface(geom))
+);
+
+alter table morocco_buildings_date
+    add column height_is_valid bool;
+
+update morocco_buildings_date
+set height_is_valid = true
+where height is not null;
+
+update morocco_buildings_date
+set imagery_vintage = '2020-08'
+where imagery_vintage is null;
+
+update morocco_buildings_date
+set height_is_valid = false, height = 6
+where height is null;

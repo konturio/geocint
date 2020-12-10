@@ -1,7 +1,6 @@
 {
 "type": "FeatureCollection",
 "name": "chefchaouen",
-"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
 "features": [
 { "type": "Feature", "properties": { "_block_id": 244, "_iou_wall": 0.0, "class_id": "residential", "osm_landuse_class": "residential", "_iou_shadow": 0.0, "shape_type": null, "processing_date": "2020\/08\/31", "building_height": 6.0, "id": 154366944 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -5.264771841829826, 35.168817196250615 ], [ -5.26476644633427, 35.168813600105558 ], [ -5.26473181622082, 35.168747008628884 ], [ -5.26476156922008, 35.168692110047139 ], [ -5.264837601232396, 35.168661586767286 ], [ -5.264895565719916, 35.168785517333781 ], [ -5.264893375833652, 35.168796441963195 ], [ -5.264771841829826, 35.168817196250615 ] ] ] ] } },
 { "type": "Feature", "properties": { "_block_id": 244, "_iou_wall": 0.0, "class_id": "residential", "osm_landuse_class": "residential", "_iou_shadow": 0.0, "shape_type": null, "processing_date": "2020\/08\/31", "building_height": 6.0, "id": 154366943 }, "geometry": { "type": "MultiPolygon", "coordinates": [ [ [ [ -5.264775330252943, 35.168827011046112 ], [ -5.264771841829826, 35.168817196250615 ], [ -5.264893375833652, 35.168796441963195 ], [ -5.264864763939757, 35.168939177148459 ], [ -5.264775330252943, 35.168827011046112 ] ] ] ] } },

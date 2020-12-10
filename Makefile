@@ -2,7 +2,7 @@ all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates
 	psql -f scripts/clean.sql
 
 data:
@@ -54,7 +54,7 @@ deploy/sonic: | deploy
 deploy/geocint: | deploy
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/belarus-latest.osm.pbf
+deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/belarus-latest.osm.pbf deploy/geocint/global_fires_h3_r8_13months.csv.gz
 	touch $@
 
 deploy/s3:
@@ -425,29 +425,43 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-data/firms: | data
+data/global_fires: | data
 	mkdir -p $@
 
-data/firms/download: | data/firms
-	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_V1_162053.zip
-	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_J1V-C2_162052.zip
-	cd data/firms; wget -nc -c https://firms.modaps.eosdis.nasa.gov/data/download/DL_FIRE_M6_162051.zip
+data/global_fires/download_new_updates: | data/global_fires
+	mkdir -p data/global_fires/new_updates
+	rm -f data/global_fires/new_updates/*.csv
+	cd data/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
+	cd data/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
+	cd data/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
+	cp data/global_fires/new_updates/*.csv data/global_fires/
 	touch $@
 
-data/firms/unzip: data/firms/download
-	cd data/firms; ls *.zip | parallel "unzip -o {}"
+data/global_fires/copy_old_data: | data/global_fires
+	cp data/firms/old_tables/*.csv data/global_fires/
 	touch $@
 
-db/table/firms_fires: data/firms/unzip | db/table
-	psql -c "drop table if exists firms_fires"
-	psql -c "create table firms_fires (latitude float, longitude float, brightness float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, frp float, daynight text, acq_datetime timestamptz);"
-	rm -f data/firms/*_proc.csv
-	ls data/firms/*.csv | parallel "python3 scripts/convert_firms_timestamps.py {}"
-	ls data/firms/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy firms_fires (latitude, longitude, brightness, scan, track, satellite, instrument, confidence, version, bright_t31, frp, daynight, acq_datetime) from stdin with csv header;\" "
+db/table/global_fires: data/global_fires/download_new_updates data/global_fires/copy_old_data |  db/table
+	psql -c "create table if not exists global_fires (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);"
+	rm -f data/global_fires/*_proc.csv
+	ls data/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {}"
+	ls data/global_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy global_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
+	psql -c "create index if not exists global_fires_hash_idx on global_fires (hash);"
+	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
+	psql -c "DELETE FROM global_fires WHERE id IN(SELECT id FROM(SELECT id, ROW_NUMBER() OVER(PARTITION BY hash ORDER BY id) AS row_num FROM global_fires) t WHERE t.row_num > 1);"
+	rm data/global_fires/*.csv
 	touch $@
 
-db/table/firms_fires_h3: db/table/firms_fires
-	psql -f tables/firms_fires_h3.sql
+db/table/global_fires_stat_h3: db/table/global_fires
+	psql -f tables/global_fires_stat_h3.sql
+	touch $@
+
+data/global_fires/global_fires_h3_r8_13months.csv.gz: db/table/global_fires
+	rm -rf $@
+	psql -q -X -c "set timezone to utc; copy (select h3_r8, acq_datetime from global_fires where acq_datetime > (select max(acq_datetime) from global_fires) - interval '13 months' order by 1,2) to stdout with csv;" | pigz > $@
+
+deploy/geocint/global_fires_h3_r8_13months.csv.gz: data/global_fires/global_fires_h3_r8_13months.csv.gz | deploy/geocint
+	cp -vp data/global_fires/global_fires_h3_r8_13months.csv.gz ~/public_html/global_fires_h3_r8_13months.csv.gz
 	touch $@
 
 db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table
@@ -797,7 +811,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/firms_fires_h3 db/table/building_count_grid_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

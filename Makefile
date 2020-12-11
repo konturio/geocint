@@ -701,6 +701,7 @@ db/table/morocco_buildings_extents: data/morocco_buildings/extents/agadir_extent
 
 db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_extents
 	psql -f tables/morocco_buildings_iou.sql -v morocco_buildings_benchmark=morocco_buildings_benchmark
+	echo "select city, metric, value from phase_metrics \crosstabview" | psql -q
 	touch $@
 
 data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual

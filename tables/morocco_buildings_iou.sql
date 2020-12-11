@@ -13,10 +13,10 @@ create table phase_metrics
     Value  float
 );
 
-alter table morocco_buildings_extents
-    rename column wkb_geometry to geom;
+-- alter table morocco_buildings_extents
+--     rename column wkb_geometry to geom;
 update morocco_buildings_extents
-set geom = ST_Transform(geom, 3857);
+set wkb_geometry = ST_Transform(wkb_geometry, 3857);
 
 alter table morocco_buildings_manual_roofprints
     rename column wkb_geometry to geom;
@@ -36,21 +36,21 @@ drop table if exists morocco_buildings_manual_extent;
 create table morocco_buildings_manual_extent as (
     select is_confident,
            building_height,
-           ST_Intersection(ST_MakeValid(b.footprint), a.geom) as footprint,
+           ST_Intersection(ST_MakeValid(b.footprint), a.wkb_geometry) as footprint,
            a.city
     from morocco_buildings_manual b
              join morocco_buildings_extents a
-                  on ST_Intersects(b.footprint, ST_MakeValid(a.geom))
+                  on ST_Intersects(b.footprint, ST_MakeValid(a.wkb_geometry))
 );
 
 drop table if exists morocco_buildings_benchmark_phase2;
 create table morocco_buildings_benchmark_phase2 as (
     select building_height                                     as building_height,
-           ST_Intersection(ST_Transform(b.geom, 3857), a.geom) as geom,
+           ST_Intersection(ST_Transform(b.geom, 3857), a.wkb_geometry) as geom,
            a.city
     from :morocco_buildings_benchmark b
              join morocco_buildings_extents a
-                  on ST_Intersects(b.geom, ST_Transform(a.geom, 4326))
+                  on ST_Intersects(b.geom, ST_Transform(a.wkb_geometry, 4326))
 );
 
 -- round the coordinates a little bit to make intersection/union more robust
@@ -155,7 +155,7 @@ insert into phase_metrics (city, metric, value)
 select b.city, '2D_IoU', sum(ST_Area(a.geom)) filter (where min_height > 0) / sum(ST_Area(a.geom))
 from morocco_buildings_linework_ph2 a
          join morocco_buildings_extents b
-              on ST_Intersects(a.geom, b.geom)
+              on ST_Intersects(a.geom, b.wkb_geometry)
 group by b.city;
 
 -- calculate 3D IoU metrics
@@ -163,7 +163,7 @@ insert into phase_metrics (city, metric, value)
 select b.city, '3D_IoU', sum(min_height * ST_Area(a.geom)) / sum(max_height * ST_Area(a.geom))
 from morocco_buildings_linework_ph2 a
          join morocco_buildings_extents b
-              on ST_Intersects(a.geom, b.geom)
+              on ST_Intersects(a.geom, b.wkb_geometry)
 group by b.city;
 
 -- Step 4. Generate feature-to-feature IoU.
@@ -239,7 +239,7 @@ select a.city,
            ST_Area(ST_Union(geom_morocco_buildings, geom_phase2)))
 from morocco_buildings_iou_feature m
          join morocco_buildings_extents a
-              on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
+              on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), wkb_geometry)
 group by 1;
 
 insert into phase_metrics (city, metric, value)
@@ -249,7 +249,7 @@ select a.city,
            ST_Area(ST_Union(geom_morocco_buildings, geom_phase2)))
 from morocco_buildings_iou_feature m
          join morocco_buildings_extents a
-              on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
+              on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), wkb_geometry)
 where not ST_isEmpty(geom_morocco_buildings)
   and not ST_isEmpty(geom_phase2)
 group by 1;
@@ -259,7 +259,7 @@ group by 1;
 insert into phase_metrics (city, metric, value)
 select city, 'Height_RMSD', sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2)))
 from morocco_buildings_iou_feature a
-         join morocco_buildings_extents b on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
+         join morocco_buildings_extents b on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), wkb_geometry)
 where building_height_phase2 > 0
   and building_height_morocco_buildings > 0
 group by 1;
@@ -270,7 +270,7 @@ select city,
        'Height_RMSD_verified',
        sqrt(avg(power(building_height_phase2 - building_height_morocco_buildings, 2)))
 from morocco_buildings_iou_feature a
-         join morocco_buildings_extents b on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), geom)
+         join morocco_buildings_extents b on ST_Intersects(coalesce(geom_morocco_buildings, geom_phase2), wkb_geometry)
 where building_height_phase2 > 0
   and building_height_morocco_buildings > 0
   and is_confident is true
@@ -283,11 +283,11 @@ drop table if exists morocco_buildings_manual_roofprints_extent;
 create table morocco_buildings_manual_roofprints_extent as (
     select is_confident,
            building_height,
-           ST_Intersection(ST_MakeValid(b.geom), a.geom) as geom,
+           ST_Intersection(ST_MakeValid(b.geom), a.wkb_geometry) as geom,
            a.city
     from morocco_buildings_manual_roofprints b
              join morocco_buildings_extents a
-                  on ST_Intersects(ST_MakeValid(b.geom), a.geom)
+                  on ST_Intersects(ST_MakeValid(b.geom), a.wkb_geometry)
 );
 
 drop table if exists morocco_buildings_benchmark_roofprints_union;
@@ -312,7 +312,7 @@ create table morocco_buildings_manual_roofprints_extent_union as (
 
 update morocco_buildings_manual_roofprints_extent_union a
 set geom = ST_Intersection(a.geom, (
-    select geom
+    select wkb_geometry
     from morocco_buildings_extents b
     where a.city = b.city)
     );

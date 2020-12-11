@@ -2,7 +2,7 @@ all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_extents
 	psql -f scripts/clean.sql
 
 data:

@@ -2,7 +2,7 @@ all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_extents
 	psql -f scripts/clean.sql
 
 data:
@@ -701,6 +701,7 @@ db/table/morocco_buildings_extents: data/morocco_buildings/extents/agadir_extent
 
 db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_extents
 	psql -f tables/morocco_buildings_iou.sql -v morocco_buildings_benchmark=morocco_buildings_benchmark
+	echo "select city, metric, value from phase_metrics \crosstabview" | psql -q
 	touch $@
 
 data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual

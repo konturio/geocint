@@ -86,7 +86,7 @@ create table bivariate_axis as (
         axis_parameters as (
             select param_id as parameter
             from
-                bivariate_copyrights
+                bivariate_indicators
         )
     select
         a.parameter as numerator,
@@ -210,11 +210,3 @@ set
 where
       numerator = 'avg_ts'
   and denominator = 'one';
-
-alter table bivariate_axis add column is_base boolean not null default false;
-
-update bivariate_axis
-set
-    is_base = true
-where
-    denominator in ('population', 'total_building_count', 'gdp', 'area_km2', 'one');

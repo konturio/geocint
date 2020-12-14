@@ -816,7 +816,7 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 	psql -f tables/stat_h3.sql
 	touch $@
 
-db/table/bivariate_axis: db/table/bivariate_copyrights db/table/stat_h3 | data/tiles/stat
+db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis.sql
 	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
@@ -825,8 +825,8 @@ db/table/bivariate_overlays: db/table/osm_meta | db/table
 	psql -f tables/bivariate_overlays.sql
 	touch $@
 
-db/table/bivariate_copyrights: db/table/stat_h3 | db/table
-	psql -f tables/bivariate_copyrights.sql
+db/table/bivariate_indicators: db/table/stat_h3 | db/table
+	psql -f tables/bivariate_indicators.sql
 	touch $@
 
 data/tile_logs: | data
@@ -843,7 +843,7 @@ db/table/tile_logs: data/tile_logs/_download | db/table
 	psql -f tables/tile_logs_h3.sql
 	touch $@
 
-data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_copyrights db/table/stat_h3 db/table/osm_meta | data/tiles
+data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_indicators db/table/stat_h3 db/table/osm_meta | data/tiles
 	bash ./scripts/generate_tiles.sh stats | parallel --eta
 	psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stats/stat.json
 	cd data/tiles/stats/; tar cvf ../stats_tiles.tar.bz2  --use-compress-prog=pbzip2 ./

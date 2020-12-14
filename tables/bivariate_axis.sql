@@ -86,7 +86,7 @@ create table bivariate_axis as (
         axis_parameters as (
             select param_id as parameter
             from
-                bivariate_copyrights
+                bivariate_indicators
         )
     select
         a.parameter as numerator,

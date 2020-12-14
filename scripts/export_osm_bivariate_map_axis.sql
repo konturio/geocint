@@ -33,7 +33,7 @@ copy (
                                                  )
                                              order by abs(correlation) * quality nulls last, abs(correlation) desc)
                                from
-                                   bivariate_axis_correlation, bivariate_copyrights xcopy, bivariate_copyrights ycopy
+                                   bivariate_axis_correlation, bivariate_indicators xcopy, bivariate_indicators ycopy
                                where xcopy.param_id = x_num and ycopy.param_id = y_num
                            ),
                            'initAxis',
@@ -100,7 +100,7 @@ copy (
             and ay.numerator = o.y_numerator )                                                      ov,
         bivariate_axis                                                                              x,
         bivariate_axis                                                                              y,
-        ( select json_object_agg(param_id, copyrights) as copyrights from bivariate_copyrights ) as copyrights
+        ( select json_object_agg(param_id, copyrights) as copyrights from bivariate_indicators ) as copyrights
     where
           x.numerator = 'count'
       and x.denominator = 'area_km2'

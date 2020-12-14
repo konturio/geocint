@@ -1,54 +1,57 @@
 drop table if exists bivariate_copyrights;
 
-create table bivariate_copyrights
+drop table if exists bivariate_indicators;
+
+create table bivariate_indicators
 (
     param_id   text,
     param_label text,
-    copyrights json
+    copyrights json,
+    is_base boolean not null default false
 );
 
-alter table bivariate_copyrights
+alter table bivariate_indicators
     set (parallel_workers = 32);
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('one', '1', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json);
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('area_km2', 'Area', '["Concept of areas © Brahmagupta, René Descartes"]'::json);
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('count', 'OSM objects', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('view_count', 'OSM Map views', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('avg_ts', 'OSM Last Edit Date (avg)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('max_ts', 'OSM Last Edit Date (max)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('p90_ts', 'OSM 90% Mapped Before', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('osm_users', 'OSM Mappers Edited Here', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('building_count', 'OSM Buildings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('highway_length', 'OSM Road Length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('local_hours', 'OSM Mapping Hours by Local Mappers', jsonb_build_array('© Kontur https://kontur.io/',
 '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('total_hours', 'OSM Mapping Hours by All Mappers', jsonb_build_array('© Kontur https://kontur.io/',
 '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('gdp', 'Gross Domestic Product', jsonb_build_array(
 '© Kontur https://kontur.io/',
 '© 2019 The World Bank Group, CC-BY 4.0',
@@ -58,7 +61,7 @@ values ('gdp', 'Gross Domestic Product', jsonb_build_array(
                                  'Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
                                  '@ OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('population', 'Population', jsonb_build_array(
 '© Kontur https://kontur.io/',
         'Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/',
@@ -67,16 +70,22 @@ values ('population', 'Population', jsonb_build_array(
         'Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('total_building_count', 'Total Buildings Estimate', jsonb_build_array(
 '© Kontur https://kontur.io/',
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050',
         'Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'));
 
-insert into bivariate_copyrights (param_id, param_label, copyrights)
+insert into bivariate_indicators (param_id, param_label, copyrights)
 values ('wildfires', 'Wildfire Days Per Year', jsonb_build_array(
 '© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002',
     'NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002',
     'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006',
     'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML'));
+
+update bivariate_indicators
+set
+    is_base = true
+where
+      param_id in ('population', 'total_building_count', 'gdp', 'area_km2', 'one');

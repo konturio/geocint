@@ -210,3 +210,11 @@ set
 where
       numerator = 'avg_ts'
   and denominator = 'one';
+
+alter table bivariate_axis add column is_base boolean not null default false;
+
+update bivariate_axis
+set
+    is_base = true
+where
+    denominator in ('population', 'total_building_count', 'gdp', 'area_km2', 'one');

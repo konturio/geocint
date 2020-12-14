@@ -37,4 +37,6 @@ create table bivariate_axis_correlation as (
           (x.numerator != y.numerator or x.denominator != y.denominator)
       and x.quality > 0.5
       and y.quality > 0.5
+      and x.denominator
+      and y.denominator
 );

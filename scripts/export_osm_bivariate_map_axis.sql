@@ -21,10 +21,10 @@ copy (
                            'correlationRates', (
                                select
                                    jsonb_agg(jsonb_build_object(
-                                                 'x', jsonb_build_object('label', x_num,
+                                                 'x', jsonb_build_object('label', xcopy.param_label,
                                                                          'quotient',
                                                                          jsonb_build_array(x_num, x_den)),
-                                                 'y', jsonb_build_object('label', y_num,
+                                                 'y', jsonb_build_object('label', ycopy.param_label,
                                                                          'quotient',
                                                                          jsonb_build_array(y_num, y_den)),
                                                  'rate', correlation, -- TODO: remove after frontend
@@ -33,7 +33,8 @@ copy (
                                                  )
                                              order by abs(correlation) * quality nulls last, abs(correlation) desc)
                                from
-                                   bivariate_axis_correlation
+                                   bivariate_axis_correlation, bivariate_copyrights xcopy, bivariate_copyrights ycopy
+                               where xcopy.param_id = x_num and ycopy.param_id = y_num
                            ),
                            'initAxis',
                            jsonb_build_object('x', jsonb_build_object('label', x.label, 'quotient',

@@ -32,18 +32,18 @@ create table bivariate_axis_correlation as (
         1 - ((1 - x.quality) * (1 - y.quality)) as quality
     from
         (bivariate_axis x
-            inner join
-                bivariate_indicators indicators_x
-                    on (x.denominator = indicators_x.param_id))
-            cross join
-        (bivariate_axis y
-            inner join
-                bivariate_indicators indicators_y
-                    on (y.denominator = indicators_y.param_id))
+            join bivariate_indicators x_den_indicator
+                    on (x.denominator = x_den_indicator.param_id)
+            join bivariate_indicators x_num_indicator
+                    on (x.numerator = x_num_indicator.param_id)),
+            (bivariate_axis y
+                join bivariate_indicators y_den_indicator
+                    on (y.denominator = y_den_indicator.param_id))
     where
           (x.numerator != y.numerator or x.denominator != y.denominator)
       and x.quality > 0.5
       and y.quality > 0.5
-      and indicators_x.is_base
-      and indicators_y.is_base
+      and x_den_indicator.is_base
+      and y_den_indicator.is_base
+      and not x_num_indicator.is_base
 );

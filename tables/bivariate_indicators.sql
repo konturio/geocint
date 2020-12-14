@@ -6,7 +6,8 @@ create table bivariate_indicators
 (
     param_id   text,
     param_label text,
-    copyrights json
+    copyrights json,
+    is_base boolean not null default false
 );
 
 alter table bivariate_indicators
@@ -82,8 +83,6 @@ values ('wildfires', 'Wildfire Days Per Year', jsonb_build_array(
     'NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002',
     'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006',
     'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML'));
-
-alter table bivariate_indicators add column is_base boolean not null default false;
 
 update bivariate_indicators
 set

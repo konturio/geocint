@@ -54,7 +54,7 @@ deploy/sonic: | deploy
 deploy/geocint: | deploy
 	mkdir -p $@
 
-deploy/_all: deploy/geocint/stats_tiles deploy/lima/stats_tiles deploy/geocint/users_tiles deploy/lima/users_tiles deploy/sonic/population_api_tables deploy/lima/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/belarus-latest.osm.pbf deploy/geocint/global_fires_h3_r8_13months.csv.gz
+deploy/_all: deploy/production deploy/test
 	touch $@
 
 deploy/s3:
@@ -925,4 +925,10 @@ deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz
 	ansible lima_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
+	touch $@
+
+deploy/test: deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/sonic/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/belarus-latest.osm.pbf deploy/geocint/global_fires_h3_r8_13months.csv.gz
+	touch $@
+
+deploy/production: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables
 	touch $@

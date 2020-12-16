@@ -5,11 +5,10 @@ PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sb
 cd ~/geocint
 git pull
 profile_make clean
-profile_make -j -k deploy/dev deploy/prod
 BRANCH = $(git rev-parse --abbrev-ref HEAD)
 if [[ "$BRANCH" = "master" ]];
 then
-  profile_make -j -k deploy/dev deploy/prod
+  profile_make -j -k dev prod
 else
-  profile_make -j -k deploy/dev
+  profile_make -j -k dev
 fi

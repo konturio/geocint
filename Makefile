@@ -1,4 +1,8 @@
-all: deploy/geocint/isochrone_tables deploy/_all data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/morocco_buildings/morocco_buildings_footprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz
+deploy/dev: deploy/geocint/isochrone_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/morocco_buildings/morocco_buildings_footprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz
+	touch $@
+
+deploy/prod: deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/geocint/belarus-latest.osm.pbf deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries
+	touch $@
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
@@ -53,9 +57,6 @@ deploy/sonic: | deploy
 
 deploy/geocint: | deploy
 	mkdir -p $@
-
-deploy/_all: deploy/production deploy/test
-	touch $@
 
 deploy/s3:
 	mkdir -p $@/test
@@ -925,10 +926,4 @@ deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz
 	ansible lima_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
-	touch $@
-
-deploy/test: deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/sonic/population_api_tables deploy/s3/osm_buildings_minsk deploy/s3/test/osm_addresses_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/belarus-latest.osm.pbf deploy/geocint/global_fires_h3_r8_13months.csv.gz
-	touch $@
-
-deploy/production: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables
 	touch $@

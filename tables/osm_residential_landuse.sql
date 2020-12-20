@@ -11,6 +11,7 @@ create table osm_residential_landuse as (
         osm
     where
         tags @> '{"landuse":"residential"}'
+    order by _ST_SortableHash(geog::geometry)
 );
 
 create index on osm_residential_landuse using gist (geom);

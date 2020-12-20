@@ -10,7 +10,7 @@ create table osm_water_lines as (
     osm
   where
     (tags ? 'water'
-    or tags @> '{"natural":"water"}' 
+    or tags @> '{"natural":"water"}'
     or tags @> '{"waterway":"riverbank"}'
     or tags @> '{"waterway":"river"}'
     or tags @> '{"waterway":"stream"}'
@@ -18,7 +18,7 @@ create table osm_water_lines as (
     or tags @> '{"waterway":"ditch"}'
     or tags @> '{"waterway":"drain"}')
     and ST_GeometryType(geog::geometry) = 'ST_LineString'
-  order by 3
+  order by _ST_SortableHash(geog::geometry)
 );
 
 create index on osm_water_lines using brin (geom);

@@ -9,4 +9,5 @@ create table osm_addresses as (
            geog::geometry              as geom
     from osm
     where tags ? 'addr:housenumber'
+    order by _ST_SortableHash(geog::geometry)
 );

@@ -15,4 +15,5 @@ create table osm_buildings as (
     from osm o
     where tags ? 'building'
       and not (tags ->> 'building') = 'no'
+    order by _ST_SortableHash(geog::geometry)
 );

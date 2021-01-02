@@ -4,7 +4,7 @@ prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api
 
 clean:
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_extents
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints
 	psql -f scripts/clean.sql
 
 data:
@@ -631,11 +631,17 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 db/table/morocco_buildings_manual_roofprints: data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson
 	psql -c "drop table if exists morocco_buildings_manual_roofprints;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson -nln morocco_buildings_manual_roofprints
+	psql -c "alter table morocco_buildings_manual_roofprints rename column wkb_geometry to geom;"
+	psql -c "alter table morocco_buildings_manual_roofprints alter column geom type geometry;"
+	psql -c "update morocco_buildings_manual_roofprints set geom = ST_Transform(geom, 3857);"
 	touch $@
 
 db/table/morocco_buildings_manual: data/morocco_buildings/morocco_buildings_manual_20201030.geojson
 	psql -c "drop table if exists morocco_buildings_manual;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/morocco_buildings_manual_20201030.geojson -nln morocco_buildings_manual
+	psql -c "alter table morocco_buildings_manual rename column wkb_geometry to footprint;"
+	psql -c "alter table morocco_buildings_manual alter column footprint type geometry;"
+	psql -c "update morocco_buildings_manual set footprint = ST_Transform(footprint, 3857);"
 	touch $@
 
 db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_2.gpkg | db/table
@@ -696,11 +702,14 @@ db/table/morocco_buildings_extents: data/morocco_buildings/extents/agadir_extent
 	psql -c "update morocco_buildings_extents set city = 'Fes' where city is null;"
 	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/meknes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
 	psql -c "update morocco_buildings_extents set city = 'Meknes' where city is null;"
+	psql -c "alter table morocco_buildings_extents rename column wkb_geometry to geom; update morocco_buildings_extents set geom = ST_Transform(geom, 3857);"
 	touch $@
 
 db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_extents
 	psql -f tables/morocco_buildings_iou.sql -v morocco_buildings_benchmark=morocco_buildings_benchmark
-	echo "select city, metric, value from phase_metrics \crosstabview" | psql -q
+	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from phase_metrics;" | head -6 > data/morocco_buildings/phase_metrics_old_imagery.csv
+	psql -f tables/morocco_buildings_iou.sql -v morocco_buildings_benchmark=morocco_buildings
+	psql -q -c "\crosstabview" -A -F "," -c "select city, metric, value from phase_metrics where metric != '2D_IoU_roofprints';" | head -6 > data/morocco_buildings/phase_metrics_new_imagery.csv
 	touch $@
 
 data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual
@@ -878,8 +887,9 @@ deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima
 	touch $@
 
 data/tiles/users_tiles.tar.bz2: db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res | data/tiles
-	bash ./scripts/generate_tiles.sh users | parallel --eta
-	cd data/tiles/users/; tar cjvf ../users_tiles.tar.bz2 ./
+	bash ./scripts/generate_tiles.sh stats | parallel --eta
+	psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stats/stat.json
+	cd data/tiles/stats/; tar cvf ../stats_tiles.tar.bz2  --use-compress-prog=pbzip2 ./
 
 deploy/geocint/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/geocint
 	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles

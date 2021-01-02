@@ -13,25 +13,6 @@ create table phase_metrics
     Value  float
 );
 
-alter table morocco_buildings_extents
-    rename column wkb_geometry to geom;
-update morocco_buildings_extents
-set geom = ST_Transform(geom, 3857);
-
-alter table morocco_buildings_manual_roofprints
-    rename column wkb_geometry to geom;
-alter table morocco_buildings_manual_roofprints
-    alter column geom type geometry;
-update morocco_buildings_manual_roofprints
-set geom = ST_Transform(geom, 3857);
-
-alter table morocco_buildings_manual
-    rename column wkb_geometry to footprint;
-alter table morocco_buildings_manual
-    alter column footprint type geometry;
-update morocco_buildings_manual
-set footprint = ST_Transform(footprint, 3857);
-
 drop table if exists morocco_buildings_manual_extent;
 create table morocco_buildings_manual_extent as (
     select is_confident,
@@ -338,9 +319,7 @@ from (
          from morocco_buildings_manual_roofprints_extent_union
      ) z;
 
-drop table if exists morocco_buildings_extents;
-drop table if exists morocco_buildings_manual;
-drop table if exists morocco_buildings_manual_roofprints;
+drop table if exists morocco_buildings_manual_union;
 drop table if exists morocco_buildings_manual_roofprints_extent_union;
 drop table if exists morocco_buildings_benchmark_phase2;
 drop table if exists morocco_buildings_iou_feature;

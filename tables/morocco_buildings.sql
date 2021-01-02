@@ -21,6 +21,8 @@ alter table morocco_buildings
     drop column processing_date;
 alter table morocco_buildings
     rename column _height_confidence to height_confidence;
+alter table morocco_buildings
+    rename column height to building_height;
 
 -- convert multipolygons to polygons
 update morocco_buildings
@@ -45,12 +47,12 @@ alter table morocco_buildings_date
 
 update morocco_buildings_date
 set height_is_valid = true
-where height is not null;
+where building_height is not null;
 
 update morocco_buildings_date
 set imagery_vintage = '2020-08'
 where imagery_vintage is null;
 
 update morocco_buildings_date
-set height_is_valid = false, height = 6
-where height is null;
+set height_is_valid = false, building_height = 6
+where building_height is null;

@@ -1,31 +1,20 @@
 copy (
     select
         jsonb_build_object('axis', ba.axis,
-                           'translations', jsonb_build_object('count', 'Count',
-                                                              'building_count', 'Building count',
-                                                              'highway_length', 'Highway length',
-                                                              'amenity_count', 'Amenity count',
-                                                              'view_count', 'Map views',
-                                                              'osm_users', 'OSM users',
-                                                              'population', 'Population',
-                                                              'avg_ts', 'Average time stamp',
-                                                              'max_ts', 'Max time stamp',
-                                                              'p90_ts', '90 Percentile time stamp',
-                                                              'area_km2', 'Area',
-                                                              'one', '1',
-                                                              'total_building_count', 'Total building count',
-                                                              'wildfires', 'Wildfires'
-                               ),
                            'meta', jsonb_build_object('max_zoom', 8,
                                                       'min_zoom', 0),
+                           'indicators', (
+                               select jsonb_agg(jsonb_build_object('name', param_id,
+                                                                   'label', param_label,
+                                                                   'copyrights', copyrights))
+                               from bivariate_indicators
+                           ),
                            'correlationRates', (
                                select
                                    jsonb_agg(jsonb_build_object(
-                                                 'x', jsonb_build_object('label', xcopy.param_label,
-                                                                         'quotient',
+                                                 'x', jsonb_build_object('quotient',
                                                                          jsonb_build_array(x_num, x_den)),
-                                                 'y', jsonb_build_object('label', ycopy.param_label,
-                                                                         'quotient',
+                                                 'y', jsonb_build_object('quotient',
                                                                          jsonb_build_array(y_num, y_den)),
                                                  'rate', correlation, -- TODO: remove after frontend
                                                  'correlation', correlation,
@@ -33,8 +22,7 @@ copy (
                                                  )
                                              order by abs(correlation) * quality nulls last, abs(correlation) desc)
                                from
-                                   bivariate_axis_correlation, bivariate_indicators xcopy, bivariate_indicators ycopy
-                               where xcopy.param_id = x_num and ycopy.param_id = y_num
+                                   bivariate_axis_correlation
                            ),
                            'initAxis',
                            jsonb_build_object('x', jsonb_build_object('label', x.label, 'quotient',

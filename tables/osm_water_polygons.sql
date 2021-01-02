@@ -40,4 +40,4 @@ create table osm_water_polygons as (
 );
 drop table osm_water_polygons_unsorted;
 vacuum analyze osm_water_polygons;
-create index on osm_water_polygons using brin (geom);
+create index on osm_water_polygons using gist (geom);

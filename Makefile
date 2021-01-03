@@ -73,10 +73,10 @@ deploy/geocint/belarus-latest.osm.pbf: data/belarus-latest.osm.pbf | deploy/geoc
 	fi
 
 data/planet-latest.osm.pbf: | data
-	rm data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
-	cd data; aria2c https://osm.cquest.org/torrents/planet-latest.osm.pbf.torrent --seed-time=0
+	rm -f data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
+	cd data; aria2c https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent --seed-time=0
 	mv data/planet-*.osm.pbf $@
-	rm data/planet-latest.osm.pbf.torrent
+	rm -f data/planet-*.osm.pbf.torrent
 	# TODO: smoke check correctness of file
 	touch $@
 

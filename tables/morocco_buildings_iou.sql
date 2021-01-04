@@ -42,6 +42,16 @@ update morocco_buildings_benchmark_phase2
 set geom = ST_CollectionExtract(
         ST_MakeValid(ST_Segmentize(ST_SnapToGrid(ST_Transform(ST_Simplify(geom, 0), 3857), 0.031415926), 5)), 3);
 
+insert into phase_metrics (city, metric, value)
+select city, 'Validation polygons', count(*)
+from morocco_buildings_manual_extent
+group by city;
+
+insert into phase_metrics (city, metric, value)
+select city, 'Validation polygons with verified height', count(*)
+from morocco_buildings_manual_extent
+where is_confident is true
+group by city;
 
 -- Step 2. Generate min / max heights map on the pieces of input geometry
 -- collect both sets into one table

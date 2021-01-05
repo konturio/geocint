@@ -32,7 +32,7 @@ create table osm_road_segments_new as (
     select *
     from osm_road_segments_new_unsorted
     -- ordering by segment geometry is required for BRIN index to work.
-    order by seg_geom
+    order by _ST_SortableHash(seg_geom)
 );
 
 drop table osm_road_segments_new_unsorted;

@@ -60,5 +60,4 @@ create table osm_roads as (
           tags ? 'highway'
       and osm_type = 'way'
       and ST_GeometryType(geog::geometry) = 'ST_LineString'
-    order by 1
 );

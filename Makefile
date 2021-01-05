@@ -73,10 +73,10 @@ deploy/geocint/belarus-latest.osm.pbf: data/belarus-latest.osm.pbf | deploy/geoc
 	fi
 
 data/planet-latest.osm.pbf: | data
-	rm data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
-	cd data; aria2c https://osm.cquest.org/torrents/planet-latest.osm.pbf.torrent --seed-time=0
+	rm -f data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
+	cd data; aria2c https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent --seed-time=0
 	mv data/planet-*.osm.pbf $@
-	rm data/planet-latest.osm.pbf.torrent
+	rm -f data/planet-*.osm.pbf.torrent
 	# TODO: smoke check correctness of file
 	touch $@
 
@@ -748,7 +748,7 @@ db/table/osm_landuses: db/table/osm db/index/osm_tags_idx | db/table
 	touch $@
 
 db/index/osm_landuses_geom_idx: db/table/osm_landuses | db/index
-	psql -c "create index on osm_landuses using gist (geom)"
+	psql -c "create index on osm_landuses using brin (geom)"
 	touch $@
 
 db/table/osm_landuses_minsk: db/table/osm_landuses db/index/osm_landuses_geom_idx | db/table
@@ -774,7 +774,7 @@ db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
 	touch $@
 
 db/index/osm_addresses_geom_idx: db/table/osm_addresses | db/index
-	psql -c "create index on osm_addresses using gist (geom)"
+	psql -c "create index on osm_addresses using brin (geom)"
 	touch $@
 
 db/table/osm_addresses_minsk: db/index/osm_addresses_geom_idx db/table/osm_addresses | db/table
@@ -812,7 +812,7 @@ deploy/s3/osm_admin_boundaries: data/osm_admin_boundaries.geojson.gz | deploy/s3
 	touch $@
 
 db/index/osm_buildings_geom_idx: db/table/osm_buildings | db/index
-	psql -c "create index on osm_buildings using gist (geom)"
+	psql -c "create index on osm_buildings using brin (geom)"
 	touch $@
 
 db/table/osm_buildings: db/index/osm_tags_idx | db/table

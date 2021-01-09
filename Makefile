@@ -447,7 +447,7 @@ db/table/global_fires: data/global_fires/download_new_updates data/global_fires/
 	ls data/global_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy global_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
 	psql -c "create index if not exists global_fires_hash_idx on global_fires (hash);"
 	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
-	psql -c "DELETE FROM global_fires WHERE id IN(SELECT id FROM(SELECT id, ROW_NUMBER() OVER(PARTITION BY hash ORDER BY id) AS row_num FROM global_fires) t WHERE t.row_num > 1);"
+	psql -c "delete from global_fires where id in(select id from(select id, row_number() over(partition by hash order by id) as row_num from global_fires) t where t.row_num > 1);"
 	rm data/global_fires/*.csv
 	touch $@
 
@@ -651,7 +651,7 @@ db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_2.gpkg
 
 data/morocco_buildings/morocco_buildings_footprints_phase2.geojson.gz: db/table/morocco_buildings
 	rm -f $@ data/morocco_buildings/morocco_buildings_footprints_phase2.geojson
-	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_footprints_phase2.geojson PG:"dbname=gis" -sql "select ST_Transform(geom, 4326) as footprint, height as building_height, height_confidence, is_residential, imagery_vintage, height_is_valid from morocco_buildings_date" -nln morocco_buildings_footprints_phase2
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_footprints_phase2.geojson PG:"dbname=gis" -sql "select ST_Transform(geom, 4326) as footprint, building_height, height_confidence, is_residential, imagery_vintage, height_is_valid from morocco_buildings_date" -nln morocco_buildings_footprints_phase2
 	cd data/morocco_buildings; pigz morocco_buildings_footprints_phase2.geojson
 
 db/table/morocco_buildings_benchmark: data/morocco_buildings/footprints/agadir_footprints.geojson data/morocco_buildings/footprints/casablanca_footprints.geojson data/morocco_buildings/footprints/chefchaouen_footprints.geojson data/morocco_buildings/footprints/fes_footprints.geojson data/morocco_buildings/footprints/meknes_footprints.geojson | db/table

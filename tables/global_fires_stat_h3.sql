@@ -1,6 +1,8 @@
 alter table global_fires
     set (parallel_workers = 32);
 
+set timezone to 'UTC';
+
 drop table if exists global_fires_stat_h3;
 create table global_fires_stat_h3 as (
     select h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8) as h3,

@@ -648,6 +648,7 @@ db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_2.gpkg
 	psql -c "drop table if exists morocco_buildings;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_2.gpkg "footprints" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
+	touch $@
 
 data/morocco_buildings/morocco_buildings_footprints_phase2.geojson.gz: db/table/morocco_buildings
 	rm -f $@ data/morocco_buildings/morocco_buildings_footprints_phase2.geojson

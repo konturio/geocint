@@ -6,9 +6,18 @@ copy (
                            'indicators', (
                                select jsonb_agg(jsonb_build_object('name', param_id,
                                                                    'label', param_label,
+                                                                   'direction', direction,
                                                                    'copyrights', copyrights))
                                from bivariate_indicators
                            ),
+                           'colors', jsonb_build_object(
+                               'fallback', '#ccc',
+                               'combinations', (
+                                   select jsonb_agg(jsonb_build_object('color', color,
+                                                                                   'color_comment', color_comment,
+                                                                                   'corner', corner))
+                                   from bivariate_colors)
+                            ),
                            'correlationRates', (
                                select
                                    jsonb_agg(jsonb_build_object(

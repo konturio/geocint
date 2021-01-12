@@ -12,42 +12,42 @@ alter table bivariate_indicators
     set (parallel_workers = 32);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('one', '1', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json, jsonb_build_array(jsonb_build_array('neutral'), jsonb_build_array('neutral')));
+values ('one', '1', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json, '[["neutral"], ["neutral"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('area_km2', 'Area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, jsonb_build_array(jsonb_build_array('neutral'), jsonb_build_array('neutral')));
+values ('area_km2', 'Area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, '[["neutral"], ["neutral"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('count', 'OSM objects', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), jsonb_build_array(jsonb_build_array('bad'), jsonb_build_array('good')));
+values ('count', 'OSM objects', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('view_count', 'OSM Map views', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),jsonb_build_array(jsonb_build_array('bad', 'unimportant'), jsonb_build_array('good', 'important')));
+values ('view_count', 'OSM Map views', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('avg_ts', 'OSM Last Edit Date (avg)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), jsonb_build_array(jsonb_build_array('bad', 'unimportant'), jsonb_build_array('good')));
+values ('avg_ts', 'OSM Last Edit Date (avg)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('max_ts', 'OSM Last Edit Date (max)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), jsonb_build_array(jsonb_build_array('bad', 'unimportant'), jsonb_build_array('good')));
+values ('max_ts', 'OSM Last Edit Date (max)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('p90_ts', 'OSM 90% Mapped Before', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), jsonb_build_array(jsonb_build_array('bad', 'unimportant'), jsonb_build_array('good')));
+values ('p90_ts', 'OSM 90% Mapped Before', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('osm_users', 'OSM Mappers Edited Here', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), jsonb_build_array(jsonb_build_array('bad'), jsonb_build_array('good')));
+values ('osm_users', 'OSM Mappers Edited Here', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('building_count', 'OSM Buildings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), jsonb_build_array(jsonb_build_array('bad'), jsonb_build_array('good')));
+values ('building_count', 'OSM Buildings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('highway_length', 'OSM Road Length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), jsonb_build_array(jsonb_build_array('bad'), jsonb_build_array('good')));
+values ('highway_length', 'OSM Road Length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('local_hours', 'OSM Mapping Hours by Local Mappers', jsonb_build_array('© Kontur https://kontur.io/',
-'© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), jsonb_build_array(jsonb_build_array('bad'), jsonb_build_array('good')));
+'© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('total_hours', 'OSM Mapping Hours by All Mappers', jsonb_build_array('© Kontur https://kontur.io/',
-'© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), jsonb_build_array(jsonb_build_array('bad'), jsonb_build_array('good')));
+'© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('gdp', 'Gross Domestic Product', jsonb_build_array(
@@ -58,7 +58,7 @@ values ('gdp', 'Gross Domestic Product', jsonb_build_array(
                                  'Copernicus Global Land Service: Land Cover 100m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, Myroslava Lesiv, Nandin-Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050',
                                  'Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
                                  '@ OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        jsonb_build_array(jsonb_build_array('bad'), jsonb_build_array('good')));
+        '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('population', 'Population', jsonb_build_array(
@@ -68,7 +68,7 @@ values ('population', 'Population', jsonb_build_array(
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050',
         'Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        jsonb_build_array(jsonb_build_array('unimportant'), jsonb_build_array('important')));
+        '[["unimportant"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('total_building_count', 'Total Buildings Estimate', jsonb_build_array(
@@ -76,7 +76,7 @@ values ('total_building_count', 'Total Buildings Estimate', jsonb_build_array(
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050',
         'Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        jsonb_build_array(jsonb_build_array('unimportant'), jsonb_build_array('important')));
+        '[["unimportant"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('wildfires', 'Wildfire Days Per Year', jsonb_build_array(
@@ -84,7 +84,7 @@ values ('wildfires', 'Wildfire Days Per Year', jsonb_build_array(
     'NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002',
     'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006',
     'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML'),
-    jsonb_build_array(jsonb_build_array('good', 'unimportant'), jsonb_build_array('bad', 'important')));
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
 
 update bivariate_indicators
 set is_base = true

@@ -1,4 +1,4 @@
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/geocint/isochrone_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/moroccco
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/moroccco
 
 prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries
 
@@ -51,6 +51,9 @@ deploy/lima: | deploy
 
 # We use sonic.kontur.io as a staging server to test the software before setting it live at lima.kontur.io.
 deploy/sonic: | deploy
+	mkdir -p $@
+
+deploy/zigzag: | deploy
 	mkdir -p $@
 
 deploy/geocint: | deploy
@@ -868,6 +871,44 @@ deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint
 	mv /var/www/tiles/stats /var/www/tiles/stats_old; mv /var/www/tiles/stats_new /var/www/tiles/stats
 	touch $@
 
+deploy/zigzag/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/zigzag
+	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible zigzag_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
+	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		mkdir -p "$$HOME/public_html/tiles/stats"; \
+		tar -cjf "$$HOME/tmp/stats_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/stats" . ; \
+		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
+		function on_exit { rm -rf "$$TMPDIR"; }; \
+		trap on_exit EXIT; \
+		tar -xf "$$HOME/tmp/stats_tiles.tar.bz2" -C "$$TMPDIR"; \
+		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
+		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
+		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/stats"; \
+		rm -f "$$HOME/tmp/stats_tiles.tar.bz2"; \
+	'
+	touch $@
+
+deploy/sonic/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/sonic
+	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible sonic_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
+	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		mkdir -p "$$HOME/public_html/tiles/stats"; \
+		tar -cjf "$$HOME/tmp/stats_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/stats" . ; \
+		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
+		function on_exit { rm -rf "$$TMPDIR"; }; \
+		trap on_exit EXIT; \
+		tar -xf "$$HOME/tmp/stats_tiles.tar.bz2" -C "$$TMPDIR"; \
+		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
+		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
+		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/stats"; \
+		rm -f "$$HOME/tmp/stats_tiles.tar.bz2"; \
+	'
+	touch $@
+
 deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima
 	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
@@ -898,6 +939,44 @@ deploy/geocint/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/geocint
 	cp -a data/tiles/users/. /var/www/tiles/users_new/
 	rm -rf /var/www/tiles/users_old
 	mv /var/www/tiles/users /var/www/tiles/users_old; mv /var/www/tiles/users_new /var/www/tiles/users
+	touch $@
+
+deploy/zigzag/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/zigzag
+	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible zigzag_live_dashboard -m copy -a 'src=data/tiles/users_tiles.tar.bz2 dest=$$HOME/tmp/users_tiles.tar.bz2'
+	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		mkdir -p "$$HOME/public_html/tiles/users"; \
+		tar -cjf "$$HOME/tmp/users_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/users" . ; \
+		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
+		function on_exit { rm -rf "$$TMPDIR"; }; \
+		trap on_exit EXIT; \
+		tar -xf "$$HOME/tmp/users_tiles.tar.bz2" -C "$$TMPDIR"; \
+		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
+		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
+		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/users"; \
+		rm -f "$$HOME/tmp/users_tiles.tar.bz2"; \
+	'
+	touch $@
+
+deploy/sonic/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/sonic
+	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible sonic_live_dashboard -m copy -a 'src=data/tiles/users_tiles.tar.bz2 dest=$$HOME/tmp/users_tiles.tar.bz2'
+	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		mkdir -p "$$HOME/public_html/tiles/users"; \
+		tar -cjf "$$HOME/tmp/users_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/users" . ; \
+		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
+		function on_exit { rm -rf "$$TMPDIR"; }; \
+		trap on_exit EXIT; \
+		tar -xf "$$HOME/tmp/users_tiles.tar.bz2" -C "$$TMPDIR"; \
+		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
+		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
+		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/users"; \
+		rm -f "$$HOME/tmp/users_tiles.tar.bz2"; \
+	'
 	touch $@
 
 deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima

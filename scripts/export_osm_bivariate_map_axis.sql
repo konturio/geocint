@@ -51,8 +51,7 @@ copy (
                                                                           jsonb_build_object('value', y.p75, 'label', y.p75_label),
                                                                           jsonb_build_object('value', y.max, 'label', y.max_label)))
                                ),
-                           'overlays', ov.overlay,
-                           'copyrights', copyrights.copyrights
+                           'overlays', ov.overlay
             )
     from
         ( select
@@ -96,8 +95,7 @@ copy (
             and ay.denominator = o.y_denominator
             and ay.numerator = o.y_numerator )                                                      ov,
         bivariate_axis                                                                              x,
-        bivariate_axis                                                                              y,
-        ( select json_object_agg(param_id, copyrights) as copyrights from bivariate_indicators ) as copyrights
+        bivariate_axis                                                                              y
     where
           x.numerator = 'count'
       and x.denominator = 'area_km2'

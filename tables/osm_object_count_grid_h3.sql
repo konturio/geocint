@@ -2,14 +2,21 @@ drop table if exists osm_object_count_grid_h3;
 create table osm_object_count_grid_h3 as (
     select resolution,
            h3,
-           count(*)                                              as count,
-           count(*) filter (where is_building)                   as building_count,
-           sum(highway_length)                                   as highway_length,
-           count(*) filter (where is_amenity)                    as amenity_count,
-           count(distinct osm_user)                              as osm_users,
-           avg(ts_epoch)                                         as avg_ts,
-           max(ts_epoch)                                         as max_ts,
-           percentile_cont(0.9) within group (order by ts_epoch) as p90_ts
+           count(*)                                                                       as count,
+           count(*)
+           filter (where to_timestamp(ts_epoch) > now() - interval '6 months')            as count_6_months,
+           count(*) filter (where is_building)                                            as building_count,
+           count(*)
+           filter (where is_building and
+                         to_timestamp(ts_epoch)::timestamp > now() - interval '6 months') as building_count_6_months,
+           sum(highway_length)                                                            as highway_length,
+           sum(highway_length)
+           filter (where to_timestamp(ts_epoch) > now() - interval '6 months')            as highway_length_6_months,
+           count(*) filter (where is_amenity)                                             as amenity_count,
+           count(distinct osm_user)                                                       as osm_users,
+           avg(ts_epoch)                                                                  as avg_ts,
+           max(ts_epoch)                                                                  as max_ts,
+           percentile_cont(0.9) within group (order by ts_epoch)                          as p90_ts
     from (
              select resolution             as resolution,
                     h3                     as h3,

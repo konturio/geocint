@@ -38,8 +38,11 @@ create table stat_h3_quality as (
             select
                 h3_to_parent(a.h3) as h3_parent,
                 avg(a.count) as agg_count,
+                avg(a.count_6_months) as agg_count_6_months,
                 avg(a.building_count) as agg_building_count,
+                avg(a.building_count_6_months) as agg_building_count_6_months,
                 avg(a.highway_length) as agg_highway_length,
+                avg(a.highway_length_6_months) as agg_highway_length_6_months,
                 avg(a.osm_users) as agg_osm_users,
                 avg(a.population) as agg_population,
                 avg(a.residential) as agg_residential,

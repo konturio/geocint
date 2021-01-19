@@ -934,7 +934,7 @@ deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima
 
 data/tiles/users_tiles.tar.bz2: db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res | data/tiles
 	bash ./scripts/generate_tiles.sh users | parallel --eta
-	cd data/tiles/users/; tar cjvf ../users_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
+	cd data/tiles/users/; tar cvf ../users_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
 
 deploy/geocint/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/geocint
 	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles

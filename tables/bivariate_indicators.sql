@@ -18,10 +18,13 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('area_km2', 'Area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, '[["neutral"], ["neutral"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('count', 'OSM objects', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
+values ('count', 'OSM Objects', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('view_count', 'OSM Map views', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
+values ('count_6_months', 'OSM Objects (last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('view_count', 'OSM Map Views', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('avg_ts', 'OSM Last Edit Date (avg)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb);
@@ -39,7 +42,13 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('building_count', 'OSM Buildings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('building_count_6_months', 'OSM Buildings (last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('highway_length', 'OSM Road Length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('highway_length_6_months', 'OSM Road Length (last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('local_hours', 'OSM Mapping Hours by Local Mappers', jsonb_build_array('© Kontur https://kontur.io/',

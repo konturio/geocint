@@ -14,8 +14,8 @@ copy (
                                'fallback', '#ccc',
                                'combinations', (
                                    select jsonb_agg(jsonb_build_object('color', color,
-                                                                                   'color_comment', color_comment,
-                                                                                   'corner', corner))
+                                                                       'color_comment', color_comment,
+                                                                       'corner', corner))
                                    from bivariate_colors)
                             ),
                            'correlationRates', (

@@ -4,8 +4,11 @@ copy (
         (
             select
                 count,
+                count_6_months,
                 building_count,
+                building_count_6_months,
                 highway_length,
+                highway_length_6_months,
                 osm_users,
                 population,
                 gdp,

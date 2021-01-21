@@ -23,8 +23,7 @@ create table osm_object_count_grid_h3 as (
            avg(ts_epoch)                                         as avg_ts,
            max(ts_epoch)                                         as max_ts,
            percentile_cont(0.9) within group (order by ts_epoch) as p90_ts
-    from osm_meta,
-         (
+    from (
              select resolution             as resolution,
                     h3                     as h3,
                     extract(epoch from ts) as ts_epoch,

@@ -1,8 +1,12 @@
 /.project
+/.psqlrc
+/Makefile.*
 .DS_Store
 .idea
+
 data/*
 !data/morocco_buildings/
+
 db
 deploy
 make_profile.db

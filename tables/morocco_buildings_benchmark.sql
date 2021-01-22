@@ -9,8 +9,6 @@ alter table :morocco_buildings
 alter table :morocco_buildings
     drop column shape_type;
 alter table :morocco_buildings
-    drop column class_id;
-alter table :morocco_buildings
     drop column osm_landuse_class;
 alter table :morocco_buildings
     rename column processing_date to imagery_vintage;

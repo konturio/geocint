@@ -1001,10 +1001,17 @@ deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
 	'
 	touch $@
 
-data/population/population_api_tables.sqld.gz: db/table/stat_h3 | data/population
+data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/population
 # crafting production friendly SQL dump
-	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3_geom_zoom_idx.*//;') scripts/population_api_dump_footer.sql | pigz" > $@__TMP
+	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3_geom_zoom_idx.*//;') scripts/population_api_dump_footer.sql <(pg_dump --no-owner -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays) | pigz" > $@__TMP
 	mv $@__TMP $@
+	touch $@
+
+deploy/zigzag/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/zigzag
+	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible zigzag_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible zigzag_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
 deploy/sonic/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/sonic
@@ -1012,7 +1019,6 @@ deploy/sonic/population_api_tables: data/population/population_api_tables.sqld.g
 	ansible sonic_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible sonic_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
-# we do not remove $$HOME/tmp/population_api_tables.sqld.gz on the staging server intentionally
 	touch $@
 
 deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/lima

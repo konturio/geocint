@@ -4,18 +4,18 @@ create table osm_object_count_grid_h3 as (
            h3,
            count(*)                                              as count,
            count(*)
-           filter (where (select ts from osm) >
+           filter (where osm.ts >
                          (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
                           from osm_meta) - interval '6 months')  as count_6_months,
            count(*) filter (where is_building)                   as building_count,
            count(*)
            filter (where is_building and
-                         (select ts from osm) >
+                         osm.ts >
                          (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
                           from osm_meta) - interval '6 months')  as building_count_6_months,
            sum(highway_length)                                   as highway_length,
            sum(highway_length)
-           filter (where (select ts from osm) >
+           filter (where osm.ts >
                          (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
                           from osm_meta) - interval '6 months')  as highway_length_6_months,
            count(*) filter (where is_amenity)                    as amenity_count,
@@ -26,6 +26,7 @@ create table osm_object_count_grid_h3 as (
     from (
              select resolution             as resolution,
                     h3                     as h3,
+                    ts                     as ts,
                     extract(epoch from ts) as ts_epoch,
                     tags ? 'amenity'       as is_amenity,
                     tags ? 'building'      as is_building,

@@ -10,7 +10,6 @@ create table osm_population_raw_centroid as (
     from osm_population_raw
 );
 
-
 drop table if exists osm_population_raw_subdivided;
 create table osm_population_raw_subdivided as (
     select osm_id,
@@ -19,7 +18,7 @@ create table osm_population_raw_subdivided as (
     from osm_population_raw
 );
 
-create index on osm_population_raw_subdivided using gist (geom);
+create index on osm_population_raw_subdivided using gist (geom_subdiv);
 
 -- osm_id for every h3 polygon
 

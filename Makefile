@@ -647,16 +647,16 @@ db/table/morocco_buildings_manual: data/morocco_buildings/morocco_buildings_manu
 	psql -c "update morocco_buildings_manual set footprint = ST_Transform(footprint, 3857);"
 	touch $@
 
-db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_2.gpkg | db/table
+db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table
 	psql -c "drop table if exists morocco_buildings;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_2.gpkg "footprints" -nln morocco_buildings
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
 	touch $@
 
-data/morocco_buildings/morocco_buildings_footprints_phase2.geojson.gz: db/table/morocco_buildings
-	rm -f $@ data/morocco_buildings/morocco_buildings_footprints_phase2.geojson
-	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_footprints_phase2.geojson PG:"dbname=gis" -sql "select ST_Transform(geom, 4326) as footprint, building_height, height_confidence, is_residential, imagery_vintage, height_is_valid from morocco_buildings_date" -nln morocco_buildings_footprints_phase2
-	cd data/morocco_buildings; pigz morocco_buildings_footprints_phase2.geojson
+data/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz: db/table/morocco_buildings
+	rm -f $@ data/morocco_buildings/morocco_buildings_footprints_phase3.geojson
+	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_footprints_phase3.geojson PG:"dbname=gis" -sql "select ST_Transform(geom, 4326) as footprint, building_height, height_confidence, is_residential, imagery_vintage, height_is_valid from morocco_buildings_date" -nln morocco_buildings_footprints_phase3
+	cd data/morocco_buildings; pigz morocco_buildings_footprints_phase3.geojson
 
 db/table/morocco_buildings_benchmark: data/morocco_buildings/phase_3/footprints/agadir_footprints_benchmark_ph3.geojson data/morocco_buildings/phase_3/footprints/casablanca_footprints_benchmark_ph3.geojson data/morocco_buildings/phase_3/footprints/chefchaouen_footprints_benchmark_ph3.geojson data/morocco_buildings/phase_3/footprints/fes_footprints_benchmark_ph3.geojson data/morocco_buildings/phase_3/footprints/meknes_footprints_benchmark_ph3.geojson | db/table
 	psql -c "drop table if exists morocco_buildings_benchmark;"

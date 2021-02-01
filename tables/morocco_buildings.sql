@@ -36,9 +36,9 @@ where not ST_IsValid(ST_Transform(geom, 3857));
 drop table morocco_buildings_date;
 create table morocco_buildings_date as (
     select m.*,
-           n.date as imagery_vintage
+           n.aquisition_date as imagery_vintage
     from morocco_buildings m
-             left join morocco_meta_finished_november_2020 n
+             left join morocco_meta_all n
                        on ST_Intersects(wkb_geometry, ST_PointOnSurface(geom))
 );
 
@@ -48,10 +48,6 @@ alter table morocco_buildings_date
 update morocco_buildings_date
 set height_is_valid = true
 where building_height is not null;
-
-update morocco_buildings_date
-set imagery_vintage = '2020-08'
-where imagery_vintage is null;
 
 update morocco_buildings_date
 set height_is_valid = false, building_height = 6

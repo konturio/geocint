@@ -714,6 +714,9 @@ db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints 
 	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from phase_metrics;" | head -6 > data/morocco_buildings/phase_metrics_old_imagery.csv
 	psql -f tables/morocco_buildings_iou.sql -v morocco_buildings_benchmark=morocco_buildings
 	psql -q -c "\crosstabview" -A -F "," -c "select city, metric, value from phase_metrics where metric != '2D_IoU_roofprints';" | head -6 > data/morocco_buildings/phase_metrics_new_imagery.csv
+
+	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual_roofprints_phase3 -v examinee_buildings_table=morocco_buildings_benchmark_roofprints -v benchmark_clip_table=morocco_buildings_extents -v type=roof
+
 	touch $@
 
 data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual
@@ -736,7 +739,7 @@ data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz:
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, height_confidence, is_residential from morocco_buildings_benchmark_roofprints' -nln morocco_buildings_benchmark_roofprints
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark_roofprints_phase2.geojson
 
-data/morocco: data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data
+data/morocco: data/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/morocco_buildings/morocco_buildings_footprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

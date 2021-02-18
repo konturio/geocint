@@ -95,6 +95,16 @@ values ('wildfires', 'Wildfire Days Per Year', jsonb_build_array(
     'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML'),
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('covid19_vaccines', 'COVID Vaccine Acceptance', jsonb_build_array(
+'© Data from Delphi COVIDcast, covidcast.cmu.edu'),
+    '[["bad"], ["neutral"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('covid19_cases', 'COVID Cases (per 100,000 people)', jsonb_build_array(
+'© Data from Delphi COVIDcast, covidcast.cmu.edu'),
+    '[["good"], ["bad"]]'::jsonb);
+
 update bivariate_indicators
 set is_base = true
 where param_id in ('population', 'total_building_count', 'gdp', 'area_km2', 'one');

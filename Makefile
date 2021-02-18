@@ -118,32 +118,46 @@ db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_t
 	psql -c "update covid19_in set status='recovered' where status is null;"
 	psql -f tables/covid19.sql
 	touch $@
-	
-	
-data/covid19/covid_cases_us_counties.csv: | data/covid19
+
+data/covid19/covid19_cases_us_counties.csv: | data/covid19
 	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_7dav_incidence_prop&start_day=2021-01-01&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
 
-
-data/covid19/load_covid_cases_us_counties_csv: data/covid19/covid_cases_us_counties.csv
-	psql -c "drop table if exists covid_cases_us_counties"
-	psql -c "create table covid_cases_us_counties(id integer, geo_value text, signal text, time_value date, issue date, lag integer, value float, stderr text, sample_size text, geo_type text, data_source text);"
-	cat data/covid19/covid_cases_us_counties.csv | psql -c "copy covid_cases_us_counties(id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';" 
-	psql -f tables/covid_cases_us_counties.sql
+db/table/covid19_cases_us_counties: data/covid19/covid19_cases_us_counties.csv db/table/gadm_us_counties_boundary
+	psql -c "drop table if exists covid19_cases_us_counties"
+	psql -c "create table covid19_cases_us_counties (id integer, geo_value text, signal text, time_value date, issue date, lag integer, value float, stderr text, sample_size text, geo_type text, data_source text);"
+	cat data/covid19/covid19_cases_us_counties.csv | psql -c "copy covid19_cases_us_counties (id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';"
+	psql -f tables/covid19_cases_us_counties.sql
 	touch $@
 
-data/gadm/gadm36_2_usa: data/gadm/gadm36_0.shp
+db/table/gadm_us_counties_boundary: data/gadm/gadm36_shp_files | db/table
 	psql -c 'drop table if exists gadm_us_counties_boundary;'
-	ogr2ogr -f PostgreSQL PG:"dbname='gis'" data/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
-	touch $@
-	
-data/covid19/counties_fips_hasc: db/table
-	psql -c 'drop table if exists counties_fips_hasc;'
-	psql -c 'create table counties_fips_hasc (state text, county text, hasc_code text, fips_code text);'
-	cat data/counties_fips_hasc.csv | psql -c "copy counties_fips_hasc (state, county, hasc_code, fips_code) from stdin with csv header DELIMITER ',';" 
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
+	psql -c 'drop table if exists us_counties_fips_codes;'
+	psql -c 'create table us_counties_fips_codes (state text, county text, hasc_code text, fips_code text);'
+	cat data/counties_fips_hasc.csv | psql -c "copy us_counties_fips_codes (state, county, hasc_code, fips_code) from stdin with csv header delimiter ',';"
+	psql -c 'drop table if exists us_counties_boundary;'
+	psql -c 'create table us_counties_boundary as (select gid_2 as gid, geom, state, county, hasc_code, fips_code from gadm_us_counties_boundary join us_counties_fips_codes on hasc_2 = hasc_code);'
 	touch $@
 
-db/table/covid_cases_us_counties_h3: data/covid19/load_covid_cases_us_counties_csv
+db/table/covid19_cases_us_counties_h3: db/table/covid19_cases_us_counties
 	psql -f tables/covid_cases_us_counties_h3.sql
+	touch $@
+
+data/covid19/vaccination: | data/covid19
+	mkdir -p $@
+
+data/covid19/vaccination/vaccine_acceptance_us_counties.csv: | data/covid19/vaccination
+	wget -q "https://delphi.cmu.edu/csv?signal=fb-survey:smoothed_accept_covid_vaccine&start_day=2021-01-01&end_day=$(shell date +%F)&geo_type=county" -O $@
+
+db/table/covid19_vaccine_accept_us_counties: data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/gadm_us_counties_boundary
+	psql -c 'drop table if exists covid19_vaccine_accept_us;'
+	psql -c 'create table covid19_vaccine_accept_us (ogc_fid serial not null, geo_value text, signal text, time_value timestamptz, issue timestamptz, lag int, value float, stderr float, sample_size float, geo_type text, data_source text);'
+	cat data/covid19/vaccination/vaccine_acceptance_us_counties.csv | psql -c 'copy covid19_vaccine_accept_us (ogc_fid, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header;'
+	psql -f tables/covid19_vaccine_accept_us_counties.sql
+	touch $@
+
+db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_us_counties
+	psql -f tables/covid19_vaccine_accept_us_counties_h3.sql
 	touch $@
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
@@ -378,11 +392,11 @@ db/table/fb_population_grid_h3_r8: db/table/fb_population_raster db/function/h3_
 data/gadm/gadm36_levels_shp.zip: | data/gadm
 	wget https://web.archive.org/web/20190829093806if_/https://data.biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip -O $@
 
-data/gadm/gadm36_0.shp: data/gadm/gadm36_levels_shp.zip
+data/gadm/gadm36_shp_files: data/gadm/gadm36_levels_shp.zip
 	cd data/gadm; unzip -o gadm36_levels_shp.zip || true
 	touch $@
 
-db/table/gadm_countries_boundary: data/gadm/gadm36_0.shp | db/table
+db/table/gadm_countries_boundary: data/gadm/gadm36_shp_files | db/table
 	psql -c "drop table if exists gadm_countries_boundary"
 	shp2pgsql -I -s 4326 data/gadm/gadm36_0.shp gadm_countries_boundary | psql -q
 	psql -c "alter table gadm_countries_boundary alter column geom set data type geometry;"
@@ -879,7 +893,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

@@ -122,10 +122,7 @@ db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_t
 	
 data/covid19/confirmed_csv: data/covid19
 	# get csv covid cases per 100,000 people 7-day avg, cca license
-	start_day="$(date -d '-8 days' +%Y-%m-%d)"
-	end_day="$(date -d '-1 day' +%Y-%m-%d)"
-	url_c19_confirmed="https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_7dav_incidence_prop&start_day=${start_day}&end_day=${end_day}&geo_type=county"
-	wget --content-disposition "${url_c19_confirmed}" -O data/covid19/confirmed_7dav_incidence_prop_county.csv
+	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_7dav_incidence_prop&start_day=$(shell date -d '-8 days' +%Y-%m-%d)&end_day=$(shell date -d '-1 day' +%Y-%m-%d)&geo_type=county" -O data/covid19/confirmed_7dav_incidence_prop_county.csv
 	touch $@
 
 data/covid19/load_confirmed_csv: data/covid19/confirmed_csv

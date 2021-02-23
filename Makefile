@@ -120,32 +120,34 @@ db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_t
 	touch $@
 	
 	
-data/covid19/confirmed_csv: data/covid19
-	# get csv covid cases per 100,000 people 7-day avg, cca license
-	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_7dav_incidence_prop&start_day=$(shell date -d '-8 days' +%Y-%m-%d)&end_day=$(shell date -d '-1 day' +%Y-%m-%d)&geo_type=county" -O data/covid19/confirmed_7dav_incidence_prop_county.csv
-	touch $@
+data/covid19/covid_cases_us_counties.csv: | data/covid19
+	# get csv covid cases per 100 000 people 7day avg, cca license
+	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_7dav_incidence_prop&start_day=2021-01-01&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
 
-data/covid19/load_confirmed_csv: data/covid19/confirmed_csv
-	# load covid19 confirmed 7dav by county csv
-	psql -c "drop table if exists confirmed_7dav_incidence_prop_county"
-	psql -c "create table confirmed_7dav_incidence_prop_county(id text, geo_value text, signal text, time_value text,issue text,lag text,value text,stderr text ,sample_size text ,geo_type text ,data_source text );"
-	cat data/covid19/confirmed_7dav_incidence_prop_county.csv | tail -n +1 | psql -c "copy confirmed_7dav_incidence_prop_county(id, geo_value,signal,time_value,issue,lag,value,stderr,sample_size,geo_type,data_source) from stdin with csv header DELIMITER ',';" 
+
+data/covid19/load_covid_cases_us_counties_csv: data/covid19/covid_cases_us_counties.csv
+	# load covid19 confirmed cases 7day average by county csv
+	psql -c "drop table if exists covid_cases_us_counties"
+	psql -c "create table covid_cases_us_counties(id integer, geo_value text, signal text, time_value date, issue date, lag integer, value float, stderr text, sample_size text, geo_type text, data_source text);"
+	cat data/covid19/covid_cases_us_counties.csv | psql -c "copy covid_cases_us_counties(id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';" 
+	psql -f tables/covid_cases_us_counties.sql
 	touch $@
 
 data/gadm/gadm36_2_usa: data/gadm/gadm36_0.shp
 	# load us county boundaries to db
+	psql -c 'drop table if exists gadm_us_counties_boundary;'
 	ogr2ogr -f PostgreSQL PG:"dbname='gis'" data/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -geomfield geom
 	touch $@
 	
 data/covid19/counties_fips_hasc: db/table
 	# load FIPS-hasc_2 encode table to db
-	psql -f tables/counties_fips_hasc.sql
-	cat data/counties_fips_hasc.csv | tail -n +1 | psql -c "copy counties_fips_hasc (name_1 text, name_2 text, hasc_2 text, fips text) from stdin with csv header DELIMITER ',';" 
+	psql -c 'drop table if exists counties_fips_hasc;'
+	psql -c 'create table counties_fips_hasc (state text, county text, hasc_code text, fips_code text);'
+	cat data/counties_fips_hasc.csv | psql -c "copy counties_fips_hasc (state, county, hasc_code, fips_code) from stdin with csv header DELIMITER ',';" 
 	touch $@
 
-	data/covid19/latest_cases_value: data/covid19/counties_fips_hasc data/gadm/gadm36_2_usa data/covid19/load_confirmed_csv
-	# create table of latest covid cases per 100,000 people 7-day avg by us county
-	psql -f tables/covid_latest_cases.sql
+db/table/covid_cases_us_counties_h3 : data/covid19/load_covid_cases_us_counties_csv
+	psql -f tables/covid_cases_us_counties_h3.sql
 	touch $@
 
 

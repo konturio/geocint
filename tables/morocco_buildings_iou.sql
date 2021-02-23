@@ -63,7 +63,7 @@ create table x_buildings_examinee as (
 create index on x_buildings_examinee using gist (geom);
 
 insert into metrics_storage (city, metric, type, value)
-select city, 'Phase 2 detected polygons', :'type', count(*)
+select city, 'Phase detected polygons', :'type', count(*)
 from x_buildings_examinee
 group by city;
 
@@ -131,7 +131,7 @@ where min_height = 0
 -- Step 3. Calculate IoU in 2D and 3D
 -- calculate 2D IoU metrics
 insert into metrics_storage (city, metric, type, value)
-select b.city, '2D_IoU', :'type', sum(ST_Area(a.geom)) filter (where min_height > 0) / sum(ST_Area(a.geom))
+select b.city, '2D IoU', :'type', sum(ST_Area(a.geom)) filter (where min_height > 0) / sum(ST_Area(a.geom))
 from x_buildings_chunks         a
      join :benchmark_clip_table b
           on ST_Intersects(a.geom, b.geom)
@@ -139,7 +139,7 @@ group by b.city;
 
 -- calculate 3D IoU metrics
 insert into metrics_storage (city, metric, type, value)
-select b.city, '3D_IoU', :'type', sum(min_height * ST_Area(a.geom)) / sum(max_height * ST_Area(a.geom))
+select b.city, '3D IoU', :'type', sum(min_height * ST_Area(a.geom)) / sum(max_height * ST_Area(a.geom))
 from x_buildings_chunks         a
      join :benchmark_clip_table b
           on ST_Intersects(a.geom, b.geom)
@@ -200,7 +200,7 @@ delete from x_buildings_iou_feature where ST_IsEmpty(geom_exa) and ST_IsEmpty(ge
 -- calculate average IoU metrics of every buildings
 insert into metrics_storage (city, metric, type, value)
 select a.city,
-       'Per-segment_IoU',
+       'Per-segment IoU',
        :'type',
        avg(ST_Area(ST_Intersection(geom_exa, geom_ref)) /
            ST_Area(ST_Union(geom_exa, geom_ref)))
@@ -226,7 +226,7 @@ group by 1;
 -- Step 5. Height metrics
 -- calculate Height RMSD in meters
 insert into metrics_storage (city, metric, type, value)
-select a.city, 'Height_RMSD', :'type', sqrt(avg(power(height_exa - height_ref, 2)))
+select a.city, 'Height RMSD', :'type', sqrt(avg(power(height_exa - height_ref, 2)))
 from x_buildings_iou_feature    m
      join :benchmark_clip_table a
           on ST_Intersects(ST_Union(ST_PointOnSurface(geom_exa), ST_PointOnSurface(geom_ref)), a.geom)
@@ -236,7 +236,7 @@ group by 1;
 
 -- calculate Height RMSD in metres where is_confident = true
 insert into metrics_storage (city, metric, type, value)
-select a.city, 'Height_RMSD_verified', :'type', sqrt(avg(power(height_exa - height_ref, 2)))
+select a.city, 'Height RMSD verified', :'type', sqrt(avg(power(height_exa - height_ref, 2)))
 from x_buildings_iou_feature    m
      join :benchmark_clip_table a
           on ST_Intersects(ST_Union(ST_PointOnSurface(geom_exa), ST_PointOnSurface(geom_ref)), a.geom)

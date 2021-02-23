@@ -642,9 +642,9 @@ db/table/morocco_buildings_manual_roofprints: data/morocco_buildings/morocco_bui
 db/table/morocco_buildings_manual: data/morocco_buildings/morocco_buildings_manual_20201030.geojson
 	psql -c "drop table if exists morocco_buildings_manual;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/morocco_buildings_manual_20201030.geojson -nln morocco_buildings_manual
-	psql -c "alter table morocco_buildings_manual rename column wkb_geometry to footprint;"
-	psql -c "alter table morocco_buildings_manual alter column footprint type geometry;"
-	psql -c "update morocco_buildings_manual set footprint = ST_Transform(footprint, 3857);"
+	psql -c "alter table morocco_buildings_manual rename column wkb_geometry to geom;"
+	psql -c "alter table morocco_buildings_manual alter column geom type geometry;"
+	psql -c "update morocco_buildings_manual set geom = ST_Transform(geom, 3857);"
 	touch $@
 
 db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table
@@ -710,18 +710,18 @@ db/table/morocco_buildings_extents: data/morocco_buildings/extents/agadir_extent
 	touch $@
 
 db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_extents
-	psql -f tables/morocco_buildings_iou.sql -v morocco_buildings_benchmark=morocco_buildings_benchmark
-	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from phase_metrics;" | head -6 > data/morocco_buildings/phase_metrics_old_imagery.csv
-	psql -f tables/morocco_buildings_iou.sql -v morocco_buildings_benchmark=morocco_buildings
-	psql -q -c "\crosstabview" -A -F "," -c "select city, metric, value from phase_metrics where metric != '2D_IoU_roofprints';" | head -6 > data/morocco_buildings/phase_metrics_new_imagery.csv
+	rm -f data/morocco_buildings/metric_storage.csv
+	psql -c "drop table if exists morocco_buildings_footprints_phase3_clipped;"
 	psql -c "create table morocco_buildings_footprints_phase3_clipped as (select a.* from morocco_buildings a join morocco_buildings_extents b on ST_Intersects(a.geom, ST_Transform(b.geom, 4326)));"
 	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual_roofprints_phase3 -v examinee_buildings_table=morocco_buildings_benchmark_roofprints -v benchmark_clip_table=morocco_buildings_extents -v type=roof
+	echo "morocco_buildings_manual_roofprints_phase3 & morocco_buildings_benchmark_roofprints tables, type=roof" > data/morocco_buildings/metric_storage.csv
+	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/morocco_buildings/metric_storage.csv
 	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual -v examinee_buildings_table=morocco_buildings_benchmark -v benchmark_clip_table=morocco_buildings_extents -v type=foot
-
-	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual -v examinee_buildings_table=morocco_buildings_benchmark -v benchmark_clip_table=morocco_buildings_extents -v type=foot
+	echo "morocco_buildings_manual & morocco_buildings_benchmark tables, type=foot" >> data/morocco_buildings/metric_storage.csv
+	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/morocco_buildings/metric_storage.csv
+	echo "morocco_buildings_manual & morocco_buildings_footprints_phase3_clipped tables, type=foot" >> data/morocco_buildings/metric_storage.csv
 	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual -v examinee_buildings_table=morocco_buildings_footprints_phase3_clipped -v benchmark_clip_table=morocco_buildings_extents -v type=foot
-
-
+	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/morocco_buildings/metric_storage.csv
 	touch $@
 
 data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual

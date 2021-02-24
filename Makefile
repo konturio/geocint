@@ -118,6 +118,33 @@ db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_t
 	psql -c "update covid19_in set status='recovered' where status is null;"
 	psql -f tables/covid19.sql
 	touch $@
+	
+	
+data/covid19/covid_cases_us_counties.csv: | data/covid19
+	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_7dav_incidence_prop&start_day=2021-01-01&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
+
+
+data/covid19/load_covid_cases_us_counties_csv: data/covid19/covid_cases_us_counties.csv
+	psql -c "drop table if exists covid_cases_us_counties"
+	psql -c "create table covid_cases_us_counties(id integer, geo_value text, signal text, time_value date, issue date, lag integer, value float, stderr text, sample_size text, geo_type text, data_source text);"
+	cat data/covid19/covid_cases_us_counties.csv | psql -c "copy covid_cases_us_counties(id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';" 
+	psql -f tables/covid_cases_us_counties.sql
+	touch $@
+
+data/gadm/gadm36_2_usa: data/gadm/gadm36_0.shp
+	psql -c 'drop table if exists gadm_us_counties_boundary;'
+	ogr2ogr -f PostgreSQL PG:"dbname='gis'" data/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
+	touch $@
+	
+data/covid19/counties_fips_hasc: db/table
+	psql -c 'drop table if exists counties_fips_hasc;'
+	psql -c 'create table counties_fips_hasc (state text, county text, hasc_code text, fips_code text);'
+	cat data/counties_fips_hasc.csv | psql -c "copy counties_fips_hasc (state, county, hasc_code, fips_code) from stdin with csv header DELIMITER ',';" 
+	touch $@
+
+db/table/covid_cases_us_counties_h3: data/covid19/load_covid_cases_us_counties_csv
+	psql -f tables/covid_cases_us_counties_h3.sql
+	touch $@
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"

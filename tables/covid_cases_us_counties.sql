@@ -11,7 +11,6 @@ create table covid_cases_us_counties_names as (
                   on a.geo_value = b.fips_code
 );
 
-
 drop table if exists covid_cases_us_counties_geom;
 create table covid_cases_us_counties_geom as (
     select a.*, b.geom as geom
@@ -20,4 +19,5 @@ create table covid_cases_us_counties_geom as (
                   on b.hasc_2 = a.hasc_code
 );
 
-create index on covid_cases_us_counties_geom using gist(geom);
+create index on covid_cases_us_counties_geom using gist (geom);
+drop table if exists covid_cases_us_counties_names;

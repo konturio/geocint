@@ -14,7 +14,7 @@ create table covid_cases_us_counties_names as (
 
 drop table if exists covid_cases_us_counties_geom;
 create table covid_cases_us_counties_geom as (
-    select a.*, b.wkb_geometry as geom
+    select a.*, b.geom as geom
     from covid_cases_us_counties_names a
              join gadm_us_counties_boundary b
                   on b.hasc_2 = a.hasc_code

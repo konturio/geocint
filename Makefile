@@ -136,7 +136,7 @@ data/covid19/load_covid_cases_us_counties_csv: data/covid19/covid_cases_us_count
 data/gadm/gadm36_2_usa: data/gadm/gadm36_0.shp
 	# load us county boundaries to db
 	psql -c 'drop table if exists gadm_us_counties_boundary;'
-	ogr2ogr -f PostgreSQL PG:"dbname='gis'" data/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -geomfield geom
+	ogr2ogr -f PostgreSQL PG:"dbname='gis'" data/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
 	touch $@
 	
 data/covid19/counties_fips_hasc: db/table

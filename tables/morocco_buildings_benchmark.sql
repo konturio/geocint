@@ -21,5 +21,4 @@ set geom = ST_CollectionHomogenize(geom);
 
 -- make geom robust to conversion to mercator
 update :morocco_buildings
-set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(ST_MakeValid(ST_Transform(geom, 3857)), 4326)), 3)
-where not ST_IsValid(ST_Transform(geom, 3857));
+set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);

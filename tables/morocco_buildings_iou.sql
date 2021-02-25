@@ -1,10 +1,3 @@
--- fix assertions inline
--- TODO: move to other flows
-update :reference_buildings_table set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom)!=3857 or not ST_IsValid(geom);
-update :examinee_buildings_table set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom)!=3857 or not ST_IsValid(geom);
-
-
-
 -- Calculation IoU metrics for all buildings from test benchmark
 
 -- Step 1. Import data and reformat it.

@@ -1,0 +1,10 @@
+image: python:latest
+
+stages:
+  - lint
+
+Makefile:
+  stage: lint
+  script:
+    - pip install git+https://github.com/konturio/make-profiler
+    - profile_make_lint

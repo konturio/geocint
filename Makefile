@@ -1,8 +1,8 @@
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco ## [FINAL] Builds all targets for development. Run on every branch.
 
-prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries
+prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
-clean:
+clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints
 	psql -f scripts/clean.sql

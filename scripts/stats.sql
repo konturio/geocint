@@ -22,6 +22,8 @@ copy (
                 one,
                 total_building_count,
                 wildfires,
+                covid19_vaccines,
+                covid19_cases,
                 ST_AsMVTGeom(geom, ST_TileEnvelope(:z, :x, :y), 8192, 64, true) as geom
             from
                 stat_h3

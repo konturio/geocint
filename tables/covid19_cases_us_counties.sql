@@ -4,8 +4,7 @@ create table covid19_cases_us_counties as (
            b.state,
            b.county,
            b.fips_code,
-           array_agg(issue)      as issue_time,
-           avg(value)            as cases_number
+           avg(value)            as covid19_cases
     from covid19_cases_us_counties_csv a
              join us_counties_boundary b
                   on a.geo_value = b.fips_code

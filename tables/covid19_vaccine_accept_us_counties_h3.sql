@@ -3,7 +3,7 @@ alter table covid19_vaccine_accept_us_counties
 
 drop table if exists covid19_vaccine_accept_us_counties_h3;
 create table covid19_vaccine_accept_us_counties_h3 as (
-    select h3_geo_to_h3(ST_Transform(ST_Centroid(geom), 4326)::point, 8) as h3,
+    select h3_geo_to_h3(ST_Transform(ST_PointOnSurface(geom), 4326)::point, 8) as h3,
            8                                                             as resolution,
            sum(vaccine_value)                                            as vaccine_value
     from covid19_vaccine_accept_us_counties

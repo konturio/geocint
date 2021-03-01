@@ -5,10 +5,11 @@ create table covid19_cases_us_counties as (
            b.county,
            b.fips_code,
            array_agg(issue)      as issue_time,
-           avg(value)            as cases_value
+           avg(value)            as cases_number
     from covid19_cases_us_counties_csv a
              join us_counties_boundary b
                   on a.geo_value = b.fips_code
     group by 1, 2, 3, 4
 );
 create index on covid19_cases_us_counties using gist (geom);
+alter table covid19_cases_us_counties set (parallel_workers = 32);

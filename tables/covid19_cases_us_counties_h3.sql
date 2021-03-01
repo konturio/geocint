@@ -1,7 +1,7 @@
 
 drop table if exists covid19_cases_us_counties_h3;
 create table covid19_cases_us_counties_h3 as (
-    select h3_geo_to_h3(ST_Transform(ST_Centroid(geom), 4326)::point, 8) as h3,
+    select h3_geo_to_h3(ST_Transform(ST_PointOnSurface(geom), 4326)::point, 8) as h3,
            8                                                             as resolution,
            sum(covid19_cases)                                            as covid19_cases
     from covid19_cases_us_counties

@@ -22,8 +22,8 @@ create table stat_h3_in as (
            coalesce(sum(total_hours), 0) as total_hours,
            coalesce(sum(view_count), 0) as view_count,
            coalesce(sum(wildfires), 0) as wildfires,
-		   coalesce(sum(vaccine_value), 0) as covid19_vaccines,
-		   coalesce(sum(cases_value), 0) as covid19_cases,
+		   coalesce(sum(covid19_vaccines), 0) as covid19_vaccines,
+		   coalesce(sum(covid19_cases), 0) as covid19_cases,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
@@ -96,7 +96,7 @@ create table stat_h3_in as (
                     null::float as residential, null::float as gdp, null::float as avg_ts, null::float as max_ts,
                     null::float as p90_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, vaccine_value as covid19_vaccines, null::float as covid19_cases, resolution
-             from covid19_vaccines_us_counties_h3
+             from covid19_vaccine_accept_us_counties_h3
 			 union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,

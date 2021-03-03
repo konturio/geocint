@@ -129,7 +129,7 @@ db/table/covid19_cases_us_counties: data/covid19/covid19_cases_us_counties.csv d
 	psql -f tables/covid19_cases_us_counties.sql
 	touch $@
 
-db/table/us_counties_boundary: data/gadm/gadm36_shp_files data/counties_fips_hasc.csv | db/table
+db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table
 	psql -c 'drop table if exists gadm_us_counties_boundary;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
 	ogr2ogr -append -f PostgreSQL PG:"dbname='gis'" data/gadm/gadm36_1.shp -sql "select name_0 as name_1, name_1 as name_2, gid_1 as gid_2, hasc_1 as hasc_2 from gadm36_1 where gid_0 = 'PRI'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
@@ -141,7 +141,7 @@ db/table/us_counties_boundary: data/gadm/gadm36_shp_files data/counties_fips_has
 	touch $@
 
 db/table/covid19_cases_us_counties_h3: db/table/covid19_cases_us_counties
-	psql -f tables/covid_cases_us_counties_h3.sql
+	psql -f tables/covid19_cases_us_counties_h3.sql
 	touch $@
 
 data/covid19/vaccination: | data/covid19
@@ -150,7 +150,7 @@ data/covid19/vaccination: | data/covid19
 data/covid19/vaccination/vaccine_acceptance_us_counties.csv: | data/covid19/vaccination
 	wget -q "https://delphi.cmu.edu/csv?signal=fb-survey:smoothed_accept_covid_vaccine&start_day=2021-01-01&end_day=$(shell date +%F)&geo_type=county" -O $@
 
-db/table/covid19_vaccine_accept_us_counties: data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/gadm_us_counties_boundary
+db/table/covid19_vaccine_accept_us_counties: data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/us_counties_boundary
 	psql -c 'drop table if exists covid19_vaccine_accept_us;'
 	psql -c 'create table covid19_vaccine_accept_us (ogc_fid serial not null, geo_value text, signal text, time_value timestamptz, issue timestamptz, lag int, value float, stderr float, sample_size float, geo_type text, data_source text);'
 	cat data/covid19/vaccination/vaccine_acceptance_us_counties.csv | psql -c 'copy covid19_vaccine_accept_us (ogc_fid, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header;'

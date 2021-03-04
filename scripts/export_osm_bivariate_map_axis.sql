@@ -29,7 +29,7 @@ copy (
                                                  'correlation', correlation,
                                                  'quality', quality
                                                  )
-                                             order by abs(correlation) * quality nulls last, abs(correlation) desc)
+                                             order by abs(correlation) * quality desc nulls last, abs(correlation) desc)
                                from
                                    bivariate_axis_correlation
                            ),

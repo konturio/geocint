@@ -76,10 +76,18 @@ declare
     quality float;
 begin
 
-    execute 'select 1.0::float-avg(
-            abs(('||parameter1||' / nullif('||parameter2||', 0)) - (agg_'||parameter1||' / nullif(agg_'||parameter2||', 0)))
+    execute 'select (1.0::float-avg(' ||
+            -- if we zoom in one step, will current zoom values be the same as next zoom values?
+            'abs(('||parameter1||' / nullif('||parameter2||', 0)) - (agg_'||parameter1||' / nullif(agg_'||parameter2||', 0)))
             /
             nullif(('||parameter1||' / nullif('||parameter2||', 0)) + (agg_'||parameter1||' / nullif(agg_'||parameter2||', 0)), 0))' ||
+            ')' ||
+            -- does the denominator cover all of the cells where numerator is present?
+            '* (' ||
+            '(count(*) filter (where '||parameter1||' != 0 and '||parameter2||' != 0))::float ' ||
+            '/ ' ||
+            '(count(*) filter (where '||parameter1||' != 0))'||
+            ' )'||
         'from stat_h3_quality' into quality;
     return quality;
 end;

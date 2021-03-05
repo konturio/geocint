@@ -3,7 +3,8 @@ dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geo
 prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
-	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html
+	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
+	rm -rf data/planet-latest-updated.osm.pbf deploy/ data/tiles data/tile_logs/index.html data/planet-is-broken
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints
 	psql -f scripts/clean.sql
 
@@ -92,6 +93,10 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
 	touch $@
 
+data/planet-latest-check-refs: data/planet-latest-updated.osm.pbf | data
+	osmium check-refs -r --no-progress data/planet-latest.osm.pbf > data/planet-latest-checkrefs.log 2>&1 ; if [ $$? -eq 1 ] ; then touch data/planet-is-broken ; fi
+	touch $@
+
 data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
 	touch $@
@@ -166,12 +171,11 @@ db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=100 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=100 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=100 OSMIUM_MAX_WORK_QUEUE_SIZE=100 numactl --preferred=1 -N 1 osmium export -i dense_mmap_array -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
 	touch $@
 
-db/table/osm_meta: data/planet-latest-updated.osm.pbf db/table/osm | db/table
+db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm_meta;"
 	rm -f data/planet-latest-updated.osm.pbf.meta.json
 	osmium fileinfo data/planet-latest.osm.pbf -ej > data/planet-latest.osm.pbf.meta.json
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
-	osmium check-refs -r --no-progress data/planet-latest.osm.pbf > planet-latest-checkrefs.log 2>&1 ; if [ $$? -eq 1 ] ; then rm -f data/planet-*.osm.pbf ; fi
 	touch $@
 
 data/belarus_boundary.geojson: db/table/osm db/index/osm_tags_idx

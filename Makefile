@@ -1,4 +1,4 @@
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-is-broken ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs ## [FINAL] Builds all targets for development. Run on every branch.
 
 prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
@@ -93,8 +93,9 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
 	touch $@
 
-data/planet-is-broken: data/planet-latest-updated.osm.pbf | data
-	osmium check-refs -r --no-progress data/planet-latest.osm.pbf ; if [ $$? -eq 1 ] ; then touch $@ ; fi
+data/planet-check-refs: data/planet-latest-updated.osm.pbf | data
+	osmium check-refs -r --no-progress data/planet-latest.osm.pbf || touch data/planet-is-broken
+	touch $@
 
 data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite

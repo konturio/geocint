@@ -171,7 +171,7 @@ db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
 	rm -f data/planet-latest-updated.osm.pbf.meta.json
 	osmium fileinfo data/planet-latest.osm.pbf -ej > data/planet-latest.osm.pbf.meta.json
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
-	osmium check-refs -r --no-progress data/planet-latest.osm.pbf > checkrefs.log 2>&1
+	osmium check-refs -r --no-progress data/planet-latest.osm.pbf > planet-latest-checkrefs.log 2>&1 ; if [ $$? -eq 1 ] ; then rm -f data/planet-*.osm.pbf ; fi
 	touch $@
 
 data/belarus_boundary.geojson: db/table/osm db/index/osm_tags_idx

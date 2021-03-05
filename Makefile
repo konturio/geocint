@@ -95,7 +95,6 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 
 data/planet-latest-check-refs: data/planet-latest-updated.osm.pbf | data
 	osmium check-refs -r --no-progress data/planet-latest.osm.pbf > data/planet-latest-checkrefs.log 2>&1 ; if [ $$? -eq 1 ] ; then touch data/planet-is-broken ; fi
-	touch $@
 
 data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite

@@ -40,7 +40,7 @@ create table bivariate_axis_correlation as (
                 join bivariate_indicators y_den_indicator
                     on (y.denominator = y_den_indicator.param_id))
     where
-          (x.numerator != y.numerator or x.denominator != y.denominator)
+          x.numerator != y.numerator
       and x.quality > 0.5
       and y.quality > 0.5
       and x_den_indicator.is_base

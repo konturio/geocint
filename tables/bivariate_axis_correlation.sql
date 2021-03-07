@@ -15,7 +15,11 @@ declare
     select_query float;
 begin
     execute 'select corr(' || x_num || '/' || x_den || ',' || y_num || '/' || y_den || ') ' ||
-            'from ' || table_name || ' where ' || x_den || '!= 0 and ' || y_den || ' != 0' into select_query;
+            'from ' || table_name || ' ' ||
+                -- denominators must be non-zero
+            'where ' || x_den || '!= 0 and ' || y_den || ' != 0 ' ||
+                -- one of numerators should be non-zero
+            'and (' || x_num || '!= 0 or ' || y_num || '!=0)' into select_query;
     return select_query;
 end;
 $$

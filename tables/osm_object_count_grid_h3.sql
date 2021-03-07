@@ -18,7 +18,6 @@ create table osm_object_count_grid_h3 as (
            filter (where z.ts >
                          (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
                           from osm_meta) - interval '6 months')  as highway_length_6_months,
-           count(*) filter (where is_amenity)                    as amenity_count,
            count(distinct z.osm_user)                            as osm_users,
            avg(ts_epoch)                                         as avg_ts,
            max(ts_epoch)                                         as max_ts,
@@ -28,9 +27,8 @@ create table osm_object_count_grid_h3 as (
                     h3                     as h3,
                     extract(epoch from ts) as ts_epoch,
                     ts                     as ts,
-                    tags ? 'amenity'       as is_amenity,
-                    tags ? 'building'      as is_building,
                     osm_user               as osm_user,
+                    ((tags ? 'building') and ((tags -> 'building') != '"no"')) as is_building,
                     case
                         when tags ? 'highway' then ST_Length(geog)
                         else 0

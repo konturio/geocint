@@ -23,7 +23,7 @@ begin
     return select_query;
 end;
 $$
-    language plpgsql;
+    language plpgsql stable parallel safe;
 
 drop table if exists bivariate_axis_correlation;
 create table bivariate_axis_correlation as (

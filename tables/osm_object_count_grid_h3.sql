@@ -3,21 +3,11 @@ create table osm_object_count_grid_h3 as (
     select resolution,
            h3,
            count(*)                                              as count,
-           count(*)
-           filter (where z.ts >
-                         (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
-                          from osm_meta) - interval '6 months')  as count_6_months,
+           count(*) filter (where last_6_months)                 as count_6_months,
            count(*) filter (where is_building)                   as building_count,
-           count(*)
-           filter (where is_building and
-                         z.ts >
-                         (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
-                          from osm_meta) - interval '6 months')  as building_count_6_months,
+           count(*) filter (where is_building and last_6_months) as building_count_6_months,
            sum(highway_length)                                   as highway_length,
-           sum(highway_length)
-           filter (where z.ts >
-                         (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
-                          from osm_meta) - interval '6 months')  as highway_length_6_months,
+           sum(highway_length) filter (where last_6_months)      as highway_length_6_months,
            count(distinct z.osm_user)                            as osm_users,
            avg(ts_epoch)                                         as avg_ts,
            max(ts_epoch)                                         as max_ts,
@@ -29,13 +19,15 @@ create table osm_object_count_grid_h3 as (
                     ts                     as ts,
                     osm_user               as osm_user,
                     ((tags ? 'building') and ((tags -> 'building') != '"no"')) as is_building,
+                    ts > (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
+                          from osm_meta) - interval '6 months' as last_6_months,
                     case
                         when tags ? 'highway' then ST_Length(geog)
                         else 0
                         end                as highway_length
              from osm,
                   ST_H3Bucket(geog) as hex
-             order by 1, 2, 3
+             order by 1, 2
          ) z
     group by 1, 2
 );

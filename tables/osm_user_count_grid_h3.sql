@@ -13,7 +13,8 @@ create table osm_user_count_grid_h3 as (
                  date_trunc('hour', ts) as hours
              from osm,
                   ST_H3Bucket(geog) as hex
-             where ts > (select max(ts) - interval '2 years' from osm)
+             where ts > (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
+                          from osm_meta) - interval '2 years'
          ) z
     group by 1, 2, 3
 );

@@ -470,7 +470,7 @@ db/table/user_hours_h3: db/function/h3 db/table/osm_user_count_grid_h3 db/table/
 	psql -f tables/user_hours_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 | db/table
+db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta | db/table
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 

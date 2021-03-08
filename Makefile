@@ -929,7 +929,7 @@ data/tile_logs/_download: | data/tile_logs data
 
 db/table/tile_logs: data/tile_logs/_download | db/table
 	psql -f tables/tile_logs.sql
-	find data/tile_logs/ -type f -size +5M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
+	find data/tile_logs/ -type f -size +10M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
 	psql -f tables/tile_stats.sql
 	psql -f tables/tile_logs_h3.sql
 	touch $@

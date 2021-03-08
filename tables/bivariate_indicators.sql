@@ -107,4 +107,4 @@ values ('covid19_cases', 'COVID Cases (per 100,000 people, 7-day average)', json
 
 update bivariate_indicators
 set is_base = true
-where param_id in ('population', 'total_building_count', 'gdp', 'area_km2', 'one');
+where param_id in ('population', 'total_building_count', 'area_km2', 'one');

@@ -1,7 +1,7 @@
 drop table if exists osm_object_count_grid_h3;
 create table osm_object_count_grid_h3 as (
-    select resolution,
-           h3,
+    select 8::int                                                as resolution,
+           h3                                                    as h3,
            count(*)                                              as count,
            count(*) filter (where last_6_months)                 as count_6_months,
            count(*) filter (where is_building)                   as building_count,
@@ -9,12 +9,13 @@ create table osm_object_count_grid_h3 as (
            sum(highway_length)                                   as highway_length,
            sum(highway_length) filter (where last_6_months)      as highway_length_6_months,
            count(distinct z.osm_user)                            as osm_users,
-           avg(ts_epoch)                                         as avg_ts,
+           min(ts_epoch)                                         as min_ts,
            max(ts_epoch)                                         as max_ts,
-           percentile_cont(0.9) within group (order by ts_epoch) as p90_ts
+           max(ts_epoch)                                         as avgmax_ts,
+           array_agg(distinct z.osm_user)                        as osm_users_array
     from (
-             select resolution             as resolution,
-                    h3                     as h3,
+             select
+                    h3_geo_to_h3(ST_PointOnSurface(geog::geometry)::point, 8) as h3,
                     extract(epoch from ts) as ts_epoch,
                     ts                     as ts,
                     osm_user               as osm_user,
@@ -25,9 +26,40 @@ create table osm_object_count_grid_h3 as (
                         when tags ? 'highway' then ST_Length(geog)
                         else 0
                         end                as highway_length
-             from osm,
-                  ST_H3Bucket(geog) as hex
-             order by 1, 2
+             from osm
+             order by 1
          ) z
-    group by 1, 2
+    group by h3
 );
+
+do
+$$
+    declare
+        res integer;
+    begin
+        res = 8;
+        while res > 0
+            loop
+                insert into osm_object_count_grid_h3 (resolution, h3, count, count_6_months, building_count,
+                                                      building_count_6_months, highway_length, highway_length_6_months,
+                                                      osm_users, min_ts, max_ts, avgmax_ts, osm_users_array)
+                select (res - 1) as resolution,
+                       h3_to_parent(h3) as h3,
+                       sum(count) as count,
+                       sum(count_6_months) as count_6_months,
+                       sum(building_count) as building_count,
+                       sum(building_count_6_months) as building_count_6_months,
+                       sum(highway_length) as highway_length,
+                       sum(highway_length_6_months) as highway_length_6_months,
+                       count(distinct osm_user) as osm_users,
+                       min(min_ts) as min_ts,
+                       max(max_ts) as max_ts,
+                       avg(avgmax_ts) as avgmax_ts,
+                       array_agg(distinct osm_user) as osm_users_array
+                from osm_object_count_grid_h3, unnest(osm_users_array) as osm_user
+                where resolution = res
+                group by 2;
+                res = res - 1;
+            end loop;
+    end;
+$$;

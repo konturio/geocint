@@ -49,9 +49,9 @@ create table stat_h3_quality as (
                 avg(a.population) as agg_population,
                 avg(a.residential) as agg_residential,
                 avg(a.gdp) as agg_gdp,
-                avg(a.avg_ts) as agg_avg_ts,
+                avg(a.min_ts) as agg_min_ts,
                 avg(a.max_ts) as agg_max_ts,
-                avg(a.p90_ts) as agg_p90_ts,
+                avg(a.avgmax_ts) as agg_avgmax_ts,
                 avg(a.local_hours) as agg_local_hours,
                 avg(a.total_hours) as agg_total_hours,
                 avg(a.view_count) as agg_view_count,
@@ -194,7 +194,7 @@ where
       numerator = 'wildfires'
   and denominator = 'area_km2';
 
-update bivariate_axis set label = '90% mapped before (date)' where numerator = 'p90_ts' and denominator = 'one';
+update bivariate_axis set label = 'Last edit (date)' where numerator = 'avgmax_ts' and denominator = 'one';
 
 update bivariate_axis
 set
@@ -203,25 +203,5 @@ set
     p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY'),
     max_label = to_char(to_timestamp(max), 'DD Mon YYYY')
 where
-      numerator = 'max_ts'
-  and denominator = 'one';
-
-update bivariate_axis
-set
-    min_label = to_char(to_timestamp(min), 'DD Mon YYYY'),
-    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY'),
-    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY'),
-    max_label = to_char(to_timestamp(max), 'DD Mon YYYY')
-where
-      numerator = 'p90_ts'
-  and denominator = 'one';
-
-update bivariate_axis
-set
-    min_label = to_char(to_timestamp(min), 'DD Mon YYYY'),
-    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY'),
-    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY'),
-    max_label = to_char(to_timestamp(max), 'DD Mon YYYY')
-where
-      numerator = 'avg_ts'
+      numerator in ('min_ts', 'max_ts', 'avgmax_ts')
   and denominator = 'one';

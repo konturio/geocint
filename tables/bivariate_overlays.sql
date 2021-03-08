@@ -68,7 +68,7 @@ from osm_meta;
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 5,
        'Kontur OpenStreetMap Antiquity',
-       'p90_ts',
+       'avgmax_ts',
        'one',
        'view_count',
        'area_km2',

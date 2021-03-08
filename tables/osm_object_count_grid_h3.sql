@@ -40,9 +40,12 @@ $$
         res = 8;
         while res > 0
             loop
+                -- aggregation below is split into two parts: first one generates correct sum/avg aggregates
+                -- second one generates group by aggregation
+                -- this can be done as two inserts as the values are going to be regrouped together in stat_h3 calculation
                 insert into osm_object_count_grid_h3 (resolution, h3, count, count_6_months, building_count,
                                                       building_count_6_months, highway_length, highway_length_6_months,
-                                                      osm_users, min_ts, max_ts, avgmax_ts, osm_users_array)
+                                                      min_ts, max_ts, avgmax_ts)
                 select (res - 1) as resolution,
                        h3_to_parent(h3) as h3,
                        sum(count) as count,
@@ -51,10 +54,17 @@ $$
                        sum(building_count_6_months) as building_count_6_months,
                        sum(highway_length) as highway_length,
                        sum(highway_length_6_months) as highway_length_6_months,
-                       count(distinct osm_user) as osm_users,
                        min(min_ts) as min_ts,
                        max(max_ts) as max_ts,
-                       avg(avgmax_ts) as avgmax_ts,
+                       avg(avgmax_ts) as avgmax_ts
+                from osm_object_count_grid_h3
+                where resolution = res
+                group by 2;
+
+                insert into osm_object_count_grid_h3 (resolution, h3, osm_users,osm_users_array)
+                select (res - 1) as resolution,
+                       h3_to_parent(h3) as h3,
+                       count(distinct osm_user) as osm_users,
                        array_agg(distinct osm_user) as osm_users_array
                 from osm_object_count_grid_h3, unnest(osm_users_array) as osm_user
                 where resolution = res

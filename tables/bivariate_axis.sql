@@ -28,7 +28,9 @@ begin
     -- unpopulated areas that skew generated histogram to be less interesting in humanitarian context.
     return query execute select_query;
 end;
-$$;
+$$
+    stable
+    parallel safe;
 
 drop table if exists stat_h3_quality;
 create table stat_h3_quality as (
@@ -91,33 +93,33 @@ begin
         'from stat_h3_quality' into quality;
     return quality;
 end;
-$$;
+$$
+    stable
+    parallel safe;
 
 drop table if exists bivariate_axis;
 create table bivariate_axis as (
-    with
-        axis_parameters as (
-            select param_id as parameter
-            from
-                bivariate_indicators
-        )
-    select
-        a.parameter as numerator,
-        b.parameter as denominator,
-        f.*,
-        q as quality,
-        '' as min_label,
-        '' as p25_label,
-        '' as p75_label,
-        '' as max_label,
-        '' as label
-    from
-        axis_parameters                                a,
-        axis_parameters                                b,
-        calculate_axis_stops(a.parameter, b.parameter) f,
-        estimate_bivariate_axis_quality(a.parameter, b.parameter) q
-    where
-        a.parameter != b.parameter
+    select numerator,
+           denominator,
+           (z.f).min,
+           (z.f).p25,
+           (z.f).p75,
+           (z.f).max,
+           quality,
+           '' as min_label,
+           '' as p25_label,
+           '' as p75_label,
+           '' as max_label,
+           '' as label
+    from (
+             select a.param_id as numerator,
+                    b.param_id as denominator,
+                    calculate_axis_stops(a.param_id, b.param_id) f,
+                    estimate_bivariate_axis_quality(a.param_id, b.param_id) quality
+             from bivariate_indicators a,
+                  bivariate_indicators b
+             where a.param_id != b.param_id
+         ) z
 );
 
 analyse bivariate_axis;

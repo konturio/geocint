@@ -926,8 +926,9 @@ data/tile_logs/_download: | data/tile_logs data
 	touch $@
 
 db/table/tile_logs: data/tile_logs/_download | db/table
-	psql -f tables/tile_logs.sql
-	find data/tile_logs/ -type f -size +10M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_log.py {} | psql -c 'copy tile_logs from stdin with csv'"
+	psql -c "drop table if exists tile_logs;"
+	psql -c "create table tile_logs (tile_date timestamptz, z int, x int, y int, view_count int, geom geometry generated always as (ST_Transform(ST_TileEnvelope(z, x, y), 4326)) stored);"
+	find data/tile_logs/ -type f -size +10M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs from stdin with csv'"
 	psql -f tables/tile_stats.sql
 	psql -f tables/tile_logs_h3.sql
 	touch $@

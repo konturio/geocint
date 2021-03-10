@@ -28,7 +28,9 @@ begin
     -- unpopulated areas that skew generated histogram to be less interesting in humanitarian context.
     return query execute select_query;
 end;
-$$;
+$$
+    stable
+    parallel safe;
 
 drop table if exists stat_h3_quality;
 create table stat_h3_quality as (
@@ -47,9 +49,9 @@ create table stat_h3_quality as (
                 avg(a.population) as agg_population,
                 avg(a.residential) as agg_residential,
                 avg(a.gdp) as agg_gdp,
-                avg(a.avg_ts) as agg_avg_ts,
+                avg(a.min_ts) as agg_min_ts,
                 avg(a.max_ts) as agg_max_ts,
-                avg(a.p90_ts) as agg_p90_ts,
+                avg(a.avgmax_ts) as agg_avgmax_ts,
                 avg(a.local_hours) as agg_local_hours,
                 avg(a.total_hours) as agg_total_hours,
                 avg(a.view_count) as agg_view_count,
@@ -91,33 +93,33 @@ begin
         'from stat_h3_quality' into quality;
     return quality;
 end;
-$$;
+$$
+    stable
+    parallel safe;
 
 drop table if exists bivariate_axis;
 create table bivariate_axis as (
-    with
-        axis_parameters as (
-            select param_id as parameter
-            from
-                bivariate_indicators
-        )
-    select
-        a.parameter as numerator,
-        b.parameter as denominator,
-        f.*,
-        q as quality,
-        '' as min_label,
-        '' as p25_label,
-        '' as p75_label,
-        '' as max_label,
-        '' as label
-    from
-        axis_parameters                                a,
-        axis_parameters                                b,
-        calculate_axis_stops(a.parameter, b.parameter) f,
-        estimate_bivariate_axis_quality(a.parameter, b.parameter) q
-    where
-        a.parameter != b.parameter
+    select numerator,
+           denominator,
+           (z.f).min,
+           (z.f).p25,
+           (z.f).p75,
+           (z.f).max,
+           quality,
+           '' as min_label,
+           '' as p25_label,
+           '' as p75_label,
+           '' as max_label,
+           '' as label
+    from (
+             select a.param_id as numerator,
+                    b.param_id as denominator,
+                    calculate_axis_stops(a.param_id, b.param_id) f,
+                    estimate_bivariate_axis_quality(a.param_id, b.param_id) quality
+             from bivariate_indicators a,
+                  bivariate_indicators b
+             where a.param_id != b.param_id
+         ) z
 );
 
 analyse bivariate_axis;
@@ -192,7 +194,7 @@ where
       numerator = 'wildfires'
   and denominator = 'area_km2';
 
-update bivariate_axis set label = '90% mapped before (date)' where numerator = 'p90_ts' and denominator = 'one';
+update bivariate_axis set label = 'Last edit (date)' where numerator = 'avgmax_ts' and denominator = 'one';
 
 update bivariate_axis
 set
@@ -201,25 +203,5 @@ set
     p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY'),
     max_label = to_char(to_timestamp(max), 'DD Mon YYYY')
 where
-      numerator = 'max_ts'
-  and denominator = 'one';
-
-update bivariate_axis
-set
-    min_label = to_char(to_timestamp(min), 'DD Mon YYYY'),
-    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY'),
-    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY'),
-    max_label = to_char(to_timestamp(max), 'DD Mon YYYY')
-where
-      numerator = 'p90_ts'
-  and denominator = 'one';
-
-update bivariate_axis
-set
-    min_label = to_char(to_timestamp(min), 'DD Mon YYYY'),
-    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY'),
-    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY'),
-    max_label = to_char(to_timestamp(max), 'DD Mon YYYY')
-where
-      numerator = 'avg_ts'
+      numerator in ('min_ts', 'max_ts', 'avgmax_ts')
   and denominator = 'one';

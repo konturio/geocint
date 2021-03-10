@@ -27,13 +27,13 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('view_count', 'OSM Map Views', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('avg_ts', 'OSM Last Edit Date (avg)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb);
+values ('avgmax_ts', 'OSM Last Edit Date (avg)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('max_ts', 'OSM Last Edit Date (max)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('p90_ts', 'OSM 90% Mapped Before', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb);
+values ('min_ts', 'OSM First Edit Date (min)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["neutral"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('osm_users', 'OSM Mappers Edited Here', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
@@ -107,4 +107,4 @@ values ('covid19_cases', 'COVID Cases (per 100,000 people, 7-day average)', json
 
 update bivariate_indicators
 set is_base = true
-where param_id in ('population', 'total_building_count', 'gdp', 'area_km2', 'one');
+where param_id in ('population', 'total_building_count', 'area_km2', 'one');

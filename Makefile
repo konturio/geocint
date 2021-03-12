@@ -399,11 +399,11 @@ data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt: data/gebco_2020_geotiff/gebc
 	gdalwarp -s_srs EPSG:4326 -t_srs epsg:3857 -r bilinear -of VRT data/gebco_2020_geotiff/gebco_2020_merged.vrt $@
 
 data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt
-	gdaldem slope -of GTiff data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 gdaldem slope -of COG data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt $@
 	rm -f data/gebco_2020_geotiff/*.vrt
 
 data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif
-	gdalwarp -s_srs EPSG:3395 -t_srs EPSG:4326 -of COG -co TILED=YES data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 gdalwarp -s_srs EPSG:3395 -t_srs EPSG:4326 -of COG -co TILED=YES -multi data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif $@
 	rm -f data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif
 
 db/table/gebco_2020_slopes: data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif | db/table

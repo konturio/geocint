@@ -1,4 +1,4 @@
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/gebco_2020_slopes_h3_r8 ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs ## [FINAL] Builds all targets for development. Run on every branch.
 
 prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
@@ -388,22 +388,28 @@ data/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/gebco_2020_geotiff
 	wget "https://www.bodc.ac.uk/data/open_download/gebco/gebco_2020/geotiff/" -O $@
 
 data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip: data/gebco_2020_geotiff/gebco_2020_geotiff.zip
-	rm -f data/gebco_2020_geotiff/*.tif data/gebco_2020_geotiff/*.pdf
 	cd data/gebco_2020_geotiff; unzip -o gebco_2020_geotiff.zip
+	rm -f data/gebco_2020_geotiff/*.pdf
 	touch $@
 
-data/gebco_2020_geotiff/gebco_2020_geotiffs_prep: data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip
-	gdal_merge.py -ot Float32 -of GTiff -o 1_gebco_2020_merged.tif gebco_2020_n*.tif
-	gdalwarp -s_srs EPSG:4326 -t_srs EPSG:3857 -of GTiff 1_gebco_2020_merged.tif 2_gebco_2020_merged_3857.tif
-	gdaldem slope -of GTiff 2_gebco_2020_merged_3857.tif 3_gebco_2020_merged_3857_slope.tif
-	gdal_translate -of GTiff -ot Byte -a_nodata 255 3_gebco_2020_merged_3857_slope.tif 4_gebco_2020_merged_3857_slope_byte.tif
-	cd data/gebco_2020_geotiff; rm -f 1_gebco_2020_merged.tif 2_gebco_2020_merged_3857.tif 3_gebco_2020_merged_3857_slope.tif
-	touch $@
+data/gebco_2020_geotiff/gebco_2020_merged.vrt: data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip
+	gdalbuildvrt $@ data/gebco_2020_geotiff/gebco_2020_n*.tif
 
-db/table/gebco_2020_slopes: data/gebco_2020_geotiff/gebco_2020_geotiffs_prep | db/table
+data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt: data/gebco_2020_geotiff/gebco_2020_merged.vrt
+	gdalwarp -s_srs EPSG:4326 -t_srs epsg:3857 -r bilinear -of VRT data/gebco_2020_geotiff/gebco_2020_merged.vrt $@
+
+data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt
+	gdaldem slope -of GTiff data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt $@
+	rm -f data/gebco_2020_geotiff/*.vrt
+
+data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif
+	gdalwarp -s_srs EPSG:3395 -t_srs EPSG:4326 -of GTiff data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif $@
+	rm -f data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif
+
+db/table/gebco_2020_slopes: data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif | db/table
 	psql -c "drop table if exists gebco_2020_slopes"
-	raster2pgsql -M -Y -s 3857 4_gebco_2020_merged_3857_slope_byte.tif -t auto gebco_2020_slopes | psql -q
-	cd data/gebco_2020_geotiff; rm -f 4_gebco_2020_merged_3857_slope_byte.tif
+	raster2pgsql -M -Y -s 4326 data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif -t auto gebco_2020_slopes | psql -q
+	rm -f data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif
 	touch $@
 
 db/table/gebco_2020_slopes_h3_r8: db/table/gebco_2020_slopes | db/table

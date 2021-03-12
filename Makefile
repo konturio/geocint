@@ -5,7 +5,7 @@ prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/covid19_cases_us_counties.csv
 	psql -f scripts/clean.sql
 
 data:
@@ -42,6 +42,9 @@ data/wb: | data
 	mkdir -p $@
 
 data/wb/gdp: | data/wb
+	mkdir -p $@
+
+data/gebco_2020_geotiff: | data
 	mkdir -p $@
 
 deploy:
@@ -379,6 +382,38 @@ db/table/fb_population_raster: data/population_fb/unzip | db/table
 	psql -c 'alter table fb_population_raster drop CONSTRAINT fb_population_raster_pkey;'
 	ls data/population_fb/*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t 256x256 fb_population_raster | psql -q'
 	psql -c "alter table fb_population_raster set (parallel_workers=32)"
+	touch $@
+
+data/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/gebco_2020_geotiff
+	wget "https://www.bodc.ac.uk/data/open_download/gebco/gebco_2020/geotiff/" -O $@
+
+data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip: data/gebco_2020_geotiff/gebco_2020_geotiff.zip
+	cd data/gebco_2020_geotiff; unzip -o gebco_2020_geotiff.zip
+	rm -f data/gebco_2020_geotiff/*.pdf
+	touch $@
+
+data/gebco_2020_geotiff/gebco_2020_merged.vrt: data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip
+	gdalbuildvrt $@ data/gebco_2020_geotiff/gebco_2020_n*.tif
+
+data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt: data/gebco_2020_geotiff/gebco_2020_merged.vrt
+	gdalwarp -s_srs EPSG:4326 -t_srs epsg:3857 -r bilinear -of VRT data/gebco_2020_geotiff/gebco_2020_merged.vrt $@
+
+data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 gdaldem slope -of COG data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt $@
+	rm -f data/gebco_2020_geotiff/*.vrt
+
+data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 gdalwarp -s_srs EPSG:3395 -t_srs EPSG:4326 -of COG -co TILED=YES -multi data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif $@
+	rm -f data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif
+
+db/table/gebco_2020_slopes: data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif | db/table
+	psql -c "drop table if exists gebco_2020_slopes"
+	raster2pgsql -M -Y -s 4326 data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif -t auto gebco_2020_slopes | psql -q
+	rm -f data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif
+	touch $@
+
+db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table
+	psql -f tables/gebco_2020_slopes_h3.sql
 	touch $@
 
 db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
@@ -897,7 +932,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/gebco_2020_slopes_h3| db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

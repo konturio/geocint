@@ -105,6 +105,11 @@ values ('covid19_cases', 'COVID Cases (per 100,000 people, 7-day average)', json
 '© Data from Delphi COVIDcast, covidcast.cmu.edu'),
     '[["good"], ["bad"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('avg_slope', 'Average slope', jsonb_build_array(
+'© Data from General Bathymatric Chart of the Oceans, www.gebco.net'),
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
+
 update bivariate_indicators
 set is_base = true
 where param_id in ('population', 'total_building_count', 'area_km2', 'one');

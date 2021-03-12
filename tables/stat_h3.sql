@@ -124,7 +124,7 @@ create table stat_h3_in as (
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
                     avg_slope as avg_slope, resolution
-             from gebco_2020_slopes_h3_r8
+             from gebco_2020_slopes_h3
          ) z
     group by 2, 1
 );

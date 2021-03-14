@@ -19,10 +19,10 @@ $$
         while res > 0
             loop
                 insert into covid19_cases_us_counties_h3 (h3, covid19_cases, resolution)
-                select h3_to_parent(h3) as h3, covid19_cases as covid19_cases, (res - 1) as resolution
+                select h3_to_parent(h3) as h3, avg(covid19_cases) as covid19_cases, (res - 1) as resolution
                 from covid19_cases_us_counties_h3
                 where resolution = res
-                group by 1, 2;
+                group by 1;
                 res = res - 1;
             end loop;
     end;

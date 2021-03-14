@@ -53,8 +53,7 @@ deploy:
 deploy/lima: | deploy
 	mkdir -p $@
 
-# We use sonic.kontur.io as a staging server to test the software before setting it live at lima.kontur.io.
-deploy/sonic: | deploy
+deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test the software before setting it live at lima.kontur.io.
 	mkdir -p $@
 
 deploy/zigzag: | deploy
@@ -82,7 +81,6 @@ data/planet-latest.osm.pbf: | data
 	cd data; aria2c https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent --seed-time=0
 	mv data/planet-*.osm.pbf $@
 	rm -f data/planet-*.osm.pbf.torrent
-	# TODO: smoke check correctness of file
 	touch $@
 
 data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
@@ -392,6 +390,7 @@ data/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/gebco_2020_geotiff
 	wget "https://www.bodc.ac.uk/data/open_download/gebco/gebco_2020/geotiff/" -O $@
 
 data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip: data/gebco_2020_geotiff/gebco_2020_geotiff.zip
+	rm -f data/gebco_2020_geotiff/*.tif
 	cd data/gebco_2020_geotiff; unzip -o gebco_2020_geotiff.zip
 	rm -f data/gebco_2020_geotiff/*.pdf
 	touch $@
@@ -400,21 +399,21 @@ data/gebco_2020_geotiff/gebco_2020_merged.vrt: data/gebco_2020_geotiff/gebco_202
 	rm -f data/gebco_2020_geotiff/*.vrt
 	gdalbuildvrt $@ data/gebco_2020_geotiff/gebco_2020_n*.tif
 
-data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt: data/gebco_2020_geotiff/gebco_2020_merged.vrt
-	gdalwarp -s_srs EPSG:4326 -t_srs epsg:3857 -r bilinear -of VRT data/gebco_2020_geotiff/gebco_2020_merged.vrt $@
+data/gebco_2020_geotiff/gebco_2020_merged_3857.tif: data/gebco_2020_geotiff/gebco_2020_merged.vrt
+	rm -f $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -t_srs epsg:3857 -r bilinear -of COG data/gebco_2020_geotiff/gebco_2020_merged.vrt $@
 
-data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 gdaldem slope -of COG data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt $@
-	rm -f data/gebco_2020_geotiff/*.vrt
+data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857.tif
+	rm -f $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdaldem slope -of COG data/gebco_2020_geotiff/gebco_2020_merged_3857.tif $@
 
 data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 gdalwarp -s_srs EPSG:3395 -t_srs EPSG:4326 -of COG -co TILED=YES -multi data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif $@
-	rm -f data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif
+	rm -f $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -t_srs EPSG:4326 -of COG -multi data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif $@
 
 db/table/gebco_2020_slopes: data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif | db/table
 	psql -c "drop table if exists gebco_2020_slopes"
 	raster2pgsql -M -Y -s 4326 data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif -t auto gebco_2020_slopes | psql -q
-	rm -f data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif
 	touch $@
 
 db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table

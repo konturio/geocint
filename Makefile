@@ -393,6 +393,7 @@ data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip: data/gebco_2020_geotiff/gebco
 	touch $@
 
 data/gebco_2020_geotiff/gebco_2020_merged.vrt: data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip
+	rm -f data/gebco_2020_geotiff/*.vrt
 	gdalbuildvrt $@ data/gebco_2020_geotiff/gebco_2020_n*.tif
 
 data/gebco_2020_geotiff/gebco_2020_merged_3857.vrt: data/gebco_2020_geotiff/gebco_2020_merged.vrt

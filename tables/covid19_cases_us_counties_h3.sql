@@ -5,7 +5,7 @@ create table covid19_cases_us_counties_h3 as (
            8                as resolution,
            covid19_cases    as covid19_cases
     from covid19_cases_us_counties
-    group by 1);
+    group by 1, 3);
 
 alter table covid19_cases_us_counties_h3
     set (parallel_workers = 32);

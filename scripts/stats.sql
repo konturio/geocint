@@ -25,6 +25,7 @@ copy (
                 covid19_vaccines,
                 covid19_cases,
                 avg_slope,
+                forest,
                 ST_AsMVTGeom(geom, ST_TileEnvelope(:z, :x, :y), 8192, 64, true) as geom
             from
                 stat_h3

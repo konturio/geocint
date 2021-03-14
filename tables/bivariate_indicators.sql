@@ -59,6 +59,11 @@ values ('total_hours', 'OSM Mapping Hours by All Mappers', jsonb_build_array('©
 '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('forest', 'Forest Landcover Area', jsonb_build_array('© Kontur https://kontur.io/',
+        'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050'),
+        '[["unimportant"], ["important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('gdp', 'Gross Domestic Product', jsonb_build_array(
 '© Kontur https://kontur.io/',
 '© 2019 The World Bank Group, CC-BY 4.0',

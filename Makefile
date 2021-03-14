@@ -350,14 +350,15 @@ data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classific
 db/table/copernicus_landcover_raster: data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif | db/table
 	psql -c "drop table if exists copernicus_landcover_raster"
 	raster2pgsql -M -Y -s 4326 data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif -t auto copernicus_landcover_raster | psql -q
+	psql -c "alter table copernicus_landcover_raster set (parallel_workers = 32);"
 	touch $@
 
 db/table/copernicus_builtup_raster_h3_r8: db/table/copernicus_landcover_raster | db/table
 	psql -f tables/copernicus_builtup_raster_h3_r8.sql
 	touch $@
 
-db/table/copernicus_forest_raster_h3: db/table/copernicus_landcover_raster | db/table
-	psql -f tables/copernicus_forest_raster_h3.sql
+db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table
+	psql -f tables/copernicus_forest_h3.sql
 	touch $@
 
 data/population_fb: | data
@@ -936,7 +937,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_raster_h3 db/table/gebco_2020_slopes_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

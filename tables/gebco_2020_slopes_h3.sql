@@ -36,3 +36,6 @@ $$
             end loop;
     end;
 $$;
+
+
+create index on gebco_2020_slopes_h3 (h3, avg_slope);

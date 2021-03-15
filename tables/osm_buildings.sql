@@ -1,5 +1,5 @@
-drop table if exists osm_buildings_all;
-create table osm_buildings_all as (
+drop table if exists osm_buildings_in;
+create table osm_buildings_in as (
     select osm_type,
            osm_id,
            tags ->> 'building'         as building,
@@ -76,10 +76,9 @@ create table osm_buildings as (
            building_name,
            b.tags as tags,
            b.geom as geom
-    from osm_buildings_all b,
+    from osm_buildings_in b,
          osm_landuses l
     where ST_Intersects(b.geom, l.geom)
-      and ST_Dimension(b.geom) = 2
 );
 
-drop table if exists osm_buildings_all;
+drop table if exists osm_buildings_in;

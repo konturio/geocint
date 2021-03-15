@@ -863,13 +863,13 @@ db/table/osm_landuses: db/table/osm db/index/osm_tags_idx | db/table
 
 db/table/osm_buildings_minsk: db/table/osm_buildings | db/table
 	psql -c "drop table if exists osm_buildings_minsk;"
-	psql -c "create table osm_buildings_minsk as (select building, street, hno, levels, height, use, building_name, geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name\":\"Минск\", \"boundary\":\"administrative\"}' and osm_id = 59195 and osm_type = 'relation'), 0));"
+	psql -c "create table osm_buildings_minsk as (select building, street, hno, levels, height, use, 'name', geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name\":\"Минск\", \"boundary\":\"administrative\"}' and osm_id = 59195 and osm_type = 'relation'), 0));"
 	touch $@
 
 data/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk
 	rm -f $@
 	rm -f data/osm_buildings_minsk.geojson*
-	ogr2ogr -f GeoJSON data/osm_buildings_minsk.geojson PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, building_name, geom from osm_buildings_minsk' -nln osm_buildings_minsk
+	ogr2ogr -f GeoJSON data/osm_buildings_minsk.geojson PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, name, geom from osm_buildings_minsk' -nln osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.geojson
 
 deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3
@@ -878,13 +878,13 @@ deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3
 
 db/table/osm_buildings_japan: db/table/osm_buildings | db/table
 	psql -c "drop table if exists osm_buildings_japan;"
-	psql -c "create table osm_buildings_japan as (select building, street, hno, levels, height, use, building_name, geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name:en\":\"Japan\", \"boundary\":\"administrative\"}' and osm_id = 382313 and osm_type = 'relation'), 0));"
+	psql -c "create table osm_buildings_japan as (select building, street, hno, levels, height, use, 'name', geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name:en\":\"Japan\", \"boundary\":\"administrative\"}' and osm_id = 382313 and osm_type = 'relation'), 0));"
 	touch $@
 
 data/osm_buildings_japan.gpkg.gz: db/table/osm_buildings_japan
 	rm -f $@
 	rm -f data/osm_buildings_japan.gpkg
-	ogr2ogr -f GPKG data/osm_buildings_japan.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, building_name, geom from osm_buildings_japan' -lco "SPATIAL_INDEX=NO" -nln osm_buildings_japan
+	ogr2ogr -f GPKG data/osm_buildings_japan.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, name, geom from osm_buildings_japan' -lco "SPATIAL_INDEX=NO" -nln osm_buildings_japan
 	cd data/; pigz osm_buildings_japan.gpkg
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table

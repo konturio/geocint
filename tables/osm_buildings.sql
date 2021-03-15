@@ -8,7 +8,7 @@ create table osm_buildings_in as (
            tags ->> 'building:levels'  as levels,
            tags ->> 'height'           as height,
            tags ->> 'building:use'     as use,
-           tags ->> 'name'             as building_name,
+           tags ->> 'name'             as "name",
            tags,
            geog::geometry              as geom
     from osm o
@@ -73,7 +73,7 @@ create table osm_buildings as (
                    then 'residential'
                end
                      use,
-           building_name,
+           "name",
            b.tags as tags,
            b.geom as geom
     from osm_buildings_in b,

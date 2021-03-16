@@ -17,7 +17,7 @@ create table osm_buildings_in as (
     order by _ST_SortableHash(geog::geometry)
 );
 
-create index on osm_buildings_all using brin (geom);
+create index on osm_buildings_in using brin (geom);
 
 drop table if exists osm_buildings;
 create table osm_buildings as (

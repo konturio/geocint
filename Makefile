@@ -1,4 +1,4 @@
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs data/osm_buildings_japan.gpkg.gz ## [FINAL] Builds all targets for development. Run on every branch.
 
 prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
@@ -861,16 +861,9 @@ db/table/osm_landuses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_landuses.sql
 	touch $@
 
-db/index/osm_landuses_geom_idx: db/table/osm_landuses | db/index
-	psql -c "create index on osm_landuses using brin (geom)"
-	touch $@
-
-db/table/osm_landuses_minsk: db/table/osm_landuses db/index/osm_landuses_geom_idx | db/table
-	psql -f tables/osm_landuses_minsk.sql
-	touch $@
-
-db/table/osm_buildings_minsk: db/index/osm_buildings_geom_idx db/table/osm_landuses_minsk db/index/osm_landuses_geom_idx | db/table
-	psql -f tables/osm_buildings_minsk.sql
+db/table/osm_buildings_minsk: db/table/osm_buildings | db/table
+	psql -c "drop table if exists osm_buildings_minsk;"
+	psql -c "create table osm_buildings_minsk as (select building, street, hno, levels, height, use, 'name', geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name\":\"Минск\", \"boundary\":\"administrative\"}' and osm_id = 59195 and osm_type = 'relation'), 0));"
 	touch $@
 
 data/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk
@@ -882,6 +875,17 @@ data/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk
 deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body data/osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
+
+db/table/osm_buildings_japan: db/table/osm_buildings | db/table
+	psql -c "drop table if exists osm_buildings_japan;"
+	psql -c "create table osm_buildings_japan as (select building, street, hno, levels, height, use, 'name', geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name:en\":\"Japan\", \"boundary\":\"administrative\"}' and osm_id = 382313 and osm_type = 'relation'), 0));"
+	touch $@
+
+data/osm_buildings_japan.gpkg.gz: db/table/osm_buildings_japan
+	rm -f $@
+	rm -f data/osm_buildings_japan.gpkg
+	ogr2ogr -f GPKG data/osm_buildings_japan.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, name, geom from osm_buildings_japan' -lco "SPATIAL_INDEX=NO" -nln osm_buildings_japan
+	cd data/; pigz osm_buildings_japan.gpkg
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_addresses.sql
@@ -925,11 +929,7 @@ deploy/s3/osm_admin_boundaries: data/osm_admin_boundaries.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/osm_admin_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/index/osm_buildings_geom_idx: db/table/osm_buildings | db/index
-	psql -c "create index on osm_buildings using brin (geom)"
-	touch $@
-
-db/table/osm_buildings: db/index/osm_tags_idx | db/table
+db/table/osm_buildings: db/table/osm_landuses db/index/osm_tags_idx | db/table
 	psql -f tables/osm_buildings.sql
 	touch $@
 

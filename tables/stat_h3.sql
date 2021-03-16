@@ -126,7 +126,7 @@ drop table if exists stat_h3;
 create table stat_h3 as (
     select a.*,
            b.avg_slope::float,
-           cf.forest_cells::float as forest,
+           (coalesce(cf.forest_cells,0))::float as forest,
            hex.area / 1000000.0 as area_km2,
            hex.geom as geom
     from stat_h3_in           a

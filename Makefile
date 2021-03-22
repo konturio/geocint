@@ -428,7 +428,7 @@ data/genereate_ndvi_tifs_2019_06_10: | data/ndvi_2019_6_10
 	bash ./scripts/generate_ndvi_tifs.sh
 	touch $@
 
-db/table/ndvi_2019_06_10: genereate_ndvi_tifs_2019_06_10 | db/table
+db/table/ndvi_2019_06_10: data/genereate_ndvi_tifs_2019_06_10 | db/table
 	psql -c "drop table if exists ndvi_2019_06_10"
 	ls data/ndvi_2019_6_10/*.tif | parallel --eta --jobs 16 'raster2pgsql -a -M -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
 	touch $@

@@ -47,7 +47,7 @@ data/wb/gdp: | data/wb
 data/gebco_2020_geotiff: | data
 	mkdir -p $@
 
-data/ndvi_2019_6_10: | data
+data/ndvi_2019_06_10: | data
 	mkdir -p $@
 
 deploy:
@@ -424,11 +424,17 @@ db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table
 	psql -f tables/gebco_2020_slopes_h3.sql
 	touch $@
 
-data/genereate_ndvi_tifs_2019_06_10: | data/ndvi_2019_6_10
-	bash ./scripts/generate_ndvi_tifs.sh
-	touch $@
+data/ndvi_2019_06_10/folderlist.txt: | data/ndvi_2019_06_10
+	rm -f $@
+	for d in /home/gis/sentinel-2-2019/2019/6/10/*; do echo $$d >> $@; done
 
-db/table/ndvi_2019_06_10: data/genereate_ndvi_tifs_2019_06_10 | db/table
+data/ndvi_2019_06_10/generate_ndvi_tifs: data/ndvi_2019_06_10/folderlist.txt
+	cat data/ndvi_2019_06_10/folderlist.txt | parallel --eta --jobs 16 'cd {} && python3 /usr/bin/gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --NoDataValue=1.001 --outfile=ndvi.tif'
+
+data/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/ndvi_2019_06_10/generate_ndvi_tifs
+	cat data/ndvi_2019_06_10/folderlist.txt | parallel --eta --jobs 16 'cd {} && GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -overwrite -t_srs EPSG:4326 -of COG ndvi.tif /home/gis/geocint/data/ndvi_2019_06_10/ndvi_{#}_4326.tif'
+
+db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
 	psql -c "drop table if exists ndvi_2019_06_10"
 	ls data/ndvi_2019_6_10/*.tif | parallel --eta --jobs 16 'raster2pgsql -a -M -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
 	touch $@

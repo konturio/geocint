@@ -118,7 +118,7 @@ values ('avg_slope', 'Average slope', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('avg_ndvi', 'Average NDVI, JUN 2019', jsonb_build_array(
 '© Data from Sentinel-2 L2A 120m Mosaic, CC-BY 4.0, https://forum.sentinel-hub.com/c/aws-sentinel'),
-    '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
+    '[["bad"], ["good"]]'::jsonb);
 
 update bivariate_indicators
 set is_base = true

@@ -436,7 +436,7 @@ data/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/ndvi_2019_06_10/generate_ndvi_tif
 
 db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
 	psql -c "drop table if exists ndvi_2019_06_10"
-	ls data/ndvi_2019_6_10/*.tif | parallel --eta --jobs 16 'raster2pgsql -a -M -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
+	ls data/ndvi_2019_06_10/*.tif | parallel --eta --jobs 16 'raster2pgsql -a -M -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
 	touch $@
 
 db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table

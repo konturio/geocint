@@ -1,6 +1,3 @@
-alter table ndvi_2019_06_10
-    set (parallel_workers = 32);
-
 drop table if exists ndvi_2019_06_10_h3;
 create table ndvi_2019_06_10_h3 as (
     select h3,
@@ -28,7 +25,7 @@ $$
         while res > 0
             loop
                 insert into ndvi_2019_06_10_h3 (h3, avg_ndvi, resolution)
-                select h3_to_parent(h3) as h3, avg(avg_ndvi) as avg_slope, (res - 1) as resolution
+                select h3_to_parent(h3) as h3, avg(avg_ndvi) as avg_ndvi, (res - 1) as resolution
                 from ndvi_2019_06_10_h3
                 where resolution = res
                 group by 1;

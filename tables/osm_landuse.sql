@@ -1,5 +1,5 @@
-drop table if exists osm_landuses;
-create table osm_landuses as (
+drop table if exists osm_landuse;
+create table osm_landuse as (
     select osm_id,
            osm_type,
            tags ->> 'landuse'     as landuse,
@@ -15,7 +15,8 @@ create table osm_landuses as (
     from osm
     where (tags ? 'landuse' or tags ? 'amenity' or tags ? 'landcover' or tags ? 'leisure' or tags ? 'tourism' or
            tags ? 'natural' or tags ? 'residential' or tags ? 'office' or tags ? 'industrial')
+      and ST_Dimension(geog::geometry) = 2
     order by _ST_SortableHash(geog::geometry)
 );
 
-create index on osm_landuses using brin(geom);
+create index on osm_landuse using brin(geom);

@@ -857,8 +857,8 @@ db/table/population_grid_h3_r8_osm_scaled: db/table/population_grid_h3_r8 db/pro
 	psql -f tables/population_grid_h3_r8_osm_scaled.sql
 	touch $@
 
-db/table/osm_landuses: db/table/osm db/index/osm_tags_idx | db/table
-	psql -f tables/osm_landuses.sql
+db/table/osm_landuse: db/table/osm db/index/osm_tags_idx | db/table
+	psql -f tables/osm_landuse.sql
 	touch $@
 
 db/table/osm_buildings_minsk: db/table/osm_buildings | db/table
@@ -929,7 +929,7 @@ deploy/s3/osm_admin_boundaries: data/osm_admin_boundaries.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/osm_admin_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/table/osm_buildings: db/table/osm_landuses db/index/osm_tags_idx | db/table
+db/table/osm_buildings: db/table/osm_landuse db/index/osm_tags_idx | db/table
 	psql -f tables/osm_buildings.sql
 	touch $@
 

@@ -424,7 +424,7 @@ db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table
 	psql -f tables/gebco_2020_slopes_h3.sql
 	touch $@
 
-data/ndvi_2019_06_10/generate_ndvi_tifs: data/ndvi_2019_06_10
+data/ndvi_2019_06_10/generate_ndvi_tifs: | data/ndvi_2019_06_10
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && python3 /usr/bin/gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --NoDataValue=1.001 --outfile=ndvi.tif'
 
 data/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/ndvi_2019_06_10/generate_ndvi_tifs

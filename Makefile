@@ -47,6 +47,9 @@ data/wb/gdp: | data/wb
 data/gebco_2020_geotiff: | data
 	mkdir -p $@
 
+data/ndvi_2019_06_10: | data
+	mkdir -p $@
+
 deploy:
 	mkdir -p $@
 
@@ -419,6 +422,22 @@ db/table/gebco_2020_slopes: data/gebco_2020_geotiff/gebco_2020_merged_4326_slope
 
 db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table
 	psql -f tables/gebco_2020_slopes_h3.sql
+	touch $@
+
+data/ndvi_2019_06_10/generate_ndvi_tifs: | data/ndvi_2019_06_10
+	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && python3 /usr/bin/gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --NoDataValue=1.001 --outfile=ndvi.tif'
+
+data/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/ndvi_2019_06_10/generate_ndvi_tifs
+	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -overwrite -t_srs EPSG:4326 -of COG ndvi.tif /home/gis/geocint/data/ndvi_2019_06_10/ndvi_{#}_4326.tif'
+
+db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
+	psql -c "drop table if exists ndvi_2019_06_10;"
+	ls data/ndvi_2019_06_10/*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
+	psql -c "alter table ndvi_2019_06_10 set (parallel_workers = 32);"
+	touch $@
+
+db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table
+	psql -f tables/ndvi_2019_06_10_h3.sql
 	touch $@
 
 db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
@@ -937,7 +956,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

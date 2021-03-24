@@ -127,11 +127,13 @@ create table stat_h3 as (
     select a.*,
            (coalesce(b.avg_slope,0))::float,
            (coalesce(cf.forest_cells,0))::float as forest,
+           (coalesce(nd.avg_ndvi,0))::float as avg_ndvi,
            hex.area / 1000000.0 as area_km2,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2020_slopes_h3 b on (a.h3 = b.h3)
-         left join copernicus_forest_h3 cf on (a.h3 = cf.h3),
+         left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
+         left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3),
          ST_HexagonFromH3(a.h3) hex
 );
 drop table stat_h3_in;
@@ -142,6 +144,6 @@ create index on stat_h3 using brin
      area_km2, building_count_6_months, covid19_vaccines, max_ts, population,
      total_hours, avgmax_ts, count, forest, highway_length, min_ts, residential,
      view_count, avg_slope, count_6_months, gdp, highway_length_6_months, one, resolution, wildfires,
-     building_count, covid19_cases, geom, local_hours, osm_users, total_building_count,
+     building_count, covid19_cases, geom, local_hours, osm_users, total_building_count, avg_ndvi
      zoom
     );

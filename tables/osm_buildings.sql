@@ -32,7 +32,9 @@ create table osm_buildings as (
     order by _ST_SortableHash(geog::geometry)
 );
 
-create index on osm_buildings using brin(geom) where use is null;
+create index on osm_buildings using brin(geom);
+
+create index on osm_buildings using gist(geom) where use is null;
 
 update osm_buildings b
 set use = case

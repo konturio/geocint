@@ -858,7 +858,7 @@ db/table/population_grid_h3_r8_osm_scaled: db/table/population_grid_h3_r8 db/pro
 	touch $@
 
 db/table/osm_landuse: db/table/osm db/index/osm_tags_idx | db/table
-	psql -f tables/osm_landuses.sql
+	psql -f tables/osm_landuse.sql
 	touch $@
 
 db/table/osm_buildings_minsk: db/table/osm_buildings | db/table

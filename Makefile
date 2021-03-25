@@ -426,14 +426,19 @@ db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table
 
 data/ndvi_2019_06_10/generate_ndvi_tifs: | data/ndvi_2019_06_10
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && python3 /usr/bin/gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --NoDataValue=1.001 --outfile=ndvi.tif'
+	touch $@
 
 data/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/ndvi_2019_06_10/generate_ndvi_tifs
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -overwrite -t_srs EPSG:4326 -of COG ndvi.tif /home/gis/geocint/data/ndvi_2019_06_10/ndvi_{#}_4326.tif'
+	touch $@
 
 db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
 	psql -c "drop table if exists ndvi_2019_06_10;"
-	ls data/ndvi_2019_06_10/*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
+	raster2pgsql -p -Y -s 4326 data/ndvi_2019_06_10/ndvi_1_4326.tif -t auto ndvi_2019_06_10 | psql -q
+	psql -c 'alter table ndvi_2019_06_10 drop CONSTRAINT ndvi_2019_06_10_pkey;'
+	ls data/ndvi_2019_06_10/*.tif | parallel --eta 'raster2pgsql -a -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
 	psql -c "alter table ndvi_2019_06_10 set (parallel_workers = 32);"
+	psql -c "vacuum analyze ndvi_2019_06_10;"
 	touch $@
 
 db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table

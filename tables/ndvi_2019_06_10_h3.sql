@@ -8,7 +8,7 @@ create table ndvi_2019_06_10_h3 as (
             avg(val)                                     as avg_ndvi
              from (
                       select p.geom, p.val
-                      from ndvi_2019_06_10_h3,
+                      from ndvi_2019_06_10,
                            ST_PixelAsCentroids(rast) p
                   ) z
             group by 1

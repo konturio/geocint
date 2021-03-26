@@ -171,6 +171,7 @@ db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
 	psql -c "drop table if exists osm;"
 	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=100 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=100 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=100 OSMIUM_MAX_WORK_QUEUE_SIZE=100 numactl --preferred=1 -N 1 osmium export -i dense_mmap_array -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
+	psql -c "alter table osm set (parallel_workers = 32);"
 	touch $@
 
 db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table
@@ -887,13 +888,13 @@ db/table/osm_landuse: db/table/osm db/index/osm_tags_idx | db/table
 
 db/table/osm_buildings_minsk: db/table/osm_buildings | db/table
 	psql -c "drop table if exists osm_buildings_minsk;"
-	psql -c "create table osm_buildings_minsk as (select building, street, hno, levels, height, use, 'name', geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name\":\"Минск\", \"boundary\":\"administrative\"}' and osm_id = 59195 and osm_type = 'relation'), 0));"
+	psql -c "create table osm_buildings_minsk as (select building, street, hno, levels, height, use, \"name\", geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name\":\"Минск\", \"boundary\":\"administrative\"}' and osm_id = 59195 and osm_type = 'relation'), 0));"
 	touch $@
 
 data/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk
 	rm -f $@
 	rm -f data/osm_buildings_minsk.geojson*
-	ogr2ogr -f GeoJSON data/osm_buildings_minsk.geojson PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, name, geom from osm_buildings_minsk' -nln osm_buildings_minsk
+	ogr2ogr -f GeoJSON data/osm_buildings_minsk.geojson PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_minsk' -nln osm_buildings_minsk
 	cd data/; pigz osm_buildings_minsk.geojson
 
 deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3
@@ -902,13 +903,13 @@ deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3
 
 db/table/osm_buildings_japan: db/table/osm_buildings | db/table
 	psql -c "drop table if exists osm_buildings_japan;"
-	psql -c "create table osm_buildings_japan as (select building, street, hno, levels, height, use, 'name', geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name:en\":\"Japan\", \"boundary\":\"administrative\"}' and osm_id = 382313 and osm_type = 'relation'), 0));"
+	psql -c "create table osm_buildings_japan as (select building, street, hno, levels, height, use, \"name\", geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name:en\":\"Japan\", \"boundary\":\"administrative\"}' and osm_id = 382313 and osm_type = 'relation'), 0));"
 	touch $@
 
 data/osm_buildings_japan.gpkg.gz: db/table/osm_buildings_japan
 	rm -f $@
 	rm -f data/osm_buildings_japan.gpkg
-	ogr2ogr -f GPKG data/osm_buildings_japan.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, name, geom from osm_buildings_japan' -lco "SPATIAL_INDEX=NO" -nln osm_buildings_japan
+	ogr2ogr -f GPKG data/osm_buildings_japan.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_japan' -lco "SPATIAL_INDEX=NO" -nln osm_buildings_japan
 	cd data/; pigz osm_buildings_japan.gpkg
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table

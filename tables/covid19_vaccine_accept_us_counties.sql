@@ -13,3 +13,4 @@ create table covid19_vaccine_accept_us_counties as (
 );
 
 create index on covid19_vaccine_accept_us_counties using gist (geom);
+alter table covid19_vaccine_accept_us_counties set (parallel_workers = 32);

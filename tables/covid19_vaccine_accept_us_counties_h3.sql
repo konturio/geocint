@@ -1,13 +1,10 @@
-alter table covid19_vaccine_accept_us_counties
-    set (parallel_workers = 32);
-
 drop table if exists covid19_vaccine_accept_us_counties_h3;
 create table covid19_vaccine_accept_us_counties_h3 as (
-    select h3_geo_to_h3(ST_Transform(ST_PointOnSurface(geom), 4326)::point, 8) as h3,
-           8                                                             as resolution,
-           sum(vaccine_value)                                            as vaccine_value
+    select h3_polyfill(geom, 8) as h3,
+           8                    as resolution,
+           sum(vaccine_value)   as vaccine_value
     from covid19_vaccine_accept_us_counties
-    group by 1);
+    group by 1, 3);
 
 alter table covid19_vaccine_accept_us_counties_h3
     set (parallel_workers = 32);

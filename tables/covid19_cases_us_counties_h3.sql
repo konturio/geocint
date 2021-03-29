@@ -1,4 +1,3 @@
-
 drop table if exists covid19_cases_us_counties_h3;
 create table covid19_cases_us_counties_h3 as (
     select h3_polyfill(geom, 8) as h3,

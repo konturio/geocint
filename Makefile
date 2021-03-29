@@ -127,7 +127,7 @@ db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_t
 	touch $@
 
 data/covid19/covid19_cases_us_counties.csv: | data/covid19
-	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_7dav_incidence_prop&start_day=2021-01-01&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
+	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_7dav_incidence_prop&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
 
 db/table/covid19_cases_us_counties: data/covid19/covid19_cases_us_counties.csv db/table/us_counties_boundary | db/table
 	psql -c "drop table if exists covid19_cases_us_counties_csv"
@@ -155,7 +155,7 @@ data/covid19/vaccination: | data/covid19
 	mkdir -p $@
 
 data/covid19/vaccination/vaccine_acceptance_us_counties.csv: | data/covid19/vaccination
-	wget -q "https://delphi.cmu.edu/csv?signal=fb-survey:smoothed_accept_covid_vaccine&start_day=2021-01-01&end_day=$(shell date +%F)&geo_type=county" -O $@
+	wget -q "https://delphi.cmu.edu/csv?signal=fb-survey:smoothed_accept_covid_vaccine&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
 
 db/table/covid19_vaccine_accept_us_counties: data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/us_counties_boundary
 	psql -c 'drop table if exists covid19_vaccine_accept_us;'

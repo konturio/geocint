@@ -5,7 +5,7 @@ prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/covid19_cases_us_counties.csv
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/covid19_cases_us_counties.csv data/covid19/vaccination/vaccine_acceptance_us_counties.csv
 	psql -f scripts/clean.sql
 
 data:

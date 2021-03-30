@@ -4,7 +4,7 @@ create table covid19_vaccine_accept_us_counties_h3 as (
            8                    as resolution,
            sum(vaccine_value)   as vaccine_value
     from covid19_vaccine_accept_us_counties
-    group by 1, 3);
+    group by 1);
 
 alter table covid19_vaccine_accept_us_counties_h3
     set (parallel_workers = 32);

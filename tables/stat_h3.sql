@@ -125,7 +125,7 @@ alter table stat_h3_in
 drop table if exists stat_h3;
 create table stat_h3 as (
     select a.*,
-           (coalesce(b.avg_slope,0))::float,
+           (coalesce(b.avg_slope,0))::float as avg_slope,
            (coalesce(cf.forest_cells,0))::float as forest,
            (coalesce(nd.avg_ndvi,0))::float as avg_ndvi,
            hex.area / 1000000.0 as area_km2,

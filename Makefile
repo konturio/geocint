@@ -112,7 +112,7 @@ data/covid19/_csv: | data/covid19
 	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv&filename=time_series_covid19_recovered_global.csv" -O data/covid19/time_series_recovered.csv
 	touch $@
 
-db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_tags_idx
+db/table/covid19_in: data/covid19/_csv | db/table
 	psql -c 'drop table if exists covid19_in;'
 	psql -c 'create table covid19_in (province text, country text, lat float, lon float, date timestamptz, value int, status text);'
 	rm -f data/covid19/*_normalized.csv
@@ -123,18 +123,34 @@ db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_t
 	psql -c "update covid19_in set status='dead' where status is null;"
 	cat data/covid19/time_series_recovered_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
 	psql -c "update covid19_in set status='recovered' where status is null;"
-	psql -f tables/covid19.sql
+	psql -c "delete from covid19_in where date < current_date - ('30 days')::interval;"
 	touch $@
 
-data/covid19/covid19_cases_us_counties.csv: | data/covid19
-	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_7dav_incidence_prop&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
-
-db/table/covid19_cases_us_counties: data/covid19/covid19_cases_us_counties.csv db/table/us_counties_boundary | db/table
-	psql -c "drop table if exists covid19_cases_us_counties_csv"
-	psql -c "create table covid19_cases_us_counties_csv (id integer, geo_value text, signal text, time_value date, issue date, lag integer, value float, stderr text, sample_size text, geo_type text, data_source text);"
-	cat data/covid19/covid19_cases_us_counties.csv | psql -c "copy covid19_cases_us_counties_csv (id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';"
-	psql -f tables/covid19_cases_us_counties.sql
+db/table/covid19_admin_boundaries: db/table/covid19_in db/table/covid19_in db/table/kontur_population_h3 db/index/osm_tags_idx
+	psql -f tables/covid19_admin_boundaries.sql
 	touch $@
+
+data/covid19/covid19_raw_cases_us_counties.csv: | data/covid19
+	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_incidence_num&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
+
+data/covid19/covid19_raw_deaths_us_counties.csv: | data/covid19
+	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:deaths_incidence_num&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
+
+data/table/covid19_us_counties_in: data/covid19/covid19_raw_cases_us_counties.csv data/covid19/covid19_raw_deaths_us_counties.csv | db/table
+	psql -c "drop table if exists covid19_us_counties_in"
+	psql -c "create table covid19_us_counties_in (id integer, geo_value text, signal text, time_value date, issue date, lag integer, value float, stderr text, sample_size text, geo_type text, data_source text, status text);"
+	cat data/covid19/covid19_raw_cases_us_counties.csv | psql -c "copy covid19_us_counties_in (id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';"
+	psql -c "update covid19_us_counties_in set status='confirmed';"
+	cat data/covid19/covid19_raw_deaths_us_counties.csv | psql -c "copy covid19_us_counties_in (id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';"
+	psql -d -c "update covid19_us_counties_in set status='dead' where status is null;"
+	touch $@
+
+## db/table/covid19_cases_us_counties: data/covid19/covid19_cases_us_counties.csv db/table/us_counties_boundary | db/table
+##	psql -c "drop table if exists covid19_cases_us_counties_csv"
+##	psql -c "create table covid19_cases_us_counties_csv (id integer, geo_value text, signal text, time_value date, issue date, lag integer, value float, stderr text, sample_size text, geo_type text, data_source text);"
+##	cat data/covid19/covid19_cases_us_counties.csv | psql -c "copy covid19_cases_us_counties_csv (id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';"
+##	psql -f tables/covid19_cases_us_counties.sql
+##	touch $@
 
 db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table
 	psql -c 'drop table if exists gadm_us_counties_boundary;'
@@ -145,11 +161,22 @@ db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table
 	cat data/counties_fips_hasc.csv | psql -c "copy us_counties_fips_codes (state, county, hasc_code, fips_code) from stdin with csv header delimiter ',';"
 	psql -c 'drop table if exists us_counties_boundary;'
 	psql -c 'create table us_counties_boundary as (select gid_2 as gid, geom, state, county, hasc_code, fips_code from gadm_us_counties_boundary join us_counties_fips_codes on hasc_2 = hasc_code);'
+	psql -c 'create sequence us_counties_boundary_admin_id_seq START 10001;'
+	psql -c "alter table us_counties_boundary add column admin_id integer NOT NULL DEFAULT nextval('us_counties_boundary_admin_id_seq');"
+	psql -c 'alter sequence us_counties_boundary_admin_id_seq OWNED BY us_counties_boundary.admin_id;'
 	touch $@
 
-db/table/covid19_cases_us_counties_h3: db/table/covid19_cases_us_counties
-	psql -f tables/covid19_cases_us_counties_h3.sql
+data/table/covid19_us_counties: data/table/covid19_us_counties_in db/table/us_counties_boundary | db/table
+	psql -f tables/covid19_us_counties.sql
 	touch $@
+
+##db/table/covid19_cases_us_counties_h3: db/table/covid19_cases_us_counties
+##	psql -f tables/covid19_cases_us_counties_h3.sql
+##	touch $@
+
+##db/table/covid19_population_h3_r8: data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
+##	psql -f tables/covid19_population_h3_r8.sql
+##	touch $@
 
 data/covid19/vaccination: | data/covid19
 	mkdir -p $@

@@ -7,7 +7,8 @@ create table covid19_us_counties as (
            b.fips_code,
            value,
 		   time_value,
-		   status
+		   status,
+           null::int as population
     from covid19_us_counties_in a
              join us_counties_boundary b
                   on a.geo_value = b.fips_code

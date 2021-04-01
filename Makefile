@@ -126,7 +126,7 @@ db/table/covid19_in: data/covid19/_csv | db/table
 	psql -c "delete from covid19_in where date < current_date - ('30 days')::interval;"
 	touch $@
 
-db/table/covid19_admin_boundaries: db/table/covid19_in db/table/covid19_in db/table/kontur_population_h3 db/index/osm_tags_idx
+db/table/covid19_admin_boundaries: db/table/covid19_in db/table/covid19_in db/index/osm_tags_idx
 	psql -f tables/covid19_admin_boundaries.sql
 	touch $@
 
@@ -174,9 +174,13 @@ data/table/covid19_us_counties: data/table/covid19_us_counties_in db/table/us_co
 ##	psql -f tables/covid19_cases_us_counties_h3.sql
 ##	touch $@
 
-##db/table/covid19_population_h3_r8: data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
-##	psql -f tables/covid19_population_h3_r8.sql
-##	touch $@
+db/table/covid19_population_h3_r8: db/table/kontur_population_h3 data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
+	psql -f tables/covid19_population_h3_r8.sql
+	touch $@
+
+db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 data/table/covid19_us_counties_in db/table/covid19_admin_boundaries | db/table
+	psql -f tables/covid19_h3_r8.sql
+	touch $@
 
 data/covid19/vaccination: | data/covid19
 	mkdir -p $@

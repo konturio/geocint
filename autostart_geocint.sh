@@ -3,6 +3,10 @@
 set -e
 PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 cd ~/geocint
+
+# On Sunday, force checkout master branch
+test `date +'%w'` "=" 0 && git checkout -f master
+
 git pull
 profile_make clean
 branch="$(git rev-parse --abbrev-ref HEAD)"

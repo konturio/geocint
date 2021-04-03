@@ -193,6 +193,10 @@ db/function/h3: | db/function
 	psql -f functions/h3.sql
 	touch $@
 
+db/function/parse_float: | db/function ## Converts text into a float or a NULL.
+	psql -f functions/parse_float.sql
+	touch $@
+
 db/function/calculate_h3_res: db/function/h3
 	psql -f functions/calculate_h3_res.sql
 	touch $@
@@ -902,8 +906,7 @@ deploy/s3/osm_buildings_minsk: data/osm_buildings_minsk.geojson.gz | deploy/s3
 	touch $@
 
 db/table/osm_buildings_japan: db/table/osm_buildings_use | db/table
-	psql -c "drop table if exists osm_buildings_japan;"
-	psql -c "create table osm_buildings_japan as (select building, street, hno, levels, height, use, \"name\", geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name:en\":\"Japan\", \"boundary\":\"administrative\"}' and osm_id = 382313 and osm_type = 'relation'), 0));"
+	psql -f tables/osm_buildings_japan.sql
 	touch $@
 
 data/osm_buildings_japan.gpkg.gz: db/table/osm_buildings_japan
@@ -954,11 +957,11 @@ deploy/s3/osm_admin_boundaries: data/osm_admin_boundaries.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/osm_admin_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/table/osm_buildings: db/index/osm_tags_idx | db/table
+db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float | db/table ## Table with all the buildings, but not all the properties yet.
 	psql -f tables/osm_buildings.sql
 	touch $@
 
-db/table/osm_buildings_use: db/table/osm_buildings db/table/osm_landuse
+db/table/osm_buildings_use: db/table/osm_buildings db/table/osm_landuse ## Set use in buildings table from landuse table.
 	psql -f tables/osm_buildings_use.sql
 	touch $@
 

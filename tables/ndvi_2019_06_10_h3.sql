@@ -10,6 +10,7 @@ create table ndvi_2019_06_10_h3 as (
                       select p.geom, p.val
                       from ndvi_2019_06_10,
                            ST_PixelAsCentroids(rast) p
+                      where val != 'NaN'
                   ) z
             group by 1
          ) x

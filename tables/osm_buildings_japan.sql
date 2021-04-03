@@ -3,19 +3,7 @@ create table osm_buildings_japan as (
     select building,
            street,
            hno,
-           (select array_to_string(array_agg(a), ', ')
-            from unnest(
-                         case
-                             when levels ~* '[0-9]*;[0-9]*'
-                                 then string_to_array(levels, '; ')
-                             when levels ~* '[0-9]*,[0-9]*'
-                                 then string_to_array(levels, ', ')
-                             when levels ~* '-?[0-9]+\.*[0-9]*'
-                                 then string_to_array(substring(levels from '-?[0-9]+\.*[0-9]*'), '')
-                             when levels ~* '-?[０-９]+\.*[０-９]*'
-                                 then string_to_array(substring(levels from '-?[０-９]+\.*[０-９]*'), '')
-                             end)
-                     as t(a)) as levels,
+           levels,
            height,
            use,
            "name",

@@ -1,3 +1,4 @@
+create index concurrently on osm_buildings using gist (geom) where use is null;
 update osm_buildings b
 set use = case
               when amenity in
@@ -27,7 +28,7 @@ set use = case
     end
 from osm_landuse l
 where use is null
-  and ST_DWithin(l.geom, b.geom, 0)
+  and ST_Intersects(l.geom, b.geom)
   and (landuse in
        ('residential', 'garages', 'retail', 'commercial', 'industrial', 'construction', 'military', 'railway',
         'service',

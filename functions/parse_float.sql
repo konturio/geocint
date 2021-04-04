@@ -1,17 +1,12 @@
 create or replace function parse_float(val text)
     returns double precision as
 $$
-begin
-    return val::double precision;
-exception
-    when others then
-        begin
-            -- todo: more sophisticated parsing
-            return null;
-        end;
-        return null;
-end
+select case
+           when val ~ '^[-+]?[0-9]*\.?[0-9]+$'
+               then val::double precision
+           else null
+       end
 $$
-    language 'plpgsql'
+    language 'sql'
     immutable
-    strict parallel safe;
+    parallel safe;

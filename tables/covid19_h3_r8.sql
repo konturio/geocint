@@ -6,8 +6,6 @@ from
 where
       id = admin_id );
 
-select country, province, population from covid19_admin order by population desc;
-
 update covid19_us_counties
 set
     population = ( select sum(population)
@@ -37,6 +35,8 @@ from
     covid19_us_counties b
 where
       a.geo_value = b.fips_code;
+
+
 
 
 drop table if exists covid19_log;

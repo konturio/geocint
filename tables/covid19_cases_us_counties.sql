@@ -5,7 +5,7 @@ create table covid19_cases_us_counties as (
            b.county,
            b.fips_code,
            avg(value)            as covid19_cases
-    from covid19_cases_us_counties_csv a
+    from covid19_us_counties_in a
              join us_counties_boundary b
                   on a.geo_value = b.fips_code
     where a.value > 0

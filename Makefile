@@ -126,7 +126,7 @@ db/table/covid19_in: data/covid19/_csv | db/table
 	psql -c "delete from covid19_in where date < current_date - ('30 days')::interval;"
 	touch $@
 
-db/table/covid19_admin_boundaries: db/table/covid19_in db/table/covid19_in db/index/osm_tags_idx
+db/table/covid19_admin_boundaries: db/table/covid19_in db/index/osm_tags_idx
 	psql -f tables/covid19_admin_boundaries.sql
 	touch $@
 
@@ -144,13 +144,6 @@ data/table/covid19_us_counties_in: data/covid19/covid19_raw_cases_us_counties.cs
 	cat data/covid19/covid19_raw_deaths_us_counties.csv | psql -c "copy covid19_us_counties_in (id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';"
 	psql -d -c "update covid19_us_counties_in set status='dead' where status is null;"
 	touch $@
-
-## db/table/covid19_cases_us_counties: data/covid19/covid19_cases_us_counties.csv db/table/us_counties_boundary | db/table
-##	psql -c "drop table if exists covid19_cases_us_counties_csv"
-##	psql -c "create table covid19_cases_us_counties_csv (id integer, geo_value text, signal text, time_value date, issue date, lag integer, value float, stderr text, sample_size text, geo_type text, data_source text);"
-##	cat data/covid19/covid19_cases_us_counties.csv | psql -c "copy covid19_cases_us_counties_csv (id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';"
-##	psql -f tables/covid19_cases_us_counties.sql
-##	touch $@
 
 db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table
 	psql -c 'drop table if exists gadm_us_counties_boundary;'
@@ -170,15 +163,11 @@ data/table/covid19_us_counties: data/table/covid19_us_counties_in db/table/us_co
 	psql -f tables/covid19_us_counties.sql
 	touch $@
 
-##db/table/covid19_cases_us_counties_h3: db/table/covid19_cases_us_counties
-##	psql -f tables/covid19_cases_us_counties_h3.sql
-##	touch $@
-
 db/table/covid19_population_h3_r8: db/table/kontur_population_h3 data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
 	psql -f tables/covid19_population_h3_r8.sql
 	touch $@
 
-db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 data/table/covid19_us_counties_in db/table/covid19_admin_boundaries | db/table
+db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
 	psql -f tables/covid19_h3_r8.sql
 	touch $@
 
@@ -1004,7 +993,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

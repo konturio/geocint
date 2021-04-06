@@ -106,23 +106,49 @@ data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_bou
 data/covid19: | data
 	mkdir -p $@
 
-data/covid19/_csv: | data/covid19
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv&filename=time_series_covid19_confirmed_global.csv" -O data/covid19/time_series_confirmed.csv
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_deaths_global.csv&filename=time_series_covid19_deaths_global.csv" -O data/covid19/time_series_deaths.csv
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv&filename=time_series_covid19_recovered_global.csv" -O data/covid19/time_series_recovered.csv
+data/covid19/_global_csv: | data/covid19
+	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv&filename=time_series_covid19_confirmed_global.csv" -O data/covid19/time_series_global_confirmed.csv
+	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_deaths_global.csv&filename=time_series_covid19_deaths_global.csv" -O data/covid19/time_series_global_deaths.csv
+	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv&filename=time_series_covid19_recovered_global.csv" -O data/covid19/time_series_global_recovered.csv
 	touch $@
 
-db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_tags_idx
+data/covid19/_us_csv: | data/covid19
+    wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv" -O data/covid19/time_series_us_confirmed.csv
+    wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv" -O data/covid19/time_series_us_deaths.csv
+	touch $@
+
+db/table/covid19_in: data/covid19/_global_csv | db/table
 	psql -c 'drop table if exists covid19_in;'
 	psql -c 'create table covid19_in (province text, country text, lat float, lon float, date timestamptz, value int, status text);'
-	rm -f data/covid19/*_normalized.csv
-	ls data/covid19/time_series_* | parallel "python3 scripts/covid19_normalization.py {}"
-	cat data/covid19/time_series_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	rm -f data/covid19/time_series_global_*_normalized.csv
+	ls data/covid19/time_series_global* | parallel "python3 scripts/covid19_normalization.py {}"
+	cat data/covid19/time_series_global_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
 	psql -c "update covid19_in set status='confirmed' where status is null;"
-	cat data/covid19/time_series_deaths_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	cat data/covid19/time_series_global_deaths_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
 	psql -c "update covid19_in set status='dead' where status is null;"
-	cat data/covid19/time_series_recovered_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	cat data/covid19/time_series_global_recovered_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
 	psql -c "update covid19_in set status='recovered' where status is null;"
+	touch $@
+
+db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table
+	psql -c 'drop table if exists covid19_us_confirmed_in;'
+	psql -c 'create table covid19_us_confirmed_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, date timestamptz, value int, status text);'
+	rm -f data/covid19/time_series_us_confirmed_normalized.csv
+	python3 scripts/covid19_us_confirmed_normalization.py data/covid19/time_series_us_confirmed.csv
+	cat data/covid19/time_series_us_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_us_confirmed_in (uid, iso2, iso3, code3, fips, admin2, province, country, lat, lon, combined_key, date, value) from stdin with csv header;"
+	psql -c "update covid19_us_confirmed_in set status='confirmed', fips=replace(fips, '.0', '');"
+	touch $@
+
+db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table
+	psql -c 'drop table if exists covid19_us_deaths_in;'
+	psql -c 'create table covid19_us_deaths_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, population int, date timestamptz, value int, status text);'
+	rm -f data/covid19/time_series_us_deaths_normalized.csv
+	python3 scripts/covid19_us_deaths_normalization.py data/covid19/time_series_us_deaths.csv
+	cat data/covid19/time_series_us_deaths_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_us_deaths_in (uid, iso2, iso3, code3, fips, admin2, province, country, lat, lon, combined_key, population, date, value) from stdin with csv header;"
+	psql -c "update covid19_us_deaths_in set status='dead', fips=replace(fips, '.0', '');"
+	touch $@
+
+db/table/covid19_global: db/table/covid19_in db/table/kontur_population_h3 db/index/osm_tags_idx
 	psql -f tables/covid19.sql
 	touch $@
 

@@ -148,8 +148,17 @@ db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table
 	psql -c "update covid19_us_deaths_in set status='dead', fips=replace(fips, '.0', '');"
 	touch $@
 
-db/table/covid19_global: db/table/covid19_in db/table/kontur_population_h3 db/index/osm_tags_idx
-	psql -f tables/covid19.sql
+
+db/table/covid19_admin_boundaries: db/table/covid19_in db/index/osm_tags_idx
+	psql -f tables/covid19_admin_boundaries.sql
+	touch $@
+
+db/table/covid19_population_h3_r8: db/table/kontur_population_h3 data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
+	psql -f tables/covid19_population_h3_r8.sql
+	touch $@
+
+db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
+	psql -f tables/covid19_h3_r8.sql
 	touch $@
 
 data/covid19/covid19_cases_us_counties.csv: | data/covid19
@@ -171,7 +180,16 @@ db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table
 	cat data/counties_fips_hasc.csv | psql -c "copy us_counties_fips_codes (state, county, hasc_code, fips_code) from stdin with csv header delimiter ',';"
 	psql -c 'drop table if exists us_counties_boundary;'
 	psql -c 'create table us_counties_boundary as (select gid_2 as gid, geom, state, county, hasc_code, fips_code from gadm_us_counties_boundary join us_counties_fips_codes on hasc_2 = hasc_code);'
+	psql -c 'create sequence us_counties_boundary_admin_id_seq START 10001;'
+	psql -c "alter table us_counties_boundary add column admin_id integer NOT NULL DEFAULT nextval('us_counties_boundary_admin_id_seq');"
+	psql -c 'alter sequence us_counties_boundary_admin_id_seq OWNED BY us_counties_boundary.admin_id;'
+	psql -c 'psql -c "create index on us_counties_boundary (fips_code);'
 	touch $@
+
+data/table/covid19_us_counties: data/table/covid19_us_counties_in db/table/us_counties_boundary | db/table
+	psql -f tables/covid19_us_counties.sql
+	touch $@
+
 
 db/table/covid19_cases_us_counties_h3: db/table/covid19_cases_us_counties
 	psql -f tables/covid19_cases_us_counties_h3.sql

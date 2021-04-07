@@ -135,7 +135,7 @@ create table stat_h3 as (
          left join gebco_2020_slopes_h3 b on (a.h3 = b.h3)
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)
-         left join covid19_dithered cd on (a.h3 = cd.h3),
+         left join covid19_dithered_summary cd on (a.h3 = cd.h3),
          ST_HexagonFromH3(a.h3) hex
 );
 drop table stat_h3_in;

@@ -158,4 +158,17 @@ $$
     end;
 $$;
 create index on covid19_dithered using gist (date, geom);
+
+create table covid19_dithered_summary as (
+    select max(date),
+           8:: int as resolution,
+           h3,
+           max(population) as population,
+           sum(confirmed) as confirmed,
+           sum(dead) as dead,
+           sum(recovered) as recovered
+    from covid19_dithered
+    group by h3
+);
+
 drop table if exists tmp_all_admin;

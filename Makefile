@@ -1,4 +1,4 @@
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs ## [FINAL] Builds all targets for development. Run on every branch.
 
 prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
@@ -113,8 +113,8 @@ data/covid19/_global_csv: | data/covid19
 	touch $@
 
 data/covid19/_us_csv: | data/covid19
-    wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv" -O data/covid19/time_series_us_confirmed.csv
-    wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv" -O data/covid19/time_series_us_deaths.csv
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv" -O data/covid19/time_series_us_confirmed.csv
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv" -O data/covid19/time_series_us_deaths.csv
 	touch $@
 
 db/table/covid19_in: data/covid19/_global_csv | db/table
@@ -147,7 +147,6 @@ db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table
 	cat data/covid19/time_series_us_deaths_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_us_deaths_in (uid, iso2, iso3, code3, fips, admin2, province, country, lat, lon, combined_key, population, date, value) from stdin with csv header;"
 	psql -c "update covid19_us_deaths_in set status='dead', fips=replace(fips, '.0', '');"
 	touch $@
-
 
 db/table/covid19_admin_boundaries: db/table/covid19_in db/index/osm_tags_idx
 	psql -f tables/covid19_admin_boundaries.sql

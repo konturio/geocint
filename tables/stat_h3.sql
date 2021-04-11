@@ -128,14 +128,14 @@ create table stat_h3 as (
            (coalesce(b.avg_slope,0))::float as avg_slope,
            (coalesce(cf.forest_area,0))::float as forest,
            (coalesce(nd.avg_ndvi,0))::float as avg_ndvi,
---           (coalesce(cd.confirmed,0))::float as covid19_confirmed,
+           (coalesce(cd.confirmed,0))::float as covid19_confirmed,
            hex.area / 1000000.0 as area_km2,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2020_slopes_h3 b on (a.h3 = b.h3)
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
-         left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3),
---         left join covid19_dithered_summary cd on (a.h3 = cd.h3)
+         left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)
+         left join covid19_dithered cd on (a.h3 = cd.h3),
          ST_HexagonFromH3(a.h3) hex
 );
 drop table stat_h3_in;
@@ -146,6 +146,6 @@ create index stat_h3_brin_all on stat_h3 using brin
      area_km2, building_count_6_months, covid19_vaccines, max_ts, population,
      total_hours, avgmax_ts, count, forest, highway_length, min_ts, residential,
      view_count, avg_slope, count_6_months, gdp, highway_length_6_months, one, resolution, wildfires,
-     building_count, covid19_cases, geom, local_hours, osm_users, total_building_count, avg_ndvi,       -- covid19_confirmed,
+     building_count, covid19_cases, geom, local_hours, osm_users, total_building_count, avg_ndvi, covid19_confirmed,
      zoom
     );

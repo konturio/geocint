@@ -110,12 +110,12 @@ values ('covid19_cases', 'COVID Cases (per 100,000 people, 7-day average)', json
 '© Data from Delphi COVIDcast, covidcast.cmu.edu'),
     '[["good"], ["bad"]]'::jsonb);
 
-/*
+
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('covid19_confirmed', 'COVID19 Confirmed Cases', jsonb_build_array(
 '© Data from JHU CSSE COVID-19 Dataset'),
    '[["good"], ["bad"]]'::jsonb);
-*/
+
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('avg_slope', 'Average slope', jsonb_build_array(

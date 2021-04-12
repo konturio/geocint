@@ -408,17 +408,17 @@ data/gebco_2020_geotiff/gebco_2020_merged.vrt: data/gebco_2020_geotiff/gebco_202
 	rm -f data/gebco_2020_geotiff/*.vrt
 	gdalbuildvrt $@ data/gebco_2020_geotiff/gebco_2020_n*.tif
 
-data/gebco_2020_geotiff/gebco_2020_merged_3857.tif: data/gebco_2020_geotiff/gebco_2020_merged.vrt
+data/gebco_2020_geotiff/gebco_2020_merged.tif: data/gebco_2020_geotiff/gebco_2020_merged.vrt
 	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -t_srs epsg:3857 -r bilinear -of COG data/gebco_2020_geotiff/gebco_2020_merged.vrt $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -t_srs epsg:4087 -r bilinear -of COG data/gebco_2020_geotiff/gebco_2020_merged.vrt $@
 
-data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857.tif
+data/gebco_2020_geotiff/gebco_2020_merged_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged.tif
 	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdaldem slope -of COG data/gebco_2020_geotiff/gebco_2020_merged_3857.tif $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdaldem slope -of COG data/gebco_2020_geotiff/gebco_2020_merged.tif $@
 
-data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif
+data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif: data/gebco_2020_geotiff/gebco_2020_merged_slope.tif
 	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -t_srs EPSG:4326 -of COG -multi data/gebco_2020_geotiff/gebco_2020_merged_3857_slope.tif $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -t_srs EPSG:4326 -of COG -multi data/gebco_2020_geotiff/gebco_2020_merged_slope.tif $@
 
 db/table/gebco_2020_slopes: data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif | db/table
 	psql -c "drop table if exists gebco_2020_slopes"

@@ -136,8 +136,8 @@ $$
                 out_recovered = least(floor(err_recovered), out_confirmed);
                 out_dead = least(floor(err_dead), out_confirmed);
                 insert into
-                    covid19_dithered (geom, h3, date, population, admin_id, total_population, confirmed, recovered,
-                                      dead)
+                    covid19_dithered (geom, h3, date, population, admin_id, total_population, resolution,
+                                      confirmed, recovered, dead)
                 values
                 (row.geom,
                  row.h3,
@@ -145,6 +145,7 @@ $$
                  row.population - out_dead,
                  row.admin_id,
                  row.total_population,
+                 row.resolution,
                  out_confirmed,
                  out_recovered,
                  out_dead);
@@ -156,5 +157,34 @@ $$
         end loop;
     end;
 $$;
+
+
+do
+$$
+    declare
+        res integer;
+    begin
+        res = 8;
+        while res > 0
+            loop
+                insert into covid19_dithered (h3, resolution, date, population, total_population, confirmed,
+                                              recovered, dead)
+                select
+                       h3_to_parent(h3) as h3,
+                       (res - 1) as resolution,
+                       max(date) as date,
+                       sum(population) as population,
+                       sum(total_population) as total_population,
+                       sum(confirmed) as confirmed,
+                       sum(recovered) as recovered,
+                       sum(dead) as dead
+                from covid19_dithered
+                where resolution = res
+                group by 1;
+                res = res - 1;
+            end loop;
+    end;
+$$;
+
 create index on covid19_dithered using gist (date, geom);
 

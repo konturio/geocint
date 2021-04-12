@@ -82,3 +82,4 @@ from
     complex_areas_to_subdivide;
 vacuum full covid19_admin_subdivided;
 
+drop table if exists tmp_all_admin;

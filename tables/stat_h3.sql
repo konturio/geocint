@@ -24,6 +24,7 @@ create table stat_h3_in as (
            coalesce(sum(wildfires), 0) as wildfires,
 		   coalesce(sum(covid19_vaccines), 0) as covid19_vaccines,
 		   coalesce(sum(covid19_cases), 0) as covid19_cases,
+           coalesce(sum(covid19_confirmed), 0) as covid19_confirmed,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
@@ -32,7 +33,7 @@ create table stat_h3_in as (
                     null::float as population, null::float as residential, null::float as gdp, min_ts as min_ts, max_ts as max_ts,
                     avgmax_ts as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
-                    resolution
+                    null::float as covid19_confirmed, resolution
              from osm_object_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -41,7 +42,7 @@ create table stat_h3_in as (
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
-                    resolution
+                    null::float as covid19_confirmed, resolution
              from kontur_population_h3
              union all
              select h3, null::float as count, null::float as count_6_months,null::float as building_count,
@@ -50,7 +51,7 @@ create table stat_h3_in as (
                     null::float as residential, gdp::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
-                    resolution
+                    null::float as covid19_confirmed, resolution
              from gdp_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -59,7 +60,7 @@ create table stat_h3_in as (
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, local_hours as local_hours, total_hours as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
-                    h3_get_resolution(h3) as resolution
+                    null::float as covid19_confirmed, h3_get_resolution(h3) as resolution
              from user_hours_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -68,7 +69,7 @@ create table stat_h3_in as (
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
-                    h3_get_resolution(h3) as resolution
+                    null::float as covid19_confirmed, h3_get_resolution(h3) as resolution
              from residential_pop_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -77,7 +78,7 @@ create table stat_h3_in as (
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, view_count::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
-                    resolution
+                    null::float as covid19_confirmed, resolution
              from tile_logs_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -86,7 +87,7 @@ create table stat_h3_in as (
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
-                    resolution
+                    null::float as covid19_confirmed, resolution
              from building_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -95,7 +96,7 @@ create table stat_h3_in as (
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     wildfires as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
-                    resolution
+                    null::float as covid19_confirmed, resolution
              from global_fires_stat_h3
 			 union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -113,8 +114,17 @@ create table stat_h3_in as (
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, covid19_cases as covid19_cases,
-                    resolution
+                    null::float as covid19_confirmed, resolution
              from covid19_cases_us_counties_h3
+        	 union all
+             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
+                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
+                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
+                    null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
+                    confirmed as covid19_confirmed, resolution
+             from covid19_dithered
         ) z
     group by 2, 1
 );
@@ -128,14 +138,12 @@ create table stat_h3 as (
            (coalesce(b.avg_slope,0))::float as avg_slope,
            (coalesce(cf.forest_area,0))::float as forest,
            (coalesce(nd.avg_ndvi,0))::float as avg_ndvi,
-           (coalesce(cd.confirmed,0))::float as covid19_confirmed,
            hex.area / 1000000.0 as area_km2,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2020_slopes_h3 b on (a.h3 = b.h3)
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
-         left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)
-         left join covid19_dithered cd on (a.h3 = cd.h3),
+         left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3),
          ST_HexagonFromH3(a.h3) hex
 );
 drop table stat_h3_in;

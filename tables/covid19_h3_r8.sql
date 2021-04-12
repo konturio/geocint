@@ -158,5 +158,3 @@ $$
 $$;
 create index on covid19_dithered using gist (date, geom);
 
-
-drop table if exists tmp_all_admin;

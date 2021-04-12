@@ -129,7 +129,7 @@ db/table/covid19_in: data/covid19/_global_csv | db/table
 	psql -c "update covid19_csv_in set status='dead' where status is null;"
 	cat data/covid19/time_series_global_recovered_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_csv_in (province, country, lat, lon, date, value) from stdin with csv header;"
 	psql -c "update covid19_csv_in set status='recovered' where status is null;"
-	psql -c "create table covid19_in as select province, country, lat, lon, status, max(date) as date, max(value) as value from covid19_csv_in group by 1,2,3,4,5;"
+	psql -c "create table covid19_in as (select province, country, lat, lon, status, max(date) as date, max(value) as value from covid19_csv_in group by 1,2,3,4,5);"
 	touch $@
 
 db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table

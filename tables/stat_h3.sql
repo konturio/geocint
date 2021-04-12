@@ -123,7 +123,7 @@ create table stat_h3_in as (
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
-                    confirmed as covid19_confirmed, resolution
+                    confirmed as covid19_confirmed, 8::int as resolution
              from covid19_dithered
         ) z
     group by 2, 1

@@ -1,11 +1,11 @@
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/covid19 db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs  ## [FINAL] Builds all targets for development. Run on every branch.
 
 prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/covid19_cases_us_counties.csv data/covid19/vaccination/vaccine_acceptance_us_counties.csv
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/covid19_cases_us_counties.csv data/covid19/vaccination/vaccine_acceptance_us_counties.csv
 	psql -f scripts/clean.sql
 
 data:
@@ -106,24 +106,60 @@ data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_bou
 data/covid19: | data
 	mkdir -p $@
 
-data/covid19/_csv: | data/covid19
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv&filename=time_series_covid19_confirmed_global.csv" -O data/covid19/time_series_confirmed.csv
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_deaths_global.csv&filename=time_series_covid19_deaths_global.csv" -O data/covid19/time_series_deaths.csv
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv&filename=time_series_covid19_recovered_global.csv" -O data/covid19/time_series_recovered.csv
+data/covid19/_global_csv: | data/covid19
+	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv&filename=time_series_covid19_confirmed_global.csv" -O data/covid19/time_series_global_confirmed.csv
+	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_deaths_global.csv&filename=time_series_covid19_deaths_global.csv" -O data/covid19/time_series_global_deaths.csv
+	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv&filename=time_series_covid19_recovered_global.csv" -O data/covid19/time_series_global_recovered.csv
 	touch $@
 
-db/table/covid19: data/covid19/_csv db/table/kontur_population_h3 db/index/osm_tags_idx
+data/covid19/_us_csv: | data/covid19
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv" -O data/covid19/time_series_us_confirmed.csv
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv" -O data/covid19/time_series_us_deaths.csv
+	touch $@
+
+db/table/covid19_in: data/covid19/_global_csv | db/table
+	psql -c 'drop table if exists covid19_csv_in;'
 	psql -c 'drop table if exists covid19_in;'
-	psql -c 'create table covid19_in (province text, country text, lat float, lon float, date timestamptz, value int, status text);'
-	rm -f data/covid19/*_normalized.csv
-	ls data/covid19/time_series_* | parallel "python3 scripts/covid19_normalization.py {}"
-	cat data/covid19/time_series_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
-	psql -c "update covid19_in set status='confirmed' where status is null;"
-	cat data/covid19/time_series_deaths_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
-	psql -c "update covid19_in set status='dead' where status is null;"
-	cat data/covid19/time_series_recovered_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_in (province, country, lat, lon, date, value) from stdin with csv header;"
-	psql -c "update covid19_in set status='recovered' where status is null;"
-	psql -f tables/covid19.sql
+	psql -c 'create table covid19_csv_in (province text, country text, lat float, lon float, date timestamptz, value int, status text);'
+	rm -f data/covid19/time_series_global_*_normalized.csv
+	ls data/covid19/time_series_global* | parallel "python3 scripts/covid19_normalization.py {}"
+	cat data/covid19/time_series_global_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_csv_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	psql -c "update covid19_csv_in set status='confirmed' where status is null;"
+	cat data/covid19/time_series_global_deaths_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_csv_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	psql -c "update covid19_csv_in set status='dead' where status is null;"
+	cat data/covid19/time_series_global_recovered_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_csv_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	psql -c "update covid19_csv_in set status='recovered' where status is null;"
+	psql -c "create table covid19_in as (select province, country, lat, lon, status, max(date) as date, max(value) as value from covid19_csv_in group by 1,2,3,4,5);"
+	touch $@
+
+db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table
+	psql -c 'drop table if exists covid19_us_confirmed_csv_in;'
+	psql -c 'create table covid19_us_confirmed_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, date timestamptz, value int);'
+	rm -f data/covid19/time_series_us_confirmed_normalized.csv
+	python3 scripts/covid19_us_confirmed_normalization.py data/covid19/time_series_us_confirmed.csv
+	cat data/covid19/time_series_us_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_us_confirmed_csv_in (uid, iso2, iso3, code3, fips, admin2, province, country, lat, lon, combined_key, date, value) from stdin with csv header;"
+	psql -f tables/covid19_us_confirmed_in.sql
+	touch $@
+
+db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table
+	psql -c 'drop table if exists covid19_us_deaths_csv_in;'
+	psql -c 'create table covid19_us_deaths_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, population int, date timestamptz, value int);'
+	rm -f data/covid19/time_series_us_deaths_normalized.csv
+	python3 scripts/covid19_us_deaths_normalization.py data/covid19/time_series_us_deaths.csv
+	cat data/covid19/time_series_us_deaths_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_us_deaths_csv_in (uid, iso2, iso3, code3, fips, admin2, province, country, lat, lon, combined_key, population, date, value) from stdin with csv header;"
+	psql -f tables/covid19_us_deaths_in.sql
+	touch $@
+
+db/table/covid19_admin_boundaries: db/table/covid19_in db/index/osm_tags_idx
+	psql -f tables/covid19_admin_boundaries.sql
+	touch $@
+
+db/table/covid19_population_h3_r8: db/table/kontur_population_h3 data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
+	psql -f tables/covid19_population_h3_r8.sql
+	touch $@
+
+db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
+	psql -f tables/covid19_h3_r8.sql
 	touch $@
 
 data/covid19/covid19_cases_us_counties.csv: | data/covid19
@@ -145,6 +181,14 @@ db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table
 	cat data/counties_fips_hasc.csv | psql -c "copy us_counties_fips_codes (state, county, hasc_code, fips_code) from stdin with csv header delimiter ',';"
 	psql -c 'drop table if exists us_counties_boundary;'
 	psql -c 'create table us_counties_boundary as (select gid_2 as gid, geom, state, county, hasc_code, fips_code from gadm_us_counties_boundary join us_counties_fips_codes on hasc_2 = hasc_code);'
+	psql -c 'create sequence us_counties_boundary_admin_id_seq START 10001;'
+	psql -c "alter table us_counties_boundary add column admin_id integer NOT NULL DEFAULT nextval('us_counties_boundary_admin_id_seq');"
+	psql -c 'alter sequence us_counties_boundary_admin_id_seq OWNED BY us_counties_boundary.admin_id;'
+	psql -c 'create index on us_counties_boundary (fips_code);'
+	touch $@
+
+data/table/covid19_us_counties: db/table/covid19_us_confirmed_in db/table/covid19_us_deaths_in db/table/us_counties_boundary | db/table
+	psql -f tables/covid19_us_counties.sql
 	touch $@
 
 db/table/covid19_cases_us_counties_h3: db/table/covid19_cases_us_counties
@@ -973,7 +1017,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

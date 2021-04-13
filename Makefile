@@ -241,6 +241,10 @@ db/function/parse_float: | db/function ## Converts text into a float or a NULL.
 	psql -f functions/parse_float.sql
 	touch $@
 
+db/function/parse_integer: | db/function ## Converts text levels into a integer or a NULL.
+	psql -f functions/parse_integer.sql
+	touch $@
+
 db/function/calculate_h3_res: db/function/h3
 	psql -f functions/calculate_h3_res.sql
 	touch $@
@@ -1005,7 +1009,7 @@ deploy/s3/osm_admin_boundaries: data/osm_admin_boundaries.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/osm_admin_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float | db/table ## Table with all the buildings, but not all the properties yet.
+db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float db/function/parse_integer | db/table ## Table with all the buildings, but not all the properties yet.
 	psql -f tables/osm_buildings.sql
 	touch $@
 

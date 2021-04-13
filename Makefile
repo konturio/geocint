@@ -154,11 +154,11 @@ db/table/covid19_admin_boundaries: db/table/covid19_in db/index/osm_tags_idx
 	psql -f tables/covid19_admin_boundaries.sql
 	touch $@
 
-db/table/covid19_population_h3_r8: db/table/kontur_population_h3 data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
+db/table/covid19_population_h3_r8: db/table/kontur_population_h3 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
 	psql -f tables/covid19_population_h3_r8.sql
 	touch $@
 
-db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 data/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
+db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
 	psql -f tables/covid19_h3_r8.sql
 	touch $@
 
@@ -187,7 +187,7 @@ db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table
 	psql -c 'create index on us_counties_boundary (fips_code);'
 	touch $@
 
-data/table/covid19_us_counties: db/table/covid19_us_confirmed_in db/table/covid19_us_deaths_in db/table/us_counties_boundary | db/table
+db/table/covid19_us_counties: db/table/covid19_us_confirmed_in db/table/covid19_us_deaths_in db/table/us_counties_boundary | db/table
 	psql -f tables/covid19_us_counties.sql
 	touch $@
 
@@ -239,6 +239,10 @@ db/function/h3: | db/function
 
 db/function/parse_float: | db/function ## Converts text into a float or a NULL.
 	psql -f functions/parse_float.sql
+	touch $@
+
+db/function/parse_integer: | db/function ## Converts text levels into a integer or a NULL.
+	psql -f functions/parse_integer.sql
 	touch $@
 
 db/function/calculate_h3_res: db/function/h3
@@ -1005,7 +1009,7 @@ deploy/s3/osm_admin_boundaries: data/osm_admin_boundaries.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/osm_admin_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float | db/table ## Table with all the buildings, but not all the properties yet.
+db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float db/function/parse_integer | db/table ## Table with all the buildings, but not all the properties yet.
 	psql -f tables/osm_buildings.sql
 	touch $@
 

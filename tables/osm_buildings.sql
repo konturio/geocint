@@ -5,7 +5,7 @@ create table osm_buildings as (
            tags ->> 'building' as building,
            tags ->> 'addr:street' as street,
            tags ->> 'addr:housenumber' as hno,
-           parse_float(tags ->> 'building:levels')::integer as levels,
+           parse_float_int4safe(tags ->> 'building:levels')::int  as levels,
            parse_float(tags ->> 'height') as height,
            coalesce(tags ->> 'building:use',
                     case

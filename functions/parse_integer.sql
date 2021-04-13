@@ -3,7 +3,7 @@ create or replace function parse_integer(val text)
 $$
 select case
            when val ~ '^[-+]?[012]?[0-9]{1,8}$'
-               then regexp_replace(val, '^\w*\.?', '')::integer
+               then val::integer
            else null
        end
 $$

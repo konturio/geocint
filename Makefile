@@ -793,17 +793,17 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
 	touch $@
 
-db/table/morocco_buildings_manual_roofprints: data/morocco_buildings_manual_roof_20201030.geojson
+db/table/morocco_buildings_manual_roofprints: data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson
 	psql -c "drop table if exists morocco_buildings_manual_roofprints;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_manual_roof_20201030.geojson -nln morocco_buildings_manual_roofprints
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson -nln morocco_buildings_manual_roofprints
 	psql -c "alter table morocco_buildings_manual_roofprints rename column wkb_geometry to geom;"
 	psql -c "alter table morocco_buildings_manual_roofprints alter column geom type geometry;"
 	psql -c "update morocco_buildings_manual_roofprints set geom = ST_Transform(geom, 3857);"
 	touch $@
 
-db/table/morocco_buildings_manual: data/morocco_buildings_manual_20201030.geojson
+db/table/morocco_buildings_manual: data/morocco_buildings/morocco_buildings_manual_20201030.geojson
 	psql -c "drop table if exists morocco_buildings_manual;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings_manual_20201030.geojson -nln morocco_buildings_manual
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/morocco_buildings_manual_20201030.geojson -nln morocco_buildings_manual
 	psql -c "alter table morocco_buildings_manual rename column wkb_geometry to geom;"
 	psql -c "alter table morocco_buildings_manual alter column geom type geometry;"
 	psql -c "update morocco_buildings_manual set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"

@@ -16,7 +16,7 @@ where
                 );
 
 alter table covid19_in
-    add column admin_id int;
+    add column if not exists admin_id int;
 update covid19_in a
 set
     admin_id = b.id
@@ -28,7 +28,7 @@ where
 
 
 alter table covid19_us_confirmed_in
-    add column admin_id int;
+    add column if not exists admin_id int;
 update covid19_us_confirmed_in a
 set
     admin_id = b.admin_id
@@ -38,7 +38,7 @@ where
       a.fips = b.fips_code;
 
 alter table covid19_us_deaths_in
-    add column admin_id int;
+    add column if not exists admin_id int;
 update covid19_us_deaths_in a
 set
     admin_id = b.admin_id

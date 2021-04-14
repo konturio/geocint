@@ -8,7 +8,7 @@ create table covid19_population_h3_r8 as
         where
             resolution = 8
     );
-create index on covid19_population_h3_r8 using gist (h3::geometry);
+create index on covid19_population_h3_r8 using gist ((h3::geometry));
 
 update covid19_population_h3_r8 h
 set

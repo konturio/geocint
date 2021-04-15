@@ -27,7 +27,7 @@ copy (
                 avg_slope,
                 forest,
                 avg_ndvi,
-                covid19_confirmed,
+                coalesce(covid19_confirmed, 0) as covid19_confirmed,
                 ST_AsMVTGeom(geom, ST_TileEnvelope(:z, :x, :y), 8192, 64, true) as geom
             from
                 stat_h3

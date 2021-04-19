@@ -409,8 +409,8 @@ db/table/copernicus_landcover_raster: data/copernicus_landcover/PROBAV_LC100_glo
 	psql -c "alter table copernicus_landcover_raster set (parallel_workers = 32);"
 	touch $@
 
-db/table/copernicus_builtup_raster_h3_r8: db/table/copernicus_landcover_raster | db/table
-	psql -f tables/copernicus_builtup_raster_h3_r8.sql
+db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table
+	psql -f tables/copernicus_builtup_h3.sql
 	touch $@
 
 db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table
@@ -502,7 +502,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/us_microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_raster_h3_r8 db/table/canada_microsoft_buildings_h3 db/table/africa_microsoft_buildings_h3 | db/table
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/us_microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/canada_microsoft_buildings_h3 db/table/africa_microsoft_buildings_h3 db/table/australia_microsoft_buildings_h3 | db/table
 	psql -f tables/building_count_grid_h3.sql
 	touch $@
 
@@ -638,6 +638,27 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
 
 db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table
 	psql -f tables/morocco_buildings_h3.sql
+	touch $@
+
+data/australia_buildings: | data
+	mkdir -p $@
+
+data/australia_buildings/download: | data/australia_buildings
+	cd data/australia_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/australia-buildings/Australia_2020-06-21.geojson.zip
+	touch $@
+
+data/australia_buildings/unzip: data/australia_buildings/download
+	cd data/australia_buildings; unzip -o Australia_2020-06-21.geojson.zip
+	touch $@
+
+db/table/australia_microsoft_buildings: data/australia_buildings/unzip
+	psql -c "drop table if exists australia_microsoft_buildings"
+	psql -c "create table australia_microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
+	cd data/australia_buildings; ogr2ogr -f PostgreSQL PG:"dbname=gis" Australia.geojson -nln australia_microsoft_buildings
+	touch $@
+
+db/table/australia_microsoft_buildings_h3: db/table/australia_microsoft_buildings | db/table
+	psql -f tables/microsoft_buildings_h3.sql -v microsoft_buildings=australia_microsoft_buildings -v microsoft_buildings_h3=australia_microsoft_buildings_h3
 	touch $@
 
 data/africa_buildings: | data

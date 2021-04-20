@@ -16,7 +16,7 @@ where
                 );
 
 alter table covid19_in
-    add column if not exists admin_id int;
+    add column if not exists admin_id integer;
 update covid19_in a
 set
     admin_id = b.id
@@ -28,7 +28,7 @@ where
 
 
 alter table covid19_us_confirmed_in
-    add column if not exists admin_id int;
+    add column if not exists admin_id integer;
 update covid19_us_confirmed_in a
 set
     admin_id = b.admin_id
@@ -38,7 +38,7 @@ where
       a.fips = b.fips_code;
 
 alter table covid19_us_deaths_in
-    add column if not exists admin_id int;
+    add column if not exists admin_id integer;
 update covid19_us_deaths_in a
 set
     admin_id = b.admin_id
@@ -53,7 +53,7 @@ create table covid19_log as (
     select
         a.date,
         a.admin_id,
-        a.value as confirmed,
+        coalesce(a.value, 0) as confirmed,
         coalesce(b.value, 0) as recovered,
         coalesce(c.value, 0) as dead,
         d.population
@@ -68,29 +68,18 @@ create table covid19_log as (
       and c.status = 'dead'
 );
 
-insert into covid19_log (date, admin_id, confirmed, population)
-    select
+insert into covid19_log (date, admin_id, confirmed, dead, population)
+    select distinct
         a.date as date,
-        a.admin_id,
+        a.admin_id as admin_id,
         coalesce(a.value, 0) as confirmed,
+        coalesce(b.value, 0) as dead,
         d.population
     from
-        covid19_us_confirmed_in              a
-        join      covid19_us_counties d on a.admin_id = d.admin_id
+        covid19_us_confirmed_in a
+        join covid19_us_deaths_in b on a.admin_id = b.admin_id
+        join covid19_us_counties d on a.admin_id = d.admin_id
 ;
-
-
-insert into covid19_log (date, admin_id, dead, population)
-    select
-        a.date as date,
-        a.admin_id,
-        coalesce(a.value, 0) as dead,
-        d.population
-    from
-        covid19_us_deaths_in              a
-        join      covid19_us_counties d on a.admin_id = d.admin_id
-;
-
 
 drop table if exists covid19_hex;
 create table covid19_hex as (

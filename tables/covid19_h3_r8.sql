@@ -68,11 +68,12 @@ create table covid19_log as (
       and c.status = 'dead'
 );
 
-insert into covid19_log (date, admin_id, confirmed, dead, population)
+insert into covid19_log (date, admin_id, confirmed, recovered, dead, population)
     select distinct
         a.date as date,
         a.admin_id as admin_id,
         coalesce(a.value, 0) as confirmed,
+        0::integer as recovered,
         coalesce(b.value, 0) as dead,
         d.population
     from

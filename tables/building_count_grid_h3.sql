@@ -1,7 +1,7 @@
 drop table if exists building_count_grid_h3;
 create table building_count_grid_h3 as (
     select h3,
-           8 as resolution,
+           8                   as resolution,
            max(building_count) as building_count
     from (
              select h3, 1::int as building_count
@@ -18,7 +18,11 @@ create table building_count_grid_h3 as (
              union all
              select h3, 1::int as building_count
              from copernicus_builtup_h3
-             group by 1
+             union all
+             select h3, building_count
+             from geoalert_urban_mapping_h3
+         ) z
+    group by 1
 );
 
 alter table building_count_grid_h3

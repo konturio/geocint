@@ -658,7 +658,7 @@ db/table/australia_microsoft_buildings: data/australia_buildings/unzip
 	touch $@
 
 db/table/australia_microsoft_buildings_h3: db/table/australia_microsoft_buildings | db/table
-	psql -f tables/microsoft_buildings_h3.sql -v microsoft_buildings=australia_microsoft_buildings -v microsoft_buildings_h3=australia_microsoft_buildings_h3
+	psql -f tables/buildings_h3.sql -v buildings=australia_microsoft_buildings -v buildings_h3=australia_microsoft_buildings_h3
 	touch $@
 
 data/africa_buildings: | data
@@ -680,7 +680,7 @@ db/table/africa_microsoft_buildings: data/africa_buildings/unzip | db/table
 	touch $@
 
 db/table/africa_microsoft_buildings_h3: db/table/africa_microsoft_buildings | db/table
-	psql -f tables/africa_microsoft_buildings_h3.sql
+	psql -f tables/buildings_h3.sql -v buildings=africa_microsoft_buildings -v buildings_h3=africa_microsoft_buildings_h3
 	touch $@
 
 data/canada_buildings: | data
@@ -713,7 +713,7 @@ db/table/canada_microsoft_buildings: data/canada_buildings/unzip | db/table
 	touch $@
 
 db/table/canada_microsoft_buildings_h3: db/table/canada_microsoft_buildings | db/table
-	psql -f tables/canada_microsoft_buildings_h3.sql
+	psql -f tables/buildings_h3.sql -v buildings=canada_microsoft_buildings -v buildings_h3=canada_microsoft_buildings_h3
 	touch $@
 
 data/us_buildings: | data
@@ -784,7 +784,7 @@ db/table/us_microsoft_buildings: data/us_buildings/unzip | db/table
 	touch $@
 
 db/table/us_microsoft_buildings_h3: db/table/us_microsoft_buildings | db/table
-	psql -f tables/us_microsoft_buildings_h3.sql
+	psql -f tables/buildings_h3.sql -v buildings=us_microsoft_buildings -v buildings_h3=us_microsoft_buildings_h3
 	touch $@
 
 db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx | db/table

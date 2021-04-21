@@ -1,8 +1,8 @@
 alter table copernicus_landcover_raster
     set (parallel_workers = 32);
 
-drop table if exists copernicus_builtup_raster_h3_r8;
-create table copernicus_builtup_raster_h3_r8 as (
+drop table if exists copernicus_builtup_h3;
+create table copernicus_builtup_h3 as (
     select h3,
            8          as resolution,
            sum(count) as count

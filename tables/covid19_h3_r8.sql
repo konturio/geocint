@@ -59,8 +59,8 @@ create table covid19_log as (
         d.population
     from
         covid19_in              a
-        left join (select admin_id, value from covid19_in where status = 'recovered') b on a.admin_id = b.admin_id
-        left join (select admin_id, value from covid19_in where status = 'dead') c on a.admin_id = c.admin_id
+        left join  covid19_in   b on a.admin_id = b.admin_id and b.status = 'recovered'
+        left join  covid19_in   c on a.admin_id = c.admin_id and c.status = 'dead'
         join      covid19_admin d on a.admin_id = d.id
     where
           a.status = 'confirmed'

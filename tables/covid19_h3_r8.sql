@@ -59,13 +59,11 @@ create table covid19_log as (
         d.population
     from
         covid19_in              a
-        left join covid19_in    b on a.date = b.date and a.admin_id = b.admin_id
-        left join covid19_in    c on a.date = c.date and a.admin_id = c.admin_id
+        left join (select admin_id, value from covid19_in where status = 'recovered') b on a.admin_id = b.admin_id
+        left join (select admin_id, value from covid19_in where status = 'dead') c on a.admin_id = c.admin_id
         join      covid19_admin d on a.admin_id = d.id
     where
           a.status = 'confirmed'
-      and b.status = 'recovered'
-      and c.status = 'dead'
 );
 
 insert into covid19_log (date, admin_id, confirmed, recovered, dead, population)
@@ -92,7 +90,7 @@ create table covid19_hex as (
         coalesce(c.recovered::float * b.population / c.population, 0) as recovered,
         coalesce(c.dead::float * b.population / c.population, 0) as dead
     from
-            ( select distinct date from covid19_log ) as a
+            ( select max(date) from covid19_log ) as a
             left join covid19_population_h3_r8           b on true
             left join covid19_log                        c on c.date = a.date and b.admin_id = c.admin_id
     order by a.date, b.h3

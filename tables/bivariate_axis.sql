@@ -198,6 +198,13 @@ where
       numerator = 'wildfires'
   and denominator = 'area_km2';
 
+update bivariate_axis
+set
+    label = 'Forest Landcover Area (km²/km²)'
+where
+      numerator = 'forest'
+  and denominator = 'area_km2';
+
 update bivariate_axis set label = 'Last edit (date)' where numerator = 'avgmax_ts' and denominator = 'one';
 
 update bivariate_axis

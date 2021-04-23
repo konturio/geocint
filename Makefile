@@ -502,7 +502,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 | db/table
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 | db/table
 	psql -f tables/building_count_grid_h3.sql
 	touch $@
 
@@ -725,6 +725,29 @@ db/table/microsoft_buildings: data/microsoft_buildings/unzip | db/table
 
 db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table
 	psql -f tables/buildings_h3.sql -v buildings=microsoft_buildings -v buildings_h3=microsoft_buildings_h3
+	touch $@
+
+data/geoalert_urban_mapping: | data
+	mkdir -p $@
+
+data/geoalert_urban_mapping/download: data/geoalert_urban_mapping
+	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/CeT7WidzbIGqaFa/download -O Open_UM_Geoalert-Russia-Chechnya.zip
+	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/AE2iIxGN8UoYfOU/download -O Open_UM_Geoalert-Tyva.zip
+	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/eHyTEdLlevmix0D/download -O Open-UM_Geoalert-Mos_region.zip
+	touch $@
+
+data/geoalert_urban_mapping/unzip: data/geoalert_urban_mapping/download
+	cd data/geoalert_urban_mapping; ls *.zip | parallel "unzip -o {}"
+	touch $@
+
+db/table/geoalert_urban_mapping: data/geoalert_urban_mapping/unzip | db/table
+	psql -c "drop table if exists geoalert_urban_mapping;"
+	psql -c "create table geoalert_urban_mapping (fid serial not null, class_id integer, processing_date timestamptz, is_osm boolean, wkb_geometry geometry);"
+	cd data/geoalert_urban_mapping; ls *.gpkg | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln geoalert_urban_mapping'
+	touch $@
+
+db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table
+	psql -f tables/buildings_h3.sql -v buildings=geoalert_urban_mapping -v buildings_h3=geoalert_urban_mapping_h3
 	touch $@
 
 db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx | db/table

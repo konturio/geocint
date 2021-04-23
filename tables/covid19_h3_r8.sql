@@ -92,7 +92,7 @@ create table covid19_hex as (
     from
             (select max(date) as date from covid19_log) as a
             left join covid19_population_h3_r8           b on true
-            left join covid19_log                        c on c.date = a.date and b.admin_id = c.admin_id
+            left join covid19_log                        c on b.admin_id = c.admin_id
     order by a.date, b.h3
 );
 

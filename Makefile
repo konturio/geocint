@@ -290,40 +290,25 @@ db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_activ
 db/procedure: | db
 	mkdir -p $@
 
-data/population_hrsl: | data
-	mkdir -p $@
-
-data/population_hrsl/download: | data/population_hrsl
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_phl_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_idn_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_khm_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_tha_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_lka_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_arg_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_pri_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_hti_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_gtm_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_mex_v1.zip
+data/hrsl_cogs: | data ## Create folder for HRSL raster data.
 	touch $@
 
-data/population_hrsl/unzip: data/population_hrsl/download
-	rm -rf *tif
-	cd data/population_hrsl; ls *.zip | parallel "unzip -o {}"
-	cd data/population_hrsl; ls *pop.tif | parallel 'gdal_translate -co "TILED=YES" -co "COMPRESS=DEFLATE" {} tiled_{}'
+data/hrsl_cogs/download: data/hrsl_cogs ## Download HRSL tifs from Data for Good at AWS S3.
+	cd data/hrsl_cogs; aws s3 cp s3://dataforgood-fb-data/hrsl-cogs/ ./ --no-sign-request --recursive
 	touch $@
 
-db/table/hrsl_population_raster: data/population_hrsl/unzip | db/table
-	psql -c "drop table if exists hrsl_population_raster"
-	raster2pgsql -p -M -Y -s 4326 data/population_hrsl/tiled_*pop.tif -t auto hrsl_population_raster | psql -q
+db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare table for raster data. Import HRSL raster tiles into database.
+	psql -c "drop table if exists hrsl_population_raster;"
+	raster2pgsql -p -M -Y -s 4326 data/hrsl_cogs/hrsl_general/v1/*.tif -t auto hrsl_population_raster | psql -q
 	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
-	ls data/population_hrsl/tiled_*pop.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -M -Y -s 4326 {} -t 256x256 hrsl_population_raster | psql -q'
+	ls data/hrsl_cogs/hrsl_general/v1/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -M -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
 	touch $@
 
-db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3
+db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Create table with HRSL raster values summed into h3 hexagons with resolution = 8.
 	psql -f tables/hrsl_population_grid_h3_r8.sql
 	touch $@
 
-db/table/hrsl_population_boundary: | db/table
+db/table/hrsl_population_boundary: | db/table ## Create table with boundaries where HRSL is available
 	psql -f tables/hrsl_population_boundary.sql
 	touch $@
 

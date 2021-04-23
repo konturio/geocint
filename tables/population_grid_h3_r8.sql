@@ -27,6 +27,7 @@ create table population_grid_h3_r8 as (
          ) z
     group by 1
 );
+
 update population_grid_h3_r8 p
 set ghs_pop = 0
 where ghs_pop is null;

@@ -15,11 +15,14 @@ select distinct ST_SetSRID(ST_MakePoint(lon, lat), 4326), province, country
 from
     covid19_in;
 
-update covid19_admin set geog = 'SRID=4326;POINT(  15.3136   -4.3276)' where country like 'Congo%';
-update covid19_admin set geog = 'SRID=4326;POINT(  -144.2731 -16.4381 )' where province like '%Polynesia';
+update covid19_admin set geog = 'SRID=4326;POINT( 15.3136 -4.3276 )' where country like 'Congo%';
+update covid19_admin set geog = 'SRID=4326;POINT( -144.2731 -16.4381 )' where province like '%Polynesia';
+update covid19_admin set geog = 'SRID=4326;POINT( 114.9042 33.882 )' where province like 'Henan'
+                                                                           and country like 'China';
 
 drop table if exists tmp_all_admin;
-create table tmp_all_admin as ( select tags, geog from osm where tags @> '{"boundary":"administrative"}' );
+create table tmp_all_admin as ( select tags, geog from osm where tags @> '{"boundary":"administrative"}'
+                                                              or tags @> '{"name:en":"Wallis and Futuna"}');
 create index on tmp_all_admin using gist (geog);
 create index on tmp_all_admin using gin (tags);
 delete from tmp_all_admin where ST_GeometryType(geog::geometry) = 'ST_Point';

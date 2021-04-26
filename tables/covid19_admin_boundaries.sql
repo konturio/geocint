@@ -22,7 +22,7 @@ update covid19_admin set geog = 'SRID=4326;POINT( 114.9042 33.882 )' where provi
 
 drop table if exists tmp_all_admin;
 create table tmp_all_admin as ( select tags, geog from osm where tags @> '{"boundary":"administrative"}'
-                                                              or tags @> '{"name:en":"Wallis and Futuna"}');
+                                                              or tags @> '{"boundary":"maritime"}');
 create index on tmp_all_admin using gist (geog);
 create index on tmp_all_admin using gin (tags);
 delete from tmp_all_admin where ST_GeometryType(geog::geometry) = 'ST_Point';

@@ -304,7 +304,7 @@ db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare t
 	ls data/hrsl_cogs/hrsl_general/v1/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -M -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
 	touch $@
 
-db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Create table with HRSL raster values summed into h3 hexagons with resolution = 8.
+db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Create table with HRSL raster values summed into h3 hexagons with resolution equal to 8.
 	psql -f tables/hrsl_population_grid_h3_r8.sql
 	touch $@
 

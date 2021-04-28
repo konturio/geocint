@@ -36,9 +36,6 @@ data/population: | data
 data/gadm: | data
 	mkdir -p $@
 
-data/population_africa_2018-10-01: | data
-	mkdir -p $@
-
 data/wb: | data
 	mkdir -p $@
 
@@ -291,6 +288,34 @@ db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_activ
 db/procedure: | db
 	mkdir -p $@
 
+data/worldpop: | data
+	mkdir -p $@
+
+data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop.org.
+	cat data/worldpop/worldpop_countries_url.txt | parallel "cd data/world_pop; wget {}"
+	touch $@
+
+db/table/worldpop_population_raster: data/worldpop/download | db/table ## Import raster data and create table with tiled data.
+	psql -c "drop table if exists worldpop_population_raster"
+	raster2pgsql -p -M -Y -s 4326 data/worldpop/*.tif -t auto worldpop_population_raster | psql -q
+	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
+	ls data/worldpop/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -M -Y -s 4326 {} -t 256x256 worldpop_population_raster | psql -q'
+	touch $@
+
+db/table/worldpop_population_grid_h3_r8: db/table/worldpop_population_raster ## Count sum sum of World Pop raster values at h3 hexagons.
+	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=worldpop_population_raster -v population_raster_grid_h3_r8=worldpop_population_raster_grid_h3_r8
+	touch $@
+
+db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate table
+	psql -c "drop table if exists worldpop_country_codes;"
+	psql -c "create table worldpop_country_codes (code varchar(3) not null, primary key (code))"
+	cd data/world_pop; ls *.tif | parallel -eta psql -c "insert into worldpop_country_codes(code) select upper(substr('{}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{}', 1, 3)))"
+	touch $@
+
+db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.
+	psql -f table/worldpop_population_boundary.sql
+	touch $@
+
 data/hrsl_cogs: | data ## Create folder for HRSL raster data.
 	mkdir -p $@
 
@@ -313,14 +338,6 @@ db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function
 
 db/table/hrsl_population_boundary: | db/table ## Create table with boundaries where HRSL data is available.
 	psql -f tables/hrsl_population_boundary.sql
-	touch $@
-
-db/table/fb_africa_population_boundary: db/table/gadm_countries_boundary | db/table
-	psql -f tables/fb_africa_population_boundary.sql
-	touch $@
-
-db/table/fb_population_boundary: db/table/gadm_countries_boundary db/table/fb_country_codes | db/table
-	psql -f tables/fb_population_boundary.sql
 	touch $@
 
 db/table/osm_unpopulated: db/index/osm_tags_idx | db/table
@@ -361,31 +378,6 @@ db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/
 	psql -f tables/ghs_globe_residential_vector.sql
 	touch $@
 
-data/population_africa_2018-10-01/population_af_2018-10-01.zip: | data/population_africa_2018-10-01
-	wget https://data.humdata.org/dataset/dbd7b22d-7426-4eb0-b3c4-faa29a87f44b/resource/7b3ef0ae-a37d-4a42-a2c9-6b111e592c2c/download/population_af_2018-10-01.zip -O $@
-
-data/population_africa_2018-10-01/population_af_2018-10-01_unzip: data/population_africa_2018-10-01/population_af_2018-10-01.zip
-	cd data/population_africa_2018-10-01; unzip -o population_af_2018-10-01.zip
-	touch $@
-
-db/table/fb_africa_population_raster: data/population_africa_2018-10-01/population_af_2018-10-01_unzip | db/table
-	psql -c "drop table if exists fb_africa_population_raster"
-	raster2pgsql -p -M -Y -s 4326 data/population_africa_2018-10-01/*.tif -t auto fb_africa_population_raster | psql -q
-	psql -c 'alter table fb_africa_population_raster drop CONSTRAINT fb_africa_population_raster_pkey;'
-	ls data/population_africa_2018-10-01/*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t 256x256 fb_africa_population_raster | psql -q'
-	psql -c "alter table fb_africa_population_raster set (parallel_workers=32)"
-	touch $@
-
-db/table/fb_africa_population_grid_h3_r8: db/table/fb_africa_population_raster db/function/h3_raster_sum_to_h3 | db/table ## Create table with sum of Facebook raster values into h3 hexagons equaled to 8 resolution.
-	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=fb_africa_population_raster -v population_raster_grid_h3_r8=fb_africa_population_grid_h3_r8
-	touch $@
-
-db/table/fb_country_codes: data/population_fb/unzip | db/table
-	psql -c "drop table if exists fb_country_codes"
-	psql -c "create table fb_country_codes (code varchar(3) not null, primary key (code))"
-	cd data/population_fb; ls *.tif | parallel -eta psql -c "\"insert into fb_country_codes(code) select upper(substr('{}',12,3)) where not exists (select code from fb_country_codes where code = upper(substr('{}',12,3)))\""
-	touch $@
-
 data/copernicus_landcover: | data
 	mkdir -p $@
 
@@ -406,30 +398,8 @@ db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table
 	psql -f tables/copernicus_forest_h3.sql
 	touch $@
 
-data/population_fb: | data
-	mkdir -p $@
-
-data/population_fb/download: | data/population_fb
-	cd data/population_fb; curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].url' -r | sed -n '/population_[a-z]\{3\}_[a-z_]*[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}_geotiff.zip/p' | parallel --eta "wget -N {}"
-	cd data/population_fb; curl "https://data.humdata.org/api/3/action/resource_search?query=url:population_" | jq '.result.results[].url' -r | sed -n '/population_[a-z]\{3\}_[a-z_]*[0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}.zip/p' | parallel --eta "wget -N {}"
-	touch $@
-
-data/population_fb/unzip: data/population_fb/download
-	cd data/population_fb; rm -rf *.tif
-	cd data/population_fb; rm -rf *.xml
-	cd data/population_fb; ls *.zip | parallel "unzip -o {}"
-	touch $@
-
 db/table/osm_residential_landuse: db/index/osm_tags_idx
 	psql -f tables/osm_residential_landuse.sql
-	touch $@
-
-db/table/fb_population_raster: data/population_fb/unzip | db/table
-	psql -c "drop table if exists fb_population_raster"
-	raster2pgsql -p -M -Y -s 4326 data/population_fb/*.tif -t auto fb_population_raster | psql -q
-	psql -c 'alter table fb_population_raster drop CONSTRAINT fb_population_raster_pkey;'
-	ls data/population_fb/*.tif | parallel --eta 'raster2pgsql -a -M -Y -s 4326 {} -t 256x256 fb_population_raster | psql -q'
-	psql -c "alter table fb_population_raster set (parallel_workers=32)"
 	touch $@
 
 data/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/gebco_2020_geotiff
@@ -495,10 +465,6 @@ db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table
 	psql -f tables/building_count_grid_h3.sql
 	touch $@
 
-db/table/fb_population_grid_h3_r8: db/table/fb_population_raster db/function/h3_raster_sum_to_h3 | db/table ## Create
-	psql -f tables/population_raster_grid_h3_r8 -v population_raster=fb_population_raster -v population_raster_grid_h3_r8=fb_population_grid_h3_r8
-	touch $@
-
 data/gadm/gadm36_levels_shp.zip: | data/gadm
 	wget https://web.archive.org/web/20190829093806if_/https://data.biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip -O $@
 
@@ -562,7 +528,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/fb_africa_population_grid_h3_r8 db/table/fb_africa_population_boundary db/table/fb_population_grid_h3_r8 db/table/fb_population_boundary | db/table
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary | db/table ## Create general table for population data at hexagons.
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 

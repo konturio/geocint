@@ -6,6 +6,7 @@
 
 data/*
 !data/morocco_buildings/
+!data/worldpop/worldpop_countries_url.txt
 
 db
 deploy

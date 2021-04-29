@@ -21,6 +21,9 @@ create table building_count_grid_h3 as (
              union all
              select h3, building_count
              from geoalert_urban_mapping_h3
+             union all
+             select h3, building_count
+             from new_zealand_buildings_h3
          ) z
     group by 1
 );

@@ -502,7 +502,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 | db/table
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table
 	psql -f tables/building_count_grid_h3.sql
 	touch $@
 
@@ -726,6 +726,14 @@ db/table/microsoft_buildings: data/microsoft_buildings/unzip | db/table
 db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table
 	psql -f tables/buildings_h3.sql -v buildings=microsoft_buildings -v buildings_h3=microsoft_buildings_h3
 	touch $@
+
+db/table/new_zealand_buildings: data/nz-building-outlines.gpkg | db/table
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/nz-building-outlines.gpkg -nln new_zealand_buildings
+	psql -c "alter table new_zealand_buildings rename column geom to wkb_geometry;"
+	touch $@
+
+db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings
+	psql -f tables/buildings_h3.sql -v buildings=new_zealand_buildings -v buildings_h3=new_zealand_buildings_h3
 
 data/geoalert_urban_mapping: | data
 	mkdir -p $@

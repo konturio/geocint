@@ -719,8 +719,8 @@ data/microsoft_buildings/unzip: data/microsoft_buildings/download
 
 db/table/microsoft_buildings: data/microsoft_buildings/unzip | db/table
 	psql -c "drop table if exists microsoft_buildings"
-	psql -c "create table microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
-	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings'
+	psql -c "create table microsoft_buildings (ogc_fid serial not null, geom geometry)"
+	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom'
 	touch $@
 
 db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table
@@ -735,8 +735,8 @@ data/new_zealand_buildings/download: | data/new_zealand_buildings ## Download Ne
 	touch $@
 
 db/table/new_zealand_buildings: data/new_zealand_buildings/download | db/table ## Create table with New Zealand buildings.
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/new_zealand_buildings/nz-building-outlines.gpkg -nln new_zealand_buildings
-	psql -c "alter table new_zealand_buildings rename column geom to wkb_geometry;"
+	psql -c "drop table if exists new_zealand_buildings;"
+	ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/new_zealand_buildings/nz-building-outlines.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
 	touch $@
 
 db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings ## Count amount of New Zealand buildings at hexagons.
@@ -758,8 +758,8 @@ data/geoalert_urban_mapping/unzip: data/geoalert_urban_mapping/download
 
 db/table/geoalert_urban_mapping: data/geoalert_urban_mapping/unzip | db/table
 	psql -c "drop table if exists geoalert_urban_mapping;"
-	psql -c "create table geoalert_urban_mapping (fid serial not null, class_id integer, processing_date timestamptz, is_osm boolean, wkb_geometry geometry);"
-	cd data/geoalert_urban_mapping; ls *.gpkg | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln geoalert_urban_mapping'
+	psql -c "create table geoalert_urban_mapping (fid serial not null, class_id integer, processing_date timestamptz, is_osm boolean, geom geometry);"
+	cd data/geoalert_urban_mapping; ls *.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln geoalert_urban_mapping -lco GEOMETRY_NAME=geom'
 	touch $@
 
 db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table

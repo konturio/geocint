@@ -738,7 +738,7 @@ db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings
 data/geoalert_urban_mapping: | data
 	mkdir -p $@
 
-data/geoalert_urban_mapping/download: data/geoalert_urban_mapping
+data/geoalert_urban_mapping/download: | data/geoalert_urban_mapping
 	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/CeT7WidzbIGqaFa/download -O Open_UM_Geoalert-Russia-Chechnya.zip
 	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/AE2iIxGN8UoYfOU/download -O Open_UM_Geoalert-Tyva.zip
 	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/eHyTEdLlevmix0D/download -O Open-UM_Geoalert-Mos_region.zip

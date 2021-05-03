@@ -502,7 +502,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
 	touch $@
 
@@ -727,13 +727,21 @@ db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table
 	psql -f tables/buildings_h3.sql -v buildings=microsoft_buildings -v buildings_h3=microsoft_buildings_h3
 	touch $@
 
-db/table/new_zealand_buildings: data/nz-building-outlines.gpkg | db/table
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/nz-building-outlines.gpkg -nln new_zealand_buildings
+data/new_zealand_buildings: | data
+	mkdir -p $@
+
+data/new_zealand_buildings/download: | data/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
+	cd data/new_zealand_buildings; aws s3 cp s3://geodata-us-east-1-kontur/public/in/nz-building-outlines.gpkg ./
+	touch $@
+
+db/table/new_zealand_buildings: data/new_zealand_buildings/download | db/table ## Create table with New Zealand buildings.
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/new_zealand_buildings/nz-building-outlines.gpkg -nln new_zealand_buildings
 	psql -c "alter table new_zealand_buildings rename column geom to wkb_geometry;"
 	touch $@
 
-db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings
+db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings ## Count amount of New Zealand buildings at hexagons.
 	psql -f tables/buildings_h3.sql -v buildings=new_zealand_buildings -v buildings_h3=new_zealand_buildings_h3
+	touch $@
 
 data/geoalert_urban_mapping: | data
 	mkdir -p $@

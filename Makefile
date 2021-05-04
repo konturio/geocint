@@ -485,8 +485,8 @@ db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table
 	psql -f tables/ndvi_2019_06_10_h3.sql
 	touch $@
 
-db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
-	psql -f tables/osm_building_count_grid_h3_r8.sql
+db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.
+	psql -f tables/buildings_h3.sql -v buildings=osm_buildings -v buildings_h3=osm_building_count_grid_h3_r8
 	touch $@
 
 db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
@@ -623,8 +623,8 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
 	psql -f tables/morocco_urban_pixel_mask_h3.sql
 	touch $@
 
-db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table
-	psql -f tables/morocco_buildings_h3.sql
+db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
+	psql -f tables/buildings_h3.sql -v buildings=morocco_buildings -v buildings_h3=morocco_buildings_h3
 	touch $@
 
 data/microsoft_buildings: | data
@@ -798,7 +798,7 @@ db/table/morocco_buildings_manual: data/morocco_buildings/morocco_buildings_manu
 
 db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table
 	psql -c "drop table if exists morocco_buildings;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
 	touch $@
 

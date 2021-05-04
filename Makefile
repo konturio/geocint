@@ -304,11 +304,12 @@ db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare t
 	ls data/hrsl_cogs/hrsl_general/v1/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -M -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
 	touch $@
 
-db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Create table with HRSL raster values summed into h3 hexagons with resolution equal to 8.
-	psql -f tables/hrsl_population_grid_h3_r8.sql
+db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Create table with sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
+	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r8=hrsl_population_grid_h3_r8
+#	psql -c "delete from hrsl_population_grid_h3_r8 where population = 'NaN';"
 	touch $@
 
-db/table/hrsl_population_boundary: | db/table ## Create table with boundaries where HRSL is available
+db/table/hrsl_population_boundary: | db/table ## Create table with boundaries where HRSL data is available.
 	psql -f tables/hrsl_population_boundary.sql
 	touch $@
 
@@ -324,8 +325,9 @@ db/table/osm_unpopulated: db/index/osm_tags_idx | db/table
 	psql -f tables/osm_unpopulated.sql
 	touch $@
 
-db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table
-	psql -f tables/ghs_globe_population_grid_h3_r8.sql
+db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Create table with sum of GHS globe raster values into h3 hexagons equaled to 8 resolution.
+	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r8=ghs_globe_population_grid_h3_r8
+	psql -c "delete from ghs_globe_population_grid_h3_r8 where population = 0;"
 	touch $@
 
 data/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip: | data
@@ -372,8 +374,8 @@ db/table/fb_africa_population_raster: data/population_africa_2018-10-01/populati
 	psql -c "alter table fb_africa_population_raster set (parallel_workers=32)"
 	touch $@
 
-db/table/fb_africa_population_grid_h3_r8: db/table/fb_africa_population_raster db/function/h3_raster_sum_to_h3 | db/table
-	psql -f tables/fb_africa_population_grid_h3_r8.sql
+db/table/fb_africa_population_grid_h3_r8: db/table/fb_africa_population_raster db/function/h3_raster_sum_to_h3 | db/table ## Create table with sum of Facebook raster values into h3 hexagons equaled to 8 resolution.
+	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=fb_africa_population_raster -v population_raster_grid_h3_r8=fb_africa_population_grid_h3_r8
 	touch $@
 
 db/table/fb_country_codes: data/population_fb/unzip | db/table

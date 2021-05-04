@@ -502,7 +502,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
 	psql -f tables/osm_building_count_grid_h3_r8.sql
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 | db/table
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
 	touch $@
 
@@ -719,18 +719,34 @@ data/microsoft_buildings/unzip: data/microsoft_buildings/download
 
 db/table/microsoft_buildings: data/microsoft_buildings/unzip | db/table
 	psql -c "drop table if exists microsoft_buildings"
-	psql -c "create table microsoft_buildings (ogc_fid serial not null, wkb_geometry geometry)"
-	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings'
+	psql -c "create table microsoft_buildings (ogc_fid serial not null, geom geometry)"
+	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom'
 	touch $@
 
 db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table
 	psql -f tables/buildings_h3.sql -v buildings=microsoft_buildings -v buildings_h3=microsoft_buildings_h3
 	touch $@
 
+data/new_zealand_buildings: | data
+	mkdir -p $@
+
+data/new_zealand_buildings/download: | data/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
+	cd data/new_zealand_buildings; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg ./
+	touch $@
+
+db/table/new_zealand_buildings: data/new_zealand_buildings/download | db/table ## Create table with New Zealand buildings.
+	psql -c "drop table if exists new_zealand_buildings;"
+	time ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
+	touch $@
+
+db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings ## Count amount of New Zealand buildings at hexagons.
+	psql -f tables/buildings_h3.sql -v buildings=new_zealand_buildings -v buildings_h3=new_zealand_buildings_h3
+	touch $@
+
 data/geoalert_urban_mapping: | data
 	mkdir -p $@
 
-data/geoalert_urban_mapping/download: data/geoalert_urban_mapping
+data/geoalert_urban_mapping/download: | data/geoalert_urban_mapping
 	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/CeT7WidzbIGqaFa/download -O Open_UM_Geoalert-Russia-Chechnya.zip
 	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/AE2iIxGN8UoYfOU/download -O Open_UM_Geoalert-Tyva.zip
 	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/eHyTEdLlevmix0D/download -O Open-UM_Geoalert-Mos_region.zip
@@ -742,8 +758,8 @@ data/geoalert_urban_mapping/unzip: data/geoalert_urban_mapping/download
 
 db/table/geoalert_urban_mapping: data/geoalert_urban_mapping/unzip | db/table
 	psql -c "drop table if exists geoalert_urban_mapping;"
-	psql -c "create table geoalert_urban_mapping (fid serial not null, class_id integer, processing_date timestamptz, is_osm boolean, wkb_geometry geometry);"
-	cd data/geoalert_urban_mapping; ls *.gpkg | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln geoalert_urban_mapping'
+	psql -c "create table geoalert_urban_mapping (fid serial not null, class_id integer, processing_date timestamptz, is_osm boolean, geom geometry);"
+	cd data/geoalert_urban_mapping; ls *.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln geoalert_urban_mapping -lco GEOMETRY_NAME=geom'
 	touch $@
 
 db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table

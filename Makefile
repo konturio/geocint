@@ -306,7 +306,6 @@ db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare t
 
 db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Create table with sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r8=hrsl_population_grid_h3_r8
-#	psql -c "delete from hrsl_population_grid_h3_r8 where population = 'NaN';"
 	touch $@
 
 db/table/hrsl_population_boundary: | db/table ## Create table with boundaries where HRSL data is available.

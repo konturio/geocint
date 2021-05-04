@@ -731,12 +731,12 @@ data/new_zealand_buildings: | data
 	mkdir -p $@
 
 data/new_zealand_buildings/download: | data/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
-	cd data/new_zealand_buildings; aws s3 cp s3://geodata-us-east-1-kontur/public/in/nz-building-outlines.gpkg ./
+	cd data/new_zealand_buildings; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg ./
 	touch $@
 
 db/table/new_zealand_buildings: data/new_zealand_buildings/download | db/table ## Create table with New Zealand buildings.
 	psql -c "drop table if exists new_zealand_buildings;"
-	ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/new_zealand_buildings/nz-building-outlines.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
+	time ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
 	touch $@
 
 db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings ## Count amount of New Zealand buildings at hexagons.

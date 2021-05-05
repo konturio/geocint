@@ -492,8 +492,8 @@ db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table
 	psql -f tables/building_count_grid_h3.sql
 	touch $@
 
-db/table/fb_population_grid_h3_r8: db/table/fb_population_raster db/function/h3_raster_sum_to_h3 | db/table
-	psql -f tables/fb_population_grid_h3_r8.sql
+db/table/fb_population_grid_h3_r8: db/table/fb_population_raster db/function/h3_raster_sum_to_h3 | db/table ## Create
+	psql -f tables/population_raster_grid_h3_r8 -v population_raster=fb_population_raster -v population_raster_grid_h3_r8=fb_population_grid_h3_r8
 	touch $@
 
 data/gadm/gadm36_levels_shp.zip: | data/gadm

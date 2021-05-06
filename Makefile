@@ -299,9 +299,11 @@ data/hrsl_cogs/download: | data/hrsl_cogs ## Download HRSL tifs from Data for Go
 
 db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare table for raster data. Import HRSL raster tiles into database.
 	psql -c "drop table if exists hrsl_population_raster;"
-	raster2pgsql -p -M -Y -s 4326 data/hrsl_cogs/hrsl_general/v1/*.tif -t auto hrsl_population_raster | psql -q
+	raster2pgsql -p -Y -s 4326 data/hrsl_cogs/hrsl_general/v1/*.tif -t auto hrsl_population_raster | psql -q
 	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
-	ls data/hrsl_cogs/hrsl_general/v1/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -M -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
+	ls data/hrsl_cogs/hrsl_general/v1/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
+	psql -c "alter table hrsl_population_raster set (parallel_workers = 32);"
+	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
 
 db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Create table with sum of HRSL raster values into h3 hexagons equaled to 8 resolution.

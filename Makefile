@@ -291,7 +291,7 @@ db/procedure: | db
 	mkdir -p $@
 
 data/hrsl_cogs: | data ## Create folder for HRSL raster data.
-	touch $@
+	mkdir -p $@
 
 data/hrsl_cogs/download: | data/hrsl_cogs ## Download HRSL tifs from Data for Good at AWS S3.
 	cd data/hrsl_cogs; aws s3 cp s3://dataforgood-fb-data/hrsl-cogs/ ./ --no-sign-request --recursive

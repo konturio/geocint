@@ -290,40 +290,27 @@ db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_activ
 db/procedure: | db
 	mkdir -p $@
 
-data/population_hrsl: | data
+data/hrsl_cogs: | data ## Create folder for HRSL raster data.
 	mkdir -p $@
 
-data/population_hrsl/download: | data/population_hrsl
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_phl_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_idn_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_khm_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_tha_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_lka_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_arg_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_pri_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_hti_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_gtm_v1.zip
-	cd data/population_hrsl; wget -c https://www.ciesin.columbia.edu/repository/hrsl/hrsl_mex_v1.zip
+data/hrsl_cogs/download: | data/hrsl_cogs ## Download HRSL tifs from Data for Good at AWS S3.
+	cd data/hrsl_cogs; aws s3 cp s3://dataforgood-fb-data/hrsl-cogs/ ./ --no-sign-request --recursive
 	touch $@
 
-data/population_hrsl/unzip: data/population_hrsl/download
-	rm -rf *tif
-	cd data/population_hrsl; ls *.zip | parallel "unzip -o {}"
-	cd data/population_hrsl; ls *pop.tif | parallel 'gdal_translate -co "TILED=YES" -co "COMPRESS=DEFLATE" {} tiled_{}'
-	touch $@
-
-db/table/hrsl_population_raster: data/population_hrsl/unzip | db/table
-	psql -c "drop table if exists hrsl_population_raster"
-	raster2pgsql -p -M -Y -s 4326 data/population_hrsl/tiled_*pop.tif -t auto hrsl_population_raster | psql -q
+db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare table for raster data. Import HRSL raster tiles into database.
+	psql -c "drop table if exists hrsl_population_raster;"
+	raster2pgsql -p -Y -s 4326 data/hrsl_cogs/hrsl_general/v1/*.tif -t auto hrsl_population_raster | psql -q
 	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
-	ls data/population_hrsl/tiled_*pop.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -M -Y -s 4326 {} -t 256x256 hrsl_population_raster | psql -q'
+	ls data/hrsl_cogs/hrsl_general/v1/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
+	psql -c "alter table hrsl_population_raster set (parallel_workers = 32);"
+	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
 
-db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3
-	psql -f tables/hrsl_population_grid_h3_r8.sql
+db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Create table with sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
+	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r8=hrsl_population_grid_h3_r8
 	touch $@
 
-db/table/hrsl_population_boundary: | db/table
+db/table/hrsl_population_boundary: | db/table ## Create table with boundaries where HRSL data is available.
 	psql -f tables/hrsl_population_boundary.sql
 	touch $@
 
@@ -339,8 +326,9 @@ db/table/osm_unpopulated: db/index/osm_tags_idx | db/table
 	psql -f tables/osm_unpopulated.sql
 	touch $@
 
-db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table
-	psql -f tables/ghs_globe_population_grid_h3_r8.sql
+db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Create table with sum of GHS globe raster values into h3 hexagons equaled to 8 resolution.
+	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r8=ghs_globe_population_grid_h3_r8
+	psql -c "delete from ghs_globe_population_grid_h3_r8 where population = 0;"
 	touch $@
 
 data/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip: | data
@@ -387,8 +375,8 @@ db/table/fb_africa_population_raster: data/population_africa_2018-10-01/populati
 	psql -c "alter table fb_africa_population_raster set (parallel_workers=32)"
 	touch $@
 
-db/table/fb_africa_population_grid_h3_r8: db/table/fb_africa_population_raster db/function/h3_raster_sum_to_h3 | db/table
-	psql -f tables/fb_africa_population_grid_h3_r8.sql
+db/table/fb_africa_population_grid_h3_r8: db/table/fb_africa_population_raster db/function/h3_raster_sum_to_h3 | db/table ## Create table with sum of Facebook raster values into h3 hexagons equaled to 8 resolution.
+	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=fb_africa_population_raster -v population_raster_grid_h3_r8=fb_africa_population_grid_h3_r8
 	touch $@
 
 db/table/fb_country_codes: data/population_fb/unzip | db/table
@@ -498,16 +486,16 @@ db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table
 	psql -f tables/ndvi_2019_06_10_h3.sql
 	touch $@
 
-db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table
-	psql -f tables/osm_building_count_grid_h3_r8.sql
+db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.
+	psql -f tables/buildings_h3.sql -v buildings=osm_buildings -v buildings_h3=osm_building_count_grid_h3_r8
 	touch $@
 
 db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
 	touch $@
 
-db/table/fb_population_grid_h3_r8: db/table/fb_population_raster db/function/h3_raster_sum_to_h3 | db/table
-	psql -f tables/fb_population_grid_h3_r8.sql
+db/table/fb_population_grid_h3_r8: db/table/fb_population_raster db/function/h3_raster_sum_to_h3 | db/table ## Create
+	psql -f tables/population_raster_grid_h3_r8 -v population_raster=fb_population_raster -v population_raster_grid_h3_r8=fb_population_grid_h3_r8
 	touch $@
 
 data/gadm/gadm36_levels_shp.zip: | data/gadm
@@ -636,8 +624,8 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
 	psql -f tables/morocco_urban_pixel_mask_h3.sql
 	touch $@
 
-db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table
-	psql -f tables/morocco_buildings_h3.sql
+db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
+	psql -f tables/buildings_h3.sql -v buildings=morocco_buildings -v buildings_h3=morocco_buildings_h3
 	touch $@
 
 data/microsoft_buildings: | data
@@ -811,7 +799,7 @@ db/table/morocco_buildings_manual: data/morocco_buildings/morocco_buildings_manu
 
 db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table
 	psql -c "drop table if exists morocco_buildings;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
 	touch $@
 
@@ -923,7 +911,7 @@ data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz:
 	ogr2ogr -f GeoJSON data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, height_confidence, is_residential from morocco_buildings_benchmark_roofprints' -nln morocco_buildings_benchmark_roofprints
 	cd data/morocco_buildings; pigz morocco_buildings_benchmark_roofprints_phase2.geojson
 
-data/morocco: data/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/morocco_buildings/morocco_buildings_footprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data
+data/morocco: data/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

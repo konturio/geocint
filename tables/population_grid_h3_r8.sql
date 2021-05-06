@@ -27,6 +27,7 @@ create table population_grid_h3_r8 as (
          ) z
     group by 1
 );
+
 update population_grid_h3_r8 p
 set ghs_pop = 0
 where ghs_pop is null;
@@ -55,7 +56,8 @@ where ST_Intersects(ST_Transform(b.geom, 4326), p.geom)
 
 drop index population_grid_h3_r8_geom_hrsl_pop_fb_africa_pop_fb_pop_idx;
 vacuum population_grid_h3_r8;
-update population_grid_h3_r8 p set population = coalesce(fb_pop, fb_africa_pop, hrsl_pop, ghs_pop);
+update population_grid_h3_r8 p
+set population = coalesce(fb_pop, fb_africa_pop, hrsl_pop, ghs_pop);
 vacuum full population_grid_h3_r8;
 vacuum analyze population_grid_h3_r8;
 create index on population_grid_h3_r8 using gist (geom, population);

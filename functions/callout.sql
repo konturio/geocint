@@ -75,6 +75,7 @@ from  k2_feature_outline where not cflag;
 
 
 -- deconflict the same PIAs
+
 update k2_feature_outline set rn = a.rn from
                     (select ROW_NUMBER() OVER (PARTITION BY label) as rn, feature_id, label from k2_feature_outline ou
                     where (select count(*) from k2_feature_outline inr
@@ -82,7 +83,7 @@ update k2_feature_outline set rn = a.rn from
 where a.feature_id = k2_feature_outline.feature_id;
 -- нумеруем одинаковые PIA
 
-/*  В процессе исправления с проверки полигонов в родительской таблице на точки в результирующей
+
 do
 $$
     declare
@@ -91,19 +92,15 @@ $$
     begin
         for row in (select rn, feature_id, label from k2_feature_outline
                     where rn >1 order by rn) loop
-           tmp_centers := st_collect(tmp_centers, q.center)
-           from ST_MaximumInscribedCircle(ST_Difference(a.geometry, st_buffer(tmp_centers,0.0001))) q,
-                k2_feature a where a.feature_id = row.feature_id;
-
-                update k2_feature_outline set label = q.center
-                from k2_feature,
-                     ST_MaximumInscribedCircle(ST_Difference(k2_feature.geometry, st_buffer(label,0.0001))) q
-                where k2_feature.feature_id = row.feature_id;
+            if row.rn = 2 then tmp_centers := coalesce(tmp_centers,row.label);  end if;
+            update k2_feature_outline set label =
+            p.center from k2_feature a,
+                                    ST_MaximumInscribedCircle(ST_Difference(geometry,
+                                                                            st_buffer (tmp_centers,0.0001))) p
+            where k2_feature_outline.rn = row.rn and k2_feature_outline.feature_id = row.feature_id;
          end loop;
     end;
 $$;
-*/
--- deconflict end
 
 do
 $$
@@ -132,12 +129,18 @@ $$
                                                                                                                         -- возможно не нужен если брать буффер pixel-size
                                   from k2_feature_outline) a)
                     then
-                        update k2_feature_outline
-                        set cline = tmp_cline
-                        where row.feature_id = k2_feature_outline.feature_id;
-                    else
-                        update k2_feature_outline set cflag = null where row.feature_id = k2_feature_outline.feature_id; -- null если есть пересечение. стоило Int делать сразу
-                    end if;
+                        if not ( select st_intersects(st_buffer(st_endpoint(tmp_cline), 0.15),                     -- лейбл не выходит за границы экрана
+                                                   ST_Boundary(st_buffer(ST_SetSRID(ST_Extent(k2_feature.geometry), 4326), 1))
+                                                    )
+                            from k2_feature )                                                                           -- buffer of endpoint, bounds of original canvas
+                        then
+                            update k2_feature_outline
+                            set cline = tmp_cline
+                            where row.feature_id = k2_feature_outline.feature_id;
+                        else
+                            update k2_feature_outline set cflag = null where row.feature_id = k2_feature_outline.feature_id; -- null если есть пересечение. стоило Int делать сразу
+                        end if;
+                     end if;
                 end if;
 
                 if (select cflag from k2_feature_outline where feature_id = row.feature_id) = 'true'

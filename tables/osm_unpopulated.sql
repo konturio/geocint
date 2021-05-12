@@ -1,5 +1,4 @@
 drop table if exists osm_unpopulated;
-
 create table osm_unpopulated as (
     select
         osm_type,
@@ -8,7 +7,7 @@ create table osm_unpopulated as (
         tags ->> 'landuse' as landuse,
         tags ->> 'population' as population,
         tags ->> 'highway' as highway,
-        ST_Transform(ST_ClipByBox2D(geog::geometry, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857) as geom
+        ST_MakeValid(ST_Transform(ST_ClipByBox2D(geog::geometry, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857)) as geom
     from
         osm
     where
@@ -24,4 +23,3 @@ create table osm_unpopulated as (
 );
 
 create index on osm_unpopulated using gist (geom);
-

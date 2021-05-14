@@ -165,5 +165,5 @@ create index stat_h3_brin_all on stat_h3 using brin
      total_hours, avgmax_ts, count, forest, highway_length, min_ts, residential,
      view_count, avg_slope, count_6_months, gdp, highway_length_6_months, one, resolution, wildfires,
      building_count, covid19_cases, geom, local_hours, osm_users, total_building_count, avg_ndvi, covid19_confirmed,
-     zoom
+     population_v2, zoom
     );

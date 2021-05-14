@@ -64,7 +64,8 @@ create table stat_h3_quality as (
                 avg(a.avg_slope) as agg_avg_slope,
                 avg(a.forest) as agg_forest,
                 avg(a.avg_ndvi) as agg_avg_ndvi,
-                avg(a.covid19_confirmed) as agg_covid19_confirmed
+                avg(a.covid19_confirmed) as agg_covid19_confirmed,
+                avg(a.population_v2) as agg_population_v2
             from
                 stat_h3 a
             where

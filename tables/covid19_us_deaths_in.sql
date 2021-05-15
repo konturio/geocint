@@ -11,3 +11,5 @@ create table covid19_us_deaths_in as
         combined_key,
         'dead'::text as status
  from covid19_us_deaths_csv_in group by 1, 4);
+
+create index if not exists covid19_us_deaths_in_fips_idx on covid19_us_deaths_in (fips);

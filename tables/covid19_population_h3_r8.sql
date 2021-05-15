@@ -24,6 +24,7 @@ set
 from
     covid19_us_counties a
 where
+    admin_id is null and
     ST_DWithin(h.h3::geometry, a.geom, 0);
 
 vacuum analyse covid19_population_h3_r8;

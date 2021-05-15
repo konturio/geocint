@@ -1,11 +1,10 @@
 drop table if exists kontur_population_in;
 create table kontur_population_in as (
     select h3,
-           8                                as resolution,
+           false                            as probably_unpopulated,
            coalesce(max(building_count), 0) as building_count,
-           coalesce(max(population), 0)     as population,
-           false                            as has_water,
-           false                            as probably_unpopulated
+           coalesce(max(population), 0)     as population
+
     from (
              select h3,
                     building_count as building_count,
@@ -21,9 +20,6 @@ create table kontur_population_in as (
          ) z
     group by 1
 );
--- after creation pop_mid1
-vacuum analyze kontur_population_in;
-create index on kontur_population_in (h3);
 
 alter table kontur_population_in
     set (parallel_workers=32);
@@ -37,15 +33,43 @@ create table kontur_population_mid1 as (
              join ST_HexagonFromH3(h3) hex on true
 );
 
-vacuum analyze kontur_population_mid1;
-
 alter table kontur_population_mid1
     set (parallel_workers=32);
+create index on kontur_population_mid1 using gist (geom);
 
 drop table kontur_population_in;
-create index on kontur_population_mid1 (h3);
 
-create index on kontur_population_mid1 using gist (geom);
+drop table if exists zero_pop_h3;
+create table zero_pop_h3 as (
+    select h3
+    from kontur_population_mid1 p
+    where exists(select from osm_water_polygons w where ST_Intersects(p.geom, w.geom))
+    or exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom,0))
+);
+
+update kontur_population_mid1 p
+set probably_unpopulated = true
+from zero_pop_h3 z
+where z.h3 = p.h3;
+
+create index on kontur_population_mid1 (probably_unpopulated) where probably_unpopulated;
+
+drop table if exists nonzero_pop_h3;
+explain (analyze, buffers) create table nonzero_pop_h3 as (
+    select h3
+    from kontur_population_mid1 p
+    where
+-- TODO: osm_residential_landuse has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now.
+        exists(select from osm_residential_landuse z where ST_DWithin(p.geom, z.geom, 0))
+      and p.probably_unpopulated
+);
+
+update kontur_population_mid1 p
+set probably_unpopulated = false
+from nonzero_pop_h3 z
+where z.h3 = p.h3;
+
+drop table if exists nonzero_pop_h3;
 
 update kontur_population_mid1
 set probably_unpopulated = true
@@ -62,52 +86,6 @@ where ST_Intersects(
                              )
               )
           );
-
-drop table if exists zero_pop_h3;
-create table zero_pop_h3 as (
-    select h3
-    from kontur_population_mid1 p
-    where exists(select from osm_water_polygons w where ST_Intersects(p.geom, w.geom))
-);
-
-update kontur_population_mid1 p
-set has_water            = true,
-    probably_unpopulated = true
-from zero_pop_h3 z
-where z.h3 = p.h3;
-
-drop table if exists zero_pop_h3;
-explain (analyze, buffers) create table zero_pop_h3 as (
-    select h3
-    from kontur_population_mid1 p
-    where
--- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now.
-        exists(select from osm_unpopulated z where ST_Intersects(p.geom, z.geom))
-      and not p.probably_unpopulated
-);
-
-update kontur_population_mid1 p
-set probably_unpopulated = true
-from zero_pop_h3 z
-where z.h3 = p.h3;
-drop table if exists zero_pop_h3;
-
-drop table if exists nonzero_pop_h3;
-explain (analyze, buffers) create table nonzero_pop_h3 as (
-    select h3
-    from kontur_population_mid1 p
-    where
--- TODO: osm_residential_landuse has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now.
-        exists(select from osm_residential_landuse z where ST_Intersects(p.geom, z.geom))
-      and p.probably_unpopulated
-);
-
-update kontur_population_mid1 p
-set probably_unpopulated = false
-from nonzero_pop_h3 z
-where z.h3 = p.h3;
-
-drop table if exists nonzero_pop_h3;
 
 drop table if exists kontur_population_mid2;
 create table kontur_population_mid2

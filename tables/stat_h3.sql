@@ -99,7 +99,7 @@ create table stat_h3_in as (
                     wildfires as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
                     null::float as covid19_confirmed, null::float as population_v2, resolution
              from global_fires_stat_h3
-			 union all
+             union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
                     null::float as highway_length_6_months, null::float as osm_users, null::float as population,
@@ -108,7 +108,7 @@ create table stat_h3_in as (
                     null::float as wildfires, vaccine_value as covid19_vaccines, null::float as covid19_cases,
                     null::float as covid19_confirmed, null::float as population_v2, resolution
              from covid19_vaccine_accept_us_counties_h3
-			 union all
+             union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
                     null::float as highway_length_6_months, null::float as osm_users, null::float as population,
@@ -117,7 +117,7 @@ create table stat_h3_in as (
                     null::float as wildfires, null::float as covid19_vaccines, covid19_cases as covid19_cases,
                     null::float as covid19_confirmed, null::float as population_v2, resolution
              from covid19_cases_us_counties_h3
-        	 union all
+             union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
                     null::float as highway_length_6_months, null::float as osm_users, null::float as population,
@@ -134,7 +134,7 @@ create table stat_h3_in as (
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_cases,
                     null::float as covid19_confirmed, population as population_v2, resolution
-             from kontur_population_h3_v2
+             from kontur_population_v2_h3
         ) z
     group by 2, 1
 );

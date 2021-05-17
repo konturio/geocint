@@ -43,8 +43,9 @@ drop table if exists zero_pop_h3;
 create table zero_pop_h3 as (
     select h3
     from kontur_population_mid1 p
+-- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now. osm_water_polygons has valid geometries, so we use ST_Intersects.
     where exists(select from osm_water_polygons w where ST_Intersects(p.geom, w.geom))
-    or exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom,0))
+       or exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
 );
 
 update kontur_population_mid1 p
@@ -55,7 +56,7 @@ where z.h3 = p.h3;
 create index on kontur_population_mid1 (probably_unpopulated) where probably_unpopulated;
 
 drop table if exists nonzero_pop_h3;
-explain (analyze, buffers) create table nonzero_pop_h3 as (
+create table nonzero_pop_h3 as (
     select h3
     from kontur_population_mid1 p
     where

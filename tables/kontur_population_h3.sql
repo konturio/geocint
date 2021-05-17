@@ -39,6 +39,22 @@ create index on kontur_population_mid1 using gist (geom);
 
 drop table kontur_population_in;
 
+update kontur_population_mid1
+set probably_unpopulated = true
+where ST_Intersects(
+              geom,
+              (
+                  select ST_Transform(
+                                 (select geog::geometry
+                                  from osm
+                                  where tags @> '{"admin_level":"2"}'
+                                    and osm_id = 3630439
+                                    and osm_type = 'relation'
+                                 ), 3857
+                             )
+              )
+          );
+
 drop table if exists zero_pop_h3;
 create table zero_pop_h3 as (
     select h3
@@ -71,22 +87,6 @@ from nonzero_pop_h3 z
 where z.h3 = p.h3;
 
 drop table if exists nonzero_pop_h3;
-
-update kontur_population_mid1
-set probably_unpopulated = true
-where ST_Intersects(
-              geom,
-              (
-                  select ST_Transform(
-                                 (select geog::geometry
-                                  from osm
-                                  where tags @> '{"admin_level":"2"}'
-                                    and osm_id = 3630439
-                                    and osm_type = 'relation'
-                                 ), 3857
-                             )
-              )
-          );
 
 drop table if exists kontur_population_mid2;
 create table kontur_population_mid2

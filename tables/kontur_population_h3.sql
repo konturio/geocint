@@ -1,3 +1,4 @@
+-- union all population and building h3 hexagon tables
 drop table if exists kontur_population_in;
 create table kontur_population_in as (
     select h3,
@@ -24,6 +25,7 @@ create table kontur_population_in as (
 alter table kontur_population_in
     set (parallel_workers=32);
 
+-- generate geometries and areas for hexagons
 drop table if exists kontur_population_mid1;
 create table kontur_population_mid1 as (
     select a.*,
@@ -39,6 +41,7 @@ create index on kontur_population_mid1 using gist (geom);
 
 drop table kontur_population_in;
 
+-- move out Morocco's population to settle it by urban mask data later
 update kontur_population_mid1
 set probably_unpopulated = true
 where ST_Intersects(
@@ -55,6 +58,7 @@ where ST_Intersects(
               )
           );
 
+-- generate table with zero populated h3 hexagons
 drop table if exists zero_pop_h3;
 create table zero_pop_h3 as (
     select h3
@@ -64,6 +68,7 @@ create table zero_pop_h3 as (
        or exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
 );
 
+-- mark true h3 hexagons which have zero population
 update kontur_population_mid1 p
 set probably_unpopulated = true
 from zero_pop_h3 z
@@ -71,6 +76,7 @@ where z.h3 = p.h3;
 
 create index on kontur_population_mid1 (probably_unpopulated) where probably_unpopulated;
 
+-- generate table with non-zero population h3 hexagons settled on residential and other places
 drop table if exists nonzero_pop_h3;
 create table nonzero_pop_h3 as (
     select h3
@@ -81,6 +87,7 @@ create table nonzero_pop_h3 as (
       and p.probably_unpopulated
 );
 
+-- mark true hexagons which are probably populated
 update kontur_population_mid1 p
 set probably_unpopulated = false
 from nonzero_pop_h3 z
@@ -96,6 +103,7 @@ create table kontur_population_mid2
     resolution integer
 );
 
+-- remove falsely precise density cells in population table
 do
 $$
     declare
@@ -146,6 +154,7 @@ $$
 $$;
 drop table kontur_population_mid1;
 
+-- populate people to lower resolution hexagons
 do
 $$
     declare
@@ -164,6 +173,7 @@ $$
     end;
 $$;
 
+-- final table with population density, area, geometry and h3 hexagons
 drop table if exists kontur_population_h3;
 create table kontur_population_h3 as (
     select p.resolution,

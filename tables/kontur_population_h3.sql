@@ -68,7 +68,7 @@ create table zero_pop_h3 as (
        or exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
 );
 
--- mark true h3 hexagons which have zero population
+-- mark h3 hexagons which have zero population
 update kontur_population_mid1 p
 set probably_unpopulated = true
 from zero_pop_h3 z
@@ -87,7 +87,7 @@ create table nonzero_pop_h3 as (
       and p.probably_unpopulated
 );
 
--- mark true hexagons which are probably populated
+-- mark hexagons which are probably populated
 update kontur_population_mid1 p
 set probably_unpopulated = false
 from nonzero_pop_h3 z
@@ -103,7 +103,7 @@ create table kontur_population_mid2
     resolution integer
 );
 
--- remove falsely precise density cells in population table
+-- produce population counts
 do
 $$
     declare

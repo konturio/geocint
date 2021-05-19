@@ -1,7 +1,0 @@
-drop table if exists :buildings_h3;
-create table :buildings_h3 as (
-    select h3_geo_to_h3(ST_PointOnSurface(geom), 8) as h3, -- here we use input geometry in EPSG:4326
-           count(*)                                 as building_count
-    from :buildings
-    group by 1
-);

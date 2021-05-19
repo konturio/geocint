@@ -487,7 +487,7 @@ db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table
 	touch $@
 
 db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.
-	psql -f tables/buildings_h3.sql -v buildings=osm_buildings -v buildings_h3=osm_building_count_grid_h3_r8
+	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r8 -v item_count=building_count
 	touch $@
 
 db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
@@ -625,7 +625,7 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
 	touch $@
 
 db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
-	psql -f tables/buildings_h3.sql -v buildings=morocco_buildings -v buildings_h3=morocco_buildings_h3
+	psql -f tables/count_items_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/microsoft_buildings: | data
@@ -711,8 +711,8 @@ db/table/microsoft_buildings: data/microsoft_buildings/unzip | db/table
 	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom'
 	touch $@
 
-db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table
-	psql -f tables/buildings_h3.sql -v buildings=microsoft_buildings -v buildings_h3=microsoft_buildings_h3
+db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Count amount of Microsoft Buildings at hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=microsoft_buildings -v table_h3=microsoft_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/new_zealand_buildings: | data
@@ -728,7 +728,7 @@ db/table/new_zealand_buildings: data/new_zealand_buildings/download | db/table #
 	touch $@
 
 db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings ## Count amount of New Zealand buildings at hexagons.
-	psql -f tables/buildings_h3.sql -v buildings=new_zealand_buildings -v buildings_h3=new_zealand_buildings_h3
+	psql -f tables/count_items_in_h3.sql -v table=new_zealand_buildings -v table_h3=new_zealand_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/geoalert_urban_mapping: | data
@@ -750,8 +750,8 @@ db/table/geoalert_urban_mapping: data/geoalert_urban_mapping/unzip | db/table
 	cd data/geoalert_urban_mapping; ls *.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln geoalert_urban_mapping -lco GEOMETRY_NAME=geom'
 	touch $@
 
-db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table
-	psql -f tables/buildings_h3.sql -v buildings=geoalert_urban_mapping -v buildings_h3=geoalert_urban_mapping_h3
+db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table ## Count amount of Geoalert buildings at hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=geoalert_urban_mapping -v table_h3=geoalert_urban_mapping_h3 -v item_count=building_count
 	touch $@
 
 db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx | db/table
@@ -763,6 +763,26 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	rm -f data/kontur_population.gpkg
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
+
+data/kontur_population_v2: | data ## Create folder for Kontur Population v2.
+	mkdir -p $@
+
+data/kontur_population_v2/kontur_population_20200928.gpkg.gz: | data/kontur_population_v2 ## Download Kontur Population v2 gzip to geocint.
+	rm -rf $@
+	cd data/kontur_population_v2; wget https://adhoc.kontur.io/data/kontur_population_20200928.gpkg.gz
+
+data/kontur_population_v2/unzip: data/kontur_population_v2/kontur_population_20200928.gpkg.gz ## Unzip Kontur Population v2 geopackage archive.
+	gzip -dfk data/kontur_population_v2/kontur_population_20200928.gpkg.gz
+	touch $@
+
+db/table/kontur_population_v2: data/kontur_population_v2/unzip ## Import population v2 into database.
+	psql -c "drop table if exists kontur_population_v2;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/kontur_population_v2/kontur_population_20200928.gpkg -t_srs EPSG:4326 -nln kontur_population_v2 -lco GEOMETRY_NAME=geom
+	touch $@
+
+db/table/kontur_population_v2_h3: db/table/kontur_population_v2 ## Generate h3 hexagon for population v2.
+	psql -f tables/kontur_population_v2_h3.sql
+	touch $@
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_population_raw.sql
@@ -1009,7 +1029,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

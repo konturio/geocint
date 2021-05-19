@@ -11,3 +11,5 @@ create table covid19_us_confirmed_in as
         combined_key,
         'confirmed'::text as status
  from covid19_us_confirmed_csv_in group by 1, 4);
+
+create index if not exists covid19_us_confirmed_in_fips_idx on covid19_us_confirmed_in (fips);

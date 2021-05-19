@@ -1,11 +1,11 @@
+-- union all population and building h3 hexagon tables
 drop table if exists kontur_population_in;
 create table kontur_population_in as (
     select h3,
-           8                                as resolution,
+           false                            as probably_unpopulated,
            coalesce(max(building_count), 0) as building_count,
-           coalesce(max(population), 0)     as population,
-           false                            as has_water,
-           false                            as probably_unpopulated
+           coalesce(max(population), 0)     as population
+
     from (
              select h3,
                     building_count as building_count,
@@ -25,6 +25,7 @@ create table kontur_population_in as (
 alter table kontur_population_in
     set (parallel_workers=32);
 
+-- generate geometries and areas for hexagons
 drop table if exists kontur_population_mid1;
 create table kontur_population_mid1 as (
     select a.*,
@@ -36,12 +37,11 @@ create table kontur_population_mid1 as (
 
 alter table kontur_population_mid1
     set (parallel_workers=32);
-
-drop table kontur_population_in;
-create index on kontur_population_mid1 (h3);
-
 create index on kontur_population_mid1 using gist (geom);
 
+drop table kontur_population_in;
+
+-- move out Morocco's population to settle it by urban mask data later
 update kontur_population_mid1
 set probably_unpopulated = true
 where ST_Intersects(
@@ -58,34 +58,25 @@ where ST_Intersects(
               )
           );
 
+-- generate table with zero populated h3 hexagons
 drop table if exists zero_pop_h3;
 create table zero_pop_h3 as (
     select h3
     from kontur_population_mid1 p
+-- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now. osm_water_polygons has valid geometries, so we use ST_Intersects.
     where exists(select from osm_water_polygons w where ST_Intersects(p.geom, w.geom))
+       or exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
 );
 
-update kontur_population_mid1 p
-set has_water            = true,
-    probably_unpopulated = true
-from zero_pop_h3 z
-where z.h3 = p.h3;
-
-drop table if exists zero_pop_h3;
-create table zero_pop_h3 as (
-    select h3
-    from kontur_population_mid1 p
-    where
--- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now.
-        exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
-      and not p.probably_unpopulated
-);
+-- mark h3 hexagons which have zero population
 update kontur_population_mid1 p
 set probably_unpopulated = true
 from zero_pop_h3 z
 where z.h3 = p.h3;
-drop table if exists zero_pop_h3;
 
+create index on kontur_population_mid1 (probably_unpopulated) where probably_unpopulated;
+
+-- generate table with non-zero population h3 hexagons settled on residential and other places
 drop table if exists nonzero_pop_h3;
 create table nonzero_pop_h3 as (
     select h3
@@ -96,6 +87,7 @@ create table nonzero_pop_h3 as (
       and p.probably_unpopulated
 );
 
+-- mark hexagons which are probably populated
 update kontur_population_mid1 p
 set probably_unpopulated = false
 from nonzero_pop_h3 z
@@ -111,6 +103,7 @@ create table kontur_population_mid2
     resolution integer
 );
 
+-- produce population counts
 do
 $$
     declare
@@ -161,6 +154,7 @@ $$
 $$;
 drop table kontur_population_mid1;
 
+-- populate people to lower resolution hexagons
 do
 $$
     declare
@@ -179,6 +173,7 @@ $$
     end;
 $$;
 
+-- final table with population density, area, geometry and h3 hexagons
 drop table if exists kontur_population_h3;
 create table kontur_population_h3 as (
     select p.resolution,

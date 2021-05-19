@@ -1,5 +1,4 @@
 drop table if exists osm_unpopulated;
-
 create table osm_unpopulated as (
     select
         osm_type,
@@ -24,4 +23,3 @@ create table osm_unpopulated as (
 );
 
 create index on osm_unpopulated using gist (geom);
-

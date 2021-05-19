@@ -1,5 +1,4 @@
 drop table if exists osm_residential_landuse;
-
 create table osm_residential_landuse as (
     select
         osm_type,

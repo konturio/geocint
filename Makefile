@@ -487,7 +487,7 @@ db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table
 	touch $@
 
 db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.
-	psql -f tables/geometry_to_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r8 -v count=building_count
+	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r8 -v item_count=building_count
 	touch $@
 
 db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
@@ -625,7 +625,7 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask
 	touch $@
 
 db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
-	psql -f tables/geometry_to_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v count=building_count
+	psql -f tables/count_items_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/microsoft_buildings: | data
@@ -711,8 +711,8 @@ db/table/microsoft_buildings: data/microsoft_buildings/unzip | db/table
 	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom'
 	touch $@
 
-db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table
-	psql -f tables/geometry_to_h3.sql -v table=microsoft_buildings -v table_h3=microsoft_buildings_h3 -v count=building_count
+db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Count amount of Microsoft Buildings at hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=microsoft_buildings -v table_h3=microsoft_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/new_zealand_buildings: | data
@@ -728,7 +728,7 @@ db/table/new_zealand_buildings: data/new_zealand_buildings/download | db/table #
 	touch $@
 
 db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings ## Count amount of New Zealand buildings at hexagons.
-	psql -f tables/geometry_to_h3.sql -v table=new_zealand_buildings -v table_h3=new_zealand_buildings_h3 -v count=building_count
+	psql -f tables/count_items_in_h3.sql -v table=new_zealand_buildings -v table_h3=new_zealand_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/geoalert_urban_mapping: | data
@@ -750,8 +750,8 @@ db/table/geoalert_urban_mapping: data/geoalert_urban_mapping/unzip | db/table
 	cd data/geoalert_urban_mapping; ls *.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln geoalert_urban_mapping -lco GEOMETRY_NAME=geom'
 	touch $@
 
-db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table
-	psql -f tables/geometry_to_h3.sql -v table=geoalert_urban_mapping -v table_h3=geoalert_urban_mapping_h3 -v count=building_count
+db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table ## Count amount of Geoalert buildings at hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=geoalert_urban_mapping -v table_h3=geoalert_urban_mapping_h3 -v item_count=building_count
 	touch $@
 
 db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx | db/table

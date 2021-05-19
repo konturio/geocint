@@ -775,12 +775,13 @@ data/kontur_population_v2/unzip: data/kontur_population_v2/kontur_population_202
 	gzip -dfk data/kontur_population_v2/kontur_population_20200928.gpkg.gz
 	touch $@
 
-db/table/kontur_population_h3_v2: data/kontur_population_v2/unzip ## Import population v2 and transform it into h3 hexagons.
+db/table/kontur_population_v2: data/kontur_population_v2/unzip ## Import population v2 into database.
 	psql -c "drop table if exists kontur_population_v2;"
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/kontur_population_v2/kontur_population_20200928.gpkg -t_srs EPSG:4326 -nln kontur_population_v2 -lco GEOMETRY_NAME=geom
-	psql -f tables/geometry_to_h3.sql -v table=kontur_population_v2 -v table_h3=kontur_population_v2_h3 -v count=population
-	psql -c "alter table kontur_population_v2_h3 add column resolution integer;"
-	psql -c "update kontur_population_v2_h3 set geom = h3_get_resolution(h3);"
+	touch $@
+
+db/table/kontur_population_v2_h3: db/table/kontur_population_v2 ## Generate h3 hexagon for population v2.
+	psql -f tables/kontur_population_v2_h3.sql
 	touch $@
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
@@ -1028,7 +1029,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_h3_v2 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

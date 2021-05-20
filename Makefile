@@ -292,7 +292,7 @@ data/worldpop: | data
 	mkdir -p $@
 
 data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop.org.
-	cat data/worldpop/worldpop_countries_url.txt | parallel "cd data/world_pop; wget {}"
+	cat data/worldpop/worldpop_countries_url.txt | parallel "cd data/worldpop; wget {}"
 	touch $@
 
 db/table/worldpop_population_raster: data/worldpop/download | db/table ## Import raster data and create table with tiled data.

@@ -298,16 +298,18 @@ data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop
 
 db/table/worldpop_population_raster: data/worldpop/download | db/table ## Import raster data and create table with tiled data.
 	psql -c "drop table if exists worldpop_population_raster"
-	raster2pgsql -p -M -Y -s 4326 data/worldpop/*.tif -t auto worldpop_population_raster | psql -q
+	raster2pgsql -p -Y -s 4326 data/worldpop/*.tif -t auto worldpop_population_raster | psql -q
 	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
-	ls data/worldpop/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -M -Y -s 4326 {} -t 256x256 worldpop_population_raster | psql -q'
+	ls data/worldpop/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t 256x256 worldpop_population_raster | psql -q'
+	psql -c "alter table worldpop_population_raster set (parallel_workers = 32);"
+	psql -c "vacuum analyze worldpop_population_raster;"
 	touch $@
 
 db/table/worldpop_population_grid_h3_r8: db/table/worldpop_population_raster ## Count sum sum of World Pop raster values at h3 hexagons.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=worldpop_population_raster -v population_raster_grid_h3_r8=worldpop_population_raster_grid_h3_r8
 	touch $@
 
-db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate table
+db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate table with iso codes for WorldPop rasters.
 	psql -c "drop table if exists worldpop_country_codes;"
 	psql -c "create table worldpop_country_codes (code varchar(3) not null, primary key (code))"
 	cd data/world_pop; ls *.tif | parallel -eta psql -c "insert into worldpop_country_codes(code) select upper(substr('{}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{}', 1, 3)))"

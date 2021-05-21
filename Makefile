@@ -292,8 +292,7 @@ data/worldpop: | data
 	mkdir -p $@
 
 data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop.org.
-	cd data/rm -r *.tif
-	aria2c -j10 -s1 -d data/worldpop --allow-overwrite true -i <(python3 scripts/async_parser_worldpop_tif_urls.py)
+	python3 scripts/async_parser_worldpop_tif_urls.py | aria2c -j10 -s1 -d data/worldpop --allow-overwrite true -i -
 	touch $@
 
 db/table/worldpop_population_raster: data/worldpop/download | db/table ## Import raster data and create table with tiled data.
@@ -309,7 +308,7 @@ db/table/worldpop_population_grid_h3_r8: db/table/worldpop_population_raster ## 
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=worldpop_population_raster -v population_raster_grid_h3_r8=worldpop_population_raster_grid_h3_r8
 	touch $@
 
-db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate table with iso codes for WorldPop rasters.
+db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate table with countries for WorldPop rasters.
 	psql -c "drop table if exists worldpop_country_codes;"
 	psql -c "create table worldpop_country_codes (code varchar(3) not null, primary key (code))"
 	cd data/world_pop; ls *.tif | parallel -eta psql -c "insert into worldpop_country_codes(code) select upper(substr('{}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{}', 1, 3)))"

@@ -4,7 +4,7 @@ import re
 import aiohttp
 import asyncio
 
-IDS_URL = 'https://www.worldpop.org/ajax/geolisting/category?id=78&_=1621531170234'
+IDS_URL = 'https://www.worldpop.org/ajax/geolisting/category?id=29&_=1621603565247'
 PAGE_URL = 'https://www.worldpop.org/geodata/summary?id='
 SITE = 'data.worldpop.org'
 
@@ -13,7 +13,7 @@ def get_ids():
     response_id = requests.get(IDS_URL)
     data = response_id.json()
 
-    url_ids = [row['id'] for row in data]
+    url_ids = [row['id'] for row in data if row['popyear'] == '2020']
 
     return url_ids
 

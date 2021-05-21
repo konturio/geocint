@@ -292,7 +292,8 @@ data/worldpop: | data
 	mkdir -p $@
 
 data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop.org.
-	cat data/worldpop/worldpop_countries_url.txt | parallel "cd data/worldpop; wget {}"
+	cd data/rm -r *.tif
+	aria2c -j10 -s1 -d data/worldpop --allow-overwrite true -i <(python3 scripts/async_parser_worldpop_tif_urls.py)
 	touch $@
 
 db/table/worldpop_population_raster: data/worldpop/download | db/table ## Import raster data and create table with tiled data.

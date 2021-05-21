@@ -293,13 +293,14 @@ data/worldpop: | data
 
 data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop.org.
 	python3 scripts/async_parser_worldpop_tif_urls.py | aria2c -j10 -s1 -d data/worldpop --allow-overwrite true -i -
+	python3 scripts/async_parser_worldpop_tif_urls.py |
 	touch $@
 
 db/table/worldpop_population_raster: data/worldpop/download | db/table ## Import raster data and create table with tiled data.
 	psql -c "drop table if exists worldpop_population_raster"
 	raster2pgsql -p -Y -s 4326 data/worldpop/*.tif -t auto worldpop_population_raster | psql -q
 	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
-	ls data/worldpop/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t 256x256 worldpop_population_raster | psql -q'
+	ls data/worldpop/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
 	psql -c "alter table worldpop_population_raster set (parallel_workers = 32);"
 	psql -c "vacuum analyze worldpop_population_raster;"
 	touch $@
@@ -315,7 +316,7 @@ db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate t
 	touch $@
 
 db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.
-	psql -f table/worldpop_population_boundary.sql
+	psql -f tables/worldpop_population_boundary.sql
 	touch $@
 
 data/hrsl_cogs: | data ## Create folder for HRSL raster data.

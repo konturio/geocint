@@ -83,7 +83,7 @@ values ('population', 'Population', jsonb_build_array(
         'Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
         'NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/',
         'Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping',
-        'Constrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/',
+        'Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["unimportant"], ["important"]]'::jsonb);
 

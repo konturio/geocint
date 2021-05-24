@@ -48,14 +48,13 @@ from worldpop_population_boundary b
 where ST_Intersects(ST_Transform(b.geom, 4326), p.geom)
   and worldpop is null;
 
-drop index population_grid_h3_r8_geom_hrsl_pop_worldpop_idx;
+drop index if exists population_grid_h3_r8_geom_hrsl_pop_worldpop_idx;
 vacuum population_grid_h3_r8;
 update population_grid_h3_r8 p
 -- set population counts starting with more high resolution raster data (30m, 100m and whole planet)
 set population = coalesce(hrsl_pop, worldpop, ghs_pop);
 
-vacuum full population_grid_h3_r8;
-vacuum analyze population_grid_h3_r8;
+vacuum full analyze population_grid_h3_r8;
 create index on population_grid_h3_r8 using gist (geom, population);
 alter table population_grid_h3_r8
     set (parallel_workers = 32);

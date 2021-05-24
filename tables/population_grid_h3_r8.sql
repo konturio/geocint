@@ -23,12 +23,6 @@ create table population_grid_h3_r8 as (
              select h3,
                     null::float as ghs_pop,
                     null::float as hrsl_pop,
-                    null::float as worldpop
-             from fb_population_grid_h3_r8
-             union all
-             select h3,
-                    null::float as ghs_pop,
-                    null::float as hrsl_pop,
                     population  as worldpop
              from worldpop_population_raster_grid_h3_r8
          ) z

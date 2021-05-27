@@ -12,7 +12,7 @@ select
     sum(val) as sum
 from
     ST_PixelAsCentroids(rast)
-where val != 'NaN'
+where val != 'NaN' and val != 0
 group by 1;
 $$
     language sql

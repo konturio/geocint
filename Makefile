@@ -291,15 +291,22 @@ db/procedure: | db
 data/worldpop: | data
 	mkdir -p $@
 
+data/worldpop/tiled_rasters: | data/worldpop
+	mkdir -p $@
+
 data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop.org.
 	python3 scripts/parser_worldpop_tif_urls.py | parallel -j10 wget -nc -c -P data/worldpop -i -
 	touch $@
 
-db/table/worldpop_population_raster: data/worldpop/download | db/table ## Import raster data and create table with tiled data.
+data/worldpop/tiled_rasters/tiles: | data/worldpop/tiled_rasters ## Tile raw stripped TIFs.
+	find data/worldpop/* -type f | sort -r | parallel -j10 --eta 'cd {//} && gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co TILED=YES {/} /home/gis/geocint/data/worldpop/tiled_rasters/tiled_{/}'
+	touch $@
+
+db/table/worldpop_population_raster: data/worldpop/tiled_rasters/tiles | db/table ## Import raster data and create table with tiled data.
 	psql -c "drop table if exists worldpop_population_raster"
-	raster2pgsql -p -Y -s 4326 data/worldpop/*.tif -t auto worldpop_population_raster | psql -q
+	raster2pgsql -p -Y -s 4326 data/worldpop/tiled_rasters/*.tif -t auto worldpop_population_raster | psql -q
 	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
-	ls data/worldpop/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
+	ls -Sr data/worldpop/tiled_rasters/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
 	psql -c "alter table worldpop_population_raster set (parallel_workers = 32);"
 	psql -c "vacuum analyze worldpop_population_raster;"
 	touch $@

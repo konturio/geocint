@@ -329,14 +329,14 @@ data/hrsl_cogs: | data ## Create folder for HRSL raster data.
 	mkdir -p $@
 
 data/hrsl_cogs/download: | data/hrsl_cogs ## Download HRSL tifs from Data for Good at AWS S3.
-	cd data/hrsl_cogs; aws s3 cp s3://dataforgood-fb-data/hrsl-cogs/ ./ --no-sign-request --recursive
+	cd data/hrsl_cogs; aws s3 sync s3://dataforgood-fb-data/hrsl-cogs/ ./ --no-sign-request
 	touch $@
 
 db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare table for raster data. Import HRSL raster tiles into database.
 	psql -c "drop table if exists hrsl_population_raster;"
-	raster2pgsql -p -Y -s 4326 data/hrsl_cogs/hrsl_general/v1/*.tif -t auto hrsl_population_raster | psql -q
+	raster2pgsql -p -Y -s 4326 data/hrsl_cogs/hrsl_general/v1.5/*.tif -t auto hrsl_population_raster | psql -q
 	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
-	ls data/hrsl_cogs/hrsl_general/v1/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
+	ls data/hrsl_cogs/hrsl_general/v1.5/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
 	psql -c "alter table hrsl_population_raster set (parallel_workers = 32);"
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@

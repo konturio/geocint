@@ -299,7 +299,7 @@ data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop
 	touch $@
 
 data/worldpop/tiled_rasters/tiles: | data/worldpop/tiled_rasters ## Tile raw stripped TIFs.
-	find data/worldpop/* -type f | sort -r | parallel -j10 --eta 'cd {//} && gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co TILED=YES {/} /home/gis/geocint/data/worldpop/tiled_rasters/tiled_{/}'
+	find data/worldpop/* -type f | sort -r | parallel -j10 --eta 'cd {//} && gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co TILED=YES -co BIGTIFF=IF_SAFER {/} /home/gis/geocint/data/worldpop/tiled_rasters/tiled_{/}'
 	touch $@
 
 db/table/worldpop_population_raster: data/worldpop/tiled_rasters/tiles | db/table ## Import raster data and create table with tiled data.

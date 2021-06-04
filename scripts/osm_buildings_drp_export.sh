@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-cd /home/gis/geocint/data/
+cd /home/gis/geocint/data/osm_buildings_drp/
+rm -f osm_buildings_*.gpkg
+rm -f osm_buildings_*.gpkg.gz
+
 ogr2ogr -lco OVERWRITE=YES -f GPKG osm_buildings_new_york.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_new_york' -lco "SPATIAL_INDEX=NO" -nln osm_buildings
 ogr2ogr -append -update -f GPKG osm_buildings_new_york.gpkg PG:'dbname=gis' -sql 'select id, "name", geom from osm_boundary_new_york' -lco "SPATIAL_INDEX=NO" -nln osm_boundary
 
 ogr2ogr -lco OVERWRITE=YES -f GPKG osm_buildings_new_orleans.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_new_orleans' -lco "SPATIAL_INDEX=NO" -nln osm_buildings
-ogr2ogr -append -update -f GPKG osm_buildings_panama_city.gpkg PG:'dbname=gis' -sql 'select id, "name", geom from osm_boundary_panama_city' -lco "SPATIAL_INDEX=NO" -nln osm_boundary
+ogr2ogr -append -update -f GPKG osm_buildings_new_orleans.gpkg PG:'dbname=gis' -sql 'select id, "name", geom from osm_boundary_new_orleans' -lco "SPATIAL_INDEX=NO" -nln osm_boundary
 
 ogr2ogr -lco OVERWRITE=YES -f GPKG osm_buildings_los_angeles.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_los_angeles' -lco "SPATIAL_INDEX=NO" -nln osm_buildings
 ogr2ogr -append -update -f GPKG osm_buildings_los_angeles.gpkg PG:'dbname=gis' -sql 'select id, "name", geom from osm_boundary_los_angeles' -lco "SPATIAL_INDEX=NO" -nln osm_boundary
@@ -47,7 +50,7 @@ ogr2ogr -lco OVERWRITE=YES -f GPKG osm_buildings_sydney.gpkg PG:'dbname=gis' -sq
 ogr2ogr -append -update -f GPKG osm_buildings_sydney.gpkg PG:'dbname=gis' -sql 'select id, "name", geom from osm_boundary_sydney' -lco "SPATIAL_INDEX=NO" -nln osm_boundary
 
 ogr2ogr -lco OVERWRITE=YES -f GPKG osm_buildings_johannesburg.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_johannesburg' -lco "SPATIAL_INDEX=NO" -nln osm_buildings
-ogr2ogr -append -update -f GPKG osm_buildings_panama_city.gpkg PG:'dbname=gis' -sql 'select id, "name", geom from osm_boundary_panama_city' -lco "SPATIAL_INDEX=NO" -nln osm_boundary
+ogr2ogr -append -update -f GPKG osm_buildings_johannesburg.gpkg PG:'dbname=gis' -sql 'select id, "name", geom from osm_boundary_johannesburg' -lco "SPATIAL_INDEX=NO" -nln osm_boundary
 
 ogr2ogr -lco OVERWRITE=YES -f GPKG osm_buildings_casablanca.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_casablanca' -lco "SPATIAL_INDEX=NO" -nln osm_buildings
 ogr2ogr -append -update -f GPKG osm_buildings_casablanca.gpkg PG:'dbname=gis' -sql 'select id, "name", geom from osm_boundary_casablanca' -lco "SPATIAL_INDEX=NO" -nln osm_boundary

@@ -1,6 +1,6 @@
 dev: deploy/zigzag/basemap deploy/sonic/basemap deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs  ## [FINAL] Builds all targets for development. Run on every branch.
 
-prod: deploy/lima/basemap deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/lima/basemap deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz deploy/geocint/osm_buildings_drp## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
@@ -949,6 +949,9 @@ deploy/geocint/osm_buildings_japan.gpkg.gz: data/osm_buildings_japan.gpkg.gz | d
 	cp -vp data/osm_buildings_japan.gpkg.gz ~/public_html/osm_buildings_japan.gpkg.gz
 	touch $@
 
+data/osm_buildings_drp: | data
+	mkdir -p $@
+
 db/table/osm_buildings_americas: db/table/osm_buildings_use | db/table
 	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_new_york -v osm_id=175905 -v tbl_name_region=osm_boundary_new_york
 	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_new_orleans -v osm_id=131885 -v tbl_name_region=osm_boundary_new_orleans
@@ -965,6 +968,7 @@ db/table/osm_buildings_europe: db/table/osm_buildings_use | db/table
 	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_rome -v osm_id=41485 -v tbl_name_region=osm_boundary_rome
 	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_paris -v osm_id=7444 -v tbl_name_region=osm_boundary_paris
 	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_london -v osm_id=65606 -v tbl_name_region=osm_boundary_london
+	psql -f tables/osm_buildings_london_city.sql
 	touch $@
 
 db/table/osm_buildings_apac: db/table/osm_buildings_use | db/table
@@ -975,7 +979,7 @@ db/table/osm_buildings_apac: db/table/osm_buildings_use | db/table
 
 db/table/osm_buildings_mea: db/table/osm_buildings_use | db/table
 	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_johannesburg -v osm_id=594508 -v tbl_name_region=osm_boundary_johannesburg
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_casablanca -v osm_id=4072985 -v tbl_name_region=osm_boundary_casablanca
+	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_casablanca -v osm_id=2523504 -v tbl_name_region=osm_boundary_casablanca
 	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_riad -v osm_id=12423679 -v tbl_name_region=osm_boundary_riad
 	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_lagos -v osm_id=3718182 -v tbl_name_region=osm_boundary_lagos
 	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_accra -v osm_id=12803764 -v tbl_name_region=osm_boundary_accra
@@ -985,12 +989,12 @@ db/table/osm_buildings_caribbean: db/table/osm_buildings_use | db/table
 	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_santo_domingo -v osm_id=7407678 -v tbl_name_region=osm_boundary_santo_domingo
 	touch $@
 
-data/osm_buildings_drp_export: db/table/osm_buildings_americas db/table/osm_buildings_europe db/table/osm_buildings_apac db/table/osm_buildings_mea db/table/osm_buildings_caribbean
+data/osm_buildings_drp_export: data/osm_buildings_drp db/table/osm_buildings_americas db/table/osm_buildings_europe db/table/osm_buildings_apac db/table/osm_buildings_mea db/table/osm_buildings_caribbean
 	bash ./scripts/osm_buildings_drp_export.sh
 	touch $@
 
 deploy/geocint/osm_buildings_drp: data/osm_buildings_drp_export | deploy/geocint
-	cp -vp data/osm_buildings_*.gpkg.gz ~/public_html/
+	cp -vp data/osm_buildings_drp/osm_buildings_*.gpkg.gz ~/public_html/ ## todo: force rsync or symlink
 	touch $@
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table

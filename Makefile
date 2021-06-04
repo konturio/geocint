@@ -299,6 +299,7 @@ data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop
 	touch $@
 
 data/worldpop/tiled_rasters/tiles: | data/worldpop/tiled_rasters ## Tile raw stripped TIFs.
+	rm -r data/worldpop/tiled_rasters/tiled_*.tif
 	find data/worldpop/* -type f | sort -r | parallel -j10 --eta 'cd {//} && gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co TILED=YES -co BIGTIFF=IF_SAFER {/} /home/gis/geocint/data/worldpop/tiled_rasters/tiled_{/}'
 	touch $@
 

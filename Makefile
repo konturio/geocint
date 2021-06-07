@@ -1245,6 +1245,6 @@ db/function/basemap_mapsme: | kothic db/function
 data/basemap_style_mapsme.json: | kothic data
 	python2 kothic/src/libkomb.py -s basemap/styles/mapsme/style-clear/style.mapcss > $@
 
-db/table/basemap_mvts_mapsme_z1_z8: db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql
+db/table/basemap_mvts_mapsme_z1_z8: data/population/population_api_tables.sqld.gz db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql
 	bash ./scripts/generate_tiles.sh basemap | parallel --eta
 	touch $@

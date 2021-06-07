@@ -994,7 +994,7 @@ data/osm_buildings_drp_export: data/osm_buildings_drp db/table/osm_buildings_ame
 	touch $@
 
 deploy/geocint/osm_buildings_drp: data/osm_buildings_drp_export | deploy/geocint
-	cp -vp data/osm_buildings_drp/osm_buildings_*.gpkg.gz ~/public_html/ ## todo: force rsync or symlink
+	cp -vp data/osm_buildings_drp/osm_buildings_*.gpkg.gz ~/public_html/
 	touch $@
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table

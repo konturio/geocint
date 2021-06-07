@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd /home/gis/geocint/data/osm_buildings_drp/
+cd data/osm_buildings_drp/
 rm -f osm_buildings_*.gpkg
 rm -f osm_buildings_*.gpkg.gz
 

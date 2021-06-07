@@ -1,4 +1,4 @@
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs  ## [FINAL] Builds all targets for development. Run on every branch.
+dev: db/table/basemap_mvts_mapsme_z1_z8 deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs  ## [FINAL] Builds all targets for development. Run on every branch.
 
 prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
@@ -1230,11 +1230,7 @@ deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
-db/table/basemap_mvts: | db/table
-	psql project -f tables/basemap_mvts.sql
-	touch $@
-
-db/table/osm2pgsql: | data/planet-latest-updated.osm.pbf
+db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
 	osm2pgsql --flat-nodes data/planet-latest-updated-flat-nodes -C 130000 --hstore-all --hstore-add-index --slim -c data/planet-latest-updated.osm.pbf
 	touch $@
 
@@ -1242,10 +1238,10 @@ kothic:
 	rm -rf kothic
 	git clone -b mb_support --single-branch https://github.com/konturio/kothic.git
 
-db/function/basemap_mapsme: kothic | db/function
+db/function/basemap_mapsme: | kothic db/function
 	python2 kothic/src/mvt_getter.py -s basemap/styles/mapsme/style-clear/style.mapcss | psql
 	touch $@
 
-db/table/basemap_mvts_mapsme_z1_z14: db/function/basemap_mapsme | db/table/basemap_mvts db/table/water_polygons_vector db/table/osm2pgsql ## [FINAL]
-	python3 scripts/generate_tile_coords.py 1 14 | parallel --colsep "," "psql -q -X -c \"insert into basemap_mvts(tile_z, tile_x, tile_y, mvt) values ({1}, {2}, {3}, basemap_z{1}({2}, {3})) on conflict (tile_z, tile_x, tile_y) do update set mvt = EXCLUDED.mvt\""
+db/table/basemap_mvts_mapsme_z1_z8: db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql
+	bash ./scripts/generate_tiles.sh basemap | parallel --eta
 	touch $@

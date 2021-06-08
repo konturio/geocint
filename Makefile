@@ -1208,7 +1208,7 @@ deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
-	osm2pgsql --tablespace-main-data bcache --tablespace-main-index bcache --tablespace-slim-data bcache --tablespace-slim-index bcache --flat-nodes data/planet-latest-updated-flat-nodes -C 130000 --hstore-all --hstore-add-index --slim -c data/planet-latest-updated.osm.pbf
+	osm2pgsql --number-processes 32 --tablespace-main-data bcache --tablespace-main-index bcache --tablespace-slim-data bcache --tablespace-slim-index bcache --flat-nodes data/planet-latest-updated-flat-nodes -C 130000 --hstore-all --hstore-add-index --slim -c data/planet-latest-updated.osm.pbf
 	touch $@
 
 kothic:

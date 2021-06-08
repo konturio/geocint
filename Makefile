@@ -291,23 +291,20 @@ db/procedure: | db
 data/worldpop: | data
 	mkdir -p $@
 
-data/worldpop/tiled_rasters: | data/worldpop
-	mkdir -p $@
-
 data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop.org.
 	python3 scripts/parser_worldpop_tif_urls.py | parallel -j10 wget -nc -c -P data/worldpop -i -
 	touch $@
 
-data/worldpop/tiled_rasters/tiles: | data/worldpop/tiled_rasters ## Tile raw stripped TIFs.
-	rm -r data/worldpop/tiled_rasters/tiled_*.tif
-	find data/worldpop/* -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co TILED=YES -co BIGTIFF=IF_SAFER {} data/worldpop/tiled_rasters/tiled_{/}'
+data/worldpop/tiled_rasters: data/worldpop/download ## Tile raw stripped TIFs.
+	rm -r data/worldpop/tiled_*.tif
+	find data/worldpop/* -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co BIGTIFF=IF_SAFER -of COG {} data/worldpop/tiled_{/}'
 	touch $@
 
-db/table/worldpop_population_raster: data/worldpop/tiled_rasters/tiles | db/table ## Import raster data and create table with tiled data.
+db/table/worldpop_population_raster: data/worldpop/tiled_rasters | db/table ## Import raster data and create table with tiled data.
 	psql -c "drop table if exists worldpop_population_raster"
-	raster2pgsql -p -Y -s 4326 data/worldpop/tiled_rasters/*.tif -t auto worldpop_population_raster | psql -q
+	raster2pgsql -p -Y -s 4326 data/worldpop/tiled_*.tif -t auto worldpop_population_raster | psql -q
 	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
-	ls -Sr data/worldpop/tiled_rasters/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
+	ls -Sr data/worldpop/tiled_*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
 	psql -c "alter table worldpop_population_raster set (parallel_workers = 32);"
 	psql -c "vacuum analyze worldpop_population_raster;"
 	touch $@
@@ -318,8 +315,8 @@ db/table/worldpop_population_grid_h3_r8: db/table/worldpop_population_raster ## 
 
 db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate table with countries for WorldPop rasters.
 	psql -c "drop table if exists worldpop_country_codes;"
-	psql -c "create table worldpop_country_codes (code varchar(3) not null, primary key (code))"
-	cd data/world_pop; ls *.tif | parallel -eta psql -c "insert into worldpop_country_codes(code) select upper(substr('{}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{}', 1, 3)))"
+	psql -c "create table worldpop_country_codes (code varchar(3) not null, primary key (code));"
+	ls data/worldpop/*.tif | parallel --eta psql -c "\"insert into worldpop_country_codes(code) select upper(substr('{/.}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{/.}', 1, 3)));\""
 	touch $@
 
 db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.

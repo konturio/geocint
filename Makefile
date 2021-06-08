@@ -291,14 +291,11 @@ db/procedure: | db
 data/worldpop: | data
 	mkdir -p $@
 
-data/worldpop/tiled_rasters: | data/worldpop
-	mkdir -p $@
-
 data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop.org.
 	python3 scripts/parser_worldpop_tif_urls.py | parallel -j10 wget -nc -c -P data/worldpop -i -
 	touch $@
 
-data/worldpop/tiled_rasters/tiles: data/worldpop/download | data/worldpop/tiled_rasters ## Tile raw stripped TIFs.
+data/worldpop/tiles: data/worldpop/download ## Tile raw stripped TIFs.
 	rm -r data/worldpop/tiled_rasters/tiled_*.tif
 	find data/worldpop/* -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co TILED=YES -co BIGTIFF=IF_SAFER {} data/worldpop/tiled_rasters/tiled_{/}'
 	touch $@
@@ -316,10 +313,10 @@ db/table/worldpop_population_grid_h3_r8: db/table/worldpop_population_raster ## 
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=worldpop_population_raster -v population_raster_grid_h3_r8=worldpop_population_raster_grid_h3_r8
 	touch $@
 
-db/table/worldpop_country_codes: | db/table ## Generate table with countries for WorldPop rasters.
+db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate table with countries for WorldPop rasters.
 	psql -c "drop table if exists worldpop_country_codes;"
-	psql -c "create table worldpop_country_codes (code varchar(3) not null, primary key (code))"
-	cd data/world_pop; ls *.tif | parallel -eta psql -c "insert into worldpop_country_codes(code) select upper(substr('{}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{}', 1, 3)))"
+	psql -c "create table worldpop_country_codes (code varchar(3) not null, primary key (code));"
+	ls data/worldpop/*.tif | parallel --eta psql -c "\"insert into worldpop_country_codes(code) select upper(substr('{/.}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{/.}', 1, 3)));\""
 	touch $@
 
 db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.

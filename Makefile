@@ -297,7 +297,7 @@ data/worldpop/download: | data/worldpop ## Download World Pop tifs from worldpop
 
 data/worldpop/tiled_rasters: data/worldpop/download ## Tile raw stripped TIFs.
 	rm -r data/worldpop/tiled_*.tif
-	find data/worldpop/* -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co BIGTIFF=IF_SAFER -of COG {} data/worldpop/tiled_{/}'
+	find data/worldpop/*.tif -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co BIGTIFF=IF_SAFER -of COG {} data/worldpop/tiled_{/}'
 	touch $@
 
 db/table/worldpop_population_raster: data/worldpop/tiled_rasters | db/table ## Import raster data and create table with tiled data.

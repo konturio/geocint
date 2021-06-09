@@ -980,7 +980,7 @@ data/drp_buildings_export: data/drp_buildings data/drp_regions.csv db/table/osm_
 	pigz osm_buildings_*.gpkg
 	touch $@
 
-deploy/geocint/drp_buildings: data/osm_buildings_drp_export | deploy/geocint
+deploy/geocint/drp_buildings: data/drp_buildings_export | deploy/geocint
 	cp -vp data/drp_buildings/drp_buildings_*.gpkg.gz ~/public_html/
 	touch $@
 

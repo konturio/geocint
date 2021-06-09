@@ -956,7 +956,7 @@ data/drp_buildings: | data
 db/table/drp_regions: data/drp_regions.csv | db/table
 	psql -c 'drop table if exists drp_regions;'
 	psql -c 'create table drp_regions (osm_id bigint, city_name text, country text);'
-	cat drp_regions.csv | tail -n +1 | psql -c "copy drp_regions (osm_id, city_name, country) from stdin with csv header delimiter ';';"
+	cat data/drp_regions.csv | tail -n +1 | psql -c "copy drp_regions (osm_id, city_name, country) from stdin with csv header delimiter ';' ;"
 	touch $@
 
 db/table/osm_boundary_drp: db/table/drp_regions db/table/osm_admin_boundaries | db/table
@@ -974,9 +974,9 @@ db/table/microsoft_buildings_drp: db/table/osm_boundary_drp db/table/microsoft_b
 data/drp_buildings_export: data/drp_buildings data/drp_regions.csv db/table/osm_boundary_drp db/table/osm_buildings_drp db/table/microsoft_buildings_drp
 	rm -f data/drp_buildings/drp_buildings_*.gpkg
 	rm -f data/drp_buildings/drp_buildings_*.gpkg.gz
-	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -lco OVERWRITE=YES -lco SPATIAL_INDEX=NO -nln boundary            -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select osm_id as id, city_name, country, geom from drp_regions where city_name = '{}' \" "
-	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update    -lco SPATIAL_INDEX=NO -nln osm_buildings       -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select building, street, hno, levels, height, use, name, geom from osm_buildings_drp where city_name = '{}' \" "
-	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update    -lco SPATIAL_INDEX=NO -nln microsoft_buildings -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select id, geom from microsoft_buildings_drp where city_name = '{}' \" "
+	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -lco OVERWRITE=YES -lco SPATIAL_INDEX=NO -nln boundary -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select osm_id as id, city_name, country, geom from drp_regions where city_name = '{}' \" "
+	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln osm_buildings -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select building, street, hno, levels, height, use, name, geom from osm_buildings_drp where city_name = '{}' \" "
+	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln microsoft_buildings -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select id, geom from microsoft_buildings_drp where city_name = '{}' \" "
 	pigz osm_buildings_*.gpkg
 	touch $@
 

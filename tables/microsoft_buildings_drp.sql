@@ -4,7 +4,7 @@ create table microsoft_buildings_drp as (
            m.ogc_fid as id,
            m.geom
     from microsoft_buildings m
-    join drp_regions r on ST_Intersects(st_setsrid(m.geom, 4326), r.geom)
+    join drp_regions r on ST_Intersects(m.geom, r.geom)
 );
 
 create index microsoft_buildings_drp_city_name_idx on microsoft_buildings_drp (city_name);

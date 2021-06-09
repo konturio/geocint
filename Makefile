@@ -682,7 +682,8 @@ data/microsoft_buildings/unzip: data/microsoft_buildings/download
 db/table/microsoft_buildings: data/microsoft_buildings/unzip | db/table
 	psql -c "drop table if exists microsoft_buildings"
 	psql -c "create table microsoft_buildings (ogc_fid serial not null, geom geometry)"
-	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom'
+	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom -t_srs EPSG:4326'
+	psql -c "create index on microsoft_buildings using gist(geom);"
 	touch $@
 
 db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Count amount of Microsoft Buildings at hexagons.
@@ -949,52 +950,38 @@ deploy/geocint/osm_buildings_japan.gpkg.gz: data/osm_buildings_japan.gpkg.gz | d
 	cp -vp data/osm_buildings_japan.gpkg.gz ~/public_html/osm_buildings_japan.gpkg.gz
 	touch $@
 
-data/osm_buildings_drp: | data
+data/drp_buildings: | data
 	mkdir -p $@
 
-db/table/osm_buildings_americas: db/table/osm_buildings_use | db/table
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_new_york -v osm_id=175905 -v tbl_name_region=osm_boundary_new_york
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_new_orleans -v osm_id=131885 -v tbl_name_region=osm_boundary_new_orleans
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_los_angeles -v osm_id=207359 -v tbl_name_region=osm_boundary_los_angeles
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_mexico_city -v osm_id=1376330 -v tbl_name_region=osm_boundary_mexico_city
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_corpus_christi -v osm_id=253988 -v tbl_name_region=osm_boundary_corpus_christi
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_atlantic_city -v osm_id=170330 -v tbl_name_region=osm_boundary_atlantic_city
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_lake_charles -v osm_id=132126 -v tbl_name_region=osm_boundary_lake_charles
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_apalachicola -v osm_id=1216579 -v tbl_name_region=osm_boundary_apalachicola
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_panama_city -v osm_id=118841 -v tbl_name_region=osm_boundary_panama_city
+db/table/drp_regions: data/drp_regions.csv | db/table
+	psql -c 'drop table if exists drp_regions;'
+	psql -c 'create table drp_regions (osm_id bigint, city_name text, country text);'
+	cat drp_regions.csv | tail -n +1 | psql -c "copy drp_regions (osm_id, city_name, country) from stdin with csv header delimiter ';';"
 	touch $@
 
-db/table/osm_buildings_europe: db/table/osm_buildings_use | db/table
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_rome -v osm_id=41485 -v tbl_name_region=osm_boundary_rome
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_paris -v osm_id=7444 -v tbl_name_region=osm_boundary_paris
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_london -v osm_id=65606 -v tbl_name_region=osm_boundary_london
-	psql -f tables/osm_buildings_london_city.sql
+db/table/osm_boundary_drp: db/table/drp_regions db/table/osm_admin_boundaries | db/table
+	psql -f tables/osm_boundary_drp.sql
 	touch $@
 
-db/table/osm_buildings_apac: db/table/osm_buildings_use | db/table
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_manila -v osm_id=103703 -v tbl_name_region=osm_boundary_manila
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_christchurch -v osm_id=2730349 -v tbl_name_region=osm_boundary_christchurch
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_sydney -v osm_id=5750005 -v tbl_name_region=osm_boundary_sydney
+db/table/osm_buildings_drp: db/table/osm_boundary_drp db/table/osm_buildings_use | db/table
+	psql -f tables/osm_buildings_drp.sql
 	touch $@
 
-db/table/osm_buildings_mea: db/table/osm_buildings_use | db/table
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_johannesburg -v osm_id=594508 -v tbl_name_region=osm_boundary_johannesburg
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_casablanca -v osm_id=2523504 -v tbl_name_region=osm_boundary_casablanca
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_riad -v osm_id=12423679 -v tbl_name_region=osm_boundary_riad
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_lagos -v osm_id=3718182 -v tbl_name_region=osm_boundary_lagos
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_accra -v osm_id=12803764 -v tbl_name_region=osm_boundary_accra
+db/table/microsoft_buildings_drp: db/table/osm_boundary_drp db/table/microsoft_buildings | db/table
+	psql -f tables/osm_buildings_drp.sql
 	touch $@
 
-db/table/osm_buildings_caribbean: db/table/osm_buildings_use | db/table
-	psql -f tables/osm_buildings_region.sql -v tbl_name_buildings=osm_buildings_santo_domingo -v osm_id=7407678 -v tbl_name_region=osm_boundary_santo_domingo
+data/drp_buildings_export: data/drp_buildings data/drp_regions.csv db/table/osm_boundary_drp db/table/osm_buildings_drp db/table/microsoft_buildings_drp
+	rm -f data/drp_buildings/drp_buildings_*.gpkg
+	rm -f data/drp_buildings/drp_buildings_*.gpkg.gz
+	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -lco OVERWRITE=YES -lco SPATIAL_INDEX=NO -nln boundary            -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select osm_id as id, city_name, country, geom from drp_regions where city_name = '{}' \" "
+	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update    -lco SPATIAL_INDEX=NO -nln osm_buildings       -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select building, street, hno, levels, height, use, name, geom from osm_buildings_drp where city_name = '{}' \" "
+	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update    -lco SPATIAL_INDEX=NO -nln microsoft_buildings -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select id, geom from microsoft_buildings_drp where city_name = '{}' \" "
+	pigz osm_buildings_*.gpkg
 	touch $@
 
-data/osm_buildings_drp_export: data/osm_buildings_drp db/table/osm_buildings_americas db/table/osm_buildings_europe db/table/osm_buildings_apac db/table/osm_buildings_mea db/table/osm_buildings_caribbean
-	bash ./scripts/osm_buildings_drp_export.sh
-	touch $@
-
-deploy/geocint/osm_buildings_drp: data/osm_buildings_drp_export | deploy/geocint
-	cp -vp data/osm_buildings_drp/osm_buildings_*.gpkg.gz ~/public_html/
+deploy/geocint/drp_buildings: data/osm_buildings_drp_export | deploy/geocint
+	cp -vp data/drp_buildings/drp_buildings_*.gpkg.gz ~/public_html/
 	touch $@
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table

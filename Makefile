@@ -1212,7 +1212,7 @@ kothic:
 	git clone -b mb_support --single-branch https://github.com/konturio/kothic.git
 
 db/function/basemap_mapsme: | kothic db/function
-	python2 kothic/src/mvt_getter.py -s basemap/styles/mapsme/style-clear/style.mapcss | psql
+	python2 kothic/src/mvt_getter.py -s basemap/styles/mapsme/style-clear/style.mapcss -s kothic/src/styles/osmosnimki-maps.mapcss -s basemap/styles/stub.mapcss | psql
 	touch $@
 
 data/basemap_style_mapsme.json: | kothic data

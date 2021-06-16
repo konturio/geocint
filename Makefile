@@ -1217,7 +1217,8 @@ db/function/basemap_mapsme: | kothic db/function
 
 data/tiles/basemap_tiles.tar.bz2: data/population/population_api_tables.sqld.gz db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/tiles
 	bash ./scripts/generate_tiles.sh basemap | parallel --eta
-	python2 kothic/src/libkomb.py --stylesheet basemap/styles/mapsme/style-clear/style.mapcss --max-zoom 8 --tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt > data/tiles/basemap/metadata.json
+	python2 kothic/src/libkomb.py --stylesheet basemap/styles/mapsme/style-clear/style.mapcss --max-zoom 8 --tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt > data/tiles/basemap/style_day.json
+	python2 kothic/src/libkomb.py --stylesheet basemap/styles/mapsme/style-night/style.mapcss --max-zoom 8 --tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt > data/tiles/basemap/style_night.json
 	cd data/tiles/basemap/; tar cvf ../basemap_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
 
 deploy/zigzag/basemap_tiles: data/tiles/basemap_tiles.tar.bz2 | deploy/zigzag

@@ -956,7 +956,7 @@ data/drp_buildings: | data
 db/table/drp_regions: data/drp_regions.csv | db/table
 	psql -c 'drop table if exists drp_regions;'
 	psql -c 'create table drp_regions (osm_id bigint, city_name text, country text);'
-	cat data/drp_regions.csv | tail -n +1 | psql -c "copy drp_regions (osm_id, city_name, country) from stdin with csv header delimiter ';' ;"
+	cat data/drp_regions.csv | psql -c "copy drp_regions (osm_id, city_name, country) from stdin with csv header delimiter ';' ;"
 	touch $@
 
 db/table/osm_boundary_drp: db/table/drp_regions db/table/osm_admin_boundaries | db/table
@@ -968,7 +968,7 @@ db/table/osm_buildings_drp: db/table/osm_boundary_drp db/table/osm_buildings_use
 	touch $@
 
 db/table/microsoft_buildings_drp: db/table/osm_boundary_drp db/table/microsoft_buildings | db/table
-	psql -f tables/osm_buildings_drp.sql
+	psql -f tables/microsoft_buildings_drp.sql
 	touch $@
 
 data/drp_buildings_export: data/drp_buildings data/drp_regions.csv db/table/osm_boundary_drp db/table/osm_buildings_drp db/table/microsoft_buildings_drp

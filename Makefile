@@ -303,6 +303,7 @@ db/table/worldpop_population_raster: data/worldpop/tiled_rasters | db/table ## I
 	psql -c "drop table if exists worldpop_population_raster"
 	raster2pgsql -p -Y -s 4326 data/worldpop/tiled_*.tif -t auto worldpop_population_raster | psql -q
 	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
+	psql -c 'alter table worldpop_population_raster set tablespace bcache;'
 	ls -Sr data/worldpop/tiled_*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
 	psql -c "alter table worldpop_population_raster set (parallel_workers = 32);"
 	psql -c "vacuum analyze worldpop_population_raster;"

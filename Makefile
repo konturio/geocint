@@ -1214,7 +1214,7 @@ db/function/basemap_mapsme: | kothic db/function
 	python2 kothic/src/mvt_getter.py -s basemap/styles/mapsme/style-clear/style.mapcss -s kothic/src/styles/osmosnimki-maps.mapcss -s basemap/styles/stub.mapcss | psql
 	touch $@
 
-data/tiles/basemap: data/population/population_api_tables.sqld.gz db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/tiles
+data/tiles/basemap: db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/population/population_api_tables.sqld.gz data/tiles
 	bash ./scripts/generate_tiles.sh basemap | parallel --eta
 
 data/basemap: | data

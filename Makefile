@@ -1287,9 +1287,6 @@ data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/tiles/basemap: data/population/population_api_tables.sqld.gz db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/tiles
-	bash ./scripts/generate_tiles.sh basemap | parallel --eta
-
 data/basemap/zigzag.tar.bz2: data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | data/tiles/basemap data/basemap/glyphs/Roboto
 	tar cvf data/basemap/zigzag.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/zigzag .
 

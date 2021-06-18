@@ -1,6 +1,6 @@
-dev: deploy/zigzag/basemap_tiles deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs  ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/zigzag/basemap deploy/sonic/basemap deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs  ## [FINAL] Builds all targets for development. Run on every branch.
 
-prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/lima/basemap deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
@@ -1215,39 +1215,144 @@ db/function/basemap_mapsme: | kothic db/function
 	python2 kothic/src/mvt_getter.py -s basemap/styles/mapsme/style-clear/style.mapcss -s kothic/src/styles/osmosnimki-maps.mapcss -s basemap/styles/stub.mapcss | psql
 	touch $@
 
-data/tiles/basemap_tiles.tar.bz2: data/population/population_api_tables.sqld.gz db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/tiles
+data/tiles/basemap: data/population/population_api_tables.sqld.gz db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/tiles
 	bash ./scripts/generate_tiles.sh basemap | parallel --eta
-	mkdir -p data/tiles/basemap/glyphs/Roboto
-	build-glyphs basemap/fonts/07_roboto_medium.ttf data/tiles/basemap/glyphs/Roboto
+
+data/basemap: | data
+	mkdir -p $@
+
+data/basemap/glyphs: | data/basemap
+	mkdir -p $@
+
+data/basemap/metadata: | data/basemap
+	mkdir -p $@
+
+data/basemap/metadata/zigzag: | data/basemap/metadata
+	mkdir -p $@
+
+data/basemap/metadata/sonic: | data/basemap/metadata
+	mkdir -p $@
+
+data/basemap/metadata/lima: | data/basemap/metadata
+	mkdir -p $@
+
+data/basemap/glyphs/Roboto: | data/basemap/glyphs
+	mkdir -p data/basemap/glyphs/Roboto
+	build-glyphs basemap/fonts/07_roboto_medium.ttf data/basemap/glyphs/Roboto
+
+data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/libkomb.py \
 		--stylesheet basemap/styles/mapsme/style-clear/style.mapcss \
 		--max-zoom 8 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
-		--glyphs-url https://zigzag.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
-		> data/tiles/basemap/style_day.json
+		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
+data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/libkomb.py \
 		--stylesheet basemap/styles/mapsme/style-night/style.mapcss \
 		--max-zoom 8 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
-		--glyphs-url https://zigzag.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
-		> data/tiles/basemap/style_night.json
-	cd data/tiles/basemap/; tar cvf ../basemap_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
+		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
 
-deploy/zigzag/basemap_tiles: data/tiles/basemap_tiles.tar.bz2 | deploy/zigzag
+data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
+	python2 kothic/src/libkomb.py \
+		--stylesheet basemap/styles/mapsme/style-clear/style.mapcss \
+		--max-zoom 8 \
+		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
+data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/sonic
+	python2 kothic/src/libkomb.py \
+		--stylesheet basemap/styles/mapsme/style-night/style.mapcss \
+		--max-zoom 8 \
+		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
+data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
+	python2 kothic/src/libkomb.py \
+		--stylesheet basemap/styles/mapsme/style-clear/style.mapcss \
+		--max-zoom 8 \
+		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
+data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
+	python2 kothic/src/libkomb.py \
+		--stylesheet basemap/styles/mapsme/style-night/style.mapcss \
+		--max-zoom 8 \
+		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
+data/tiles/basemap: data/population/population_api_tables.sqld.gz db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/tiles
+	bash ./scripts/generate_tiles.sh basemap | parallel --eta
+
+data/basemap/zigzag.tar.bz2: data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | data/tiles/basemap data/basemap/glyphs/Roboto
+	tar cvf data/basemap/zigzag.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/zigzag .
+
+data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json | data/tiles/basemap data/basemap/glyphs/Roboto
+	tar cvf data/basemap/sonic.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/sonic .
+
+data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json | data/tiles/basemap data/basemap/glyphs/Roboto
+	tar cvf data/basemap/lima.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/lima .
+
+deploy/zigzag/basemap: data/basemap/zigzag.tar.bz2 | deploy/zigzag
 	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible zigzag_live_dashboard -m copy -a 'src=data/tiles/basemap_tiles.tar.bz2 dest=$$HOME/tmp/basemap_tiles.tar.bz2'
+	ansible zigzag_live_dashboard -m copy -a 'src=data/basemap/zigzag.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
 	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
 		set -e; \
 		set -o pipefail; \
 		mkdir -p "$$HOME/public_html/tiles/basemap"; \
-		tar -cjf "$$HOME/tmp/basemap_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/basemap" . ; \
+		tar -cjf "$$HOME/tmp/basemap_prev.tar.bz2" -C "$$HOME/public_html/tiles/basemap" . ; \
 		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
 		function on_exit { rm -rf "$$TMPDIR"; }; \
 		trap on_exit EXIT; \
-		tar -xf "$$HOME/tmp/basemap_tiles.tar.bz2" -C "$$TMPDIR"; \
+		tar -xf "$$HOME/tmp/basemap.tar.bz2" -C "$$TMPDIR"; \
 		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
 		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
 		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/basemap"; \
-		rm -f "$$HOME/tmp/basemap_tiles.tar.bz2"; \
+		rm -f "$$HOME/tmp/basemap.tar.bz2"; \
+	'
+	touch $@
+
+deploy/sonic/basemap: data/basemap/sonic.tar.bz2 | deploy/sonic
+	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible sonic_live_dashboard -m copy -a 'src=data/basemap/sonic.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
+	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		mkdir -p "$$HOME/public_html/tiles/basemap"; \
+		tar -cjf "$$HOME/tmp/basemap_prev.tar.bz2" -C "$$HOME/public_html/tiles/basemap" . ; \
+		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
+		function on_exit { rm -rf "$$TMPDIR"; }; \
+		trap on_exit EXIT; \
+		tar -xf "$$HOME/tmp/basemap.tar.bz2" -C "$$TMPDIR"; \
+		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
+		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
+		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/basemap"; \
+		rm -f "$$HOME/tmp/basemap.tar.bz2"; \
+	'
+	touch $@
+
+deploy/lima/basemap: data/basemap/lima.tar.bz2 | deploy/lima
+	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible lima_live_dashboard -m copy -a 'src=data/basemap/lima.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
+	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		mkdir -p "$$HOME/public_html/tiles/basemap"; \
+		tar -cjf "$$HOME/tmp/basemap_prev.tar.bz2" -C "$$HOME/public_html/tiles/basemap" . ; \
+		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
+		function on_exit { rm -rf "$$TMPDIR"; }; \
+		trap on_exit EXIT; \
+		tar -xf "$$HOME/tmp/basemap.tar.bz2" -C "$$TMPDIR"; \
+		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
+		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
+		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/basemap"; \
+		rm -f "$$HOME/tmp/basemap.tar.bz2"; \
 	'
 	touch $@

@@ -7,7 +7,6 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	rm -rf deploy/ data/tiles data/tile_logs/index.html data/planet-is-broken
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/covid19_cases_us_counties.csv data/covid19/vaccination/vaccine_acceptance_us_counties.csv
 	psql -f scripts/clean.sql
-	rm -rf kothic
 
 data:
 	mkdir -p $@
@@ -1204,7 +1203,7 @@ deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
-db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
+db/table/osm2pgsql: data/planet-latest.osm.pbf | db/table
 	osm2pgsql --number-processes 32 --tablespace-main-data bcache --flat-nodes data/planet-latest-updated-flat-nodes -C 130000 --hstore-all --hstore-add-index --slim -c data/planet-latest-updated.osm.pbf
 	touch $@
 

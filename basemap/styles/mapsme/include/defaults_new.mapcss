@@ -25,7 +25,7 @@ way|z16-::*
 
 *::*
 {
-  text-halo-color: #ffffff;
+  text-halo-color: @white;
   text-anchor-horizontal: center;
   text-anchor-vertical: center;
   icon-width: 16;

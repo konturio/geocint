@@ -123,48 +123,48 @@ area|z14-[natural=cape]
 {text: name;}
 
 node|z1-2[place=continent]
-{font-size: 12;text-color: #8C8C8C;max-width: 5;-x-me-text-priority:16000;}
+{font-size: 12;text-color: @country_label;max-width: 5;-x-me-text-priority:16000;}
 
 node|z10-[place=archipelago],
 node|z10-[place=island],
 area|z10-[place=archipelago],
 area|z10-[place=island]
-{font-size: 8;text-color: #7F7F7F;}
+{font-size: 8;text-color: @district_label;}
 
 node|z12-[place=archipelago],
 node|z12-[place=island],
 area|z12-[place=archipelago],
 area|z12-[place=island]
-{font-size: 9;text-color: #7F7F7F;}
+{font-size: 9;text-color: @district_label;}
 
 node|z14-[place=archipelago],
 node|z14-[place=island],
 area|z14-[place=archipelago],
 area|z14-[place=island]
-{font-size: 10;text-color: #7F7F7F;}
+{font-size: 10;text-color: @district_label;}
 
 node|z16-[place=archipelago],
 node|z16-[place=island],
 area|z16-[place=archipelago],
 area|z16-[place=island]
-{font-size: 8;text-color: #7F7F7F;}
+{font-size: 8;text-color: @district_label;}
 
 node|z14-[natural=cape],
 area|z14-[natural=cape]
-{font-size: 8;text-color: #444444;}
+{font-size: 8;text-color: @poi_label;}
 
 /* 3.COUNTRIES & STATES */
 
 node|z3-[place=country]
-{text: name;text-color: #8C8C8C;-x-me-text-priority:16000;}
+{text: name;text-color: @country_label;-x-me-text-priority:16000;}
 node|z3-[place=country]::int_name
-{text: int_name;text-color: #8C8C8C;-x-me-text-priority:16000;}
+{text: int_name;text-color: @country_label;-x-me-text-priority:16000;}
 
 node|z5[place=state][addr:country=US],
 node|z6-10[place=state]
-{text: name;text-color: #8C8C8C;}
+{text: name;text-color: @state_label;}
 node|z7-10[place=state]::int_name
-{text: int_name;text-color: #8C8C8C;}
+{text: int_name;text-color: @state_label;}
 
 node|z3[place=country]
 {font-size: 10;}
@@ -216,14 +216,14 @@ node|z6[place=city][capital!=2][population>=50000],
 node|z7-8[place=city][capital!=2][population>=40000],
 node|z9-[place=city][capital!=2][population<40000],
 node|z4-[place=city][capital=2][population>=0],
-{text: name;text-color: #222222;text-halo-radius: 1;text-halo-opacity: 1;text-halo-color: #FFFFFF;}
+{text: name;text-color: @label_dark;text-halo-radius: 1;text-halo-opacity: 1;text-halo-color: @label_halo_light;}
 node|z4[place=city][capital!=2][population>=1000000]::int_name,
 node|z5[place=city][capital!=2][population>=150000]::int_name,
 node|z6[place=city][capital!=2][population>=50000]::int_name,
 node|z7-8[place=city][capital!=2][population>=40000]::int_name,
 node|z4-[place=city][capital=2][population<40000]::int_name,
 node|z9-[place=city][capital!=2][population<40000]::int_name
-{text: int_name;text-color: #222222;text-halo-radius: 1;text-halo-opacity: 1;text-halo-color: #FFFFFF;}
+{text: int_name;text-color: @label_dark;text-halo-radius: 1;text-halo-opacity: 1;text-halo-color: @label_halo_light;}
 
 node|z4[place=city][capital!=2][population>=1000000],
 {font-size: 9;text-halo-opacity: 0.7;}
@@ -285,8 +285,8 @@ node|z10[place=city][capital=2][population>=0]
 node|z10[place=city][capital=2][population>=0]::int_name
 {text-offset: 1;font-size: 12;}
 node|z10[place=city][capital!=2][population>=0],
-{text:name;font-size: 11;text-halo-radius: 0.9;}
-node|z10[place=city][capital!=2][population>=0]::int_name1111111111
+{font-size: 11;text-halo-radius: 0.9;}
+node|z10[place=city][capital!=2][population>=0]::int_name
 {font-size: 10;text-halo-radius: 0.9;}
 
 node|z11[place=city][capital=2][population>=0]
@@ -303,31 +303,31 @@ node|z12[place=city][capital=2][population>=0]
 node|z12[place=city][capital=2][population>=0]::int_name
 {text-offset: 1;font-size: 11;}
 node|z12[place=city][capital!=2][population>=0],
-{font-size: 13;text-color: #333333;}
+{font-size: 13;text-color: @label_medium;}
 node|z12[place=city][capital!=2][population>=0]::int_name
-{font-size: 11;text-color: #333333;}
+{font-size: 11;text-color: @label_medium;}
 
 node|z13-[place=city][capital=2][population>=0]
-{icon-image: star-l.svg;text-offset: 1;font-size: 14;text-color: #333333;}
+{icon-image: star-l.svg;text-offset: 1;font-size: 14;text-color: @label_medium;}
 node|z13-[place=city][capital=2][population>=0]::int_name
-{text-offset: 1;font-size: 11;text-color: #333333;}
+{text-offset: 1;font-size: 11;text-color: @label_medium;}
 node|z13-[place=city][capital!=2][population>=0],
-{font-size: 14;text-color: #333333;}
+{font-size: 14;text-color: @label_medium;}
 node|z13-[place=city][capital!=2][population>=0]::int_name
-{font-size: 12;text-color: #333333;}
+{font-size: 12;text-color: @label_medium;}
 
 /* 4.2 Town */
 
 node|z8[place=town][population>=40000],
 node|z9[place=town][population>=20000]
-{text: name;text-color: #666666;}
+{text: name;text-color: @city_label;}
 node|z8[place=town][population>=40000]::int_name,
 node|z9[place=town][population>=20000]::int_name
-{text:int_name;text-color: #666666;}
+{text:int_name;text-color: @city_label;}
 node|z10-[place=town][population<20000],
-{text: name;text-color: #333333;text-halo-radius: 1;text-halo-opacity: 0.8;text-halo-color: #FFFFFF;}
+{text: name;text-color: @label_medium;text-halo-radius: 1;text-halo-opacity: 0.8;text-halo-color: @label_halo_light;}
 node|z10-[place=town][population<20000]::int_name
-{text:int_name;text-color: #333333;text-halo-radius: 1;text-halo-opacity: 0.8;text-halo-color: #FFFFFF;}
+{text:int_name;text-color: @label_medium;text-halo-radius: 1;text-halo-opacity: 0.8;text-halo-color: @label_halo_light;}
 
 node|z8[place=town][population>=40000]
 {font-size: 10;}
@@ -340,9 +340,9 @@ node|z9[place=town][population>=20000]::int_name
 {font-size: 9;}
 
 node|z10[place=town][population<20000]
-{font-size: 10;text-color: #666666;text-halo-opacity: 0.7;}
+{font-size: 10;text-color: @city_label;text-halo-opacity: 0.7;}
 node|z10[place=town][population<20000]::int_name
-{font-size: 9;text-color: #666666;text-halo-opacity: 0.7;}
+{font-size: 9;text-color: @city_label;text-halo-opacity: 0.7;}
 
 node|z11[place=town][population>=0]
 {font-size: 11;}
@@ -362,10 +362,10 @@ node|z13-[place=town][population>=0]::int_name
 /* 4.3 Village */
 
 node|z11-[place=village]
-{text: name;text-color: #666666;text-halo-radius: 1;text-halo-opacity: 0.7;text-halo-color: #FFFFFF;}
+{text: name;text-color: @city_label;text-halo-radius: 1;text-halo-opacity: 0.7;text-halo-color: @label_halo_light;}
 node|z11-[place=village]::int_name
-{text:int_name;text-color: #666666;text-halo-radius: 1;text-halo-opacity: 0.7;text-halo-color: #FFFFFF;}
-node|z13-[place=hamlet]{text: name;text-color: #444444;text-halo-radius: 1;text-halo-opacity: 0.6;text-halo-color: #FFFFFF;}
+{text:int_name;text-color: @city_label;text-halo-radius: 1;text-halo-opacity: 0.7;text-halo-color: @label_halo_light;}
+node|z13-[place=hamlet]{text: name;text-color: @label_light;text-halo-radius: 1;text-halo-opacity: 0.6;text-halo-color: @label_halo_light;}
 
 node|z11[place=village]
 {font-size: 10;}
@@ -378,9 +378,9 @@ node|z12[place=village]::int_name
 {font-size: 9;}
 
 node|z13-[place=village]
-{font-size: 12;text-color: #333333;text-halo-opacity: 0.8;}
+{font-size: 12;text-color: @label_medium;text-halo-opacity: 0.8;}
 node|z13-[place=village]::int_name
-{font-size: 10;text-color: #333333;text-halo-opacity: 0.8;}
+{font-size: 10;text-color: @label_medium;text-halo-opacity: 0.8;}
 
 node|z13-[place=hamlet]
 {font-size: 11;}
@@ -394,14 +394,14 @@ node|z13-[place=neighbourhood],
 node|z14-[place=farm],
 node|z14-[place=isolated_dwelling],
 node|z17-[landuse=residential],
-{text: name;text-color: #7F7F7F;}
+{text: name;text-color: @district_label;}
 node|z13-14[place=suburb]::int_name,
 node|z13-[place=locality]::int_name,
 node|z13-[place=neighbourhood]::int_name,
 node|z14-[place=farm]::int_name,
 node|z14-[place=isolated_dwelling]::int_name,
 node|z17-[landuse=residential]::int_name,
-{text: int_name;text-color: #7F7F7F;}
+{text: int_name;text-color: @district_label;}
 
 node|z10[place=suburb]
 {font-size: 8;}
@@ -437,11 +437,11 @@ node|z17-[landuse=residential]::int_name,
 area|z14-[leisure=park][name],
 area|z14-[landuse=forest][name],
 area|z16-[leisure=garden][name]
-{text: name;text-color: #3A7921;text-halo-color: #FFFFFF;text-halo-radius: 0.5;text-halo-opacity: 0.8;icon-min-distance: 10;}
+{text: name;text-color: @park_label;text-halo-color: @halo_park_label;text-halo-radius: 0.5;text-halo-opacity: 0.8;icon-min-distance: 10;}
 area|z14-[leisure=park][name]::int_name,
 area|z14-[landuse=forest][name]::int_name,
 area|z16-[leisure=garden][name]::int_name
-{text: int_name;text-color: #3A7921;text-halo-color: #FFFFFF;text-halo-radius: 0.5;text-halo-opacity: 0.8;}
+{text: int_name;text-color: @park_label;text-halo-color: @halo_park_label;text-halo-radius: 0.5;text-halo-opacity: 0.8;}
 
 area|z14-[landuse=forest][name]
 {icon-image: nparkf-s.svg;text-offset: 1;font-size: 10;}
@@ -515,7 +515,7 @@ node|z17-[landuse=allotments],
 node|z17-[landuse=recreation_ground],
 node|z17-[landuse=orchard],
 node|z17-[landuse=vineyard],
-{text: name;font-size: 10;text-color: #444444;}
+{text: name;font-size: 10;text-color: @poi_label;}
 
 /* 5.2 Beach & Glacier */
 
@@ -523,7 +523,7 @@ area|z15-[leisure=beach_resort],
 area|z15-[natural=beach],
 node|z17-[leisure=beach_resort],
 node|z17-[natural=beach]
-{text: name;font-size: 10;text-color: #444444;}
+{text: name;font-size: 10;text-color: @poi_label;}
 
 /* 6.WATER */
 
@@ -544,7 +544,7 @@ node|z14-[natural=strait],
 area|z14-[natural=water],
 node|z16-[natural=wetland],
 area|z16-[natural=wetland],
-{text:name;text-color: #4499Bb;}
+{text:name;text-color: @water_label;}
 
 /*6.1 Area water(ocean,sea,lake,pond etc.)*/
 
@@ -589,17 +589,17 @@ line|z11-14[waterway=riverbank],
 line|z13-14[waterway=stream],
 line|z13-14[waterway=canal]
 line|z13-14[natural=strait]
-{font-size: 10;text:name;text-color: #4499Bb;}
+{font-size: 10;text:name;text-color: @water_label;}
 line|z15-17[waterway=stream],
 line|z15-17[waterway=canal],
 line|z15-17[natural=strait],
-{font-size: 11;text:name;text-color: #4499Bb;}
+{font-size: 11;text:name;text-color: @water_label;}
 line|z15-[waterway=river],
 line|z15-[waterway=riverbank],
 line|z18-[waterway=stream],
 line|z18-[waterway=canal],
 line|z18-[natural=strait],
-{font-size: 12;text:name;text-color: #4499Bb;}
+{font-size: 12;text:name;text-color: @water_label;}
 
 line[waterway]
 {text-position: line;}
@@ -621,7 +621,7 @@ node|z15-[landuse=construction],
 node|z15-[landuse=landfill],
 node|z15-[landuse=railway],
 node|z15-[landuse=quarry],
-{text: name;font-size: 10;text-color: #666666;text-position: center;}
+{text: name;font-size: 10;text-color: @city_label;text-position: center;}
 
 /* 	7.4 Cemetry */
 
@@ -629,7 +629,7 @@ area|z15-[landuse=cemetery],
 node|z15-[landuse=cemetery],
 area|z17-[amenity=grave_yard],
 node|z17-[amenity=grave_yard],
-{text: name;text-offset: 1;font-size: 10;text-color: #444444;}
+{text: name;text-offset: 1;font-size: 10;text-color: @poi_label;}
 
 area|z15-16[landuse=cemetery]
 {icon-image: cemetery-m.svg;}
@@ -645,7 +645,7 @@ area|z15-[highway=pedestrian][area?],
 area|z15-[area:highway=pedestrian],
 area|z15-[highway=footway][area?][!sac_scale],
 area|z15-[area:highway=footway],
-{text: name;font-size: 11;text-color: #666666;text-position: center;}
+{text: name;font-size: 11;text-color: @city_label;text-position: center;}
 
 /* 	7.6 Military */
 
@@ -655,12 +655,12 @@ node|z16[landuse=military]
 
 area|z17-[landuse=military],
 node|z17-[landuse=military]
-{icon-image: military-m.svg;text-offset: 1;text: name;font-size: 10;text-color: #444444;}
+{icon-image: military-m.svg;text-offset: 1;text: name;font-size: 10;text-color: @poi_label;}
 
 /* 	7.7 Commercial */
 
 area|z17-[landuse=commercial]
-{text: name;font-size: 10;text-color: #444444;text-position: center;}
+{text: name;font-size: 10;text-color: @poi_label;text-position: center;}
 
 /* 8.BUILDINGS */
 
@@ -668,21 +668,21 @@ area|z16-[building],
 node|z16-[building],
 area|z16-[addr:housenumber][addr:street],
 node|z16-[addr:housenumber][addr:street]
-{text: name;text-color: #61615A;text-position: center;}
+{text: name;text-color: @building_label;text-position: center;}
 area|z16-[building]::int_name,
 node|z16-[building]::int_name,
-/* area|z16-[addr:housenumber][addr:street]::int_name, */
-/* node|z16-[addr:housenumber][addr:street]::int_name */
-{text:int_name;text-color: #61615A;text-position: center;}
+area|z16-[addr:housenumber][addr:street]::int_name,
+node|z16-[addr:housenumber][addr:street]::int_name
+{text:int_name;text-color: @building_label;text-position: center;}
 node|z18-[entrance]
-{text-color: #61615A;}
+{text-color: @building_label;}
 
 /* 8.1 Pier */
 area|z15-[waterway=dam],
 line|z15-[waterway=dam],
 line|z15-[waterway=weir],
 node|z15-[waterway=weir]
-{text: name;font-size: 10;text-color:#444444;fill-opacity: 1;}
+{text: name;font-size: 10;text-color:@poi_label;fill-opacity: 1;}
 
 area|z17-[man_made=pier],
 area|z17-[man_made=breakwater],
@@ -690,14 +690,14 @@ line|z17-[man_made=pier],
 line|z17-[man_made=breakwater],
 node|z17-[man_made=pier],
 node|z17-[man_made=breakwater]
-{text: name;font-size: 10;text-color:#444444;fill-opacity: 1;-x-me-area-priority:16000;}
+{text: name;font-size: 10;text-color:@poi_label;fill-opacity: 1;-x-me-area-priority:16000;}
 
 /*	8.2 Building */
 area|z16[building],
 node|z16[building],
 area|z16[addr:housenumber][addr:street],
 node|z16[addr:housenumber][addr:street],
-{text:"addr:housename";font-size: 9;text-color: #65655E;}
+{text:"addr:housename";font-size: 9;text-color: @housename;}
 
 area|z17[building],
 node|z17[building],
@@ -728,14 +728,14 @@ node|z19-[entrance]::flats
 
 /* 8.3 Airports */
 area|z14-[aeroway=terminal]
-{fill-color: #C9C8BB;}
+{fill-color: @building;}
 
 area|z14[aeroway=terminal]
 {fill-opacity: 0.8;}
 area|z15[aeroway=terminal]
-{ text: name; font-size: 9; fill-opacity: 0.8; text-color: #61615A; text-position: center;}
+{ text: name; font-size: 9; fill-opacity: 0.8; text-color: @building_label; text-position: center;}
 area|z16-[aeroway=terminal]
-{text: name; font-size: 9; fill-opacity: 1; text-color: #61615A; text-position: center;}
+{text: name; font-size: 9; fill-opacity: 1; text-color: @building_label; text-position: center;}
 
 /* 9. ISOLINES */
 
@@ -743,17 +743,17 @@ line[isoline]
 {text-position: line;}
 
 line|z11-[isoline=step_1000],
-{text:name;font-size: 9;fill-opacity: 0.7;text-color: #496149;}
+{text:name;font-size: 9;fill-opacity: 0.7;text-color: @label_isoline1000;}
 
 line|z12-[isoline=step_500],
-{text:name;font-size: 9;fill-opacity: 0.7;text-color: #496149;}
+{text:name;font-size: 9;fill-opacity: 0.7;text-color: @label_isoline500;}
 
 line|z15-[isoline=step_100],
-{text:name;font-size: 9;fill-opacity: 0.7;text-color: #496149;}
+{text:name;font-size: 9;fill-opacity: 0.7;text-color: @label_isoline100;}
 
 line|z17-[isoline=step_50],
 line|z17-[isoline=zero],
-{text:name;font-size: 9;fill-opacity: 0.7;text-color: #567556;}
+{text:name;font-size: 9;fill-opacity: 0.7;text-color: @label_isoline50;}
 
 line|z17-[isoline=step_10],
-{text:name;font-size: 9;fill-opacity: 0.7;text-color: #567556;}
+{text:name;font-size: 9;fill-opacity: 0.7;text-color: @label_isoline10;}

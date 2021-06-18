@@ -83,13 +83,13 @@ area[landuse=village_green],
 area[landuse=field],
 {z-index: 41;}
 
-/* line[isoline=step_1000],
+line[isoline=step_1000],
 line[isoline=step_500],
 line[isoline=step_100],
 line[isoline=step_50],
 line[isoline=step_10],
 line[isoline=zero],
-{z-index: 42;} */
+{z-index: 42;}
 
 area[natural=wetland],
 area[leisure=marina],
@@ -187,20 +187,20 @@ area|z10-[place=islet]
 {fill-position: background;	fill-opacity: 1;}
 
 area|z0-[natural=coastline]
-{fill-color: #8BD3E0;}
+{fill-color: @water;}
 
 area|z0-[natural=land],
 area|z10-[place=islet]
-{fill-color: #E3E1D2;}
+{fill-color: @background;}
 
 /* 3.BOUNDARIES */
 
 line|z2-[boundary=administrative]
-{color: #63635C;opacity: 1;}
+{color: @border_country;opacity: 1;}
 
 line|z4[boundary=administrative][admin_level=3],
 line|z5-[boundary=administrative][admin_level=4]
-{color: #73726B;opacity: 1;}
+{color: @border_region;opacity: 1;}
 
 /* 3.1 Country */
 
@@ -272,17 +272,17 @@ area|z14-[landuse=meadow],
 area|z14-[landuse=recreation_ground],
 area|z14-[landuse=village_green],
 area|z14-[landuse=field],
-{fill-color: #C6CF93;}
+{fill-color: @green1;}
 
 area|z11-12[landuse=forest],
 area|z10-12[leisure=park],
 area|z12[leisure=garden],
-{fill-color: #BCC87E;}
+{fill-color: @green2;}
 
 area|z13[landuse=forest],
 area|z13[leisure=park],
 area|z13[leisure=garden]
-{fill-color: #B3C471;}
+{fill-color: @green3;}
 
 area|z12-13[landuse=grass],
 area|z12-13[natural=grassland],
@@ -297,29 +297,29 @@ area|z12-13[landuse=meadow],
 area|z12-13[landuse=recreation_ground],
 area|z12-13[landuse=village_green],
 area|z12-13[landuse=field],
-{fill-color: #CFD5A8;}
+{fill-color: @green0;}
 
 area|z14-[leisure=nature_reserve],
 area|z14-[boundary=national_park],
-{fill-position: background; fill-opacity: 1; fill-color: #9EB360;}
+{fill-position: background; fill-opacity: 1; fill-color: @green6;}
 
 area|z14-[landuse=military]
-{fill-position: background; fill-opacity: 1; fill-color: #E53935;}
+{fill-position: background; fill-opacity: 1; fill-color: @military;}
 
 area|z14[landuse=forest],
 area|z14[leisure=park],
 area|z14[leisure=garden]
-{fill-color: #AEC26B;}
+{fill-color: @green4;}
 
 area|z15[landuse=forest],
 area|z15[leisure=park],
 area|z15[leisure=garden]
-{fill-color: #B0C270;}
+{fill-color: @green5;}
 
 area|z16-[landuse=forest],
 area|z16-[leisure=park],
 area|z16-[leisure=garden]
-{fill-color: #AABF65;}
+{fill-color: @forest;}
 
 /* 5.BEACH & GLACIER */
 
@@ -329,11 +329,11 @@ area|z10-[leisure=beach_resort],
 {fill-position: background;	fill-opacity: 1;}
 
 area|z0-[natural=glacier]
-{fill-color: #FFFFFF;}
+{fill-color: @glacier;}
 
 area|z10-[natural=beach],
 area|z10-[leisure=beach_resort],
-{fill-color: #FCEC7E;}
+{fill-color: @beach;}
 
 /* 6.WATER */
 
@@ -359,7 +359,7 @@ line|z13-[waterway=stream][intermittent=yes],
 line|z13-[waterway=canal],
 line|z13-[natural=strait],
 line|z16-[waterway=lock],
-{opacity: 1;color: #36B0BF;-x-me-line-priority: -15600;}
+{opacity: 1;color: @river;-x-me-line-priority: -15600;}
 
 /* 6.1 Area water(lake,pond etc.) */
 
@@ -374,10 +374,10 @@ area|z12-[landuse=basin],
 area|z12-[landuse=reservoir],
 area|z13-[leisure=swimming_pool],
 area|z16-[amenity=fountain],
-{fill-color: #8BD3E0;}
+{fill-color: @water;}
 
 area|z11-[natural=wetland]
-{fill-color: #c9ddd6;}
+{fill-color: @wetland;}
 
 /* 6.2 Line water(river,canal etc.) */
 
@@ -421,7 +421,7 @@ line|z15-[waterway=stream][intermittent=yes]
 area|z15-[waterway=dam],
 line|z15-[waterway=dam],
 line|z15-[waterway=weir],
-{width: 1;opacity: 1;color: #808080;}
+{width: 1;opacity: 1;color: @bridge_casing;}
 
 line|z16-[waterway=lock],
 {width: 1.5;}
@@ -430,7 +430,7 @@ node|z16-[waterway=lock_gate],
 
 line|z17-[waterway=ditch],
 line|z17-[waterway=drain],
-{width: 1.8;opacity: 1;color: #36B0BF;dashes: 0.9,0.9;}
+{width: 1.8;opacity: 1;color: @river;dashes: 0.9,0.9;}
 
 /* Do not draw tunnel waterways */
 
@@ -477,39 +477,39 @@ area|z15-[landuse=construction],
 area|z15-[landuse=landfill],
 area|z15-[landuse=railway],
 area|z15-[landuse=quarry]
-{fill-color: #E4E2EB;}
+{fill-color: @industrial;}
 
 /* 7.2 Hostital */
 
 area|z14-[amenity=hospital],
 area|z14-[amenity=doctors]
-{fill-color: #F8D9D9;}
+{fill-color: @hospital;}
 
 /* 7.3 University & Sport */
 
 area|z14-[amenity=university]
-{fill-color: #F8E4BA;}
+{fill-color: @university;}
 
 area|z15-[leisure=pitch],
 area|z15-[leisure=stadium],
 area|z17-[leisure=playground],
 area|z17-[sport=multi],
 area|z16-[sport=soccer],
-{fill-color: #D1CDA7;}
+{fill-color: @sport;}
 
 /* 7.4 Cemetry */
 
 area|z14[landuse=cemetery],
 area|z14[amenity=grave_yard]
-{fill-color: #BCC87E;fill-opacity: 0.85;}
+{fill-color: @green2;fill-opacity: 0.85;}
 
 area|z15-[amenity=grave_yard],
 area|z15-[landuse=cemetery]
-{fill-color: #BCC87E;}
+{fill-color: @green2;}
 
 area|z16-[amenity=grave_yard],
 area|z16-[landuse=cemetery]
-{fill-color: #B3C471;}
+{fill-color: @green3;}
 
 /* 7.5 Pedestrian areas */
 
@@ -521,14 +521,14 @@ area|z14-[area:highway=living_street],
 area|z16-[public_transport=platform],
 area|z16-[railway=platform],
 area|z16-[amenity=place_of_worship]
-{fill-color: #EDE8D6;}
+{fill-color: @pedestrian_area;}
 
 area|z16-[highway=pedestrian][area?],
 area|z16-[area:highway=pedestrian],
 area|z16-[highway=footway][area?][!sac_scale],
 area|z16-[area:highway=footway],
 area|z16-[area:highway=living_street],
-{fill-color: #F2EEDA;}
+{fill-color: @pedestrian_area_light;}
 
 /* 7.6 Airports */
 
@@ -536,88 +536,88 @@ area|z10[aeroway=airport][aerodrome=international],
 area|z10[aeroway=aerodrome][aerodrome=international],
 area|z10[aeroway=aerodrome],
 area|z10[aeroway=airport]
-{fill-color: #D4BFF2;}
+{fill-color: @aerodrome0;}
 area|z11[aeroway=airport][aerodrome=international],
 area|z11[aeroway=aerodrome][aerodrome=international],
 area|z11[aeroway=aerodrome],
 area|z11[aeroway=airport],
-{fill-color: #D4BFF2;}
+{fill-color: @aerodrome1;}
 area|z12-[aeroway=airport][aerodrome=international],
 area|z12-[aeroway=aerodrome][aerodrome=international],
 area|z12-[aeroway=airport],
 area|z12-[aeroway=aerodrome]
-{fill-color: #D1C0EB;}
+{fill-color: @aerodrome2;}
 area|z13[aeroway=airport][aerodrome=international],
 area|z13[aeroway=aerodrome][aerodrome=international],
 area|z13[aeroway=airport],
 area|z13[aeroway=aerodrome]
-{fill-color: #CFC1E8;}
+{fill-color: @aerodrome3;}
 area|z14[aeroway=airport][aerodrome=international],
 area|z14[aeroway=aerodrome][aerodrome=international],
 area|z14[aeroway=airport],
 area|z14[aeroway=aerodrome]
-{fill-color: #CDC0E3;}
+{fill-color: @aerodrome4;}
 area|z15-19[aeroway=airport][aerodrome=international],
 area|z15-19[aeroway=aerodrome][aerodrome=international],
 area|z15-19[aeroway=airport],
 area|z15-19[aeroway=aerodrome]
-{fill-color: #C8BCDE;}
+{fill-color: @aerodrome5;}
 
 
 /* 7.7 Religion */
 
 area|z15-[landuse=churchyard]
-{fill-color: #E3E1D2;}
+{fill-color: @background;}
 
 /* Parking */
 
 area|z15-[amenity=parking]
-{fill-color: #F2F2CE;}
+{fill-color: @parking;}
 
 /* 8.BUILDINGS */
 
 /* 8.1 Pier */
 area|z12-[man_made=pier],
 area|z12-[man_made=breakwater],
-{fill-position: background; fill-opacity: 1; fill-color: #E3E1D2;casing-color: #E3E1D2;}
+{fill-position: background; fill-opacity: 1; fill-color: @background;casing-color: @background;}
 
 line|z14-[man_made=pier],
 line|z14-[man_made=breakwater],
 line|z14-[man_made=cutline]
-{width: 2;color: #E3E1D2;opacity: 1;}
+{width: 2;color: @background;opacity: 1;}
 
 /* 8.2 Building */
 
 area|z14[building],
 area|z14[landuse=garages],
 area|z14[building=train_station],
-{fill-color: #C9C8BB;fill-opacity: 0.5;casing-width: 0;}
+{fill-color: @building;fill-opacity: 0.5;casing-width: 0;}
 
 area|z15[building],
 area|z15[landuse=garages],
 area|z15[building=train_station],
-{fill-color: #C9C8BB;fill-opacity: 0.6;casing-width: 0;}
+{fill-color: @building;fill-opacity: 0.6;casing-width: 0;}
 
 area|z14-15[aeroway=terminal],
 area|z16[building],
 area|z16[building:part],
 area|z16[landuse=garages],
 area|z16[building=train_station],
-{fill-color: #C9C8BB;fill-opacity: 0.8;casing-width: 1;casing-color: #A1A096;}
+{fill-color: @building;fill-opacity: 0.8;casing-width: 1;casing-color: @building_border;}
 
 area|z16[aeroway=terminal],
 area|z17[building],
 area|z17[building:part],
 area|z17[landuse=garages],
 area|z17[building=train_station],
-{fill-color: #C2C0B3;opacity: 0.9;casing-width: 1;casing-color: #9B9A8F;}
+{fill-color: @building_dark;opacity: 0.9;casing-width: 1;casing-color: @building_dark_border;}
 
 area|z17-[aeroway=terminal],
 area|z18-[building],
 area|z18-[building:part],
 area|z18-[landuse=garages],
 area|z18-[building=train_station],
-{fill-color: #C2C0B3;opacity: 1;casing-width: 1;casing-color: #9B9A8F;}
+{fill-color: @building_dark;opacity: 1;casing-width: 1;casing-color: @building_dark_border;}
 
 /* 8.3 Barrier */
 
@@ -627,7 +627,7 @@ line|z16-[barrier=retaining_wall],
 line|z16-[barrier=hedge],
 line|z16-[barrier=fence],
 line|z16-[historic=citywalls],
-{color: #999999;opacity: 1;}
+{color: @fence;opacity: 1;}
 
 line|z16[barrier=wall],
 line|z16[barrier=city_wall],
@@ -653,20 +653,20 @@ line|z18-[historic=citywalls],
 
 /* 9. ISOLINES */
 
-/* line|z11-[isoline=step_1000],
-{color: #496149;}
+line|z11-[isoline=step_1000],
+{color: @isoline1000;}
 line|z11-[isoline=step_500],
-{color: #496149;}
+{color: @isoline500;}
 
 line|z13-[isoline=step_100],
-{color: #496149;}
+{color: @isoline100;}
 
 line|z15-[isoline=step_50],
 line|z15-[isoline=zero],
-{color: #567556;}
+{color: @isoline50;}
 
 line|z15-[isoline=step_10],
-{color: #567556;}
+{color: @isoline10;}
 
 line|z11-[isoline=step_1000],
 {width: 1.3;opacity: 0.8;}
@@ -701,4 +701,4 @@ line|z17[isoline=step_10],
 line|z18-[isoline=step_50],
 line|z18-[isoline=zero],
 line|z18-[isoline=step_10],
-{width: 1.3;opacity: 0.8;} */
+{width: 1.3;opacity: 0.8;}

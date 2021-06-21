@@ -1,6 +1,6 @@
 dev: deploy/zigzag/basemap deploy/sonic/basemap deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs  ## [FINAL] Builds all targets for development. Run on every branch.
 
-prod: deploy/lima/basemap deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/lima/basemap deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz deploy/geocint/drp_buildings ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
@@ -682,7 +682,8 @@ data/microsoft_buildings/unzip: data/microsoft_buildings/download
 db/table/microsoft_buildings: data/microsoft_buildings/unzip | db/table
 	psql -c "drop table if exists microsoft_buildings"
 	psql -c "create table microsoft_buildings (ogc_fid serial not null, geom geometry)"
-	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom'
+	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom -t_srs EPSG:4326'
+	psql -c "create index on microsoft_buildings using gist(geom);"
 	touch $@
 
 db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Count amount of Microsoft Buildings at hexagons.
@@ -947,6 +948,40 @@ data/osm_buildings_japan.gpkg.gz: db/table/osm_buildings_japan
 
 deploy/geocint/osm_buildings_japan.gpkg.gz: data/osm_buildings_japan.gpkg.gz | deploy/geocint
 	cp -vp data/osm_buildings_japan.gpkg.gz ~/public_html/osm_buildings_japan.gpkg.gz
+	touch $@
+
+data/drp_buildings: | data
+	mkdir -p $@
+
+db/table/drp_regions: data/drp_regions.csv | db/table
+	psql -c 'drop table if exists drp_regions;'
+	psql -c 'create table drp_regions (osm_id bigint, city_name text, country text);'
+	cat data/drp_regions.csv | psql -c "copy drp_regions (osm_id, city_name, country) from stdin with csv header delimiter ';' ;"
+	touch $@
+
+db/table/osm_boundary_drp: db/table/drp_regions db/table/osm_admin_boundaries | db/table
+	psql -f tables/osm_boundary_drp.sql
+	touch $@
+
+db/table/osm_buildings_drp: db/table/osm_boundary_drp db/table/osm_buildings_use | db/table
+	psql -f tables/osm_buildings_drp.sql
+	touch $@
+
+db/table/microsoft_buildings_drp: db/table/osm_boundary_drp db/table/microsoft_buildings | db/table
+	psql -f tables/microsoft_buildings_drp.sql
+	touch $@
+
+data/drp_buildings_export: data/drp_buildings data/drp_regions.csv db/table/osm_boundary_drp db/table/osm_buildings_drp db/table/microsoft_buildings_drp
+	rm -f data/drp_buildings/drp_buildings_*.gpkg
+	rm -f data/drp_buildings/drp_buildings_*.gpkg.gz
+	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -lco OVERWRITE=YES -lco SPATIAL_INDEX=NO -nln boundary -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select osm_id as id, city_name, country, geom from drp_regions where city_name = '{}' \" "
+	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln osm_buildings -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select building, street, hno, levels, height, use, name, geom from osm_buildings_drp where city_name = '{}' \" "
+	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln microsoft_buildings -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select id, geom from microsoft_buildings_drp where city_name = '{}' \" "
+	pigz data/drp_buildings/osm_buildings_*.gpkg
+	touch $@
+
+deploy/geocint/drp_buildings: data/drp_buildings_export | deploy/geocint
+	cp -vp data/drp_buildings/drp_buildings_*.gpkg.gz ~/public_html/
 	touch $@
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table

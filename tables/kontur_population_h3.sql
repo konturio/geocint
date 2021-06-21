@@ -17,6 +17,7 @@ create table kontur_population_in as (
                     null::float as building_count,
                     population  as population
              from population_grid_h3_r8
+             where population > 0
              order by 1
          ) z
     group by 1

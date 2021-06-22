@@ -669,7 +669,7 @@ data/microsoft_buildings/unzip: data/microsoft_buildings/download
 db/table/microsoft_buildings: data/microsoft_buildings/unzip | db/table
 	psql -c "drop table if exists microsoft_buildings"
 	psql -c "create table microsoft_buildings (ogc_fid serial not null, geom geometry(polygon,4326))"
-	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom -t_srs EPSG:4326'
+	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom -a_srs EPSG:4326'
 	psql -c "create index on microsoft_buildings using gist(geom);"
 	touch $@
 

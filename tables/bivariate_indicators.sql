@@ -121,11 +121,6 @@ values ('covid19_vaccines', 'COVID19 Vaccine Acceptance', jsonb_build_array(
     '[["bad"], ["neutral"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('covid19_cases', 'COVID19 Cases (per 100,000 people, 7-day average)', jsonb_build_array(
-'© Data from Delphi COVIDcast, covidcast.cmu.edu'),
-    '[["good"], ["bad"]]'::jsonb);
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('covid19_confirmed', 'COVID19 Confirmed Cases', jsonb_build_array(
 '© Data from JHU CSSE COVID-19 Dataset'),
    '[["good"], ["bad"]]'::jsonb);

@@ -23,7 +23,6 @@ copy (
                 total_building_count,
                 wildfires,
                 covid19_vaccines,
-                covid19_cases,
                 avg_slope,
                 forest,
                 avg_ndvi,

@@ -188,7 +188,7 @@ data/covid19/vaccination/vaccine_acceptance_us_counties.csv: | data/covid19/vacc
 db/table/covid19_vaccine_accept_us_counties: data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/us_counties_boundary
 	psql -c 'drop table if exists covid19_vaccine_accept_us;'
 	psql -c 'create table covid19_vaccine_accept_us (ogc_fid serial not null, geo_value text, signal text, time_value timestamptz, issue timestamptz, lag int, missing_value int, missing_stderr int, missing_sample_size int, value float, stderr float, sample_size float, geo_type text, data_source text);'
-	cat data/covid19/vaccination/vaccine_acceptance_us_counties.csv | psql -c 'copy test_c19_va_us (ogc_fid, geo_value, signal, time_value, issue, lag, missing_value, missing_stderr, missing_sample_size, value, stderr, sample_size, geo_type, data_source) from stdin with csv header;'
+	cat data/covid19/vaccination/vaccine_acceptance_us_counties.csv | psql -c 'copy covid19_vaccine_accept_us (ogc_fid, geo_value, signal, time_value, issue, lag, missing_value, missing_stderr, missing_sample_size, value, stderr, sample_size, geo_type, data_source) from stdin with csv header;'
 	psql -f tables/covid19_vaccine_accept_us_counties.sql
 	touch $@
 
@@ -964,7 +964,7 @@ data/drp_buildings_export: data/drp_buildings data/drp_regions.csv db/table/osm_
 	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -lco OVERWRITE=YES -lco SPATIAL_INDEX=NO -nln boundary -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select osm_id as id, city_name, country, geom from drp_regions where city_name = '{}' \" "
 	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln osm_buildings -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select building, street, hno, levels, height, use, name, geom from osm_buildings_drp where city_name = '{}' \" "
 	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln microsoft_buildings -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select id, geom from microsoft_buildings_drp where city_name = '{}' \" "
-	pigz data/drp_buildings/osm_buildings_*.gpkg
+	pigz data/drp_buildings/drp_buildings_*.gpkg
 	touch $@
 
 deploy/geocint/drp_buildings: data/drp_buildings_export | deploy/geocint

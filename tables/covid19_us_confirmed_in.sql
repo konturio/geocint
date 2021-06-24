@@ -12,4 +12,15 @@ create table covid19_us_confirmed_in as
         'confirmed'::text as status
  from covid19_us_confirmed_csv_in group by 1, 4);
 
+insert into covid19_us_confirmed_in
+(select
+        '49000' as fips,
+        max(date) as date,
+        max(cumulative_cases) as value,
+        'Utah, US' as combined_key,
+        'confirmed' as status
+from covid19_utah_confirmed_csv_in);
+
+delete from covid19_us_confirmed_in where fips like '490%' and not fips = '49000';
+
 create index if not exists covid19_us_confirmed_in_fips_idx on covid19_us_confirmed_in (fips);

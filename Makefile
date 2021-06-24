@@ -112,6 +112,8 @@ data/covid19/_global_csv: | data/covid19
 data/covid19/_us_csv: | data/covid19
 	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv" -O data/covid19/time_series_us_confirmed.csv
 	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv" -O data/covid19/time_series_us_deaths.csv
+	wget "https://coronavirus-dashboard.utah.gov/Utah_COVID19_data.zip" -O data/covid19/utah_covid19.zip
+	unzip -p data/covid19/utah_covid19.zip 'Overview_COVID-19 Cases by Date of Symptom Onset or Diagnosis_'* > data/covid19/covid19_utah.csv
 	touch $@
 
 db/table/covid19_in: data/covid19/_global_csv | db/table
@@ -135,8 +137,12 @@ db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table
 	rm -f data/covid19/time_series_us_confirmed_normalized.csv
 	python3 scripts/covid19_us_confirmed_normalization.py data/covid19/time_series_us_confirmed.csv
 	cat data/covid19/time_series_us_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_us_confirmed_csv_in (uid, iso2, iso3, code3, fips, admin2, province, country, lat, lon, combined_key, date, value) from stdin with csv header;"
+	psql -c 'drop table if exists covid19_utah_confirmed_csv_in;'
+	psql -c 'create table covid19_utah_confirmed_csv_in (date timestamptz, confirmed_case_count int, cumulative_cases int, seven_day_average float);'
+	cat data/covid19/covid19_utah.csv | psql -c "copy covid19_utah_confirmed_csv_in (date , confirmed_case_count, cumulative_cases, seven_day_average) from stdin with csv header delimiter ',';"
 	psql -f tables/covid19_us_confirmed_in.sql
 	touch $@
+
 
 db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table
 	psql -c 'drop table if exists covid19_us_deaths_csv_in;'
@@ -176,12 +182,7 @@ db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table
 	psql -c 'drop table if exists us_counties_fips_codes;'
 	psql -c 'create table us_counties_fips_codes (state text, county text, hasc_code text, fips_code text);'
 	cat data/counties_fips_hasc.csv | psql -c "copy us_counties_fips_codes (state, county, hasc_code, fips_code) from stdin with csv header delimiter ',';"
-	psql -c 'drop table if exists us_counties_boundary;'
-	psql -c 'create table us_counties_boundary as (select gid_2 as gid, geom, state, county, hasc_code, fips_code from gadm_us_counties_boundary join us_counties_fips_codes on hasc_2 = hasc_code);'
-	psql -c 'create sequence us_counties_boundary_admin_id_seq START 10001;'
-	psql -c "alter table us_counties_boundary add column admin_id integer NOT NULL DEFAULT nextval('us_counties_boundary_admin_id_seq');"
-	psql -c 'alter sequence us_counties_boundary_admin_id_seq OWNED BY us_counties_boundary.admin_id;'
-	psql -c 'create index on us_counties_boundary (fips_code);'
+	psql -f tables/us_counties_boundary.sql
 	touch $@
 
 db/table/covid19_us_counties: db/table/covid19_us_confirmed_in db/table/covid19_us_deaths_in db/table/us_counties_boundary | db/table

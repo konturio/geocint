@@ -12,7 +12,7 @@ create table covid19_us_confirmed_in as
         'confirmed'::text as status
  from covid19_us_confirmed_csv_in group by 1, 4);
 
-insert into covid19_us_confirmed_in
+insert into covid19_us_confirmed_in (fips, date, value, combined_key, status)
 (select
         '49000' as fips,
         max(date) as date,

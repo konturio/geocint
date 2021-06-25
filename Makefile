@@ -183,12 +183,12 @@ data/covid19/vaccination: | data/covid19
 	mkdir -p $@
 
 data/covid19/vaccination/vaccine_acceptance_us_counties.csv: | data/covid19/vaccination
-	wget -q "https://delphi.cmu.edu/csv?signal=fb-survey:smoothed_accept_covid_vaccine&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
+	wget -q "https://api.covidcast.cmu.edu/epidata/covidcast/csv?signal=fb-survey:smoothed_covid_vaccinated&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
 
 db/table/covid19_vaccine_accept_us_counties: data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/us_counties_boundary
 	psql -c 'drop table if exists covid19_vaccine_accept_us;'
-	psql -c 'create table covid19_vaccine_accept_us (ogc_fid serial not null, geo_value text, signal text, time_value timestamptz, issue timestamptz, lag int, missing_value int, missing_stderr int, missing_sample_size int, value float, stderr float, sample_size float, geo_type text, data_source text);'
-	cat data/covid19/vaccination/vaccine_acceptance_us_counties.csv | psql -c 'copy covid19_vaccine_accept_us (ogc_fid, geo_value, signal, time_value, issue, lag, missing_value, missing_stderr, missing_sample_size, value, stderr, sample_size, geo_type, data_source) from stdin with csv header;'
+	psql -c 'create table covid19_vaccine_accept_us (ogc_fid serial not null, geo_value text, signal text, time_value timestamptz, issue timestamptz, lag int, value float, stderr float, sample_size float, geo_type text, data_source text);'
+	cat data/covid19/vaccination/vaccine_acceptance_us_counties.csv | psql -c 'copy covid19_vaccine_accept_us (ogc_fid, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header;'
 	psql -f tables/covid19_vaccine_accept_us_counties.sql
 	touch $@
 

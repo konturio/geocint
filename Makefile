@@ -1250,8 +1250,9 @@ db/function/basemap_mapsme: | kothic db/function
 	python2 kothic/src/mvt_getter.py -s basemap/styles/mapsme/style-clear/style.mapcss -s kothic/src/styles/osmosnimki-maps.mapcss -s basemap/styles/stub.mapcss | psql
 	touch $@
 
-data/tiles/basemap: db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/population/population_api_tables.sqld.gz data/tiles
+data/tiles/basemap_all: db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/population/population_api_tables.sqld.gz data/tiles
 	bash ./scripts/generate_tiles.sh basemap | parallel --eta
+	touch $@
 
 data/basemap: | data
 	mkdir -p $@
@@ -1323,13 +1324,13 @@ data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/zigzag.tar.bz2: data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | data/tiles/basemap data/basemap/glyphs/Roboto
+data/basemap/zigzag.tar.bz2: data/tiles/basemap_all data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | data/basemap/glyphs/Roboto
 	tar cvf data/basemap/zigzag.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/zigzag .
 
-data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json | data/tiles/basemap data/basemap/glyphs/Roboto
+data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json | data/basemap/glyphs/Roboto
 	tar cvf data/basemap/sonic.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/sonic .
 
-data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json | data/tiles/basemap data/basemap/glyphs/Roboto
+data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json | data/basemap/glyphs/Roboto
 	tar cvf data/basemap/lima.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/lima .
 
 deploy/zigzag/basemap: data/basemap/zigzag.tar.bz2 | deploy/zigzag

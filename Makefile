@@ -1,11 +1,11 @@
-dev: deploy/zigzag/basemap deploy/sonic/basemap deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs  ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/zigzag/basemap deploy/sonic/basemap deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs deploy/geocint/drp_buildings ## [FINAL] Builds all targets for development. Run on every branch.
 
 prod: deploy/lima/basemap deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz deploy/geocint/drp_buildings ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/covid19_cases_us_counties.csv data/covid19/vaccination/vaccine_acceptance_us_counties.csv
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/vaccination/vaccine_acceptance_us_counties.csv
 	psql -f scripts/clean.sql
 
 data:
@@ -165,16 +165,6 @@ db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 db/table/covid19_us_co
 	psql -f tables/covid19_h3_r8.sql
 	touch $@
 
-data/covid19/covid19_cases_us_counties.csv: | data/covid19
-	wget -q "https://delphi.cmu.edu/csv?signal=indicator-combination:confirmed_7dav_incidence_prop&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
-
-db/table/covid19_cases_us_counties: data/covid19/covid19_cases_us_counties.csv db/table/us_counties_boundary | db/table
-	psql -c "drop table if exists covid19_cases_us_counties_csv"
-	psql -c "create table covid19_cases_us_counties_csv (id integer, geo_value text, signal text, time_value date, issue date, lag integer, value float, stderr text, sample_size text, geo_type text, data_source text);"
-	cat data/covid19/covid19_cases_us_counties.csv | psql -c "copy covid19_cases_us_counties_csv (id, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header delimiter ',';"
-	psql -f tables/covid19_cases_us_counties.sql
-	touch $@
-
 db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table
 	psql -c 'drop table if exists gadm_us_counties_boundary;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
@@ -189,15 +179,11 @@ db/table/covid19_us_counties: db/table/covid19_us_confirmed_in db/table/covid19_
 	psql -f tables/covid19_us_counties.sql
 	touch $@
 
-db/table/covid19_cases_us_counties_h3: db/table/covid19_cases_us_counties
-	psql -f tables/covid19_cases_us_counties_h3.sql
-	touch $@
-
 data/covid19/vaccination: | data/covid19
 	mkdir -p $@
 
 data/covid19/vaccination/vaccine_acceptance_us_counties.csv: | data/covid19/vaccination
-	wget -q "https://delphi.cmu.edu/csv?signal=fb-survey:smoothed_accept_covid_vaccine&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
+	wget -q "https://api.covidcast.cmu.edu/epidata/covidcast/csv?signal=fb-survey:smoothed_covid_vaccinated&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
 
 db/table/covid19_vaccine_accept_us_counties: data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/us_counties_boundary
 	psql -c 'drop table if exists covid19_vaccine_accept_us;'
@@ -682,8 +668,8 @@ data/microsoft_buildings/unzip: data/microsoft_buildings/download
 
 db/table/microsoft_buildings: data/microsoft_buildings/unzip | db/table
 	psql -c "drop table if exists microsoft_buildings"
-	psql -c "create table microsoft_buildings (ogc_fid serial not null, geom geometry)"
-	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom -t_srs EPSG:4326'
+	psql -c "create table microsoft_buildings (ogc_fid serial not null, geom geometry(polygon,4326))"
+	cd data/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom -a_srs EPSG:4326'
 	psql -c "create index on microsoft_buildings using gist(geom);"
 	touch $@
 
@@ -978,7 +964,7 @@ data/drp_buildings_export: data/drp_buildings data/drp_regions.csv db/table/osm_
 	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -lco OVERWRITE=YES -lco SPATIAL_INDEX=NO -nln boundary -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select osm_id as id, city_name, country, geom from drp_regions where city_name = '{}' \" "
 	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln osm_buildings -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select building, street, hno, levels, height, use, name, geom from osm_buildings_drp where city_name = '{}' \" "
 	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln microsoft_buildings -f GPKG data/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select id, geom from microsoft_buildings_drp where city_name = '{}' \" "
-	pigz data/drp_buildings/osm_buildings_*.gpkg
+	pigz data/drp_buildings/drp_buildings_*.gpkg
 	touch $@
 
 deploy/geocint/drp_buildings: data/drp_buildings_export | deploy/geocint
@@ -1039,7 +1025,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/covid19_cases_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

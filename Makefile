@@ -1235,7 +1235,7 @@ deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
-	osm2pgsql --number-processes 32 --flat-nodes data/planet-latest-updated-flat-nodes -C 120000 --hstore-all --hstore-add-index --slim --create data/planet-latest-updated.osm.pbf
+	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --flat-nodes data/planet-latest-updated-flat-nodes -C 120000 --hstore-all --hstore-add-index --slim --create data/planet-latest-updated.osm.pbf
 	touch $@
 
 kothic:
@@ -1245,7 +1245,7 @@ tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod
 	cd tile_generator; go get; go build -o tile_generator
 
 db/function/basemap_mapsme: | kothic db/function
-	python2 kothic/src/mvt_getter.py -s basemap/styles/mapsme_mod/style-clear/style.mapcss -s kothic/src/styles/osmosnimki-maps.mapcss | psql
+	python2 kothic/src/mvt_getter.py --stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss --stylesheet kothic/src/styles/osmosnimki-maps.mapcss --osm2pgsql-style basemap/osm2pgsql_styles/default.style | psql
 	touch $@
 
 data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/population/population_api_tables.sqld.gz data/tiles

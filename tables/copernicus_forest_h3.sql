@@ -29,13 +29,11 @@ $$
         cur_row record;
         carry float;
         cur_out float;
-        err float;
     begin
-        err = 0;
         carry = 0;
         for cur_row in (select * from copernicus_forest_h3_in order by h3) loop
             carry = carry + cur_row.forest_area;
-            cur_out = least(err, cur_row.area_km2);
+            cur_out = least(carry, cur_row.area_km2);
             carry = carry - cur_out;
             if cur_out > 0 then
                 insert into copernicus_forest_h3 (h3, resolution, forest_area, area_km2)

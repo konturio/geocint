@@ -79,17 +79,17 @@ node[place=village]
 node[place=town]
 {z-index: 1100;}
 
-node[place=city][capital!=2][population<40000]
+node[place=city][!capital?][population<40000]
 {z-index: 1200;}
 
 node[place=city][capital=3][population<40000],
 node[place=city][capital=4][population<40000]
 {z-index: 1300;}
 
-node[place=city][capital!=2][population>=40000]
+node[place=city][!capital?][population>=40000]
 {z-index: 1400;}
 
-node[place=city][capital=2][population>=0]
+node[place=city][capital?][population>=0]
 {z-index: 1450;}
 
 node[place=ocean],
@@ -187,63 +187,63 @@ node|z8-10[place=state]
 
 /* 4.1 Cities */
 
-node|z4[place=city][capital!=2][population>=1000000],
-node|z5[place=city][capital!=2][population>=150000],
-node|z6[place=city][capital!=2][population>=50000],
-node|z7-8[place=city][capital!=2][population>=40000],
-node|z9-[place=city][capital!=2][population<40000],
-node|z4-[place=city][capital=2][population>=0],
+node|z4[place=city][!capital?][population>=1000000],
+node|z5[place=city][!capital?][population>=150000],
+node|z6[place=city][!capital?][population>=50000],
+node|z7-8[place=city][!capital?][population>=40000],
+node|z9-[place=city][!capital?][population<40000],
+node|z4-[place=city][capital?][population>=0],
 {text: "name:en";text-color: @label_dark;text-halo-radius: 1;text-halo-opacity: 1;text-halo-color: @label_halo_light;}
 
-node|z4[place=city][capital!=2][population>=1000000],
+node|z4[place=city][!capital?][population>=1000000],
 {font-size: 9;text-halo-opacity: 0.7;}
 
-node|z4[place=city][capital=2][population>=0],
+node|z4[place=city][capital?][population>=0],
 {icon-image: star-s.svg;text-offset: 1;font-size: 10;}
 
-node|z5[place=city][capital!=2][population>=150000],
+node|z5[place=city][!capital?][population>=150000],
 {font-size: 10;text-halo-opacity: 0.6;}
-node|z5[place=city][capital=2][population>=0]
+node|z5[place=city][capital?][population>=0]
 {icon-image: star-m.svg;text-offset: 1;font-size: 10.4;}
 
-node|z6[place=city][capital!=2][population>=50000]
+node|z6[place=city][!capital?][population>=50000]
 {font-size: 10.4;text-halo-opacity: 0.6;}
-node|z6[place=city][capital=2][population>=0]
+node|z6[place=city][capital?][population>=0]
 {icon-image: star-l.svg;text-offset: 1;font-size: 11.6;}
 
-node|z7[place=city][capital!=2][population>=40000]
+node|z7[place=city][!capital?][population>=40000]
 {font-size: 10;text-halo-opacity: 0.8;}
-node|z7[place=city][capital=2][population>=0]
+node|z7[place=city][capital?][population>=0]
 {icon-image: star-l.svg;text-offset: 1;font-size: 11;}
 
-node|z8[place=city][capital!=2][population>=40000]
+node|z8[place=city][!capital?][population>=40000]
 {font-size: 10.5;}
-node|z8[place=city][capital=2][population>=0]
+node|z8[place=city][capital?][population>=0]
 {icon-image: star-l.svg;text-offset: 1;font-size: 11.5;}
 
-node|z9[place=city][capital=2][population>=0]
+node|z9[place=city][capital?][population>=0]
 {icon-image: star-l.svg;text-offset: 1;font-size: 13;  text-halo-radius: 0.5;}
-node|z9[place=city][capital!=2][population>=0],
+node|z9[place=city][!capital?][population>=0],
 {font-size: 11;text-halo-radius: 0.5;}
 
-node|z10[place=city][capital=2][population>=0]
+node|z10[place=city][capital?][population>=0]
 {icon-image: star-l.svg;text-offset: 1;font-size: 13;}
-node|z10[place=city][capital!=2][population>=0],
+node|z10[place=city][!capital?][population>=0],
 {font-size: 11;text-halo-radius: 0.9;}
 
-node|z11[place=city][capital=2][population>=0]
+node|z11[place=city][capital?][population>=0]
 {icon-image: star-l.svg;text-offset: 1;font-size: 12;}
-node|z11[place=city][capital!=2][population>=0],
+node|z11[place=city][!capital?][population>=0],
 {font-size: 12;}
 
-node|z12[place=city][capital=2][population>=0]
+node|z12[place=city][capital?][population>=0]
 {icon-image: star-l.svg;text-offset: 1;font-size: 13;}
-node|z12[place=city][capital!=2][population>=0],
+node|z12[place=city][!capital?][population>=0],
 {font-size: 13;text-color: @label_medium;}
 
-node|z13-[place=city][capital=2][population>=0]
+node|z13-[place=city][capital?][population>=0]
 {icon-image: star-l.svg;text-offset: 1;font-size: 14;text-color: @label_medium;}
-node|z13-[place=city][capital!=2][population>=0],
+node|z13-[place=city][!capital?][population>=0],
 {font-size: 14;text-color: @label_medium;}
 
 /* 4.2 Town */

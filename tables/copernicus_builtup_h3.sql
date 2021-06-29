@@ -1,6 +1,3 @@
-alter table copernicus_landcover_raster
-    set (parallel_workers = 32);
-
 drop table if exists copernicus_builtup_h3;
 create table copernicus_builtup_h3 as (
     select h3,

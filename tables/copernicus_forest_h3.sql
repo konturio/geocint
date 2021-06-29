@@ -29,8 +29,10 @@ $$
         cur_row record;
         carry float;
         cur_out float;
+        err float;
     begin
         err = 0;
+        carry = 0;
         for cur_row in (select * from copernicus_forest_h3_in order by h3) loop
             carry = carry + cur_row.forest_area;
             cur_out = least(err, cur_row.area_km2);
@@ -43,6 +45,7 @@ $$
         raise notice 'unprocessed carry %', carry;
     end;
 $$;
+
 drop table if exists copernicus_forest_h3_in;
 
 -- generate overviews

@@ -2,9 +2,13 @@ dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/ge
 
 prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz deploy/geocint/drp_buildings ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 
-basemap_dev: deploy/zigzag/basemap deploy/sonic/basemap ## [FINAL]
+basemap: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build
 
-basemap_prod: deploy/lima/basemap ## [FINAL]
+basemap_dev: deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment
+	touch $@
+
+basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment
+	touch $@
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi

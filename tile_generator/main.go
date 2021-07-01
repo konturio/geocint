@@ -5,13 +5,14 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"io"
 	"log"
 	"math"
 	"os"
 	"sync"
 	"time"
+	"path"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 // example usage: tile-generator --parallel-limit 10 --min-zoom 7 --max-zoom 7 --sql 'select basemap($1, $2, $3)' --db-config 'host=localhost dbname=gis'
@@ -20,6 +21,7 @@ var minZoom = flag.Int("min-zoom", 0, "min zoom")
 var maxZoom = flag.Int("max-zoom", 8, "max zoom")
 var sql = flag.String("sql", "", "sql")
 var dbConfig = flag.String("db-config", "", "db config")
+var outputPath = flag.String("output-path", ".", "output path")
 
 var globalDb *pgxpool.Pool = nil
 
@@ -71,8 +73,8 @@ func BuildTile(zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
 		return err
 	}
 
-	dir := fmt.Sprintf("%d/%d", zxy.z, zxy.x)
-	filePath := fmt.Sprintf("%d/%d/%d.pbf", zxy.z, zxy.x, zxy.y)
+	dir := path.Join(*outputPath, fmt.Sprintf("%d/%d", zxy.z, zxy.x))
+	filePath := path.Join(*outputPath, fmt.Sprintf("%d/%d/%d.pbf", zxy.z, zxy.x, zxy.y))
 
 	// Get the data
 	row := db.QueryRow(context.Background(), *sql, zxy.z, zxy.x, zxy.y)

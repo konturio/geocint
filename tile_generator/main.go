@@ -56,7 +56,7 @@ type TileZxy struct {
 	z, x, y int
 }
 
-func BuildTile(zxy TileZxy, zxys chan TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
+func BuildTile(zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
 	defer wg.Done()
 
 	if zxy.z > *maxZoom {
@@ -78,6 +78,7 @@ func BuildTile(zxy TileZxy, zxys chan TileZxy, wg *sync.WaitGroup, sem chan stru
 	row := db.QueryRow(context.Background(), *sql, zxy.z, zxy.x, zxy.y)
 	var mvtTile []byte
 	err = row.Scan(&mvtTile)
+	<-sem
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -101,13 +102,13 @@ func BuildTile(zxy TileZxy, zxys chan TileZxy, wg *sync.WaitGroup, sem chan stru
 	log.Printf("z: %d x: %d y: %d bytes: %d", zxy.z, zxy.x, zxy.y, bytes)
 
 	if bytes != 0 || zxy.z < 10 {
-		zxys <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}
-		zxys <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}
-		zxys <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}
-		zxys <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}
+		wg.Add(4)
+		
+		BuildTile(TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
+		BuildTile(TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
+		BuildTile(TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
+		BuildTile(TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
 	}
-
-	<-sem
 
 	return err
 }
@@ -115,28 +116,18 @@ func BuildTile(zxy TileZxy, zxys chan TileZxy, wg *sync.WaitGroup, sem chan stru
 func main() {
 	flag.Parse()
 
-	zxys := make(chan TileZxy)
 	wg := sync.WaitGroup{}
-
-	go func() {
-		z := *minZoom
-		for x := 0; x < int(math.Pow(float64(2), float64(z))); x++ {
-			for y := 0; y < int(math.Pow(float64(2), float64(z))); y++ {
-				zxys <- TileZxy{z, x, y}
-			}
-		}
-	}()
-
-	go func() {
-		time.Sleep(1000 * time.Millisecond)
-		wg.Wait()
-		close(zxys)
-	}()
 
 	sem := make(chan struct{}, *maxParallel)
 
-	for zxy := range zxys {
-		wg.Add(1)
-		go BuildTile(zxy, zxys, &wg, sem)
+	z := *minZoom
+	for x := 0; x < int(math.Pow(float64(2), float64(z))); x++ {
+		for y := 0; y < int(math.Pow(float64(2), float64(z))); y++ {
+			wg.Add(1)
+			go BuildTile(TileZxy{z, x, y}, &wg, sem)
+		}
 	}
+
+	wg.Wait()
+	close(sem)
 }

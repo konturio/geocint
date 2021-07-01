@@ -106,10 +106,10 @@ func BuildTile(zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
 	if bytes != 0 || zxy.z < 10 {
 		wg.Add(4)
 		
-		BuildTile(TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
-		BuildTile(TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
-		BuildTile(TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
-		BuildTile(TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
+		go BuildTile(TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
+		go BuildTile(TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
 	}
 
 	return err

@@ -16,7 +16,7 @@ import (
 )
 
 // example usage: tile-generator --parallel-limit 10 --min-zoom 7 --max-zoom 7 --sql 'select basemap($1, $2, $3)' --db-config 'host=localhost dbname=gis'
-var maxParallel = flag.Int("parallel-limit", 32, "parallel limit")
+var maxParallel = flag.Int("j", 32, "parallel limit")
 var minZoom = flag.Int("min-zoom", 0, "min zoom")
 var maxZoom = flag.Int("max-zoom", 8, "max zoom")
 var sql = flag.String("sql", "", "sql")

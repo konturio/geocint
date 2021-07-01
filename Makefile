@@ -1249,7 +1249,7 @@ db/function/basemap_mapsme: | kothic db/function
 	touch $@
 
 data/tiles/basemap_all: tile_generator db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/population/population_api_tables.sqld.gz data/tiles
-	tile_generator/tile-generator --parallel-limit 32 --min-zoom 0 --max-zoom 8 --sql 'select basemap($1, $2, $3)' --db-config 'host=localhost dbname=gis' output-path data/tiles/basemap/
+	tile_generator/tile-generator -j 32 --min-zoom 0 --max-zoom 8 --sql 'select basemap($1, $2, $3)' --db-config 'host=localhost dbname=gis' output-path data/tiles/basemap/
 	touch $@
 
 data/basemap: | data

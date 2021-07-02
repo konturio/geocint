@@ -1236,18 +1236,21 @@ deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
-	osm2pgsql --number-processes 32 --flat-nodes data/planet-latest-updated-flat-nodes -C 120000 --hstore-all --hstore-add-index --slim --create data/planet-latest-updated.osm.pbf
+	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --flat-nodes data/planet-latest-updated-flat-nodes -C 120000 --hstore-all --hstore-add-index --slim --create data/planet-latest-updated.osm.pbf
 	touch $@
 
 kothic:
 	git clone -b mb_support --single-branch https://github.com/konturio/kothic.git
 
+tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod
+	cd tile_generator; go get; go build -o tile_generator
+
 db/function/basemap_mapsme: | kothic db/function
-	python2 kothic/src/mvt_getter.py -s basemap/styles/mapsme/style-clear/style.mapcss -s kothic/src/styles/osmosnimki-maps.mapcss -s basemap/styles/stub.mapcss | psql
+	python2 kothic/src/mvt_getter.py --stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss --stylesheet kothic/src/styles/osmosnimki-maps.mapcss --osm2pgsql-style basemap/osm2pgsql_styles/default.style | psql
 	touch $@
 
-data/tiles/basemap_all: db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/population/population_api_tables.sqld.gz data/tiles
-	bash ./scripts/generate_tiles.sh basemap | parallel --eta
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/population/population_api_tables.sqld.gz data/tiles
+	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql 'select basemap($1, $2, $3)' --db-config 'host=localhost dbname=gis' output-path data/tiles/basemap/
 	touch $@
 
 data/basemap: | data
@@ -1274,7 +1277,7 @@ data/basemap/glyphs/Roboto: | data/basemap/glyphs
 
 data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/libkomb.py \
-		--stylesheet basemap/styles/mapsme/style-clear/style.mapcss \
+		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
 		--max-zoom 8 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
@@ -1282,7 +1285,7 @@ data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigz
 
 data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/libkomb.py \
-		--stylesheet basemap/styles/mapsme/style-night/style.mapcss \
+		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
 		--max-zoom 8 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
@@ -1290,7 +1293,7 @@ data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zi
 
 data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
 	python2 kothic/src/libkomb.py \
-		--stylesheet basemap/styles/mapsme/style-clear/style.mapcss \
+		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
 		--max-zoom 8 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
@@ -1298,7 +1301,7 @@ data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
 
 data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/sonic
 	python2 kothic/src/libkomb.py \
-		--stylesheet basemap/styles/mapsme/style-night/style.mapcss \
+		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
 		--max-zoom 8 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
@@ -1306,7 +1309,7 @@ data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/son
 
 data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
 	python2 kothic/src/libkomb.py \
-		--stylesheet basemap/styles/mapsme/style-clear/style.mapcss \
+		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
 		--max-zoom 8 \
 		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
@@ -1314,7 +1317,7 @@ data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
 
 data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 	python2 kothic/src/libkomb.py \
-		--stylesheet basemap/styles/mapsme/style-night/style.mapcss \
+		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
 		--max-zoom 8 \
 		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \

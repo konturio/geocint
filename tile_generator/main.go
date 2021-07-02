@@ -12,10 +12,12 @@ import (
 	"sync"
 	"time"
 	"path"
+	"strings"
+	"strconv"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-// example usage: tile-generator --parallel-limit 10 --min-zoom 7 --max-zoom 7 --sql 'select basemap($1, $2, $3)' --db-config 'host=localhost dbname=gis'
+// example usage: tile-generator --parallel-limit 10 --min-zoom 7 --max-zoom 7 --sql 'select basemap(:z, :x, :y)' --db-config 'host=localhost dbname=gis'
 var maxParallel = flag.Int("j", 32, "parallel limit")
 var minZoom = flag.Int("min-zoom", 0, "min zoom")
 var maxZoom = flag.Int("max-zoom", 8, "max zoom")
@@ -58,7 +60,7 @@ type TileZxy struct {
 	z, x, y int
 }
 
-func BuildTile(zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
+func BuildTile(db *pgxpool.Pool, zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
 	defer wg.Done()
 
 	if zxy.z > *maxZoom {
@@ -67,19 +69,17 @@ func BuildTile(zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
 
 	sem <- struct{}{}
 
-	db, err := dbConnect()
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
 	dir := path.Join(*outputPath, fmt.Sprintf("%d/%d", zxy.z, zxy.x))
 	filePath := path.Join(*outputPath, fmt.Sprintf("%d/%d/%d.pbf", zxy.z, zxy.x, zxy.y))
 
 	// Get the data
-	row := db.QueryRow(context.Background(), *sql, zxy.z, zxy.x, zxy.y)
+	sql := *sql
+	sql = strings.ReplaceAll(sql, ":z", strconv.Itoa(zxy.z))
+	sql = strings.ReplaceAll(sql, ":x", strconv.Itoa(zxy.x))
+	sql = strings.ReplaceAll(sql, ":y", strconv.Itoa(zxy.y))
+	row := db.QueryRow(context.Background(), sql)
 	var mvtTile []byte
-	err = row.Scan(&mvtTile)
+	err := row.Scan(&mvtTile)
 	<-sem
 	if err != nil {
 		fmt.Println(err)
@@ -106,10 +106,10 @@ func BuildTile(zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
 	if bytes != 0 || zxy.z < 10 {
 		wg.Add(4)
 		
-		go BuildTile(TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
-		go BuildTile(TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
-		go BuildTile(TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
-		go BuildTile(TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
 	}
 
 	return err
@@ -122,11 +122,17 @@ func main() {
 
 	sem := make(chan struct{}, *maxParallel)
 
+	db, err := dbConnect()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	z := *minZoom
 	for x := 0; x < int(math.Pow(float64(2), float64(z))); x++ {
 		for y := 0; y < int(math.Pow(float64(2), float64(z))); y++ {
 			wg.Add(1)
-			go BuildTile(TileZxy{z, x, y}, &wg, sem)
+			go BuildTile(db, TileZxy{z, x, y}, &wg, sem)
 		}
 	}
 

@@ -10,7 +10,7 @@ create table hrsl_population_boundary as (
                     and exists(
                           select
                           from ST_PixelAsCentroids(r.rast, 1) p
-                          where ST_Contains(geom_4326, p.geom)
+                          where ST_Intersects(geom_4326, p.geom)
                       )
               )
 );

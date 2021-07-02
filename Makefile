@@ -1241,12 +1241,15 @@ db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
 kothic:
 	git clone -b mb_support --single-branch https://github.com/konturio/kothic.git
 
+tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod
+	cd tile_generator; go get; go build -o tile_generator
+
 db/function/basemap_mapsme: | kothic db/function
 	python2 kothic/src/mvt_getter.py -s basemap/styles/mapsme/style-clear/style.mapcss -s kothic/src/styles/osmosnimki-maps.mapcss -s basemap/styles/stub.mapcss | psql
 	touch $@
 
-data/tiles/basemap_all: db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/population/population_api_tables.sqld.gz data/tiles
-	bash ./scripts/generate_tiles.sh basemap | parallel --eta
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/population/population_api_tables.sqld.gz data/tiles
+	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql 'select basemap($1, $2, $3)' --db-config 'host=localhost dbname=gis' output-path data/tiles/basemap/
 	touch $@
 
 data/basemap: | data

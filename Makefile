@@ -339,7 +339,7 @@ db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r8=hrsl_population_grid_h3_r8
 	touch $@
 
-db/table/hrsl_population_boundary: | db/table ## Create table with boundaries where HRSL data is available.
+db/table/hrsl_population_boundary: db/table/gadm_countries_boundary db/table/hrsl_population_raster | db/table ## Create table with boundaries where HRSL data is available.
 	psql -f tables/hrsl_population_boundary.sql
 	touch $@
 

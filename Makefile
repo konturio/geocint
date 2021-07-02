@@ -331,6 +331,7 @@ db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare t
 	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
 	ls data/hrsl_cogs/hrsl_general/v1.5/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
 	psql -c "alter table hrsl_population_raster set (parallel_workers = 32);"
+	psql -c "create index hrsl_population_raster_rast_idx on public.hrsl_population_raster using gist (ST_ConvexHull(rast));"
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
 

@@ -83,14 +83,6 @@ area[landuse=village_green],
 area[landuse=field],
 {z-index: 41;}
 
-line[isoline=step_1000],
-line[isoline=step_500],
-line[isoline=step_100],
-line[isoline=step_50],
-line[isoline=step_10],
-line[isoline=zero],
-{z-index: 42;}
-
 area[natural=wetland],
 area[leisure=marina],
 line[waterway=stream][intermittent=yes]

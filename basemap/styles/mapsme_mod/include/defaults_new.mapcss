@@ -32,11 +32,6 @@ way|z16-::*
   icon-height: 16;
 }
 
-*::int_name
-{
-  text-offset: 1;
-}
-
 node::* {
   text-anchor-vertical: top;
 }

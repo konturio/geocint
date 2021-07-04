@@ -175,17 +175,3 @@
 @shield: #FFFFFF;
 @shield_outline: #000000;
 /* blue - #2E89B0; #687E94; #598DBE; */
-
-/* 7.ISOLINES COLORS */
-
-@isoline1000: #496149;
-@isoline500: #496149;
-@isoline100: #496149;
-@isoline50: #567556;
-@isoline10: #567556;
-
-@label_isoline1000: #496149;
-@label_isoline500: #496149;
-@label_isoline100: #496149;
-@label_isoline50: #567556;
-@label_isoline10: #567556;

@@ -917,6 +917,10 @@ db/table/osm_landuse: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_landuse.sql
 	touch $@
 
+db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table
+	psql -f tables/osm_landuse_industrial.sql
+	touch $@
+
 db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table
 	psql -c "drop table if exists osm_buildings_minsk;"
 	psql -c "create table osm_buildings_minsk as (select building, street, hno, levels, height, use, \"name\", geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name\":\"Минск\", \"boundary\":\"administrative\"}' and osm_id = 59195 and osm_type = 'relation'), 0));"

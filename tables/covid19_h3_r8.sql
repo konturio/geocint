@@ -76,7 +76,7 @@ insert into covid19_log (date, admin_id, confirmed, recovered, dead, population)
         d.population
     from
         covid19_us_confirmed_in a
-        join covid19_us_deaths_in b on a.admin_id = b.admin_id
+        left join covid19_us_deaths_in b on a.admin_id = b.admin_id
         join covid19_us_counties d on a.admin_id = d.admin_id
 ;
 

@@ -921,6 +921,10 @@ db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_landuse_industrial.sql
 	touch $@
 
+db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table
+	psql -f tables/osm_landuse_industrial_h3.sql
+	touch $@
+
 db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table
 	psql -c "drop table if exists osm_buildings_minsk;"
 	psql -c "create table osm_buildings_minsk as (select building, street, hno, levels, height, use, \"name\", geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name\":\"Минск\", \"boundary\":\"administrative\"}' and osm_id = 59195 and osm_type = 'relation'), 0));"
@@ -1038,7 +1042,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

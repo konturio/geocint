@@ -4,7 +4,7 @@ prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_ap
 
 basemap: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build
 
-basemap_dev: deploy/geocint/basemap_tiles deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment
+basemap_dev: deploy/geocint/basemap deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment
 	touch $@
 
 basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment
@@ -1378,7 +1378,7 @@ data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/g
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-deploy/geocint/basemap_tiles: data/tiles/basemap_all data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json | deploy/geocint data/basemap/glyphs/Roboto
+deploy/geocint/basemap: data/tiles/basemap_all data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json | deploy/geocint data/basemap/glyphs/Roboto
 	cp data/basemap/metadata/geocint/style_day.json /var/www/html/basemap/style_mwm.json
 	cp data/basemap/metadata/geocint/style_night.json /var/www/html/basemap/style_mwm_night.json
 	cp -r data/basemap/glyphs/. /var/www/html/basemap/glyphs

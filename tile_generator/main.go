@@ -70,7 +70,7 @@ func BuildTile(db *pgxpool.Pool, zxy TileZxy, wg *sync.WaitGroup, sem chan struc
 	sem <- struct{}{}
 
 	dir := path.Join(*outputPath, fmt.Sprintf("%d/%d", zxy.z, zxy.x))
-	filePath := path.Join(*outputPath, fmt.Sprintf("%d/%d/%d.pbf", zxy.z, zxy.x, zxy.y))
+	filePath := path.Join(*outputPath, fmt.Sprintf("%d/%d/%d.mvt", zxy.z, zxy.x, zxy.y))
 
 	// Get the data
 	sql := *sql

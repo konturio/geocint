@@ -4,7 +4,7 @@ prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_ap
 
 basemap: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build
 
-basemap_dev: deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment
+basemap_dev: deploy/geocint/basemap_tiles deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment
 	touch $@
 
 basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment
@@ -1246,11 +1246,15 @@ tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod
 	cd tile_generator; go get; go build -o tile_generator
 
 db/function/basemap_mapsme: | kothic db/function
-	python2 kothic/src/mvt_getter.py --stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss --stylesheet kothic/src/styles/osmosnimki-maps.mapcss --osm2pgsql-style basemap/osm2pgsql_styles/default.style | psql
+	python2 kothic/src/komap.py \
+		--renderer=mvt-sql \
+		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
+		--osm2pgsql-style basemap/osm2pgsql_styles/default.style \
+		| psql
 	touch $@
 
 data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/population/population_api_tables.sqld.gz data/tiles
-	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql 'select basemap($1, $2, $3)' --db-config 'host=localhost dbname=gis' output-path data/tiles/basemap/
+	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql 'select basemap(:z, :x, :y)' --db-config 'host=localhost dbname=gis' --output-path data/tiles/basemap
 	touch $@
 
 data/basemap: | data
@@ -1271,57 +1275,115 @@ data/basemap/metadata/sonic: | data/basemap/metadata
 data/basemap/metadata/lima: | data/basemap/metadata
 	mkdir -p $@
 
+data/basemap/metadata/geocint: | data/basemap/metadata
+	mkdir -p $@
+
 data/basemap/glyphs/Roboto: | data/basemap/glyphs
 	mkdir -p data/basemap/glyphs/Roboto
 	build-glyphs basemap/fonts/07_roboto_medium.ttf data/basemap/glyphs/Roboto
 
 data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigzag
-	python2 kothic/src/libkomb.py \
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
-		--max-zoom 8 \
+		--tiles-max-zoom 9 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zigzag
-	python2 kothic/src/libkomb.py \
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
-		--max-zoom 8 \
+		--tiles-max-zoom 9 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
-	python2 kothic/src/libkomb.py \
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
-		--max-zoom 8 \
+		--tiles-max-zoom 9 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/sonic
-	python2 kothic/src/libkomb.py \
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
-		--max-zoom 8 \
+		--tiles-max-zoom 9 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
-	python2 kothic/src/libkomb.py \
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
-		--max-zoom 8 \
+		--tiles-max-zoom 9 \
 		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 	python2 kothic/src/libkomb.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
-		--max-zoom 8 \
+		--tiles-max-zoom 9 \
 		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
+
+data/basemap/metadata/geocint/style_day.json: | kothic data/basemap/metadata/geocint
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
+		--tiles-max-zoom 9 \
+		--tiles-url https://geocint.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
+data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/geocint
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
+		--tiles-max-zoom 9 \
+		--tiles-url https://geocint.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
+deploy/geocint/basemap_tiles: data/tiles/basemap_all data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json | deploy/geocint data/basemap/glyphs/Roboto
+	cp data/basemap/metadata/geocint/style_day.json /var/www/html/basemap/style_mwm.json
+	cp data/basemap/metadata/geocint/style_night.json /var/www/html/basemap/style_mwm_night.json
+	cp -r data/basemap/glyphs/. /var/www/html/basemap/glyphs
+	cp -r data/tiles/basemap/. /var/www/tiles/basemap
+	touch $@
 
 data/basemap/zigzag.tar.bz2: data/tiles/basemap_all data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | data/basemap/glyphs/Roboto
 	tar cvf data/basemap/zigzag.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/zigzag .

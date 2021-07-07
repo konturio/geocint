@@ -1,9 +1,9 @@
 drop table if exists hrsl_population_raster_coverage;
 create table hrsl_population_raster_coverage as (
-    select  st_subdivide((st_dump(st_unaryunion(c.geom))).geom) as geom
+    select  ST_Subdivide((ST_Dump(ST_UnaryUnion(c.geom))).geom) as geom
     from (
-        select unnest(st_clusterintersecting(
-             st_snaptogrid(st_envelope(r.rast), 1. / 3600)
+        select unnest(ST_ClusterIntersecting(
+             ST_SnapToGrid(ST_Envelope(r.rast), 1. / 3600)
             )) "geom"
         from hrsl_population_raster r
     ) "c"
@@ -15,19 +15,19 @@ create index hrsl_population_raster_coverage_geom_idx on hrsl_population_raster_
 drop table if exists hrsl_population_boundary;
 create table hrsl_population_boundary as (
     with countries as (
-        select gid, gid_0, name_0, st_subdivide(geom) "geom" from gadm_countries_boundary
+        select gid, gid_0, name_0, ST_Subdivide(geom) "geom" from gadm_countries_boundary
     ),
     data as (
         select gid_0,
                name_0,
-               st_area(b_geom) "boundary_area",
+               ST_Area(b_geom) "boundary_area",
                sum(coverage_area) "coverage_area",
-               sum((coverage_area = st_area(c.geom))::integer) "inner_coverage"
+               sum((coverage_area = ST_Area(c.geom))::integer) "inner_coverage"
         from countries g,
              hrsl_population_raster_coverage c,
-             lateral st_transform(g.geom, 4326) b_geom,
-             lateral st_area(st_intersection(c.geom, b_geom)) "coverage_area"
-        where st_intersects(b_geom, c.geom)
+             lateral ST_Transform(g.geom, 4326) b_geom,
+             lateral ST_Area(ST_Intersection(c.geom, b_geom)) "coverage_area"
+        where ST_Intersects(b_geom, c.geom)
         group by g.gid_0, g.name_0, b_geom),
     stats as (
         select gid_0, name_0,
@@ -36,8 +36,8 @@ create table hrsl_population_boundary as (
         from data
     	group by gid_0, name_0
     )
-    select b.gid, b.gid_0 "iso", b.name_0 "name", st_subdivide(st_transform(b.geom, 4326)) AS "geom"
-    from gadm_countries_boundary b
+    select b.gid, b.gid_0 "iso", b.name_0 "name", b.geom
+    from countries b
     where b.gid_0 in (
         select s.gid_0
         from stats s

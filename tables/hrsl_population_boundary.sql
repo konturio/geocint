@@ -1,6 +1,6 @@
 drop table if exists hrsl_population_raster_coverage;
 create table hrsl_population_raster_coverage as (
-    select  st_subdivide((st_dump(st_unaryunion(c.geom))).geom) as "geom"
+    select  st_subdivide((st_dump(st_unaryunion(c.geom))).geom) as geom
     from (
         select unnest(st_clusterintersecting(
              st_snaptogrid(st_envelope(r.rast), 1. / 3600)

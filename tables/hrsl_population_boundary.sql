@@ -22,7 +22,7 @@ create table hrsl_population_boundary as (
                name_0,
                ST_Area(b_geom) "boundary_area",
                sum(coverage_area) "coverage_area",
-               sum((coverage_area = ST_Area(c.geom))::integer) "inner_coverage"
+               count(*) filter (where coverage_area = ST_Area(c.geom)) "inner_coverage"
         from countries g,
              hrsl_population_raster_coverage c,
              lateral ST_Transform(g.geom, 4326) b_geom,

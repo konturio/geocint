@@ -1,7 +1,7 @@
-drop table if exists osm_landuse_industrial_h3;
-create table osm_landuse_industrial_h3 as
+drop table if exists osm_landuse_industrial_h3_in;
+create table osm_landuse_industrial_h3_in as
     (select distinct
-            h3_polyfill(geom, 8)                              as h3,
+            h3_polyfill(st_buffer(geom,0.0045), 8)     as h3,
             8::int                                            as resolution,
             1::int                                            as is_industrial
      --       h3_to_geo_boundary_geometry(h3_polyfill(geom, 8)) as h3_geom

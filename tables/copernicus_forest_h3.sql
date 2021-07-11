@@ -29,7 +29,11 @@ $$
         while res > 0
             loop
                 insert into copernicus_forest_h3_in (h3, forest_area, area_km2, resolution)
-                select h3_to_parent(h3) as h3, sum(forest_area), sum(area_km2), (res - 1) as resolution
+                select 
+                    h3_to_parent(h3), 
+                    sum(forest_area),
+                    ST_Area(h3_to_geo_boundary_geometry(h3_to_parent(h3))::geography) / 1000000.0, 
+                    (res - 1)
                 from copernicus_forest_h3_in
                 where resolution = res
                 group by 1;

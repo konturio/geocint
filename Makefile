@@ -933,7 +933,7 @@ db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table
 
 db/table/osm_volcanos_h3: db/index/osm_tags_idx db/function/generate_overviews | db/table
 	psql -f tables/osm_volcanos.sql
-	psql -f tables/count_points_in_h3.sql -v table=osm_volcanos -v table_h3=osm_volcanos_h3 -v item_count=volcanos_count
+	psql -f tables/count_points_inside_h3.sql -v table=osm_volcanos -v table_h3=osm_volcanos_h3 -v item_count=volcanos_count
 	psql -c "select generate_overviews('osm_volcanos_h3', 'volcanos_count', 'sum', 8);"
 	touch $@
 

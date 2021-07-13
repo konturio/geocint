@@ -144,7 +144,7 @@ create table stat_h3_in as (
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
                     null::float as population_v2, null::float as industrial_area, volcanos_count, resolution
-             from volcanos_votw_h3
+             from osm_volcanos_h3
         ) z
     group by 2, 1
 );

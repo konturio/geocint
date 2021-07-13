@@ -28,6 +28,9 @@ db:
 db/function: | db
 	mkdir -p $@
 
+db/procedure: | db
+	mkdir -p $@
+
 db/table: | db
 	mkdir -p $@
 
@@ -248,8 +251,8 @@ db/function/h3_raster_sum_to_h3: | db/function
 	psql -f functions/h3_raster_sum_to_h3.sql
 	touch $@
 
-db/function/generate_overviews: db/function/h3
-	psql -f functions/generate_overviews.sql
+db/procedure/generate_overviews: | db/procedure
+	psql -f procedures/generate_overviews.sql
 	touch $@
 
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx
@@ -285,9 +288,6 @@ db/table/osm_user_count_grid_h3: db/table/osm db/function/h3
 db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_active_users
 	psql -f tables/osm_users_hex.sql
 	touch $@
-
-db/procedure: | db
-	mkdir -p $@
 
 data/worldpop: | data
 	mkdir -p $@
@@ -931,10 +931,10 @@ db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table
 db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table
 	psql -f tables/osm_landuse_industrial_h3.sql
 
-db/table/osm_volcanos_h3: db/index/osm_tags_idx db/function/generate_overviews | db/table
+db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table
 	psql -f tables/osm_volcanos.sql
 	psql -f tables/count_points_inside_h3.sql -v table=osm_volcanos -v table_h3=osm_volcanos_h3 -v item_count=volcanos_count
-	psql -c "select generate_overviews('osm_volcanos_h3', 'volcanos_count', 'sum', 8);"
+	psql -c "call generate_overviews('osm_volcanos_h3', 'volcanos_count', 'sum', 8);"
 	touch $@
 
 db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table

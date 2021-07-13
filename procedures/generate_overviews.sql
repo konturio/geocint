@@ -1,12 +1,10 @@
-drop function if exists generate_overviews(table_h3 text, item_count text, method text, start_resolution integer);
+drop procedure if exists generate_overviews(table_h3 text, item_count text, method text, start_resolution integer);
 
-create or replace function generate_overviews(table_h3 text,
+create or replace procedure generate_overviews(table_h3 text,
                                               item_count text,
                                               method text default 'sum',
                                               start_resolution integer default 8)
-    returns integer
     language plpgsql
-    volatile
 as
 $$
 declare
@@ -23,6 +21,5 @@ begin
             res = res - 1;
         end loop;
 
-    return 0;
 end;
 $$;

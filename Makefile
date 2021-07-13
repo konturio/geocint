@@ -28,6 +28,9 @@ db:
 db/function: | db
 	mkdir -p $@
 
+db/procedure: | db
+	mkdir -p $@
+
 db/table: | db
 	mkdir -p $@
 
@@ -248,6 +251,10 @@ db/function/h3_raster_sum_to_h3: | db/function
 	psql -f functions/h3_raster_sum_to_h3.sql
 	touch $@
 
+db/procedure/generate_overviews: | db/procedure
+	psql -f procedures/generate_overviews.sql
+	touch $@
+
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx
 	psql -f tables/osm_roads.sql
 	touch $@
@@ -281,9 +288,6 @@ db/table/osm_user_count_grid_h3: db/table/osm db/function/h3
 db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_active_users
 	psql -f tables/osm_users_hex.sql
 	touch $@
-
-db/procedure: | db
-	mkdir -p $@
 
 data/worldpop: | data
 	mkdir -p $@
@@ -926,6 +930,11 @@ db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table
 
 db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table
 	psql -f tables/osm_landuse_industrial_h3.sql
+
+db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table
+	psql -f tables/osm_volcanos.sql
+	psql -f tables/count_points_inside_h3.sql -v table=osm_volcanos -v table_h3=osm_volcanos_h3 -v item_count=volcanos_count
+	psql -c "call generate_overviews('osm_volcanos_h3', 'volcanos_count', 'sum', 8);"
 	touch $@
 
 db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table
@@ -1045,7 +1054,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

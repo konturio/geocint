@@ -931,10 +931,10 @@ db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table
 db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table
 	psql -f tables/osm_landuse_industrial_h3.sql
 
-db/table/volcanos_votw_h3: data/volcanos_votw.csv db/function/generate_overviews | db/table
-	ogr2ogr -overwrite -f PostgreSQL PG:"dbname=gis" -nln volcanos_votw -lco GEOMETRY_NAME=geom -a_srs 'EPSG:4326' data/volcanos_votw.csv -oo X_POSSIBLE_NAMES=lon -oo Y_POSSIBLE_NAMES=lat
-	psql -f tables/count_points_in_h3.sql -v table=volcanos_votw -v table_h3=volcanos_votw_h3 -v item_count=volcanos_count
-	psql -c "select generate_overviews('volcanos_votw_h3', 'volcanos_count', 'sum', 8);"
+db/table/osm_volcanos_h3: db/index/osm_tags_idx db/function/generate_overviews | db/table
+	psql -f tables/osm_volcanos.sql
+	psql -f tables/count_points_in_h3.sql -v table=osm_volcanos -v table_h3=osm_volcanos_h3 -v item_count=volcanos_count
+	psql -c "select generate_overviews('osm_volcanos_h3', 'volcanos_count', 'sum', 8);"
 	touch $@
 
 db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table
@@ -1054,7 +1054,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/volcanos_votw_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

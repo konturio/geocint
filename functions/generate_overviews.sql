@@ -1,4 +1,4 @@
-drop function if exists generate_overviews(table_h3 text, item_count text, start_resolution integer);
+drop function if exists generate_overviews(table_h3 text, item_count text, method text, start_resolution integer);
 
 create or replace function generate_overviews(table_h3 text,
                                               item_count text,

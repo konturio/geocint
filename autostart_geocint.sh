@@ -7,6 +7,11 @@ cd ~/geocint
 # On Sunday, force checkout master branch
 test `date +'%w'` "=" 0 && git checkout -f master
 
+# Install / upgrade the python libs
+sudo pip3 install slackclient
+sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
+
+# Pull new data from Git
 git pull
 profile_make clean
 branch="$(git rev-parse --abbrev-ref HEAD)"
@@ -20,3 +25,6 @@ else
   profile_make -j -k dev
   make -k -q -n --debug=b dev 2>&1 |grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" |tail -n+10 | SLACK_KEY=xoxb-2329653303-1423278364594-PNV6Urmf55CEvKxpK2UiqjIG python3 scripts/slack_message.py geocint "Nightly build" cat
 fi
+
+# redraw the make.svg after build
+profile_make

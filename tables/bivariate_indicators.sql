@@ -135,6 +135,16 @@ values ('avg_ndvi', 'Average NDVI, JUN 2019', jsonb_build_array(
 '© Data from Sentinel-2 L2A 120m Mosaic, CC-BY 4.0, https://forum.sentinel-hub.com/c/aws-sentinel'),
     '[["bad"], ["good"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('industrial_area', 'OSM industrial area', jsonb_build_array(
+'© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+    '[["neutral", "unimportant"], ["neutral", "important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('volcanos_count', 'Number of volcanos', jsonb_build_array(
+'© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+    '[["neutral", "unimportant"], ["neutral", "important"]]'::jsonb);
+
 update bivariate_indicators
 set is_base = true
 where param_id in ('population', 'total_building_count', 'area_km2', 'one');

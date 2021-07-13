@@ -141,8 +141,8 @@ values ('industrial_area', 'OSM industrial area', jsonb_build_array(
     '[["neutral", "unimportant"], ["neutral", "important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('volcanos_count', 'Volcanoes amount', jsonb_build_array(
-'© Data from Smithsonian Institution, National Museum of National History, Global Volcanism Program, volcano.si.edu'),
+values ('volcanos_count', 'Number of volcanos', jsonb_build_array(
+'© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
     '[["neutral", "unimportant"], ["neutral", "important"]]'::jsonb);
 
 update bivariate_indicators

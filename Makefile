@@ -248,6 +248,10 @@ db/function/h3_raster_sum_to_h3: | db/function
 	psql -f functions/h3_raster_sum_to_h3.sql
 	touch $@
 
+db/function/generate_overviews_sum: db/function/h3
+	psql -f functions/generate_overviews_sum.sql
+	touch $@
+
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx
 	psql -f tables/osm_roads.sql
 	touch $@
@@ -926,6 +930,11 @@ db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table
 
 db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table
 	psql -f tables/osm_landuse_industrial_h3.sql
+
+db/table/volcanos_h3: data/volcanos_votw.csv db/function/generate_overviews_sum | db/table
+	ogr2ogr -overwrite -f PostgreSQL PG:"dbname=gis" -nln volcanos_votw -lco GEOMETRY_NAME=geom -a_srs 'EPSG:4326' data/volcanos_votw.csv -oo X_POSSIBLE_NAMES=lon -oo Y_POSSIBLE_NAMES=lat
+	psql -f tables/count_points_in_h3.sql -v table=volcanos_votw -v table_h3=volcanos_votw_h3 -v item_count=volcanos_count
+	psql -f functions/generate_overviews_sum.sql -v table_h3=volcanos_votw_h3 -v item_count=volcanos_count
 	touch $@
 
 db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table

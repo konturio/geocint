@@ -10,6 +10,7 @@ test `date +'%w'` "=" 0 && git checkout -f master
 # Install / upgrade the python libs
 sudo pip3 install slackclient
 sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
+sudo pip3 install pandas
 
 # Pull new data from Git
 git pull

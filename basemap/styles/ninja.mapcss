@@ -1,0 +1,31 @@
+@border_country: #63635C;
+@country_label: #444444;
+
+line|z2-10[boundary=administrative][admin_level=2]
+{
+    color: @border_country;
+    opacity: 1;
+    width: 0.5;
+}
+
+node|z3-[place=country]
+{
+    text: "name:en";
+    text-color: @country_label;
+    text-transform: uppercase;
+}
+
+node|z3[place=country]
+{font-size: 15;}
+node|z4[place=country]
+{font-size: 16;}
+node|z5[place=country]
+{font-size: 17;}
+node|z6[place=country]
+{font-size: 18;}
+node|z7[place=country]
+{font-size: 19;}
+node|z8[place=country]
+{font-size: 20;}
+node|z9-[place=country]
+{font-size: 21;}

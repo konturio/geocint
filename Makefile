@@ -1269,6 +1269,7 @@ db/function/basemap_mapsme: | kothic db/function
 	python2 kothic/src/komap.py \
 		--renderer=mvt-sql \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
+		--stylesheet basemap/styles/ninja.mapcss \
 		--osm2pgsql-style basemap/osm2pgsql_styles/default.style \
 		| psql
 	touch $@
@@ -1374,6 +1375,18 @@ data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
+data/basemap/metadata/geocint/ninja.json: | kothic data/basemap/metadata/geocint
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/ninja.mapcss \
+		--tiles-max-zoom 14 \
+		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
 data/basemap/metadata/geocint/style_day.json: | kothic data/basemap/metadata/geocint
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
@@ -1381,8 +1394,8 @@ data/basemap/metadata/geocint/style_day.json: | kothic data/basemap/metadata/geo
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
-		--tiles-max-zoom 9 \
-		--tiles-url https://geocint.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--tiles-max-zoom 14 \
+		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
@@ -1393,14 +1406,18 @@ data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/g
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
-		--tiles-max-zoom 9 \
-		--tiles-url https://geocint.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--tiles-max-zoom 14 \
+		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-deploy/geocint/basemap: data/tiles/basemap_all data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json | deploy/geocint data/basemap/glyphs/Roboto
+deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/ninja.json data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json
+	cp data/basemap/metadata/geocint/ninja.json /var/www/html/basemap/style_ninja.json
 	cp data/basemap/metadata/geocint/style_day.json /var/www/html/basemap/style_mwm.json
 	cp data/basemap/metadata/geocint/style_night.json /var/www/html/basemap/style_mwm_night.json
+	touch $@
+
+deploy/geocint/basemap: deploy/geocint/basemap_mapcss data/tiles/basemap_all | deploy/geocint data/basemap/glyphs/Roboto
 	cp -r data/basemap/glyphs/. /var/www/html/basemap/glyphs
 	cp -r data/tiles/basemap/. /var/www/tiles/basemap
 	touch $@

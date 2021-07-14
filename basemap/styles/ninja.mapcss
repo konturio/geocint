@@ -1,31 +1,319 @@
 @border_country: #63635C;
+@border_region: #73726B;
 @country_label: #444444;
+@label_dark: #222222;
+@label_medium: #333333;
+@label_light: #444444;
+
+node[place=continent]
+{
+    z-index: 999;
+}
+
+node[place=state]
+{
+    z-index: 1001;
+}
+
+node[place=country]
+{
+    z-index: 2000;
+}
+
+node[place=city][!capital?][population<40000]
+{
+    z-index: 1200;
+}
+
+node[place=city][capital=3][population<40000],
+node[place=city][capital=4][population<40000]
+{
+    z-index: 1300;
+}
+
+node[place=city][!capital?][population>=40000]
+{
+    z-index: 1400;
+}
+
+node[place=city][capital?][population>=0]
+{
+    z-index: 1450;
+}
+
+area|z0-[natural=coastline]
+{
+    color: @border_country;
+    opacity: 1;
+    width: 0.7;
+}
 
 line|z2-10[boundary=administrative][admin_level=2]
 {
     color: @border_country;
     opacity: 1;
+    width: 0.7;
+    blur: 0.7;
+}
+
+line|z4[boundary=administrative][admin_level=3],
+line|z5-[boundary=administrative][admin_level=4]
+{
+    color: @border_region;
+    opacity: 1;
+}
+
+line|z2[boundary=administrative][admin_level=2]
+{
     width: 0.5;
+    opacity: 0.7;
+}
+
+line|z3[boundary=administrative][admin_level=2]
+{
+    width: 0.5;
+    opacity: 0.8;
+}
+
+line|z4[boundary=administrative][admin_level=2]
+{
+    width: 0.6;
+}
+
+line|z5[boundary=administrative][admin_level=2]
+{
+    width: 0.8;
+}
+
+line|z6[boundary=administrative][admin_level=2]
+{
+    width: 0.85;
+}
+
+line|z7[boundary=administrative][admin_level=2]
+{
+    width: 1;
+}
+
+line|z8[boundary=administrative][admin_level=2]
+{
+    width: 1.1;
+}
+
+line|z9-[boundary=administrative][admin_level=2]
+{
+    width: 1.4;
+}
+
+line|z4[boundary=administrative][admin_level=3]
+{
+    width: 0.8;
+    dashes: 0.9,0.36;
+}
+
+line|z5[boundary=administrative][admin_level=4]
+{
+    width: 0.7;
+    opacity: 0.8;
+    dashes: 1.35,0.9;
+}
+
+line|z6[boundary=administrative][admin_level=4]
+{
+    width: 0.8;
+    dashes: 0.9,0.45;
+}
+
+line|z7[boundary=administrative][admin_level=4]
+{
+    width: 0.9;
+    dashes: 1.8,0.9;
+}
+
+line|z8[boundary=administrative][admin_level=4]
+{
+    width: 0.9;
+    dashes: 1.44,1.44;
+}
+
+line|z9[boundary=administrative][admin_level=4]
+{
+    width: 1;
+    dashes: 1.8,0.9;
+}
+
+line|z10-[boundary=administrative][admin_level=4]
+{
+    width: 1.2;
+    dashes: 1.8,0.9;
+}
+
+node|z1-2[place=continent]
+{
+    text: "name:en";
+    font-size: 14;
+    text-color: @country_label;
 }
 
 node|z3-[place=country]
 {
     text: "name:en";
     text-color: @country_label;
-    text-transform: uppercase;
 }
 
 node|z3[place=country]
-{font-size: 15;}
+{
+    font-size: 15;
+}
 node|z4[place=country]
-{font-size: 16;}
+{
+    font-size: 17;
+}
 node|z5[place=country]
-{font-size: 17;}
+{
+    font-size: 18;
+}
 node|z6[place=country]
-{font-size: 18;}
+{
+    font-size: 20;
+}
 node|z7[place=country]
-{font-size: 19;}
+{
+    font-size: 21;
+}
 node|z8[place=country]
-{font-size: 20;}
+{
+    font-size: 22;
+}
 node|z9-[place=country]
-{font-size: 21;}
+{
+    font-size: 25;
+}
+
+node|z6-10[place=state]
+{
+    text: "name:en";
+    text-color: @country_label;
+}
+
+node|z6-7[place=state]
+{
+    font-size: 11;
+}
+node|z8-10[place=state]
+{
+    font-size: 12;
+}
+
+node|z4[place=city][!capital?][population>=1000000],
+node|z5[place=city][!capital?][population>=150000],
+node|z6[place=city][!capital?][population>=50000],
+node|z7-8[place=city][!capital?][population>=40000],
+node|z9-[place=city][!capital?][population<40000],
+node|z4-[place=city][capital?][population>=0],
+{
+    text: "name:en";
+    text-color: @label_dark;
+}
+
+node|z4[place=city][!capital?][population>=1000000],
+{
+    font-size: 9;
+}
+
+node|z4[place=city][capital?][population>=0],
+{
+    font-size: 10;
+}
+
+node|z5[place=city][!capital?][population>=150000],
+{
+    font-size: 10;
+}
+node|z5[place=city][capital?][population>=0]
+{
+    font-size: 10.4;
+}
+
+node|z6[place=city][!capital?][population>=50000]
+{
+    font-size: 10.4;
+}
+
+node|z6[place=city][capital?][population>=0]
+{
+    font-size: 11.6;
+}
+
+node|z7[place=city][!capital?][population>=40000]
+{
+    font-size: 10;
+}
+
+node|z7[place=city][capital?][population>=0]
+{
+    font-size: 11;
+}
+
+node|z8[place=city][!capital?][population>=40000]
+{
+    font-size: 10.5;
+}
+
+node|z8[place=city][capital?][population>=0]
+{
+    font-size: 11.5;
+}
+
+node|z9[place=city][capital?][population>=0]
+{
+    font-size: 13;
+}
+
+node|z9[place=city][!capital?][population>=0],
+{
+    font-size: 11;
+}
+
+node|z10[place=city][capital?][population>=0]
+{
+    font-size: 13;
+}
+
+node|z10[place=city][!capital?][population>=0],
+{
+    font-size: 11;
+}
+
+node|z11[place=city][capital?][population>=0]
+{
+    font-size: 12;
+}
+
+node|z11[place=city][!capital?][population>=0],
+{
+    font-size: 12;
+}
+
+node|z12[place=city][capital?][population>=0]
+{
+    font-size: 13;
+}
+
+node|z12[place=city][!capital?][population>=0],
+{
+    font-size: 13;
+    text-color: @label_medium;
+}
+
+node|z13-[place=city][capital?][population>=0]
+{
+    font-size: 14;
+    text-color: @label_medium;
+}
+
+node|z13-[place=city][!capital?][population>=0],
+{
+    font-size: 14;
+    text-color: @label_medium;
+}

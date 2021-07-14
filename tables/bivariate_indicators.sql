@@ -138,12 +138,12 @@ values ('avg_ndvi', 'Average NDVI, JUN 2019', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('industrial_area', 'OSM industrial area', jsonb_build_array(
 '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-    '[["neutral", "unimportant"], ["neutral", "important"]]'::jsonb);
+    '[["unimportant"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('volcanos_count', 'Number of volcanos', jsonb_build_array(
 '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-    '[["neutral", "unimportant"], ["neutral", "important"]]'::jsonb);
+    '[["unimportant"], ["important"]]'::jsonb);
 
 update bivariate_indicators
 set is_base = true

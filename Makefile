@@ -1260,7 +1260,7 @@ db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
 	touch $@
 
 kothic:
-	git clone -b mb_support --single-branch https://github.com/konturio/kothic.git
+	git clone -b master --single-branch https://github.com/kothic/kothic.git
 
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod
 	cd tile_generator; go get; go build -o tile_generator

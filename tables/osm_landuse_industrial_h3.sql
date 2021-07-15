@@ -1,12 +1,19 @@
 drop table if exists osm_landuse_industrial_h3_in;
-create table osm_landuse_industrial_h3_in as
-    (select distinct
-            h3_polyfill(geog, 8)     as h3,
-            h3_to_geo_boundary_geography(h3_polyfill(geog, 8)) as h3_geog
-     from osm_landuse_industrial);
---TODO: add h3 that intersects st_boundary(geog)
+create table osm_landuse_industrial_h3_in as (
+    select h3,
+           h3_to_geo_boundary_geography(h3) as geom
+    from (select distinct h3_polyfill(geom, 8) as h3
+          from osm_landuse_industrial
+          union
+          select distinct h3_line(
+                                  h3_geo_to_h3(st_startpoint(b.line_segment), 8),
+                                  h3_geo_to_h3(st_endpoint(b.line_segment), 8))
+                from
+                     (select (ST_DumpSegments(geom)).geom as line_segment from osm_landuse_industrial) b
+         ) a
+);
 
-create index on osm_landuse_industrial_h3_in using gist(h3_geog);
+create index on osm_landuse_industrial_h3_in using gist(geom);
 
 drop table if exists osm_landuse_industrial_h3;
 
@@ -15,9 +22,9 @@ select h3,
        sum(industrial_area) as industrial_area,
        8::int               as resolution
 from (select h.h3,
-             ST_Area(ST_Intersection(i.geog, h.h3_geog)) / 1000000.0 as industrial_area
+             ST_Area((ST_Intersection(i.geom, h.geom))::geography) / 1000000.0 as industrial_area
       from osm_landuse_industrial_h3_in h
-               join osm_landuse_industrial i on ST_Intersects(h.h3_geog, i.geog)
+               join osm_landuse_industrial i on ST_Intersects(h.geom, i.geom)
      ) a
 group by h3;
 

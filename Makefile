@@ -1303,7 +1303,7 @@ data/basemap/glyphs/Roboto: | data/basemap/glyphs
 	mkdir -p data/basemap/glyphs/Roboto
 	build-glyphs basemap/fonts/07_roboto_medium.ttf data/basemap/glyphs/Roboto
 
-data/basemap/metadata/zigzag/style_day.json: $(shell find basemap/styles/mapsme_mod -type f -name "*.mapcss") | kothic data/basemap/metadata/zigzag
+data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1315,7 +1315,7 @@ data/basemap/metadata/zigzag/style_day.json: $(shell find basemap/styles/mapsme_
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/zigzag/style_night.json: $(shell find basemap/styles/mapsme_mod -type f -name "*.mapcss") | kothic data/basemap/metadata/zigzag
+data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1327,7 +1327,7 @@ data/basemap/metadata/zigzag/style_night.json: $(shell find basemap/styles/mapsm
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/sonic/style_day.json: $(shell find basemap/styles/mapsme_mod -type f -name "*.mapcss") | kothic data/basemap/metadata/sonic
+data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1339,7 +1339,7 @@ data/basemap/metadata/sonic/style_day.json: $(shell find basemap/styles/mapsme_m
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/sonic/style_night.json: $(shell find basemap/styles/mapsme_mod -type f -name "*.mapcss") | kothic data/basemap/metadata/sonic
+data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/sonic
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1351,7 +1351,7 @@ data/basemap/metadata/sonic/style_night.json: $(shell find basemap/styles/mapsme
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/lima/style_day.json: $(shell find basemap/styles/mapsme_mod -type f -name "*.mapcss") | kothic data/basemap/metadata/lima
+data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1363,7 +1363,7 @@ data/basemap/metadata/lima/style_day.json: $(shell find basemap/styles/mapsme_mo
 		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/lima/style_night.json: $(shell find basemap/styles/mapsme_mod -type f -name "*.mapcss") | kothic data/basemap/metadata/lima
+data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 	python2 kothic/src/libkomb.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1387,7 +1387,7 @@ data/basemap/metadata/geocint/ninja.json: basemap/styles/ninja.mapcss | kothic d
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/geocint/style_day.json: $(shell find basemap/styles/mapsme_mod -type f -name "*.mapcss") | kothic data/basemap/metadata/geocint
+data/basemap/metadata/geocint/style_day.json: | kothic data/basemap/metadata/geocint
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1399,7 +1399,7 @@ data/basemap/metadata/geocint/style_day.json: $(shell find basemap/styles/mapsme
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/geocint/style_night.json: $(shell find basemap/styles/mapsme_mod -type f -name "*.mapcss") | kothic data/basemap/metadata/geocint
+data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/geocint
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \

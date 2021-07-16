@@ -38,7 +38,7 @@ create table kontur_population_mid1 as (
 
 alter table kontur_population_mid1
     set (parallel_workers=32);
-create index on kontur_population_mid1 using gist (geom);
+-- create index on kontur_population_mid1 using gist (geom);
 
 drop table kontur_population_in;
 

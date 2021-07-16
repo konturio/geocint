@@ -63,10 +63,19 @@ where ST_Intersects(
 drop table if exists zero_pop_h3;
 create table zero_pop_h3 as (
     select h3
-    from kontur_population_mid1 p
--- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now. osm_water_polygons has valid geometries, so we use ST_Intersects.
-    where exists(select from osm_water_polygons w where ST_Intersects(p.geom, w.geom))
-       or exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
+    from (
+        select h3
+        from kontur_population_mid1 p
+        where exists(select from osm_water_polygons w where ST_Intersects(p.geom, w.geom))
+        union all
+        select h3
+        from kontur_population_mid1 p
+        -- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with
+        --  ST_DWithin(,0) for now. osm_water_polygons has valid geometries, so we use ST_Intersects.
+        where exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
+        order by 1
+        ) "u"
+    group by 1
 );
 
 -- mark h3 hexagons which have zero population

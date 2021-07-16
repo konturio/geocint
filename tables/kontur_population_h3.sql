@@ -90,7 +90,11 @@ create table kontur_population_mid2 as (
     from kontur_population_mid1 p
         left outer join zero_pop_h3 z
             on (z.h3 = p.h3));
+
 drop table kontur_population_mid1;
+
+alter table kontur_population_mid2
+    set (parallel_workers=32);
 
 create index on kontur_population_mid2 (probably_unpopulated) where probably_unpopulated;
 

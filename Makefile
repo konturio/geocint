@@ -930,6 +930,7 @@ db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table
 
 db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table
 	psql -f tables/osm_landuse_industrial_h3.sql
+	touch $@
 
 db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table
 	psql -f tables/osm_volcanos.sql

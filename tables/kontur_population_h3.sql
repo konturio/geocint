@@ -38,7 +38,7 @@ create table kontur_population_mid1 as (
 
 alter table kontur_population_mid1
     set (parallel_workers=32);
-create index on kontur_population_mid1 using gist (geom);
+create index on kontur_population_mid1 using brin (geom);
 
 drop table kontur_population_in;
 
@@ -63,25 +63,46 @@ where ST_Intersects(
 drop table if exists zero_pop_h3;
 create table zero_pop_h3 as (
     select h3
-    from kontur_population_mid1 p
--- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now. osm_water_polygons has valid geometries, so we use ST_Intersects.
-    where exists(select from osm_water_polygons w where ST_Intersects(p.geom, w.geom))
-       or exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
+    from (
+        select h3
+        from kontur_population_mid1 p
+        where exists(select from osm_water_polygons w where ST_Intersects(p.geom, w.geom))
+        union all
+        select h3
+        from kontur_population_mid1 p
+        -- TODO: osm_unpopulated has invalid geometries and it fails here if we use ST_Intersects. Stubbing with
+        --  ST_DWithin(,0) for now. osm_water_polygons has valid geometries, so we use ST_Intersects.
+        where exists(select from osm_unpopulated z where ST_DWithin(p.geom, z.geom, 0))
+        order by 1
+        ) "u"
+    group by 1
 );
 
--- mark h3 hexagons which have zero population
-update kontur_population_mid1 p
-set probably_unpopulated = true
-from zero_pop_h3 z
-where z.h3 = p.h3;
+-- generate table with marked h3 hexagons which have zero population
+drop table if exists kontur_population_mid2;
+create table kontur_population_mid2 as (
+    select p.h3,
+           (z is not null) or probably_unpopulated as "probably_unpopulated",
+           building_count,
+           population,
+           area_km2,
+           geom
+    from kontur_population_mid1 p
+        left outer join zero_pop_h3 z
+            on (z.h3 = p.h3));
 
-create index on kontur_population_mid1 (probably_unpopulated) where probably_unpopulated;
+drop table kontur_population_mid1;
+
+alter table kontur_population_mid2
+    set (parallel_workers=32);
+
+create index on kontur_population_mid2 (probably_unpopulated) where probably_unpopulated;
 
 -- generate table with non-zero population h3 hexagons settled on residential and other places
 drop table if exists nonzero_pop_h3;
 create table nonzero_pop_h3 as (
     select h3
-    from kontur_population_mid1 p
+    from kontur_population_mid2 p
     where
 -- TODO: osm_residential_landuse has invalid geometries and it fails here if we use ST_Intersects. Stubbing with ST_DWithin(,0) for now.
         exists(select from osm_residential_landuse z where ST_DWithin(p.geom, z.geom, 0))
@@ -89,15 +110,15 @@ create table nonzero_pop_h3 as (
 );
 
 -- mark hexagons which are probably populated
-update kontur_population_mid1 p
+update kontur_population_mid2 p
 set probably_unpopulated = false
 from nonzero_pop_h3 z
 where z.h3 = p.h3;
 
 drop table if exists nonzero_pop_h3;
 
-drop table if exists kontur_population_mid2;
-create table kontur_population_mid2
+drop table if exists kontur_population_mid3;
+create table kontur_population_mid3
 (
     h3         h3index,
     population float,
@@ -114,7 +135,7 @@ $$
         cur_row record;
     begin
         carry = 0;
-        for cur_row in (select * from kontur_population_mid1 order by h3)
+        for cur_row in (select * from kontur_population_mid2 order by h3)
             loop
                 cur_pop = cur_row.population + carry;
                 -- Population density of Manila is 46178 people/km2 and that's highest on planet
@@ -146,14 +167,14 @@ $$
                 carry = cur_row.population + carry - cur_pop;
                 if cur_pop > 0
                 then
-                    insert into kontur_population_mid2 (h3, population, resolution)
+                    insert into kontur_population_mid3 (h3, population, resolution)
                     values (cur_row.h3, cur_pop, 8);
                 end if;
             end loop;
         raise notice 'unprocessed carry %', carry;
     end;
 $$;
-drop table kontur_population_mid1;
+drop table kontur_population_mid2;
 
 -- populate people to lower resolution hexagons
 do
@@ -164,9 +185,9 @@ $$
         res = 8;
         while res > 0
             loop
-                insert into kontur_population_mid2 (h3, population, resolution)
+                insert into kontur_population_mid3 (h3, population, resolution)
                 select h3_to_parent(h3) as h3, sum(population) as population, (res - 1) as resolution
-                from kontur_population_mid2
+                from kontur_population_mid3
                 where resolution = res
                 group by 1;
                 res = res - 1;
@@ -182,10 +203,10 @@ create table kontur_population_h3 as (
            h.area,
            p.h3,
            p.population as population
-    from kontur_population_mid2 p,
+    from kontur_population_mid3 p,
          ST_HexagonFromH3(h3) h
 );
 
 create index on kontur_population_h3 using gist (resolution, geom);
 
-drop table if exists kontur_population_mid2;
+drop table if exists kontur_population_mid3;

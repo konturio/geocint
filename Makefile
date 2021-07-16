@@ -939,7 +939,7 @@ db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table
 db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table
 	psql -f tables/osm_volcanos.sql
 	psql -f tables/count_points_inside_h3.sql -v table=osm_volcanos -v table_h3=osm_volcanos_h3 -v item_count=volcanos_count
-	psql -c "call generate_overviews('osm_volcanos_h3', 'volcanos_count', 'sum', 8);"
+	psql -c "call generate_overviews('osm_volcanos_h3', '{volcanos_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table
@@ -1005,6 +1005,23 @@ deploy/geocint/drp_buildings: data/drp_buildings_export | deploy/geocint
 	cp -vp data/drp_buildings/drp_buildings_*.gpkg.gz ~/public_html/
 	touch $@
 
+db/table/us_census_tract_boundaries: data/census_gov/cb_2019_us_tract_500k.shp | db/table ## Import all US census tract boundaries into database
+	ogr2ogr --config PG_USE_COPY YES -s_srs EPSG:4269 -t_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/census_gov/cb_2019_us_tract_500k.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -lco OVERWRITE=YES -nln us_census_tract_boundaries
+	touch $@
+
+db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/census_gov/us_census_tracts_age.csv data/census_gov/us_census_tracts_commuting_characteristics.csv data/census_gov/us_census_tracts_disability_characteristics.csv data/census_gov/us_census_tracts_language_spoken_at_home.csv data/census_gov/us_census_tracts_poverty_of_families_last_12_months.csv | db/table
+	psql -c 'drop table if exists us_census_tracts_stats_in;'
+	psql -c 'create table us_census_tracts_stats_in (id_tract text, tract_name text, pop_under_5_total float, pop_over_65_total float, families_total float, families_poverty_percent float, poverty_families_total float generated always as (families_total * families_poverty_percent / 100) stored, pop_disability_total float, pop_not_well_eng_speak float, pop_working_total float, pop_with_cars_percent float, pop_without_car float generated always as (pop_working_total - (pop_working_total * pop_with_cars_percent) / 100) stored);'
+	python3 scripts/normalize_census_data.py -c data/census_data_config.json -o data/census_gov/us_census_tracts_stats.csv
+	cat data/census_gov/us_census_tracts_stats.csv | tail -n +1 | psql -c "copy us_census_tracts_stats_in (id_tract, tract_name, pop_under_5_total, pop_over_65_total, families_total, families_poverty_percent, pop_disability_total, pop_not_well_eng_speak, pop_working_total, pop_with_cars_percent) from stdin with csv header delimiter ';';"
+	psql -f tables/us_census_tracts_stats.sql
+	touch $@
+
+db/table/us_census_tract_stats_h3: db/table/us_census_tract_stats db/procedure/generate_overviews | db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
+	psql -f tables/us_census_tract_stats_h3.sql
+	psql -c "call generate_overviews('us_census_tract_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car,}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
+	touch $@
+
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_addresses.sql
 	touch $@
@@ -1059,7 +1076,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tract_stats_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

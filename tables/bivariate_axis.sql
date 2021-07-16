@@ -66,7 +66,13 @@ create table stat_h3_quality as (
                 avg(a.covid19_confirmed) as agg_covid19_confirmed,
                 avg(a.population_v2) as agg_population_v2,
                 avg(a.industrial_area) as agg_industrial_area,
-                avg(a.volcanos_count) as agg_volcanos_count
+                avg(a.volcanos_count) as agg_volcanos_count,
+                avg(a.pop_under_5_total) as agg_pop_under_5_total,
+                avg(a.pop_over_65_total) as agg_pop_over_65_total,
+                avg(a.poverty_families_total) as agg_poverty_families_total,
+                avg(a.pop_disability_total) as agg_pop_disability_total,
+                avg(a.pop_not_well_eng_speak) as agg_pop_not_well_eng_speak,
+                avg(a.pop_without_car) as agg_pop_without_car
             from
                 stat_h3 a
             where

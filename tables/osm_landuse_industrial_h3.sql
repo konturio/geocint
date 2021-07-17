@@ -1,7 +1,7 @@
 drop table if exists osm_landuse_industrial_h3_in;
 create table osm_landuse_industrial_h3_in as (
     select h3,
-           h3_to_geo_boundary_geography(h3) as geom
+           h3_to_geo_boundary_geometry(h3) as geom
     from (select distinct h3_polyfill(geom, 8) as h3
           from osm_landuse_industrial
           union
@@ -22,7 +22,7 @@ select h3,
        sum(industrial_area) as industrial_area,
        8::int               as resolution
 from (select h.h3,
-             ST_Area((ST_Intersection(i.geom, h.geom))::geography) / 1000000.0 as industrial_area
+             ST_Area((ST_Intersection(h.geom, i.geom))::geography) / 1000000.0 as industrial_area
       from osm_landuse_industrial_h3_in h
                join osm_landuse_industrial i on ST_Intersects(h.geom, i.geom)
      ) a

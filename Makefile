@@ -1,4 +1,4 @@
-all: prod dev basemap_all
+all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
 dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
@@ -1259,7 +1259,7 @@ deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
-	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --flat-nodes data/planet-latest-updated-flat-nodes -C 120000 --hstore-all --hstore-add-index --slim --create data/planet-latest-updated.osm.pbf
+	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --hstore-add-index --create data/planet-latest-updated.osm.pbf
 	touch $@
 
 kothic:

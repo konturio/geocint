@@ -35,6 +35,6 @@ fi
 if [ -z "$(${PSQL_SELECT} "SELECT to_regnamespace('${username}');")" ]; then
   echo "Creating user schema ${username}"
   ${PSQL_COMMAND} "
-    CREATE SCHEMA ${username} AUTHORIZATION ${username};
+    CREATE SCHEMA AUTHORIZATION ${username};
   "
 fi

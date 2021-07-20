@@ -19,7 +19,8 @@ if [ -z "$(${PSQL_SELECT} "SELECT to_regrole('geocint_users');")" ]; then
   echo "Create group role geocint_users"
   ${PSQL_COMMAND} "
     CREATE ROLE geocint_users;
-    GRANT gis TO geocint_users;
+    GRANT pg_monitor TO geocint_users;
+    GRANT pg_signal_backend TO geocint_users;
   "
 fi
 

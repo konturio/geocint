@@ -21,7 +21,7 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/drp_regions
 	psql -f scripts/clean.sql
 
-add_user:
+add_user: ## [FINAL] Add user to geocint
 	sh ./scripts/create_geocint_user.sh
 
 data:

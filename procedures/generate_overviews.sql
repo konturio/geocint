@@ -1,4 +1,4 @@
-drop procedure if exists generate_overviews(table_h3 text, item_count text[], method text, start_resolution integer);
+drop procedure if exists generate_overviews;
 create or replace procedure generate_overviews(table_h3 text,
                                                item_count text[],
                                                method text[],

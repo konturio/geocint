@@ -158,7 +158,7 @@ values ('count_pop_under_65_total', 'Population over age of 65', jsonb_build_arr
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('poverty_families_total', 'Families living below poverty line', jsonb_build_array(
         '© United States Census Bureau https://www.census.gov/en.html'),
-        '[["unimportant"], ["important"]]'::jsonb);
+        '[["unimportant, good"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('pop_disability_total', 'Population with a disability', jsonb_build_array(

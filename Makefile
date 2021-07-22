@@ -1013,7 +1013,7 @@ db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/census_
 	psql -c 'drop table if exists us_census_tracts_stats_in;'
 	psql -c 'create table us_census_tracts_stats_in (id_tract text, tract_name text, pop_under_5_total float, pop_over_65_total float, families_total float, families_poverty_percent float, poverty_families_total float generated always as (families_total * families_poverty_percent / 100) stored, pop_disability_total float, pop_not_well_eng_speak float, pop_working_total float, pop_with_cars_percent float, pop_without_car float generated always as (pop_working_total - (pop_working_total * pop_with_cars_percent) / 100) stored);'
 	python3 scripts/normalize_census_data.py -c data/census_data_config.json -o data/census_gov/us_census_tracts_stats.csv
-	cat data/census_gov/us_census_tracts_stats.csv | tail -n +1 | psql -c "copy us_census_tracts_stats_in (id_tract, tract_name, pop_under_5_total, pop_over_65_total, families_total, families_poverty_percent, pop_disability_total, pop_not_well_eng_speak, pop_working_total, pop_with_cars_percent) from stdin with csv header delimiter ';';"
+	cat data/census_gov/us_census_tracts_stats.csv | psql -c "copy us_census_tracts_stats_in (id_tract, tract_name, pop_under_5_total, pop_over_65_total, families_total, families_poverty_percent, pop_disability_total, pop_not_well_eng_speak, pop_working_total, pop_with_cars_percent) from stdin with csv header delimiter ';';"
 	psql -f tables/us_census_tracts_stats.sql
 	touch $@
 

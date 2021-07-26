@@ -1390,8 +1390,8 @@ data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/ninja.mapcss \
 		--tiles-max-zoom 9 \
-		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
-		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
@@ -1402,8 +1402,8 @@ data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
 		--tiles-max-zoom 9 \
-		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
-		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
@@ -1414,8 +1414,8 @@ data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 9 \
-		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
-		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | kothic data/basemap/metadata/geocint

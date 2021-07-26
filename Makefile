@@ -1019,7 +1019,7 @@ db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/census_
 
 db/table/us_census_tract_stats_h3: db/table/us_census_tract_stats db/procedure/generate_overviews | db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
 	psql -f tables/us_census_tract_stats_h3.sql
-	psql -c "call generate_overviews('us_census_tract_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car,}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
+	psql -c "call generate_overviews('us_census_tract_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table

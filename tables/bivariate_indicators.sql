@@ -148,12 +148,12 @@ values ('volcanos_count', 'Number of volcanos', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('count_pop_under_5_total', 'Population under age of 5', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb);
+        '[["unimportant"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('count_pop_under_65_total', 'Population over age of 65', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb);
+        '[["unimportant"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('poverty_families_total', 'Families living below poverty line', jsonb_build_array(
@@ -173,7 +173,7 @@ values ('pop_not_well_eng_spoken', 'Population with a difficulty speaking Englis
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('pop_without_cars', 'Population without a car', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
-        '[["neutral"], ["important", "bad"]]'::jsonb);
+        '[["neutral"], ["important"]]'::jsonb);
 
 update bivariate_indicators
 set is_base = true

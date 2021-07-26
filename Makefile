@@ -1310,6 +1310,18 @@ data/basemap/glyphs/Roboto: | data/basemap/glyphs
 	mkdir -p data/basemap/glyphs/Roboto
 	build-glyphs basemap/fonts/07_roboto_medium.ttf data/basemap/glyphs/Roboto
 
+data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zigzag
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/ninja.mapcss \
+		--tiles-max-zoom 9 \
+		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
 data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
@@ -1332,6 +1344,18 @@ data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zi
 		--tiles-max-zoom 9 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
+data/basemap/metadata/sonic/style_ninja.json: | kothic data/basemap/metadata/sonic
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/ninja.mapcss \
+		--tiles-max-zoom 9 \
+		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
@@ -1358,6 +1382,18 @@ data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/son
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
+data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/ninja.mapcss \
+		--tiles-max-zoom 9 \
+		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
 data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
@@ -1382,7 +1418,7 @@ data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/geocint/ninja.json: basemap/styles/ninja.mapcss | kothic data/basemap/metadata/geocint
+data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | kothic data/basemap/metadata/geocint
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1418,8 +1454,8 @@ data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/g
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/ninja.json data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json
-	cp data/basemap/metadata/geocint/ninja.json /var/www/html/basemap/style_ninja.json
+deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja.json data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json
+	cp data/basemap/metadata/geocint/style_ninja.json /var/www/html/basemap/style_ninja.json
 	cp data/basemap/metadata/geocint/style_day.json /var/www/html/basemap/style_mwm.json
 	cp data/basemap/metadata/geocint/style_night.json /var/www/html/basemap/style_mwm_night.json
 	touch $@
@@ -1429,13 +1465,13 @@ deploy/geocint/basemap: deploy/geocint/basemap_mapcss data/tiles/basemap_all | d
 	cp -r data/tiles/basemap/. /var/www/tiles/basemap
 	touch $@
 
-data/basemap/zigzag.tar.bz2: data/tiles/basemap_all data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | data/basemap/glyphs/Roboto
+data/basemap/zigzag.tar.bz2: data/tiles/basemap_all data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | data/basemap/glyphs/Roboto
 	tar cvf data/basemap/zigzag.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/zigzag .
 
-data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json | data/basemap/glyphs/Roboto
+data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json | data/basemap/glyphs/Roboto
 	tar cvf data/basemap/sonic.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/sonic .
 
-data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json | data/basemap/glyphs/Roboto
+data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json | data/basemap/glyphs/Roboto
 	tar cvf data/basemap/lima.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/lima .
 
 deploy/zigzag/basemap: data/basemap/zigzag.tar.bz2 | deploy/zigzag

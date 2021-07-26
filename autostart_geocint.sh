@@ -27,8 +27,15 @@ else
 fi
 
 # Notify about successful pipeline status at channel
-if [[ -e $(find /home/gis/geocint/ -maxdepth 1 -type f -name "prod" -a -name "dev" -mmin -10) ]]; then
-  echo "Geocint pipeline has built successfully!" | python3 scripts/slack_message.py geocint "Nightly build" cat
+if [[ -e $(find /home/gis/geocint/ -maxdepth 1 -type f -name "prod" -mmin -10) && $branch == "master" ]]; then
+  echo "$branch has built successfully! prod target exists." | python3 scripts/slack_message.py geocint "Nightly build" cat
+elif [[ -e $(find /home/gis/geocint/ -maxdepth 1 -type f -name "dev" -mmin -10) && $branch != "master" ]]; then
+  echo "$branch has built successfully! dev target exists." | python3 scripts/slack_message.py geocint "Nightly build" cat
+elif [[ ! -e $(find /home/gis/geocint/ -maxdepth 1 -type f -name "prod" -mmin -10) && "$branch" == "master" ]]; then
+  echo "$branch has failed! prod target doesn't exist!" | python3 scripts/slack_message.py geocint "Nightly build" cat
+else
+  [[ ! -e $(find /home/gis/geocint/ -maxdepth 1 -type f -name "dev" -mmin -10) && "$branch" != "master" ]]
+  echo "$branch has failed! dev target doesn't exist!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 fi
 
 # redraw the make.svg after build

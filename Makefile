@@ -1263,7 +1263,7 @@ db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
 	touch $@
 
 db/table/osm2pgsql_mix_in_coastlines: db/table/osm2pgsql db/table/water_polygons_vector | db/table
-	psql -c "insert into planet_osm_polygon (osm_id, "natural", way) select 0 as osm_id, 'coastline' as "natural", geom as way from water_polygons_vector;"
+	psql -c "insert into planet_osm_polygon (osm_id, \"natural\", way) select 0 as osm_id, 'coastline' as \"natural\", geom as way from water_polygons_vector;"
 	touch $@
 
 kothic:

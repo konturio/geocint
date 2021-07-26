@@ -1262,6 +1262,10 @@ db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
 	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --flat-nodes data/planet-latest-updated-flat-nodes --slim --drop --create data/planet-latest-updated.osm.pbf
 	touch $@
 
+db/table/osm2pgsql_mix_in_coastlines: db/table/osm2pgsql db/table/water_polygons_vector | db/table
+	insert into planet_osm_polygon (osm_id, "natural", way) select 0 as osm_id, 'coastline' as "natural", geom as way from water_polygons_vector;
+	touch $@
+
 kothic:
 	git clone -b master --single-branch https://github.com/kothic/kothic.git
 
@@ -1277,7 +1281,7 @@ db/function/basemap_mapsme: | kothic db/function
 		| psql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/tiles
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql_mix_in_coastlines | data/tiles
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql 'select basemap(:z, :x, :y)' --db-config 'host=localhost dbname=gis' --output-path data/tiles/basemap
 	touch $@
 

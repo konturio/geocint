@@ -1009,8 +1009,8 @@ data/census_gov: | data
 	mkdir $@
 
 data/census_gov/download: data/census_gov
-# need to сlarify ssh options dur to review
-	ssh -v -D 1080 -L 127.0.0.1:8118:127.0.0.1:8118 -p 27257 kontur@159.69.33.67 'wget -O - https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_tract_500k.zip' >> data/census_gov/cb_2019_us_tract_500k.zip
+	# TODO: setup export https_proxy for file download because of forbidden connection
+	wget "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_tract_500k.zip" -O data/census_gov/cb_2019_us_tract_500k.zip
 	touch $@
 
 data/census_gov/unzip: data/census_gov/download

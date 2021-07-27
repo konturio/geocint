@@ -2,16 +2,16 @@
 PSQL_SELECT='psql -t -A -U gis -c'
 PSQL_COMMAND='psql -q -U gis -c'
 
-username=$(whoami)
+username=$1
 
-printf 'Enter password for [%s]: ' "${username}"
-stty -echo
-read -r password
-stty echo
-echo
+if [ -z "${username}" ]; then
+  printf 'Enter username: '
+  read -r username
+  echo
+fi
 
-if [ -z "${password}" ]; then
-  echo "Empty string is not a valid password"
+if [ -z "${username}" ]; then
+  echo "Empty string is not a valid username"
   exit 1
 fi
 
@@ -27,7 +27,7 @@ fi
 if [ -z "$(${PSQL_SELECT} "SELECT to_regrole('${username}');")" ]; then
   echo "Create login role ${username}"
   ${PSQL_COMMAND} "
-    CREATE ROLE ${username} WITH LOGIN PASSWORD '${password}';
+    CREATE ROLE ${username} LOGIN;
     GRANT geocint_users TO ${username};
   "
 fi

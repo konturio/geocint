@@ -11,6 +11,3 @@ create table us_census_tracts_stats_h3 as (
     from us_census_tracts_stats
     group by 1
 );
-
-alter table us_census_tracts_stats_h3
-    set (parallel_workers = 32);

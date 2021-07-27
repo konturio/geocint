@@ -1008,12 +1008,11 @@ deploy/geocint/drp_buildings: data/drp_buildings_export | deploy/geocint
 data/census_gov: | data
 	mkdir $@
 
-data/census_gov/download: data/census_gov
+data/census_gov/cb_2019_us_tract_500k.zip: | data/census_gov
 	# TODO: setup export https_proxy for file download because of forbidden connection
 	wget "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_tract_500k.zip" -O data/census_gov/cb_2019_us_tract_500k.zip
-	touch $@
 
-data/census_gov/unzip: data/census_gov/download
+data/census_gov/unzip: data/census_gov/cb_2019_us_tract_500k.zip
 	tar xvf data/census_gov/cb_2019_us_tract_500k.zip
 	touch $@
 

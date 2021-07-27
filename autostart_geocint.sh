@@ -12,8 +12,9 @@ sudo pip3 install slackclient
 sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
 sudo pip3 install pandas
 
-# Reset hard files like on Git HEAD position
-git reset --hard HEAD
+# Rebase and stash uncommitted changes from Git simultaneously
+git rebase --autostash
+
 profile_make clean
 branch="$(git rev-parse --abbrev-ref HEAD)"
 if [[ "$branch" == "master" ]]; then

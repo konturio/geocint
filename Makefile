@@ -322,7 +322,8 @@ db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate t
 	ls data/worldpop/*.tif | parallel --eta psql -c "\"insert into worldpop_country_codes(code) select upper(substr('{/.}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{/.}', 1, 3)));\""
 	touch $@
 
-db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.
+db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/table ## [FINAL] Generate table with boundaries for WorldPop data.
+	# IMPORTANT: set FINAL due to excluding WorldPop from the pipeline
 	psql -f tables/worldpop_population_boundary.sql
 	touch $@
 

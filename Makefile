@@ -1,7 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
 dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary ## [FINAL] Builds all targets for development. Run on every branch.
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target created!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 

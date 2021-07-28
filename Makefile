@@ -1,10 +1,13 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
+	echo "Dev target created!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz deploy/geocint/drp_buildings ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
+	echo "Prod target exists!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 basemap_all: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build
 	touch $@
@@ -938,7 +941,7 @@ db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table
 db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table
 	psql -f tables/osm_volcanos.sql
 	psql -f tables/count_points_inside_h3.sql -v table=osm_volcanos -v table_h3=osm_volcanos_h3 -v item_count=volcanos_count
-	psql -c "call generate_overviews('osm_volcanos_h3', 'volcanos_count', 'sum', 8);"
+	psql -c "call generate_overviews('osm_volcanos_h3', '{volcanos_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table
@@ -1004,6 +1007,34 @@ deploy/geocint/drp_buildings: data/drp_buildings_export | deploy/geocint
 	cp -vp data/drp_buildings/drp_buildings_*.gpkg.gz ~/public_html/
 	touch $@
 
+data/census_gov: | data
+	mkdir $@
+
+data/census_gov/cb_2019_us_tract_500k.zip: | data/census_gov
+	# TODO: setup export https_proxy for file download because of forbidden connection US Census Bureau
+	wget "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_tract_500k.zip" -O $@
+
+data/census_gov/cb_2019_us_tract_500k.shp: data/census_gov/cb_2019_us_tract_500k.zip
+	cd data/census_gov; unzip -o data/census_gov/cb_2019_us_tract_500k.zip
+	touch $@
+
+db/table/us_census_tract_boundaries: data/census_gov/cb_2019_us_tract_500k.shp | db/table ## Import all US census tract boundaries into database
+	ogr2ogr --config PG_USE_COPY YES -s_srs EPSG:4269 -t_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/census_gov/cb_2019_us_tract_500k.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -lco OVERWRITE=YES -nln us_census_tract_boundaries
+	touch $@
+
+db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/census_gov/us_census_tracts_age.csv data/census_gov/us_census_tracts_commuting_characteristics.csv data/census_gov/us_census_tracts_disability_characteristics.csv data/census_gov/us_census_tracts_language_spoken_at_home.csv data/census_gov/us_census_tracts_poverty_of_families_last_12_months.csv | db/table
+	psql -c 'drop table if exists us_census_tracts_stats_in;'
+	psql -c 'create table us_census_tracts_stats_in (id_tract text, tract_name text, pop_under_5_total float, pop_over_65_total float, families_total float, families_poverty_percent float, poverty_families_total float generated always as (families_total * families_poverty_percent / 100) stored, pop_disability_total float, pop_not_well_eng_speak float, pop_working_total float, pop_with_cars_percent float, pop_without_car float generated always as (pop_working_total - (pop_working_total * pop_with_cars_percent) / 100) stored);'
+	python3 scripts/normalize_census_data.py -c data/census_data_config.json -o data/census_gov/us_census_tracts_stats.csv
+	cat data/census_gov/us_census_tracts_stats.csv | psql -c "copy us_census_tracts_stats_in (id_tract, tract_name, pop_under_5_total, pop_over_65_total, families_total, families_poverty_percent, pop_disability_total, pop_not_well_eng_speak, pop_working_total, pop_with_cars_percent) from stdin with csv header delimiter ';';"
+	psql -f tables/us_census_tracts_stats.sql
+	touch $@
+
+db/table/us_census_tract_stats_h3: db/table/us_census_tract_stats db/procedure/generate_overviews | db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
+	psql -f tables/us_census_tract_stats_h3.sql
+	psql -c "call generate_overviews('us_census_tract_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
+	touch $@
+
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_addresses.sql
 	touch $@
@@ -1058,7 +1089,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tract_stats_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

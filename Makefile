@@ -311,7 +311,8 @@ db/table/worldpop_population_raster: data/worldpop/tiled_rasters | db/table ## I
 	psql -c "vacuum analyze worldpop_population_raster;"
 	touch $@
 
-db/table/worldpop_population_grid_h3_r8: db/table/worldpop_population_raster ## Count sum sum of World Pop raster values at h3 hexagons.
+db/table/worldpop_population_grid_h3_r8: db/table/worldpop_population_raster ## [FINAL] Count sum sum of World Pop raster values at h3 hexagons.
+	# IMPORTANT: set FINAL due to excluding WorldPop from the pipeline
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=worldpop_population_raster -v population_raster_grid_h3_r8=worldpop_population_raster_grid_h3_r8
 	touch $@
 
@@ -538,7 +539,8 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary | db/table ## Create general table for population data at hexagons.
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 | db/table ## Create general table for population data at hexagons.
+	# IMPORTANT: removed WorldPop dependencies - db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 

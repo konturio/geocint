@@ -1,19 +1,25 @@
 drop table if exists copernicus_forest_h3_in;
 create table copernicus_forest_h3_in as (
     select h3,
-           8           as resolution,
-           forest_area as forest_area,
+           8                                                               as resolution,
+           evergreen_needle_leaved_forest / 1000000                        as evergreen_needle_leaved_forest,
+           shrublands / 1000000                                            as shrublands,
+           herbage / 1000000                                               as herbage,
+           unknown_forest / 1000000                                        as unknown_forest,
            ST_Area(h3_to_geo_boundary_geometry(h3)::geography) / 1000000.0 as area_km2
     from (
-             select h3_geo_to_h3(geom, 8)      as h3,
-                    sum(cell_area) / 1000000.0 as forest_area
+             select h3_geo_to_h3(geom, 8)                            as h3,
+                    sum(cell_area) filter (where cell in (111, 121)) as evergreen_needle_leaved_forest,
+                    sum(cell_area) filter (where cell in (111, 121)) as shrublands,
+                    sum(cell_area) filter (where cell = 30)          as herbage,
+                    sum(cell_area) filter (where cell in (116, 126)) as unknown_forest
              from (
-                      select ST_PointOnSurface(p.geom)      as geom,
-                             ST_Area(geom::geography)       as cell_area,
-                             p.val                          as cells
+                      select ST_PointOnSurface(p.geom) as geom,
+                             ST_Area(geom::geography)  as cell_area,
+                             p.val                     as cell
                       from copernicus_landcover_raster,
                            ST_PixelAsPolygons(rast) p
-                      where p.val in (111, 113, 112, 114, 115, 116, 121, 123, 122, 124, 125, 126)
+                      where p.val in (30, 111, 113, 112, 114, 115, 116, 121, 123, 122, 124, 125, 126)
                   ) z
              group by 1
          ) x
@@ -29,11 +35,10 @@ $$
         while res > 0
             loop
                 insert into copernicus_forest_h3_in (h3, forest_area, area_km2, resolution)
-                select 
-                    h3_to_parent(h3), 
-                    sum(forest_area),
-                    ST_Area(h3_to_geo_boundary_geometry(h3_to_parent(h3))::geography) / 1000000.0, 
-                    (res - 1)
+                select h3_to_parent(h3),
+                       sum(forest_area),
+                       ST_Area(h3_to_geo_boundary_geometry(h3_to_parent(h3))::geography) / 1000000.0,
+                       (res - 1)
                 from copernicus_forest_h3_in
                 where resolution = res
                 group by 1;
@@ -43,7 +48,10 @@ $$
 $$;
 
 drop table if exists copernicus_forest_h3;
-create table copernicus_forest_h3 (like copernicus_forest_h3_in);
+create table copernicus_forest_h3
+(
+    like copernicus_forest_h3_in
+);
 
 -- dither areas to not be bigger than 100% of hexagon's area for every resolution
 do
@@ -75,5 +83,3 @@ $$
 $$;
 
 drop table if exists copernicus_forest_h3_in;
-
-

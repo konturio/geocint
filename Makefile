@@ -372,10 +372,6 @@ db/table/ghs_globe_population_raster: data/GHS_POP_E2015_GLOBE_R2019A_54009_250_
 	psql -c "alter table ghs_globe_population_raster set (parallel_workers=32);"
 	touch $@
 
-db/table/ghs_globe_population_boundary: db/table/ghs_globe_population_raster | db/table
-	psql -f tables/ghs_globe_population_boundary.sql
-	touch $@
-
 data/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data
 	wget https://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_SMOD_POP_GLOBE_R2016A/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k/V1-0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -O $@
 
@@ -542,7 +538,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/ghs_globe_population_boundary db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary | db/table ## Create general table for population data at hexagons.
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary | db/table ## Create general table for population data at hexagons.
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 

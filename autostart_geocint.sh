@@ -5,26 +5,28 @@ PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sb
 cd ~/geocint
 
 # On Sunday, force checkout master branch
-test `date +'%w'` "=" 0 && git checkout -f master
+test $(date +'%w') "=" 0 && git checkout -f master
 
 # Install / upgrade the python libs
 sudo pip3 install slackclient
 sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
 sudo pip3 install pandas
 
-# Pull new data from Git
-git pull
+# Pull and stash uncommitted changes from Git
+git pull --rebase --autostash
+
 profile_make clean
+
 branch="$(git rev-parse --abbrev-ref HEAD)"
-if [[ "$branch" = "master" ]];
-then
+
+if [[ "$branch" == "master" ]]; then
   echo "Current branch is $branch. Running dev and prod targets." | python3 scripts/slack_message.py geocint "Nightly build" cat
   profile_make -j -k dev prod
-  make -k -q -n --debug=b dev prod 2>&1 |grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" |tail -n+10 | SLACK_KEY=xoxb-2329653303-1423278364594-PNV6Urmf55CEvKxpK2UiqjIG python3 scripts/slack_message.py geocint "Nightly build" cat
+  make -k -q -n --debug=b dev prod 2>&1 | grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" | tail -n+10 | python3 scripts/slack_message.py geocint "Nightly build" cat
 else
   echo "Current branch is $branch (not master). Running dev target." | python3 scripts/slack_message.py geocint "Nightly build" cat
   profile_make -j -k dev
-  make -k -q -n --debug=b dev 2>&1 |grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" |tail -n+10 | SLACK_KEY=xoxb-2329653303-1423278364594-PNV6Urmf55CEvKxpK2UiqjIG python3 scripts/slack_message.py geocint "Nightly build" cat
+  make -k -q -n --debug=b dev 2>&1 | grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" | tail -n+10 | python3 scripts/slack_message.py geocint "Nightly build" cat
 fi
 
 # redraw the make.svg after build

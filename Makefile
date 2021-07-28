@@ -1,4 +1,6 @@
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary  ## [FINAL] Builds all targets for development. Run on every branch.
+all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
+
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 
 prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz deploy/geocint/drp_buildings ## [FINAL] Deploys artifacts to production. Runs only on master branch.
@@ -538,8 +540,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 | db/table ## Create general table for population data at hexagons.
-	# IMPORTANT: removed WorldPop dependencies - db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary | db/table ## Create general table for population data at hexagons.
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 
@@ -1258,7 +1259,11 @@ deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
-	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --flat-nodes data/planet-latest-updated-flat-nodes -C 120000 --hstore-all --hstore-add-index --slim --create data/planet-latest-updated.osm.pbf
+	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --flat-nodes data/planet-latest-updated-flat-nodes --slim --drop --create data/planet-latest-updated.osm.pbf
+	touch $@
+
+db/table/osm2pgsql_mix_in_coastlines: db/table/osm2pgsql db/table/water_polygons_vector | db/table
+	psql -c "insert into planet_osm_polygon (osm_id, \"natural\", way, way_area) select 0 as osm_id, 'coastline' as \"natural\", geom as way, ST_Area(geom) as way_area from water_polygons_vector;"
 	touch $@
 
 kothic:
@@ -1276,7 +1281,7 @@ db/function/basemap_mapsme: | kothic db/function
 		| psql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/water_polygons_vector db/table/osm2pgsql | data/tiles
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql_mix_in_coastlines | data/tiles
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql 'select basemap(:z, :x, :y)' --db-config 'host=localhost dbname=gis' --output-path data/tiles/basemap
 	touch $@
 
@@ -1305,6 +1310,18 @@ data/basemap/glyphs/Roboto: | data/basemap/glyphs
 	mkdir -p data/basemap/glyphs/Roboto
 	build-glyphs basemap/fonts/07_roboto_medium.ttf data/basemap/glyphs/Roboto
 
+data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zigzag
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/ninja.mapcss \
+		--tiles-max-zoom 9 \
+		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
 data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
@@ -1327,6 +1344,18 @@ data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zi
 		--tiles-max-zoom 9 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
+data/basemap/metadata/sonic/style_ninja.json: | kothic data/basemap/metadata/sonic
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/ninja.mapcss \
+		--tiles-max-zoom 9 \
+		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
@@ -1353,6 +1382,18 @@ data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/son
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
+data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/ninja.mapcss \
+		--tiles-max-zoom 9 \
+		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
 data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
@@ -1361,8 +1402,8 @@ data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
 		--tiles-max-zoom 9 \
-		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
-		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
@@ -1373,11 +1414,11 @@ data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 9 \
-		--tiles-url https://lima.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
-		--glyphs-url https://lima.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
+		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/geocint/ninja.json: basemap/styles/ninja.mapcss | kothic data/basemap/metadata/geocint
+data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | kothic data/basemap/metadata/geocint
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1413,8 +1454,8 @@ data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/g
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/ninja.json data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json
-	cp data/basemap/metadata/geocint/ninja.json /var/www/html/basemap/style_ninja.json
+deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja.json data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json
+	cp data/basemap/metadata/geocint/style_ninja.json /var/www/html/basemap/style_ninja.json
 	cp data/basemap/metadata/geocint/style_day.json /var/www/html/basemap/style_mwm.json
 	cp data/basemap/metadata/geocint/style_night.json /var/www/html/basemap/style_mwm_night.json
 	touch $@
@@ -1424,13 +1465,13 @@ deploy/geocint/basemap: deploy/geocint/basemap_mapcss data/tiles/basemap_all | d
 	cp -r data/tiles/basemap/. /var/www/tiles/basemap
 	touch $@
 
-data/basemap/zigzag.tar.bz2: data/tiles/basemap_all data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | data/basemap/glyphs/Roboto
+data/basemap/zigzag.tar.bz2: data/tiles/basemap_all data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | data/basemap/glyphs/Roboto
 	tar cvf data/basemap/zigzag.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/zigzag .
 
-data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json | data/basemap/glyphs/Roboto
+data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json | data/basemap/glyphs/Roboto
 	tar cvf data/basemap/sonic.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/sonic .
 
-data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json | data/basemap/glyphs/Roboto
+data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json | data/basemap/glyphs/Roboto
 	tar cvf data/basemap/lima.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/lima .
 
 deploy/zigzag/basemap: data/basemap/zigzag.tar.bz2 | deploy/zigzag

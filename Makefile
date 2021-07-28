@@ -1009,14 +1009,14 @@ data/census_gov: | data
 	mkdir $@
 
 data/census_gov/cb_2019_us_tract_500k.zip: | data/census_gov
-	# TODO: setup export https_proxy for file download because of forbidden connection
-	wget "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_tract_500k.zip" -O data/census_gov/cb_2019_us_tract_500k.zip
+	# TODO: setup export https_proxy for file download because of forbidden connection US Census Bureau
+	wget "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_tract_500k.zip" -O $@
 
-data/census_gov/unzip: data/census_gov/cb_2019_us_tract_500k.zip
-	tar xvf data/census_gov/cb_2019_us_tract_500k.zip
+data/census_gov/cb_2019_us_tract_500k.shp: data/census_gov/cb_2019_us_tract_500k.zip
+	unzip data/census_gov/cb_2019_us_tract_500k.zip
 	touch $@
 
-db/table/us_census_tract_boundaries: data/census_gov/unzip | db/table ## Import all US census tract boundaries into database
+db/table/us_census_tract_boundaries: data/census_gov/cb_2019_us_tract_500k.shp | db/table ## Import all US census tract boundaries into database
 	ogr2ogr --config PG_USE_COPY YES -s_srs EPSG:4269 -t_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/census_gov/cb_2019_us_tract_500k.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -lco OVERWRITE=YES -nln us_census_tract_boundaries
 	touch $@
 

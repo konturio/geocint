@@ -31,7 +31,9 @@ create table population_grid_h3_r8 as (
 
 update population_grid_h3_r8 p
 set ghs_pop = 0
-where ghs_pop is null;
+from ghs_globe_population_boundary b
+where ST_Intersects(ST_Transform(b.geom, 4326), p.geom)
+  and ghs_pop is null;
 
 create index population_grid_h3_r8_geom_hrsl_pop_worldpop_idx on population_grid_h3_r8 using gist (geom, hrsl_pop, worldpop);
 
@@ -52,7 +54,8 @@ drop index if exists population_grid_h3_r8_geom_hrsl_pop_worldpop_idx;
 vacuum population_grid_h3_r8;
 update population_grid_h3_r8 p
 -- set population counts starting with more high resolution raster data (30m, 100m and whole planet)
-set population = coalesce(hrsl_pop, worldpop, ghs_pop);
+-- IMPORTANT: swap worldpop and ghs_pop due to worldpop quality issue
+set population = coalesce(hrsl_pop, ghs_pop, worldpop);
 
 vacuum full analyze population_grid_h3_r8;
 create index on population_grid_h3_r8 using gist (geom, population);

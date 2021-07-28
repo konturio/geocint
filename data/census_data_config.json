@@ -1,0 +1,44 @@
+{
+  "header_map": {
+    "id": "tract_id",
+    "Geographic Area Name": "tract_name",
+    "Estimate!!Total!!Total population!!AGE!!Under 5 years": "pop_under_5_total",
+    "Estimate!!Total!!Total population!!SELECTED AGE CATEGORIES!!65 years and over": "pop_over_65_total",
+    "Estimate!!Total!!All families!!Families": "families_total",
+    "Estimate!!Percent below poverty level!!All families!!Families": "families_poverty_percent",
+    "Estimate!!With a disability!!Total civilian noninstitutionalized population": "pop_disability_total",
+    "Estimate!!Speak English  less than very well\"!!Percent of specified language speakers!!Population 5 years and over\"": "pop_not_well_eng_spoken",
+    "Estimate!!Total!!Workers 16 years and over": "pop_working_total",
+    "Estimate!!Total!!Workers 16 years and over!!MEANS OF TRANSPORTATION TO WORK!!Car, truck, or van": "pop_with_cars_percent"
+  },
+  "header_code": {
+    "data/census_gov/us_census_tracts_age.csv": [
+      "GEO_ID",
+      "NAME",
+      "S0101_C01_002E",
+      "S0101_C01_030E"
+    ],
+    "data/census_gov/us_census_tracts_poverty_of_families_last_12_months.csv": [
+      "GEO_ID",
+      "NAME",
+      "S1702_C01_001E",
+      "S1702_C02_001E"
+    ],
+    "data/census_gov/us_census_tracts_disability_characteristics.csv": [
+      "GEO_ID",
+      "NAME",
+      "S1810_C02_001E"
+    ],
+    "data/census_gov/us_census_tracts_language_spoken_at_home.csv": [
+      "GEO_ID",
+      "NAME",
+      "S1601_C05_001E"
+    ],
+    "data/census_gov/us_census_tracts_commuting_characteristics.csv": [
+      "GEO_ID",
+      "NAME",
+      "S0801_C01_001E",
+      "S0801_C01_002E"
+    ]
+  }
+}

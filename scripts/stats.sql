@@ -30,6 +30,12 @@ copy (
                 population_v2,
                 industrial_area,
                 volcanos_count,
+                pop_under_5_total,
+                pop_over_65_total,
+                poverty_families_total,
+                pop_disability_total,
+                pop_not_well_eng_speak,
+                pop_without_car,
                 ST_AsMVTGeom(geom, ST_TileEnvelope(:z, :x, :y), 8192, 64, true) as geom
             from
                 stat_h3

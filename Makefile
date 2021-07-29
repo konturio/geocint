@@ -1030,7 +1030,7 @@ data/census_gov/cb_2019_us_tract_500k.zip: | data/census_gov
 	wget "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_tract_500k.zip" -O $@
 
 data/census_gov/cb_2019_us_tract_500k.shp: data/census_gov/cb_2019_us_tract_500k.zip
-	cd data/census_gov; unzip -o data/census_gov/cb_2019_us_tract_500k.zip
+	unzip -o data/census_gov/cb_2019_us_tract_500k.zip -d data/census_gov
 	touch $@
 
 db/table/us_census_tract_boundaries: data/census_gov/cb_2019_us_tract_500k.shp | db/table ## Import all US census tract boundaries into database

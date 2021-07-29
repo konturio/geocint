@@ -492,16 +492,12 @@ db/table/gadm_boundaries: data/gadm/gadm36_shp_files | db/table
 	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_2 -nlt MULTIPOLYGON data/gadm/gadm36_2.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
 	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_3 -nlt MULTIPOLYGON data/gadm/gadm36_3.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
 	psql -f tables/gadm_boundaries.sql
-	psql -c "drop table if exists gadm_level_0"
-	psql -c "drop table if exists gadm_level_1"
-	psql -c "drop table if exists gadm_level_2"
-	psql -c "drop table if exists gadm_level_3"
 	touch $@
 
 db/table/gadm_countries_boundary: db/table/gadm_boundaries
-	psql -c "drop table if exists gadm_countries_boundary"
-	psql -c "create table gadm_countries_boundary as select row_number() over() gid, gid gid_0, "name" name_0, geom from gadm_boundaries where gadm_level = 0"
-	psql -c "update gadm_countries_boundary set geom = ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
+	psql -c "drop table if exists gadm_countries_boundary;"
+	psql -c "create table gadm_countries_boundary as select row_number() over() gid, gid gid_0, \"name\" name_0, geom from gadm_boundaries where gadm_level = 0;"
+	psql -c "alter table gadm_countries_boundary alter column geom type geometry(multipolygon, 3857) using ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
 
 db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 | db/table
@@ -1030,7 +1026,7 @@ data/census_gov/cb_2019_us_tract_500k.zip: | data/census_gov
 	wget "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_tract_500k.zip" -O $@
 
 data/census_gov/cb_2019_us_tract_500k.shp: data/census_gov/cb_2019_us_tract_500k.zip
-	cd data/census_gov; unzip -o data/census_gov/cb_2019_us_tract_500k.zip
+	unzip -o data/census_gov/cb_2019_us_tract_500k.zip -d data/census_gov
 	touch $@
 
 db/table/us_census_tract_boundaries: data/census_gov/cb_2019_us_tract_500k.shp | db/table ## Import all US census tract boundaries into database
@@ -1078,7 +1074,7 @@ deploy/s3/osm_addresses_minsk: data/osm_addresses_minsk.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_addresses_minsk.geojson.gz --body data/osm_addresses_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx db/table/gadm_level_1 db/table/gadm_level_2 db/table/gadm_level_3 db/table/kontur_population_h3 | db/table
+db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_admin_boundaries.sql
 	touch $@
 

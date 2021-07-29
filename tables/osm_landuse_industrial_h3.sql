@@ -3,8 +3,11 @@ create table osm_landuse_industrial_plain as (
     select a.geom
     FROM osm_landuse_industrial a
     where not exists(
-            select 1 from osm_landuse_industrial b where ST_Intersects(a.geom, b.geom) and a.osm_id != b.osm_id)
-    union
+            select 1
+            from osm_landuse_industrial b
+            where ST_Intersects(a.geom, b.geom)
+              and a.osm_id != b.osm_id)
+    union all
     select (ST_Dump(ST_union(a.geom))).geom as geom
     from osm_landuse_industrial a,
          osm_landuse_industrial b

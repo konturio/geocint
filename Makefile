@@ -1280,9 +1280,20 @@ data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivaria
 	mv $@__TMP $@
 	touch $@
 
-deploy/zigzag/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/zigzag
+deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3
+	aws s3api copy-object --copy-source geodata-us-east-1-kontur/public/geocint/test/population_api_tables.sqld.gz --bucket geodata-us-east-1-kontur --key public/geocint/test/population_api_tables.sqld.gz.bak --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/test/population_api_tables.sqld.gz --body data/population/population_api_tables.sqld.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
+
+deploy/s3/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3
+	aws s3api copy-object --copy-source geodata-us-east-1-kontur/public/geocint/population_api_tables.sqld.gz --bucket geodata-us-east-1-kontur --key public/geocint/population_api_tables.sqld.gz.bak --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/population_api_tables.sqld.gz --body data/population/population_api_tables.sqld.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
+
+
+deploy/zigzag/population_api_tables: deploy/s3/test/population_api_tables | deploy/zigzag
 	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible zigzag_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible zigzag_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-us-east-1-kontur object=/public/geocint/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'
 	ansible zigzag_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@

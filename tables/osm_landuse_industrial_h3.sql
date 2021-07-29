@@ -1,15 +1,33 @@
+drop table if exists osm_landuse_industrial_plain;
+create table osm_landuse_industrial_plain as (
+    select a.geom
+    FROM osm_landuse_industrial a
+    where not exists(
+            select 1
+            from osm_landuse_industrial b
+            where ST_Intersects(a.geom, b.geom)
+              and a.osm_id != b.osm_id)
+    union all
+    select (ST_Dump(ST_union(a.geom))).geom as geom
+    from osm_landuse_industrial a,
+         osm_landuse_industrial b
+    where a.osm_id <> b.osm_id
+      and ST_intersects(a.geom, b.geom)
+);
+
+
 drop table if exists osm_landuse_industrial_h3_in;
 create table osm_landuse_industrial_h3_in as (
     select h3,
            h3_to_geo_boundary_geometry(h3) as geom
     from (select distinct h3_polyfill(geom, 8) as h3
-          from osm_landuse_industrial
+          from osm_landuse_industrial_plain
           union
           select distinct h3_line(
                                   h3_geo_to_h3(st_startpoint(b.line_segment), 8),
                                   h3_geo_to_h3(st_endpoint(b.line_segment), 8))
                 from
-                     (select (ST_DumpSegments(geom)).geom as line_segment from osm_landuse_industrial) b
+                     (select (ST_DumpSegments(geom)).geom as line_segment from osm_landuse_industrial_plain) b
          ) a
 );
 
@@ -24,27 +42,9 @@ select h3,
 from (select h.h3,
              ST_Area((ST_Intersection(h.geom, i.geom))::geography) / 1000000.0 as industrial_area
       from osm_landuse_industrial_h3_in h
-               join osm_landuse_industrial i on ST_Intersects(h.geom, i.geom)
+               join osm_landuse_industrial_plain i on ST_Intersects(h.geom, i.geom)
      ) a
 group by h3;
 
 drop table if exists osm_landuse_industrial_h3_in;
-
--- generate overviews
-do
-$$
-    declare
-        res integer;
-    begin
-        res = 8;
-        while res > 0
-            loop
-                insert into osm_landuse_industrial_h3 (h3, industrial_area, resolution)
-                select h3_to_parent(h3) as h3, sum(industrial_area), (res - 1) as resolution
-                from osm_landuse_industrial_h3
-                where resolution = res
-                group by 1;
-                res = res - 1;
-            end loop;
-    end;
-$$;
+drop table if exists osm_landuse_industrial_plain;

@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target created!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -486,11 +486,26 @@ data/gadm/gadm36_shp_files: data/gadm/gadm36_levels_shp.zip
 	cd data/gadm; unzip -o gadm36_levels_shp.zip || true
 	touch $@
 
-db/table/gadm_countries_boundary: data/gadm/gadm36_shp_files | db/table
+db/table/gadm_boundaries: data/gadm/gadm36_shp_files | db/table
+	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_0 -nlt MULTIPOLYGON data/gadm/gadm36_0.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
+	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_1 -nlt MULTIPOLYGON data/gadm/gadm36_1.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
+	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_2 -nlt MULTIPOLYGON data/gadm/gadm36_2.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
+	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_3 -nlt MULTIPOLYGON data/gadm/gadm36_3.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
+	psql -f tables/gadm_boundaries.sql
+	psql -c "drop table if exists gadm_level_0"
+	psql -c "drop table if exists gadm_level_1"
+	psql -c "drop table if exists gadm_level_2"
+	psql -c "drop table if exists gadm_level_3"
+	touch $@
+
+db/table/gadm_countries_boundary: db/table/gadm_boundaries
 	psql -c "drop table if exists gadm_countries_boundary"
-	shp2pgsql -I -s 4326 data/gadm/gadm36_0.shp gadm_countries_boundary | psql -q
-	psql -c "alter table gadm_countries_boundary alter column geom set data type geometry;"
+	psql -c "create table gadm_countries_boundary as select row_number() over() gid, gid gid_0, "name" name_0, geom from gadm_boundaries where gadm_level = 0"
 	psql -c "update gadm_countries_boundary set geom = ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
+	touch $@
+
+db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 | db/table
+	psql -f tables/kontur_boundaries.sql
 	touch $@
 
 data/wb/gdp/wb_gdp.zip: | data/wb/gdp
@@ -1048,7 +1063,7 @@ db/table/osm_addresses_minsk: db/index/osm_addresses_geom_idx db/table/osm_addre
 
 data/osm_addresses_minsk.geojson.gz: db/table/osm_addresses_minsk
 	rm -vf data/osm_addresses_minsk.geojson*
-	ogr2ogr -f GeoJSON data/osm_addresses_minsk.geojson PG:'dbname=gis' -sql "select * from osm_addresses_minsk" -lco "SPATIAL_INDEX=NO" -nln osm_addresses_minsk
+	ogr2ogr -f GeoJSON data/osm_addresses_minsk.geojson PG:'dbname=gis' -sql "select * from osm_addresses_minsk" -nln osm_addresses_minsk
 	pigz data/osm_addresses_minsk.geojson
 	touch $@
 
@@ -1062,13 +1077,13 @@ deploy/s3/osm_addresses_minsk: data/osm_addresses_minsk.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_addresses_minsk.geojson.gz --body data/osm_addresses_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table
+db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx db/table/gadm_level_1 db/table/gadm_level_2 db/table/gadm_level_3 db/table/kontur_population_h3 | db/table
 	psql -f tables/osm_admin_boundaries.sql
 	touch $@
 
 data/osm_admin_boundaries.geojson.gz: db/table/osm_admin_boundaries
 	rm -vf data/osm_admin_boundaries.geojson*
-	ogr2ogr -f GeoJSON data/osm_admin_boundaries.geojson PG:'dbname=gis' -sql "select * from osm_admin_boundaries" -lco "SPATIAL_INDEX=NO" -nln osm_admin_boundaries
+	ogr2ogr -f GeoJSON data/osm_admin_boundaries.geojson PG:'dbname=gis' -sql "select * from osm_admin_boundaries" -nln osm_admin_boundaries
 	pigz data/osm_admin_boundaries.geojson
 	touch $@
 

@@ -1349,9 +1349,32 @@ data/basemap/metadata/lima: | data/basemap/metadata
 data/basemap/metadata/geocint: | data/basemap/metadata
 	mkdir -p $@
 
-data/basemap/glyphs/Roboto: | data/basemap/glyphs
-	mkdir -p data/basemap/glyphs/Roboto
-	build-glyphs basemap/fonts/07_roboto_medium.ttf data/basemap/glyphs/Roboto
+data/basemap/glyphs_all: | data/basemap/glyphs
+	mkdir -p data/basemap/glyphs/Roboto-Black
+	build-glyphs basemap/fonts/roboto/Roboto-Black.ttf data/basemap/glyphs/Roboto-Black
+	mkdir -p data/basemap/glyphs/Roboto-BlackItalic
+	build-glyphs basemap/fonts/roboto/Roboto-BlackItalic.ttf data/basemap/glyphs/Roboto-BlackItalic
+	mkdir -p data/basemap/glyphs/Roboto-Bold
+	build-glyphs basemap/fonts/roboto/Roboto-Bold.ttf data/basemap/glyphs/Roboto-Bold
+	mkdir -p data/basemap/glyphs/Roboto-BoldItalic
+	build-glyphs basemap/fonts/roboto/Roboto-BoldItalic.ttf data/basemap/glyphs/Roboto-BoldItalic
+	mkdir -p data/basemap/glyphs/Roboto-Italic
+	build-glyphs basemap/fonts/roboto/Roboto-Italic.ttf data/basemap/glyphs/Roboto-Italic
+	mkdir -p data/basemap/glyphs/Roboto-Light
+	build-glyphs basemap/fonts/roboto/Roboto-Light.ttf data/basemap/glyphs/Roboto-Light
+	mkdir -p data/basemap/glyphs/Roboto-LightItalic
+	build-glyphs basemap/fonts/roboto/Roboto-LightItalic.ttf data/basemap/glyphs/Roboto-LightItalic
+	mkdir -p data/basemap/glyphs/Roboto-Medium
+	build-glyphs basemap/fonts/roboto/Roboto-Medium.ttf data/basemap/glyphs/Roboto-Medium
+	mkdir -p data/basemap/glyphs/Roboto-MediumItalic
+	build-glyphs basemap/fonts/roboto/Roboto-MediumItalic.ttf data/basemap/glyphs/Roboto-MediumItalic
+	mkdir -p data/basemap/glyphs/Roboto-Regular
+	build-glyphs basemap/fonts/roboto/Roboto-Regular.ttf data/basemap/glyphs/Roboto-Regular
+	mkdir -p data/basemap/glyphs/Roboto-Thin
+	build-glyphs basemap/fonts/roboto/Roboto-Thin.ttf data/basemap/glyphs/Roboto-Thin
+	mkdir -p data/basemap/glyphs/Roboto-ThinItalic
+	build-glyphs basemap/fonts/roboto/Roboto-ThinItalic.ttf data/basemap/glyphs/Roboto-ThinItalic
+	touch $@
 
 data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/komap.py \
@@ -1503,18 +1526,18 @@ deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja.json da
 	cp data/basemap/metadata/geocint/style_night.json /var/www/html/basemap/style_mwm_night.json
 	touch $@
 
-deploy/geocint/basemap: deploy/geocint/basemap_mapcss data/tiles/basemap_all | deploy/geocint data/basemap/glyphs/Roboto
+deploy/geocint/basemap: deploy/geocint/basemap_mapcss data/tiles/basemap_all data/basemap/glyphs_all | deploy/geocint
 	cp -r data/basemap/glyphs/. /var/www/html/basemap/glyphs
 	cp -r data/tiles/basemap/. /var/www/tiles/basemap
 	touch $@
 
-data/basemap/zigzag.tar.bz2: data/tiles/basemap_all data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | data/basemap/glyphs/Roboto
+data/basemap/zigzag.tar.bz2: data/tiles/basemap_all data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json data/basemap/glyphs_all
 	tar cvf data/basemap/zigzag.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/zigzag .
 
-data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json | data/basemap/glyphs/Roboto
+data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json data/basemap/glyphs_all
 	tar cvf data/basemap/sonic.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/sonic .
 
-data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json | data/basemap/glyphs/Roboto
+data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json data/basemap/glyphs_all
 	tar cvf data/basemap/lima.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/lima .
 
 deploy/zigzag/basemap: data/basemap/zigzag.tar.bz2 | deploy/zigzag

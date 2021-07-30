@@ -146,12 +146,12 @@ values ('volcanos_count', 'Number of volcanos', jsonb_build_array(
         '[["unimportant"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('count_pop_under_5_total', 'Population under age of 5', jsonb_build_array(
+values ('pop_under_5_total', 'Population under age of 5', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["unimportant"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('count_pop_under_65_total', 'Population over age of 65', jsonb_build_array(
+values ('pop_over_65_total', 'Population over age of 65', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["unimportant"], ["important"]]'::jsonb);
 

@@ -218,6 +218,7 @@ db/table/covid19_population_h3_r8: db/table/kontur_population_h3 db/table/covid1
 
 db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
 	psql -f tables/covid19_h3_r8.sql
+	psql -c "call generate_overviews('covid19_dithered', '{date, population, total_population, confirmed, recovered, dead}'::text[], '{max, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
 
 db/table/us_counties_boundary: data/mid/gadm/gadm36_shp_files | db/table ## USA counties boundaries extracted from GADM (Database of Global Administrative Areas) admin_level_2 dataset.

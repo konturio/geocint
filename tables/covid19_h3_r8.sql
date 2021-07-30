@@ -85,6 +85,7 @@ create table covid19_hex as (
     select
         a.date,
         b.*,
+        8::int as resolution,
         coalesce(c.population, b.population) as total_population,
         coalesce(c.confirmed::float * b.population / c.population, 0) as confirmed,
         coalesce(c.recovered::float * b.population / c.population, 0) as recovered,

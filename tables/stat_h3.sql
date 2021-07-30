@@ -198,7 +198,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, pop_under_5_total,
                     pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car,
                     resolution
-             from us_census_tract_stats_h3
+             from us_census_tracts_stats_h3
         ) z
     group by 2, 1
 );

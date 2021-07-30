@@ -1387,6 +1387,7 @@ data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zi
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
+	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
 data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/komap.py \
@@ -1423,6 +1424,7 @@ data/basemap/metadata/sonic/style_ninja.json: | kothic data/basemap/metadata/son
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
+	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
 data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
 	python2 kothic/src/komap.py \
@@ -1459,6 +1461,7 @@ data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
+	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
 data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
 	python2 kothic/src/komap.py \
@@ -1495,6 +1498,7 @@ data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | ko
 		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
+	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
 data/basemap/metadata/geocint/style_day.json: | kothic data/basemap/metadata/geocint
 	python2 kothic/src/komap.py \

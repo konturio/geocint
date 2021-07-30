@@ -729,9 +729,9 @@ data/geoalert_urban_mapping: | data
 	mkdir -p $@
 
 data/geoalert_urban_mapping/download: | data/geoalert_urban_mapping
-	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/CeT7WidzbIGqaFa/download -O Open_UM_Geoalert-Russia-Chechnya.zip
-	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/AE2iIxGN8UoYfOU/download -O Open_UM_Geoalert-Tyva.zip
-	cd data/geoalert_urban_mapping; wget http://filebrowser.aeronetlab.space/s/eHyTEdLlevmix0D/download -O Open-UM_Geoalert-Mos_region.zip
+	cd data/geoalert_urban_mapping; wget https://filebrowser.aeronetlab.space/s/TUVKmq2pwNwy4WH/download -O Open_UM_Geoalert-Russia-Chechnya.zip
+	cd data/geoalert_urban_mapping; wget https://filebrowser.aeronetlab.space/s/znbuMiaZlsrh6NT/download -O Open_UM_Geoalert-Tyva.zip
+	cd data/geoalert_urban_mapping; wget https://filebrowser.aeronetlab.space/s/q8vri4GTILLivv8/download -O Open-UM_Geoalert-Mos_region.zip
 	touch $@
 
 data/geoalert_urban_mapping/unzip: data/geoalert_urban_mapping/download

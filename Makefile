@@ -1041,9 +1041,9 @@ db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/census_
 	psql -f tables/us_census_tracts_stats.sql
 	touch $@
 
-db/table/us_census_tract_stats_h3: db/table/us_census_tract_stats db/procedure/generate_overviews | db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
-	psql -f tables/us_census_tract_stats_h3.sql
-	psql -c "call generate_overviews('us_census_tract_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
+db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/procedure/generate_overviews | db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
+	psql -f tables/us_census_tracts_stats_h3.sql
+	psql -c "call generate_overviews('us_census_tracts_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
 
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
@@ -1100,7 +1100,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tract_stats_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

@@ -166,12 +166,12 @@ values ('pop_disability_total', 'Population with a disability', jsonb_build_arra
         '[["unimportant"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('pop_not_well_eng_spoken', 'Population with a difficulty speaking English', jsonb_build_array(
+values ('pop_not_well_eng_speak', 'Population with a difficulty speaking English', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["good"], ["important", "bad"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('pop_without_cars', 'Population without a car', jsonb_build_array(
+values ('pop_without_car', 'Population without a car', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["neutral"], ["important"]]'::jsonb);
 

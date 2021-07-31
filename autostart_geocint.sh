@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -e
 PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 cd ~/geocint
 
@@ -14,6 +13,13 @@ sudo pip3 install pandas
 
 # Pull and stash uncommitted changes from Git
 git pull --rebase --autostash
+
+# Push error message if pipeline hasn't pulled from Git
+git_error=$(git pull --rebase --autostash 2>&1)
+
+if [[ $? -ne 0 ]]; then
+  echo -e "Geocint pipeline hasn't pulled new changes!. Check it manually.\nError message: $git_error" | python3 scripts/slack_message.py geocint "Nightly build" cat
+fi
 
 profile_make clean
 

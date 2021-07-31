@@ -223,11 +223,13 @@ create table stat_h3 as (
 drop table stat_h3_in;
 vacuum analyze stat_h3;
 create index on stat_h3 using gist (geom, zoom);
-create index stat_h3_brin_all on stat_h3 using brin
-    (
+-- cannot create index with more than 32 columns, so create more indexes
+create index stat_h3_brin_pt1 on stat_h3 using brin (
      area_km2, building_count_6_months, covid19_vaccines, max_ts, population,
      total_hours, avgmax_ts, count, forest, highway_length, min_ts, residential,
-     view_count, avg_slope, count_6_months, gdp, highway_length_6_months, one, resolution, wildfires,
+     view_count, avg_slope, count_6_months, gdp, highway_length_6_months, one, resolution);
+create index stat_h3_brin_pt2 on stat_h3 using brin (
+     wildfires,
      building_count, geom, local_hours, osm_users, total_building_count, avg_ndvi, covid19_confirmed,
      population_v2, industrial_area, volcanos_count, pop_under_5_total, pop_over_65_total,
      poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car, zoom

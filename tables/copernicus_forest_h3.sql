@@ -21,6 +21,7 @@ create table copernicus_forest_h3_in as (
                              p.val                     as cell
                       from copernicus_landcover_raster,
                            ST_PixelAsPolygons(rast) p
+                      -- based on Discrete classification coding from Copernicus Global Land Service: https://zenodo.org/record/4723921#.YQmESVMzaDV
                       where p.val in (20, 30, 111, 113, 112, 114, 115, 116, 121, 123, 122, 124, 125, 126)
                   ) z
              group by 1
@@ -28,6 +29,7 @@ create table copernicus_forest_h3_in as (
 );
 
 -- generate overviews
+-- TODO: rewrite generated_overviews() procedure to receive expression to "method" parameter for column
 do
 $$
     declare
@@ -45,7 +47,6 @@ $$
                        sum(herbage),
                        sum(unknown_forest),
                        ST_Area(h3_to_geo_boundary_geometry(h3_to_parent(h3))::geography) / 1000000.0,
-                       -- we have complex method to insert in into table as str
                        (res - 1)
                 from copernicus_forest_h3_in
                 where resolution = res
@@ -78,6 +79,7 @@ $$
                 select jsonb_object_agg(column_name, 0) from unnest(columns) "column_name" into carry;
                 for cur_row in (select to_jsonb(r) from copernicus_forest_h3_in r where resolution = res order by h3)
                     loop
+                        -- recursive сalculation carry value for every forest type area
                         select jsonb_object_agg(c.key, carry_value - carry_out_value),
                                jsonb_object_agg(c.key, carry_out_value)
                         from jsonb_each(carry) c,
@@ -87,6 +89,7 @@ $$
                         where c.key = r.key
                         into carry, carry_out;
 
+                        -- insert new value when difference between forest and hexagon area area is bigger then zero
                         if jsonb_path_exists(carry_out, '$.** ? (@ > 0)') then
                             insert into copernicus_forest_h3
                             select *

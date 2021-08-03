@@ -72,7 +72,11 @@ create table stat_h3_quality as (
                 avg(a.poverty_families_total) as agg_poverty_families_total,
                 avg(a.pop_disability_total) as agg_pop_disability_total,
                 avg(a.pop_not_well_eng_speak) as agg_pop_not_well_eng_speak,
-                avg(a.pop_without_car) as agg_pop_without_car
+                avg(a.pop_without_car) as agg_pop_without_car,
+                avg(a.evergreen_needle_leaved_forest) as agg_evergreen_needle_leaved_forest,
+                avg(a.shrubs) as agg_shrubs,
+                avg(a.herbage) as agg_herbage,
+                avg(a.unknown_forest) as agg_unknown_forest
             from
                 stat_h3 a
             where

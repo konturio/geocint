@@ -209,9 +209,13 @@ alter table stat_h3_in
 drop table if exists stat_h3;
 create table stat_h3 as (
     select a.*,
-           (coalesce(b.avg_slope,0))::float as avg_slope,
-           (coalesce(cf.forest_area,0))::float as forest,
-           (coalesce(nd.avg_ndvi,0))::float as avg_ndvi,
+           (coalesce(b.avg_slope, 0))::float as avg_slope,
+           (coalesce(cf.forest_area, 0))::float as forest,
+           (coalesce(cf.evergreen_needle_leaved_forest, 0))::float as evergreen_needle_leaved_forest,
+           (coalesce(cf.shrubs, 0))::float as shrubs,
+           (coalesce(cf.herbage, 0))::float as herbage,
+           (coalesce(cf.unknown_forest, 0))::float as unknown_forest,
+           (coalesce(nd.avg_ndvi, 0))::float as avg_ndvi,
            hex.area / 1000000.0 as area_km2,
            hex.geom as geom
     from stat_h3_in           a
@@ -226,10 +230,11 @@ create index on stat_h3 using gist (geom, zoom);
 -- cannot create index with more than 32 columns, so create more indexes
 create index stat_h3_brin_pt1 on stat_h3 using brin (
      area_km2, building_count_6_months, covid19_vaccines, max_ts, population,
-     total_hours, avgmax_ts, count, forest, highway_length, min_ts, residential,
-     view_count, avg_slope, count_6_months, gdp, highway_length_6_months, one, resolution);
+     total_hours, avgmax_ts, count, forest, evergreen_needle_leaved_forest,
+     shrubs, herbage, unknown_forest, highway_length, min_ts, residential,
+     view_count, count_6_months, avg_slope, one, resolution);
 create index stat_h3_brin_pt2 on stat_h3 using brin (
-     wildfires,
+     gdp, highway_length_6_months, wildfires,
      building_count, geom, local_hours, osm_users, total_building_count, avg_ndvi, covid19_confirmed,
      population_v2, industrial_area, volcanos_count, pop_under_5_total, pop_over_65_total,
      poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car, zoom

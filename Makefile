@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.geojson ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -27,6 +27,9 @@ data:
 	mkdir -p $@
 
 db:
+	mkdir -p $@
+
+reports:
 	mkdir -p $@
 
 db/function: | db
@@ -520,6 +523,13 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries
 db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 | db/table
 	psql -f tables/kontur_boundaries.sql
 	touch $@
+
+db/table/population_check_osm: db/table/kontur_boundaries | db/table
+	psql -f tables/population_check_osm.sql
+	touch $@
+
+reports/population_check_osm.geojson: db/table/population_check_osm | reports
+	ogr2ogr -f "GeoJSON" test.geojson PG:"dbname=gis" -sql "select * from population_check_osm where index > 0.05" -nln population_check_osm
 
 data/wb/gdp/wb_gdp.zip: | data/wb/gdp
 	wget http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=xml -O $@

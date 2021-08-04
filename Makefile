@@ -1285,11 +1285,6 @@ deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld
 	aws s3 cp data/population/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
-##  deploy/s3/prod/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3
-##	aws s3api copy-object --copy-source geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz --bucket geodata-eu-central-1-kontur --key private/geocint/prod/population_api_tables.sqld.gz.bak --content-type "application/json" --content-encoding
-##	aws s3api cp geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz  geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz
-## 	touch $@
-
 deploy/zigzag/population_api_tables: deploy/s3/test/population_api_tables | deploy/zigzag
 	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'

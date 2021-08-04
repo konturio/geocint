@@ -36,6 +36,10 @@ copy (
                 pop_disability_total,
                 pop_not_well_eng_speak,
                 pop_without_car,
+                evergreen_needle_leaved_forest,
+                shrubs,
+                herbage,
+                unknown_forest,
                 ST_AsMVTGeom(geom, ST_TileEnvelope(:z, :x, :y), 8192, 64, true) as geom
             from
                 stat_h3

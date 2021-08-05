@@ -545,10 +545,10 @@ data/un_population.csv: | data
 
 db/table/un_population: data/un_population.csv | db/table
 	psql -c 'drop table if exists un_population_text;'
-	psql -c 'create table un_population_text(iso text, name text, variant_id text, variant text, time text, mid_period text ,pop_male text,pop_female text ,pop_total text, pop_density text);'
+	psql -c 'create table un_population_text(iso text, name text, variant_id text, variant text, time text, mid_period text, pop_male text, pop_female text, pop_total text, pop_density text);'
 	cat data/un_population.csv | psql -c "copy un_population_text from stdin with csv header delimiter ',';"
 	psql -c 'drop table if exists un_population;'
-	psql -c 'create table un_population as select iso::integer, name, variant_id::integer, variant, time::integer "year", parse_float(mid_period) "mid_period", parse_float(pop_male) "pop_male", parse_float(pop_female) "pop_female", parse_float(pop_total) "pop_total", parse_float(pop_density) "pop_density" from un_population_text;'
+	psql -c 'create table un_population as select iso::integer, name, variant_id::integer, variant, time::integer "year", parse_float(mid_period) "mid_period", parse_float(pop_male) * 1000 "pop_male", parse_float(pop_female) * 1000 "pop_female", parse_float(pop_total) * 1000 "pop_total", parse_float(pop_density) * 1000 "pop_density" from un_population_text;'
 	psql -c 'drop table if exists un_population_text;'
 	touch $@
 
@@ -560,7 +560,7 @@ reports/population_check_un.csv: db/table/population_check_un | reports
 	psql -c 'copy (select * from population_check_un where index > 0.05) to stdout with csv header;' > $@
 
 reports/population_check_world: db/table/kontur_population_h3 db/table/population_check_un | reports
-	psql -c "select abs(sum(population) - (select pop_total * 1000 from un_population where variant_id = 2 and year = 2020 and name = 'World')) from kontur_population_h3 where resolution = 8" > @$
+	psql -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = 2020 and name = 'World')) from kontur_population_h3 where resolution = 8" > @$
 
 data/wb/gdp/wb_gdp.zip: | data/wb/gdp
 	wget http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=xml -O $@

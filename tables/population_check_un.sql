@@ -1,10 +1,10 @@
 drop table if exists population_check_un;
 create table population_check_un as (
     with un as (
-        select distinct i.iso3             "code",
-                        u.name             "country",
-                        u.year             "year",
-                        u.pop_total * 1000 "pop"
+        select distinct i.iso3      "code",
+                        u.name      "country",
+                        u.year      "year",
+                        u.pop_total "pop"
         from un_population u,
              iso_codes i
         where u.iso = i.iso_num
@@ -13,8 +13,8 @@ create table population_check_un as (
         order by 1)
     select un.code,
            un.country,
-           un.year                            "un_pop_year",
-           un.pop                             "un_pop_population",
+           un.year                            "un_year",
+           un.pop                             "un_population",
            k.population                       "kontur_population",
            diff_pop,
            diff_pop / (un.pop + k.population) "index"

@@ -1292,9 +1292,9 @@ deploy/zigzag/population_api_tables: deploy/s3/test/population_api_tables | depl
 	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
-deploy/sonic/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/sonic
+deploy/sonic/population_api_tables: deploy/s3/test/population_api_tables | deploy/sonic
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible sonic_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'
 	ansible sonic_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@

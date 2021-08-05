@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.geojson ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv reports/population_check_un.csv reports/population_check_world ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -528,8 +528,39 @@ db/table/population_check_osm: db/table/kontur_boundaries | db/table
 	psql -f tables/population_check_osm.sql
 	touch $@
 
-reports/population_check_osm.geojson: db/table/population_check_osm | reports
-	ogr2ogr -f "GeoJSON" test.geojson PG:"dbname=gis" -sql "select * from population_check_osm where index > 0.05" -nln population_check_osm
+reports/population_check_osm.csv: db/table/population_check_osm | reports
+	psql -c 'copy (select * from population_check_osm where index > 0.05) to stdout with csv header;' > $@
+
+data/iso_codes.csv: | data
+	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
+
+db/table/iso_codes: data/iso_codes.csv | db/table
+	psql -c 'drop table if exists iso_codes;'
+	psql -c 'create table iso_codes(iso_num integer, iso2 char(2), iso3 char(3), name text);'
+	cat data/iso_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy iso_codes from stdin with csv header;"
+	touch $@
+
+data/un_population.csv: | data
+	wget 'https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv' -O $@
+
+db/table/un_population: data/un_population.csv | db/table
+	psql -c 'drop table if exists un_population_text;'
+	psql -c 'create table un_population_text(iso text, name text, variant_id text, variant text, time text, mid_period text ,pop_male text,pop_female text ,pop_total text, pop_density text);'
+	cat data/un_population.csv | psql -c "copy un_population_text from stdin with csv header delimiter ',';"
+	psql -c 'drop table if exists un_population;'
+	psql -c 'create table un_population as select iso::integer, name, variant_id::integer, variant, time::integer "year", parse_float(mid_period) "mid_period", parse_float(pop_male) "pop_male", parse_float(pop_female) "pop_female", parse_float(pop_total) "pop_total", parse_float(pop_density) "pop_density" from un_population_text;'
+	psql -c 'drop table if exists un_population_text;'
+	touch $@
+
+db/table/population_check_un: db/table/un_population | db/table
+	psql -f tables/population_check_un.sql
+	touch $@
+
+reports/population_check_un.csv: db/table/population_check_un | reports
+	psql -c 'copy (select * from population_check_un where index > 0.05) to stdout with csv header;' > $@
+
+reports/population_check_world: db/table/kontur_population_h3 db/table/population_check_un | reports
+	psql -c "select abs(sum(population) - (select pop_total * 1000 from un_population where variant_id = 2 and year = 2020 and name = 'World')) from kontur_population_h3 where resolution = 8" > @$
 
 data/wb/gdp/wb_gdp.zip: | data/wb/gdp
 	wget http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=xml -O $@

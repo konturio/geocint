@@ -5,8 +5,7 @@ create table population_check_osm as (
            kontur_pop                        "kontur_pop",
            osm_pop,
            diff_pop,
-           diff_pop / (kontur_pop + osm_pop) "index",
-           geom
+           diff_pop / (kontur_pop + osm_pop) "index"
     from kontur_boundaries b,
          parse_float(tags ->> 'population') osm_pop,
          coalesce(b.population, 0) kontur_pop,
@@ -17,5 +16,3 @@ create table population_check_osm as (
       and area > 5161293.2 -- average hexagon area at 7 resolution
     order by "index" desc
 );
-
-create index on population_check_osm using gist (geom);

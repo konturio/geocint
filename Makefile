@@ -552,7 +552,7 @@ db/table/un_population: data/un_population.csv | db/table
 	psql -c 'drop table if exists un_population_text;'
 	touch $@
 
-db/table/population_check_un: db/table/un_population | db/table
+db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table
 	psql -f tables/population_check_un.sql
 	touch $@
 

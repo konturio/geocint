@@ -560,7 +560,7 @@ reports/population_check_un.csv: db/table/population_check_un | reports
 	psql -c 'copy (select * from population_check_un where index > 0.05) to stdout with csv header;' > $@
 
 reports/population_check_world: db/table/kontur_population_h3 db/table/population_check_un | reports
-	psql -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = 2020 and name = 'World')) from kontur_population_h3 where resolution = 8" > @$
+	psql -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = date_part('year', current_date) and name = 'World')) from kontur_population_h3 where resolution = 8" > @$
 
 data/wb/gdp/wb_gdp.zip: | data/wb/gdp
 	wget http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=xml -O $@

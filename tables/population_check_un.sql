@@ -9,7 +9,7 @@ create table population_check_un as (
              iso_codes i
         where u.iso = i.iso_num
           and u.variant_id = 2
-          and u.year = date_part('year', current_date)
+          and u.year = date_part('year', current_date) - 1
         order by 1)
     select un.code,
            un.country,
@@ -27,5 +27,5 @@ create table population_check_un as (
       and un.code = k.tags ->> 'ISO3166-1:alpha3'
       -- exclude boundaries with a small area (for example, the Vatican City)
       and area > 737327.6 -- average hexagon area at 8 resolution
-    order by diff_pop / (un.pop + k.population) desc
+    order by "index" desc
 );

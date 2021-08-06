@@ -530,6 +530,7 @@ db/table/population_check_osm: db/table/kontur_boundaries | db/table
 
 reports/population_check_osm.csv: db/table/population_check_osm | reports
 	psql -c 'copy (select * from population_check_osm where index > 0.05) to stdout with csv header;' > $@
+	echo "Countries with population different from OSM $(wc -l $@ | awk '{print $1}')" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/iso_codes.csv: | data
 	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
@@ -558,9 +559,11 @@ db/table/population_check_un: db/table/un_population db/table/iso_codes | db/tab
 
 reports/population_check_un.csv: db/table/population_check_un | reports
 	psql -c 'copy (select * from population_check_un where index > 0.05) to stdout with csv header;' > $@
+	echo "Countries with population different from UN $(wc -l $@ | awk '{print $1}')" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 reports/population_check_world: db/table/kontur_population_h3 db/table/population_check_un | reports
 	psql -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = date_part('year', current_date) and name = 'World')) from kontur_population_h3 where resolution = 8" > @$
+	head -1 $@ | xargs echo "Planet population difference" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/wb/gdp/wb_gdp.zip: | data/wb/gdp
 	wget http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=xml -O $@

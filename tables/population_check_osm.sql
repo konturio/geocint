@@ -4,9 +4,9 @@ create table population_check_osm as (
            name,
            tags ->> 'name:en'                  "name_en",
            tags ->> 'population:date'          "pop_date",
-           osm_pop,
-           b.population                        "kontur_pop",
-           osm_pop - b.population              "diff_pop",
+           round(osm_pop)                      "osm_pop",
+           round(b.population)                 "kontur_pop",
+           round(osm_pop - b.population)       "diff_pop",
            abs(log(osm_pop) - log(population)) "diff_log"
     from kontur_boundaries b,
          parse_float(tags ->> 'population') osm_pop,

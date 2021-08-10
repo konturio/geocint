@@ -13,10 +13,10 @@ create table population_check_un as (
         order by 1)
     select un.code,
            un.country,
-           un.year                       "un_year",
-           un.pop                        "un_population",
-           k.population                  "kontur_population",
-           un.pop - k.population         "diff_pop",
+           un.year                            "un_year",
+           round(un.pop)                      "un_pop",
+           round(k.population)                "kontur_pop",
+           round(un.pop - k.population)       "diff_pop",
            abs(log(un.pop) - log(population)) "diff_log"
     from un,
          kontur_boundaries k,

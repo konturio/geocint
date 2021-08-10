@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Terminate script after failed command execution
 set -e
 PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 cd ~/geocint
@@ -17,6 +18,7 @@ git pull --rebase --autostash
 
 profile_make clean
 
+# Check name of current git branch
 branch="$(git rev-parse --abbrev-ref HEAD)"
 
 if [[ "$branch" == "master" ]]; then

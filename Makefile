@@ -1280,16 +1280,21 @@ data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivaria
 	mv $@__TMP $@
 	touch $@
 
-deploy/zigzag/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/zigzag
+deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
+	aws s3 cp data/population/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/zigzag/population_api_tables: deploy/s3/test/population_api_tables | deploy/zigzag
 	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible zigzag_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible zigzag_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'
 	ansible zigzag_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
-deploy/sonic/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/sonic
+deploy/sonic/population_api_tables: deploy/s3/test/population_api_tables | deploy/sonic
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible sonic_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'
 	ansible sonic_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@

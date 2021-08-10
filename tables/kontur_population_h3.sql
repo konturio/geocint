@@ -177,23 +177,7 @@ $$;
 drop table kontur_population_mid2;
 
 -- populate people to lower resolution hexagons
-do
-$$
-    declare
-        res integer;
-    begin
-        res = 8;
-        while res > 0
-            loop
-                insert into kontur_population_mid3 (h3, population, resolution)
-                select h3_to_parent(h3) as h3, sum(population) as population, (res - 1) as resolution
-                from kontur_population_mid3
-                where resolution = res
-                group by 1;
-                res = res - 1;
-            end loop;
-    end;
-$$;
+call generate_overviews('kontur_population_mid3', '{population}'::text[], '{sum}'::text[], 8);
 
 -- final table with population density, area, geometry and h3 hexagons
 drop table if exists kontur_population_h3;

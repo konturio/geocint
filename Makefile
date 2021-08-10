@@ -164,7 +164,6 @@ db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table
 	psql -f tables/covid19_us_confirmed_in.sql
 	touch $@
 
-
 db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table
 	psql -c 'drop table if exists covid19_us_deaths_csv_in;'
 	psql -c 'create table covid19_us_deaths_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, population int, date timestamptz, value int);'
@@ -215,6 +214,7 @@ db/table/covid19_vaccine_accept_us_counties: data/covid19/vaccination/vaccine_ac
 
 db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_us_counties
 	psql -f tables/covid19_vaccine_accept_us_counties_h3.sql
+	psql -c "call generate_overviews('covid19_vaccine_accept_us_counties_h3', '{vaccine_value}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
@@ -489,6 +489,7 @@ db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
 
 db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table
 	psql -f tables/ndvi_2019_06_10_h3.sql
+	psql -c "call generate_overviews('ndvi_2019_06_10_h3', '{avg_ndvi}'::text[], '{avg}'::text[], 8);"
 	touch $@
 
 db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.
@@ -497,6 +498,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Cou
 
 db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
+	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 data/gadm/gadm36_levels_shp.zip: | data/gadm
@@ -837,6 +839,7 @@ db/table/kontur_population_v2: data/kontur_population_v2/unzip ## Import populat
 
 db/table/kontur_population_v2_h3: db/table/kontur_population_v2 ## Generate h3 hexagon for population v2.
 	psql -f tables/kontur_population_v2_h3.sql
+	psql -c "call generate_overviews('kontur_population_v2_h3', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
@@ -1082,19 +1085,22 @@ deploy/geocint/drp_buildings: data/drp_buildings_export | deploy/geocint
 data/census_gov: | data
 	mkdir $@
 
-data/census_gov/cb_2019_us_tract_500k.zip: | data/census_gov
-	# TODO: setup export https_proxy for file download because of forbidden connection US Census Bureau
-	wget "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_tract_500k.zip" -O $@
+data/census_gov/cb_2019_us_tract_500k.zip: | data/census_gov ## Download census tract data from AWS S3 bucket.
+	cd data/census_gov; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/cb_2019_us_tract_500k.zip ./
 
 data/census_gov/cb_2019_us_tract_500k.shp: data/census_gov/cb_2019_us_tract_500k.zip
 	unzip -o data/census_gov/cb_2019_us_tract_500k.zip -d data/census_gov
 	touch $@
 
 db/table/us_census_tract_boundaries: data/census_gov/cb_2019_us_tract_500k.shp | db/table ## Import all US census tract boundaries into database
-	ogr2ogr --config PG_USE_COPY YES -s_srs EPSG:4269 -t_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/census_gov/cb_2019_us_tract_500k.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -lco OVERWRITE=YES -nln us_census_tract_boundaries
+	ogr2ogr --config PG_USE_COPY YES -overwrite -s_srs EPSG:4269 -t_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/census_gov/cb_2019_us_tract_500k.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -nln us_census_tract_boundaries
 	touch $@
 
-db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/census_gov/us_census_tracts_age.csv data/census_gov/us_census_tracts_commuting_characteristics.csv data/census_gov/us_census_tracts_disability_characteristics.csv data/census_gov/us_census_tracts_language_spoken_at_home.csv data/census_gov/us_census_tracts_poverty_of_families_last_12_months.csv | db/table
+data/census_gov/data_census_download: | data/census_gov ## Download thematic census tracts Zealand's buildings from AWS S3 bucket.
+	cd data/census_gov; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/ ./ --recursive --exclude "*" --include "*us_census_tracts_*"
+	touch $@
+
+db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/census_gov/data_census_download | db/table
 	psql -c 'drop table if exists us_census_tracts_stats_in;'
 	psql -c 'create table us_census_tracts_stats_in (id_tract text, tract_name text, pop_under_5_total float, pop_over_65_total float, families_total float, families_poverty_percent float, poverty_families_total float generated always as (families_total * families_poverty_percent / 100) stored, pop_disability_total float, pop_not_well_eng_speak float, pop_working_total float, pop_with_cars_percent float, pop_without_car float generated always as (pop_working_total - (pop_working_total * pop_with_cars_percent) / 100) stored);'
 	python3 scripts/normalize_census_data.py -c data/census_data_config.json -o data/census_gov/us_census_tracts_stats.csv

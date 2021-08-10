@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv reports/population_check_un.csv reports/population_check_world ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv reports/population_check_world ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -553,15 +553,15 @@ db/table/un_population: data/un_population.csv | db/table
 	psql -c 'drop table if exists un_population_text;'
 	touch $@
 
-db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table
-	psql -f tables/population_check_un.sql
-	touch $@
+#db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table
+#	psql -f tables/population_check_un.sql
+#	touch $@
 
-reports/population_check_un.csv: db/table/population_check_un | reports
-	psql -c 'copy (select * from population_check_un where index > 0.05) to stdout with csv header;' > $@
-	echo "Countries with population different from UN $(wc -l $@ | awk '{print $1}')" | python3 scripts/slack_message.py geocint "Nightly build" cat
+#reports/population_check_un.csv: db/table/population_check_un | reports
+#	psql -c 'copy (select * from population_check_un where index > 0.05) to stdout with csv header;' > $@
+#	echo "Countries with population different from UN $(wc -l $@ | awk '{print $1}')" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-reports/population_check_world: db/table/kontur_population_h3 db/table/population_check_un | reports
+reports/population_check_world: db/table/kontur_population_h3 db/table/un_population | reports
 	psql -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = date_part('year', current_date) and name = 'World')) from kontur_population_h3 where resolution = 8" > @$
 	head -1 $@ | xargs echo "Planet population difference" | python3 scripts/slack_message.py geocint "Nightly build" cat
 

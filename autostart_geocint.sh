@@ -5,6 +5,8 @@ set -e
 PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 cd ~/geocint
 
+# make.lock is a file which exists while pipeline running
+# if make.lock exists, pipeline should not be started
 if [ -e make.lock ]; then
   echo "Skip start: running pipeline is not done yet." | python3 scripts/slack_message.py geocint "Nightly build" cat
   exit 1

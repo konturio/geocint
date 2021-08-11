@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math"
 	"os"
@@ -21,7 +22,7 @@ import (
 var maxParallel = flag.Int("j", 32, "parallel limit")
 var minZoom = flag.Int("min-zoom", 0, "min zoom")
 var maxZoom = flag.Int("max-zoom", 8, "max zoom")
-var sql = flag.String("sql", "", "sql")
+var sqlQueryFilepath = flag.String("sql-query-filepath", "", "sql query file path")
 var dbConfig = flag.String("db-config", "", "db config")
 var outputPath = flag.String("output-path", ".", "output path")
 
@@ -60,7 +61,7 @@ type TileZxy struct {
 	z, x, y int
 }
 
-func BuildTile(db *pgxpool.Pool, zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
+func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
 	defer wg.Done()
 
 	if zxy.z > *maxZoom {
@@ -73,7 +74,7 @@ func BuildTile(db *pgxpool.Pool, zxy TileZxy, wg *sync.WaitGroup, sem chan struc
 	filePath := path.Join(*outputPath, fmt.Sprintf("%d/%d/%d.mvt", zxy.z, zxy.x, zxy.y))
 
 	// Get the data
-	sql := *sql
+	sql := sqlTemplate
 	sql = strings.ReplaceAll(sql, ":z", strconv.Itoa(zxy.z))
 	sql = strings.ReplaceAll(sql, ":x", strconv.Itoa(zxy.x))
 	sql = strings.ReplaceAll(sql, ":y", strconv.Itoa(zxy.y))
@@ -106,10 +107,10 @@ func BuildTile(db *pgxpool.Pool, zxy TileZxy, wg *sync.WaitGroup, sem chan struc
 	if bytes != 0 || zxy.z < 10 {
 		wg.Add(4)
 		
-		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
-		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
-		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
-		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
+		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
+		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
 	}
 
 	return err
@@ -118,13 +119,18 @@ func BuildTile(db *pgxpool.Pool, zxy TileZxy, wg *sync.WaitGroup, sem chan struc
 func main() {
 	flag.Parse()
 
+	sqlTemplate, err := ioutil.ReadFile(*sqlQueryFilepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	wg := sync.WaitGroup{}
 
 	sem := make(chan struct{}, *maxParallel)
 
 	db, err := dbConnect()
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 		return
 	}
 
@@ -132,7 +138,7 @@ func main() {
 	for x := 0; x < int(math.Pow(float64(2), float64(z))); x++ {
 		for y := 0; y < int(math.Pow(float64(2), float64(z))); y++ {
 			wg.Add(1)
-			go BuildTile(db, TileZxy{z, x, y}, &wg, sem)
+			go BuildTile(db, string(sqlTemplate), TileZxy{z, x, y}, &wg, sem)
 		}
 	}
 

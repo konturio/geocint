@@ -1136,8 +1136,8 @@ db/table/tile_logs: data/tile_logs/_download | db/table
 	psql -f tables/tile_logs_h3.sql
 	touch $@
 
-data/tiles/stats_tiles.tar.bz2: db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors db/table/stat_h3 db/table/osm_meta | data/tiles
-	bash ./scripts/generate_tiles.sh stats | parallel --eta
+data/tiles/stats_tiles.tar.bz2: tile_generator/tile_generator db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors db/table/stat_h3 db/table/osm_meta | data/tiles
+	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/stats.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/stats
 	psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stats/stat.json
 	cd data/tiles/stats/; tar cvf ../stats_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
 
@@ -1206,8 +1206,8 @@ deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima
 	'
 	touch $@
 
-data/tiles/users_tiles.tar.bz2: db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res | data/tiles
-	bash ./scripts/generate_tiles.sh users | parallel --eta
+data/tiles/users_tiles.tar.bz2: tile_generator/tile_generator db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res | data/tiles
+	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/users.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/users
 	cd data/tiles/users/; tar cvf ../users_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
 
 deploy/geocint/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/geocint
@@ -1330,7 +1330,7 @@ db/function/basemap_mapsme: | kothic db/function
 	touch $@
 
 data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql_mix_in_coastlines | data/tiles
-	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql 'select basemap(:z, :x, :y)' --db-config 'host=localhost dbname=gis' --output-path data/tiles/basemap
+	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 
 data/basemap: | data

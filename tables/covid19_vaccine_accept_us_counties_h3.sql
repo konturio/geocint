@@ -18,7 +18,6 @@ create table covid19_vaccine_accept_us_counties_h3 as (
     lateral (select u.fips_code, count(h3) as h3_count
              from covid19_vaccine_accept_us_counties_h3_in h
              where ST_Intersects(h.geom, u.geom)
-             and h.geom && u.geom
     group by 1) x
     where x.fips_code = u.fips_code
 );

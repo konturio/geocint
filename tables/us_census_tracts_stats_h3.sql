@@ -23,7 +23,6 @@ create table us_census_tracts_stats_h3 as (
     lateral (select u.id_tract, count(h3) as h3_count
              from us_census_tracts_stats_h3_in h
              where ST_Intersects(h.geom, u.geom)
-             and h.geom && u.geom
     group by 1) x
     where x.id_tract = u.id_tract
 );

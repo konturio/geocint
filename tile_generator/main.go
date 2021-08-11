@@ -83,19 +83,18 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 	err := row.Scan(&mvtTile)
 	<-sem
 	if err != nil {
-		fmt.Println(err)
-		return err
+		log.Fatal(err)
 	}
 
 	err = os.MkdirAll(dir, 0777)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	// Create the file
 	out, err := os.Create(filePath)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	defer out.Close()
 

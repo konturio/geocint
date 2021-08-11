@@ -490,6 +490,7 @@ db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
 db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table
 	psql -f tables/ndvi_2019_06_10_h3.sql
 	psql -c "call generate_overviews('ndvi_2019_06_10_h3', '{avg_ndvi}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);"
 	touch $@
 
 db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.

@@ -15,6 +15,3 @@ create table ndvi_2019_06_10_h3 as (
             group by 1
          ) x
 );
-
-
-create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);

@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv db/table/iso_codes reports/population_check_world ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -27,6 +27,9 @@ data:
 	mkdir -p $@
 
 db:
+	mkdir -p $@
+
+reports:
 	mkdir -p $@
 
 db/function: | db
@@ -340,7 +343,7 @@ db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare t
 	psql -c "drop table if exists hrsl_population_raster;"
 	raster2pgsql -p -Y -s 4326 data/hrsl_cogs/hrsl_general/v1.5/*.tif -t auto hrsl_population_raster | psql -q
 	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
-	ls data/hrsl_cogs/hrsl_general/v1.5/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
+	find data/hrsl_cogs/hrsl_general -name "*.tif" -type f -printf "%f %p\n" | sed -E 's/.*-v(([[:digit:]]\.?)+)\.tif(.*)/\1 \0/;s/-v([[:digit:]]\.?)+\.tif//1' | sort -Vrk1,1 | sort -uk2,2 | cut -d\  -f2- | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
 	psql -c "alter table hrsl_population_raster set (parallel_workers = 32);"
 	psql -c "create index hrsl_population_raster_rast_idx on public.hrsl_population_raster using gist (ST_ConvexHull(rast));"
 	psql -c "vacuum analyze hrsl_population_raster;"
@@ -520,6 +523,47 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries
 db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 | db/table
 	psql -f tables/kontur_boundaries.sql
 	touch $@
+
+db/table/population_check_osm: db/table/kontur_boundaries | db/table
+	psql -f tables/population_check_osm.sql
+	touch $@
+
+reports/population_check_osm.csv: db/table/population_check_osm | reports
+	psql -c 'copy (select * from population_check_osm order by diff_pop desc) to stdout with csv header;' > $@
+	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 boundaries with population different from OSM"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
+
+data/iso_codes.csv: | data
+	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
+
+db/table/iso_codes: data/iso_codes.csv | db/table
+	psql -c 'drop table if exists iso_codes;'
+	psql -c 'create table iso_codes(iso_num integer, iso2 char(2), iso3 char(3), name text);'
+	cat data/iso_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy iso_codes from stdin with csv header;"
+	touch $@
+
+data/un_population.csv: | data
+	wget 'https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv' -O $@
+
+db/table/un_population: data/un_population.csv | db/table
+	psql -c 'drop table if exists un_population_text;'
+	psql -c 'create table un_population_text(iso text, name text, variant_id text, variant text, time text, mid_period text, pop_male text, pop_female text, pop_total text, pop_density text);'
+	cat data/un_population.csv | psql -c "copy un_population_text from stdin with csv header delimiter ',';"
+	psql -c 'drop table if exists un_population;'
+	psql -c 'create table un_population as select iso::integer, name, variant_id::integer, variant, time::integer "year", parse_float(mid_period) "mid_period", parse_float(pop_male) * 1000 "pop_male", parse_float(pop_female) * 1000 "pop_female", parse_float(pop_total) * 1000 "pop_total", parse_float(pop_density) * 1000 "pop_density" from un_population_text;'
+	psql -c 'drop table if exists un_population_text;'
+	touch $@
+
+#db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table
+#	psql -f tables/population_check_un.sql
+#	touch $@
+
+#reports/population_check_un.csv: db/table/population_check_un | reports
+#	psql -c 'copy (select * from population_check_un order by diff_pop) to stdout with csv header;' > $@
+#	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
+
+reports/population_check_world: db/table/kontur_population_h3 db/table/un_population | reports
+	psql -tA -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = date_part('year', current_date) and name = 'World')) from kontur_population_h3 where resolution = 8" > @$
+	head -1 $@ | xargs echo "Planet population difference" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/wb/gdp/wb_gdp.zip: | data/wb/gdp
 	wget http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=xml -O $@

@@ -441,13 +441,30 @@ data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif: data/gebco_2020_geotif
 	rm -f $@
 	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -t_srs EPSG:4326 -of COG -multi data/gebco_2020_geotiff/gebco_2020_merged_slope.tif $@
 
-db/table/gebco_2020_slopes: data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif | db/table
-	psql -c "drop table if exists gebco_2020_slopes"
+db/table/gebco_2020_slopes: data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif | db/table ## Put GEBCO slope raster data into table.
+	psql -c "drop table if exists gebco_2020_slopes;"
 	raster2pgsql -M -Y -s 4326 data/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif -t auto gebco_2020_slopes | psql -q
 	touch $@
 
-db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table
-	psql -f tables/gebco_2020_slopes_h3.sql
+db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table ## Generate h3 table with average slope values from 1 to 8 resolution.
+	psql -f tables/gebco_values_into_h3.sql -v table_name=gebco_2020_slopes -v table_name_h3=gebco_2020_slopes_h3 -v item_name=avg_slope
+	psql -c "call generate_overviews('gebco_2020_slopes_h3', '{avg_slope}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on gebco_2020_slopes_h3 (h3, avg_slope);"
+	touch $@
+
+data/gebco_2020_geotiff/gebco_2020_merged_4326.tif: data/gebco_2020_geotiff/gebco_2020_merged.vrt
+	rm -f $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdal_translate -r bilinear -of COG -co "BIGTIFF=YES" data/gebco_2020_geotiff/gebco_2020_merged.vrt $@
+
+db/table/gebco_2020_elevation: data/gebco_2020_geotiff/gebco_2020_merged_4326.tif | db/table ## Put GEBCO elevation raster data into table.
+	psql -c "drop table if exists gebco_2020_elevation;"
+	raster2pgsql -M -Y -s 4326 data/gebco_2020_geotiff/gebco_2020_merged_4326.tif -t auto gebco_2020_elevation | psql -q
+	touch $@
+
+db/table/gebco_2020_elevation_h3: db/table/gebco_2020_elevation | db/table ## Generate h3 table with average elevation from 1 to 8 resolution.
+	psql -f tables/gebco_values_into_h3.sql -v table_name=gebco_2020_elevation -v table_name_h3=gebco_2020_elevation_h3 -v item_name=avg_elevation
+	psql -c "call generate_overviews('gebco_2020_elevation_h3', '{avg_elevation}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on gebco_2020_elevation_h3 (h3, avg_elevation);"
 	touch $@
 
 data/ndvi_2019_06_10/generate_ndvi_tifs: | data/ndvi_2019_06_10
@@ -1100,7 +1117,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

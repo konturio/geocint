@@ -210,6 +210,7 @@ drop table if exists stat_h3;
 create table stat_h3 as (
     select a.*,
            (coalesce(b.avg_slope, 0))::float as avg_slope,
+           (coalesce(g.avg_elevation, 0))::float as avg_elevation,
            (coalesce(cf.forest_area, 0))::float as forest,
            (coalesce(cf.evergreen_needle_leaved_forest, 0))::float as evergreen_needle_leaved_forest,
            (coalesce(cf.shrubs, 0))::float as shrubs,
@@ -219,7 +220,8 @@ create table stat_h3 as (
            hex.area / 1000000.0 as area_km2,
            hex.geom as geom
     from stat_h3_in           a
-         left join gebco_2020_slopes_h3 b on (a.h3 = b.h3)
+         left join gebco_2020_slopes_h3 b on (a.h3 = b.h3),
+         left join gebco_2020_elevation_h3 g on (a.h3 = b.h3),
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3),
          ST_HexagonFromH3(a.h3) hex
@@ -232,7 +234,7 @@ create index stat_h3_brin_pt1 on stat_h3 using brin (
      area_km2, building_count_6_months, covid19_vaccines, max_ts, population,
      total_hours, avgmax_ts, count, forest, evergreen_needle_leaved_forest,
      shrubs, herbage, unknown_forest, highway_length, min_ts, residential,
-     view_count, count_6_months, avg_slope, one, resolution);
+     view_count, count_6_months, avg_slope, one, resolution, avg_elevation);
 create index stat_h3_brin_pt2 on stat_h3 using brin (
      gdp, highway_length_6_months, wildfires,
      building_count, geom, local_hours, osm_users, total_building_count, avg_ndvi, covid19_confirmed,

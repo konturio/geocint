@@ -1423,30 +1423,11 @@ data/basemap/metadata/geocint: | data/basemap/metadata
 	mkdir -p $@
 
 data/basemap/glyphs_all: | data/basemap/glyphs
-	mkdir -p data/basemap/glyphs/Roboto-Black
-	build-glyphs basemap/fonts/roboto/Roboto-Black.ttf data/basemap/glyphs/Roboto-Black
-	mkdir -p data/basemap/glyphs/Roboto-BlackItalic
-	build-glyphs basemap/fonts/roboto/Roboto-BlackItalic.ttf data/basemap/glyphs/Roboto-BlackItalic
-	mkdir -p data/basemap/glyphs/Roboto-Bold
-	build-glyphs basemap/fonts/roboto/Roboto-Bold.ttf data/basemap/glyphs/Roboto-Bold
-	mkdir -p data/basemap/glyphs/Roboto-BoldItalic
-	build-glyphs basemap/fonts/roboto/Roboto-BoldItalic.ttf data/basemap/glyphs/Roboto-BoldItalic
-	mkdir -p data/basemap/glyphs/Roboto-Italic
-	build-glyphs basemap/fonts/roboto/Roboto-Italic.ttf data/basemap/glyphs/Roboto-Italic
-	mkdir -p data/basemap/glyphs/Roboto-Light
-	build-glyphs basemap/fonts/roboto/Roboto-Light.ttf data/basemap/glyphs/Roboto-Light
-	mkdir -p data/basemap/glyphs/Roboto-LightItalic
-	build-glyphs basemap/fonts/roboto/Roboto-LightItalic.ttf data/basemap/glyphs/Roboto-LightItalic
-	mkdir -p data/basemap/glyphs/Roboto-Medium
-	build-glyphs basemap/fonts/roboto/Roboto-Medium.ttf data/basemap/glyphs/Roboto-Medium
-	mkdir -p data/basemap/glyphs/Roboto-MediumItalic
-	build-glyphs basemap/fonts/roboto/Roboto-MediumItalic.ttf data/basemap/glyphs/Roboto-MediumItalic
-	mkdir -p data/basemap/glyphs/Roboto-Regular
-	build-glyphs basemap/fonts/roboto/Roboto-Regular.ttf data/basemap/glyphs/Roboto-Regular
-	mkdir -p data/basemap/glyphs/Roboto-Thin
-	build-glyphs basemap/fonts/roboto/Roboto-Thin.ttf data/basemap/glyphs/Roboto-Thin
-	mkdir -p data/basemap/glyphs/Roboto-ThinItalic
-	build-glyphs basemap/fonts/roboto/Roboto-ThinItalic.ttf data/basemap/glyphs/Roboto-ThinItalic
+	rm -rf basemap/omt_fonts
+	git clone https://github.com/openmaptiles/fonts.git basemap/omt_fonts
+	cd basemap/omt_fonts; npm i
+	cd basemap/omt_fonts; node generate.js
+	cp -r basemap/omt_fonts/_output/. data/basemap/glyphs
 	touch $@
 
 data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zigzag

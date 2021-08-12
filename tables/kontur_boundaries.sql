@@ -60,11 +60,10 @@ from osm_admin_boundaries_in b
 left join lateral (
 		select
 				g.hasc,
-                g.gadm_level,
-                ST_Area(ST_Intersection(b.geom, g.geom))::numeric / ST_Area(ST_Union(b.geom, g.geom)) iou -- Calculate Intersection Over Union between OSM and GADM
+                                g.gadm_level,
+                                ST_Area(ST_Intersection(b.geom, g.geom))::numeric / ST_Area(ST_Union(b.geom, g.geom)) iou -- Calculate Intersection Over Union between OSM and GADM
 		from gadm_boundaries g
-		where ST_Intersects(g.geom, ST_PointOnSurface(b.geom))
-				and ST_Intersects(b.geom, ST_PointOnSurface(g.geom))
+		where ST_Intersects(g.geom, b.geom)
 		order by 3 desc
 		limit 1
 ) g on true;

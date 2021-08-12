@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv db/table/iso_codes reports/population_check_world ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/abu_dhabi_food_places.geojson.gz ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -565,7 +565,7 @@ db/table/un_population: data/un_population.csv | db/table
 #	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 reports/population_check_world: db/table/kontur_population_h3 db/table/un_population | reports
-	psql -tA -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = date_part('year', current_date) and name = 'World')) from kontur_population_h3 where resolution = 8" > @$
+	psql -tA -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = date_part('year', current_date) and name = 'World')) from kontur_population_h3 where resolution = 8;" > @$
 	head -1 $@ | xargs echo "Planet population difference" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/wb/gdp/wb_gdp.zip: | data/wb/gdp
@@ -992,6 +992,20 @@ data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz:
 
 data/morocco: data/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data
 	touch $@
+
+db/table/abu_dhabi_admin_boundaries: | db/table
+	psql -f tables/abu_dhabi_admin_boundaries.sql
+	touch $@
+
+db/table/abu_dhabi_food_places: db/table/abu_dhabi_admin_boundaries | db/table
+	psql -f tables/abu_dhabi_food_places.sql
+	touch $@
+
+data/abu_dhabi_food_places.geojson.gz: db/table/abu_dhabi_food_places
+	rm -f $@
+	rm -f data/abu_dhabi_food_places.geojson*
+	ogr2ogr -f GeoJSON data/abu_dhabi_food_places.geojson PG:'dbname=gis' -sql 'select osm_id, name, type, tags, geom from abu_dhabi_food_places' -nln abu_dhabi_food_places
+	cd data/; pigz abu_dhabi_food_places.geojson
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw
 	psql -c "create index on osm_population_raw using gist(geom)"

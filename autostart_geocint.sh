@@ -6,7 +6,7 @@ cleanup() {
 
 # Terminate script after failed command execution
 set -e
-PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin"
 cd ~/geocint
 
 # make.lock is a file which exists while pipeline running

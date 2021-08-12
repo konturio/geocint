@@ -30,7 +30,6 @@ select gid_0       gid,
 from gadm_level_3;
 
 create index on gadm_boundaries using gist (geom);
-create index on gadm_boundaries using gist (ST_PointOnSurface(geom));
 
 drop table if exists gadm_level_0;
 drop table if exists gadm_level_1;

@@ -14,6 +14,3 @@ create table abu_dhabi_food_places as (
       and o.tags ->> 'shop' in ('convenience', 'general', 'greengrocer', 'kiosk', 'supermarket')
       and ST_Intersects(d.geom, o.geog::geometry)
 );
-
-select osm_id, name, type, tags, geom
-from abu_dhabi_food_places

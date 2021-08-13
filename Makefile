@@ -1391,7 +1391,6 @@ tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod
 db/function/basemap_mapsme: | kothic db/function
 	python2 kothic/src/komap.py \
 		--renderer=mvt-sql \
-		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
 		--stylesheet basemap/styles/ninja.mapcss \
 		--osm2pgsql-style basemap/osm2pgsql_styles/default.style \
 		| psql

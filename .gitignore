@@ -11,4 +11,5 @@ db
 deploy
 make_profile.db
 make.svg
+make.lock
 kothic

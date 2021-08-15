@@ -40,35 +40,6 @@ drop table abu_dhabi_shops;
 
 drop table if exists abu_dhabi_bivariate_pop_shops;
 create table abu_dhabi_bivariate_pop_shops as (
-    with percenties as (
-        select array [
-                   null,
-                   percentile_disc(1. / 3) within group (order by population),
-                   percentile_disc(2. / 3) within group (order by population)
-                   ]::numeric[] "first",
-               array [
-                   null,
-                   percentile_disc(1. / 3) within group (order by shops),
-                   percentile_disc(2. / 3) within group (order by shops)
-                   ]::numeric[] "second"
-        from abu_dhabi_pop_shops),
-         first_ranges as (
-             select idx, numrange(value, lead(value) over (order by value nulls first)) "range"
-             from percenties,
-                  unnest(first) with ordinality as v(value, idx)
-         ),
-         second_ranges as (
-             select chr(64 + idx::integer) "idx", numrange(value, lead(value) over (order by value nulls first)) "range"
-             from percenties,
-                  unnest(second) with ordinality as v(value, idx)
-         )
-    select s.*,
-           r2.idx || r1.idx "bivariate_cell"
-    from abu_dhabi_pop_shops s,
-         first_ranges r1,
-         second_ranges r2
-    where r1.range @> s.population::numeric
-      and r2.range @> s.shops::numeric
+    select *, chr(64 + ntile(3) over (order by shops)) || ntile(3) over (order by population) "bivariate_cell"
+    from abu_dhabi_pop_shops
 );
-
-drop table abu_dhabi_pop_shops;

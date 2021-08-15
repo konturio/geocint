@@ -63,7 +63,7 @@ left join lateral (
                                 g.gadm_level,
                                 ST_Area(ST_Intersection(b.geom, g.geom))::numeric / ST_Area(ST_Union(b.geom, g.geom)) iou -- Calculate Intersection Over Union between OSM and GADM
 		from gadm_boundaries g
-		where ST_Intersects(g.geom, b.geom)
+		where ST_Intersects(g.geom, b.geom) and (ST_Intersects(g.geom, ST_PointOnSurface(b.geom)) or ST_Intersects(ST_PointOnSurface(g.geom), b.geom))
 		order by 3 desc
 		limit 1
 ) g on true;

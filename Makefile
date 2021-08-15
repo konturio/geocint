@@ -23,28 +23,28 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/drp_regions
 	psql -f scripts/clean.sql
 
-data:
+data: ## Create folder for storing temporary file based datasets
 	mkdir -p $@
 
-db:
+db: ## Create folder for storing database objects creation footprints
 	mkdir -p $@
 
-reports:
+reports: ## Create folder for storing reports
 	mkdir -p $@
 
-db/function: | db
+db/function: | db ## Create folder for storing database functions footprints
 	mkdir -p $@
 
-db/procedure: | db
+db/procedure: | db ## Create folder for storing database procedures footprints
 	mkdir -p $@
 
-db/table: | db
+db/table: | db ## Create folder for storing database tables footprints
 	mkdir -p $@
 
-db/index: | db
+db/index: | db ## Create folder for storing database indexes footprints
 	mkdir -p $@
 
-data/tiles: | data
+data/tiles: | data ## Create folder for storing generated vector tiles
 	mkdir -p $@
 
 data/tiles/stat: | data/tiles
@@ -65,7 +65,7 @@ data/wb/gdp: | data/wb
 data/gebco_2020_geotiff: | data
 	mkdir -p $@
 
-data/ndvi_2019_06_10: | data
+data/ndvi_2019_06_10: | data ## Create folder for NDVI rasters.
 	mkdir -p $@
 
 deploy:
@@ -121,16 +121,16 @@ data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_bou
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
 	touch $@
 
-data/covid19: | data
+data/covid19: | data  ## Create folder for storing temporary file based datasets on COVID-19
 	mkdir -p $@
 
-data/covid19/_global_csv: | data/covid19
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv&filename=time_series_covid19_confirmed_global.csv" -O data/covid19/time_series_global_confirmed.csv
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_deaths_global.csv&filename=time_series_covid19_deaths_global.csv" -O data/covid19/time_series_global_deaths.csv
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv&filename=time_series_covid19_recovered_global.csv" -O data/covid19/time_series_global_recovered.csv
+data/covid19/_global_csv: | data/covid19 ## Download global daily COVID-19 data by confirmed/deaths/recovered cases in csv from github Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University.
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv" -O data/covid19/time_series_global_confirmed.csv
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv" -O data/covid19/time_series_global_deaths.csv
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv" -O data/covid19/time_series_global_recovered.csv
 	touch $@
 
-data/covid19/_us_csv: | data/covid19
+data/covid19/_us_csv: | data/covid19 ## Download US detailed daily COVID-19 data from github Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University.
 	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv" -O data/covid19/time_series_us_confirmed.csv
 	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv" -O data/covid19/time_series_us_deaths.csv
 	wget "https://coronavirus-dashboard.utah.gov/Utah_COVID19_data.zip" -O data/covid19/utah_covid19.zip
@@ -262,7 +262,7 @@ db/procedure/generate_overviews: | db/procedure
 	psql -f procedures/generate_overviews.sql
 	touch $@
 
-db/table/osm_roads: db/table/osm db/index/osm_tags_idx
+db/table/osm_roads: db/table/osm db/index/osm_tags_idx ## Roads from OpenStreetMap.
 	psql -f tables/osm_roads.sql
 	touch $@
 
@@ -349,19 +349,19 @@ db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare t
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
 
-db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Create table with sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
+db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r8=hrsl_population_grid_h3_r8
 	touch $@
 
-db/table/hrsl_population_boundary: db/table/gadm_countries_boundary db/table/hrsl_population_raster | db/table ## Create table with boundaries where HRSL data is available.
+db/table/hrsl_population_boundary: db/table/gadm_countries_boundary db/table/hrsl_population_raster | db/table ## Boundaries where HRSL data is available.
 	psql -f tables/hrsl_population_boundary.sql
 	touch $@
 
-db/table/osm_unpopulated: db/index/osm_tags_idx | db/table
+db/table/osm_unpopulated: db/index/osm_tags_idx | db/table ## Unpopulated areas from OpenStreetMap further used in kontur_population dataset.
 	psql -f tables/osm_unpopulated.sql
 	touch $@
 
-db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Create table with sum of GHS globe raster values into h3 hexagons equaled to 8 resolution.
+db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Sum of GHS globe raster values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r8=ghs_globe_population_grid_h3_r8
 	psql -c "delete from ghs_globe_population_grid_h3_r8 where population = 0;"
 	touch $@
@@ -395,34 +395,34 @@ db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/
 	psql -f tables/ghs_globe_residential_vector.sql
 	touch $@
 
-data/copernicus_landcover: | data
+data/copernicus_landcover: | data ## Create folder for Copernicus land cover data.
 	mkdir -p $@
 
-data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif: | data/copernicus_landcover
+data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif: | data/copernicus_landcover ## Download Copernicus land cover raster locally.
 	cd data/copernicus_landcover; wget -c -nc https://zenodo.org/record/3939050/files/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif
 
-db/table/copernicus_landcover_raster: data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif | db/table
+db/table/copernicus_landcover_raster: data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif | db/table ## Put land cover raster in table.
 	psql -c "drop table if exists copernicus_landcover_raster"
 	raster2pgsql -M -Y -s 4326 data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif -t auto copernicus_landcover_raster | psql -q
 	psql -c "alter table copernicus_landcover_raster set (parallel_workers = 32);"
 	touch $@
 
-db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table
+db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table ## Count of 'urban' pixels from land cover raster into h3 hexagons on 8 resolution.
 	psql -f tables/copernicus_builtup_h3.sql
 	touch $@
 
-db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table
+db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table ## Forest area in km2 by types from land cover raster into h3 hexagons on 8 resolution.
 	psql -f tables/copernicus_forest_h3.sql
 	touch $@
 
-db/table/osm_residential_landuse: db/index/osm_tags_idx
+db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
 	psql -f tables/osm_residential_landuse.sql
 	touch $@
 
-data/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/gebco_2020_geotiff
+data/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/gebco_2020_geotiff ## Download GEBCO bathymetry zipped raster.
 	wget "https://www.bodc.ac.uk/data/open_download/gebco/gebco_2020/geotiff/" -O $@
 
-data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip: data/gebco_2020_geotiff/gebco_2020_geotiff.zip
+data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip: data/gebco_2020_geotiff/gebco_2020_geotiff.zip ## Unzip GEBCO raster.
 	rm -f data/gebco_2020_geotiff/*.tif
 	cd data/gebco_2020_geotiff; unzip -o gebco_2020_geotiff.zip
 	rm -f data/gebco_2020_geotiff/*.pdf
@@ -470,15 +470,15 @@ db/table/gebco_2020_elevation_h3: db/table/gebco_2020_elevation | db/table ## Ge
 	psql -c "create index on gebco_2020_elevation_h3 (h3, avg_elevation);"
 	touch $@
 
-data/ndvi_2019_06_10/generate_ndvi_tifs: | data/ndvi_2019_06_10
+data/ndvi_2019_06_10/generate_ndvi_tifs: | data/ndvi_2019_06_10 ## Create NDVI rasters from Sentinel 2 data.
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && python3 /usr/bin/gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --outfile=ndvi.tif'
 	touch $@
 
-data/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/ndvi_2019_06_10/generate_ndvi_tifs
+data/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/ndvi_2019_06_10/generate_ndvi_tifs ## Reproject NDVI rasters to EPSG-4326.
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -overwrite -t_srs EPSG:4326 -of COG ndvi.tif /home/gis/geocint/data/ndvi_2019_06_10/ndvi_{#}_4326.tif'
 	touch $@
 
-db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
+db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table ## Put NDVI rasters in table.
 	psql -c "drop table if exists ndvi_2019_06_10;"
 	raster2pgsql -p -Y -s 4326 data/ndvi_2019_06_10/ndvi_1_4326.tif -t auto ndvi_2019_06_10 | psql -q
 	psql -c 'alter table ndvi_2019_06_10 drop CONSTRAINT ndvi_2019_06_10_pkey;'
@@ -487,7 +487,7 @@ db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
 	psql -c "vacuum analyze ndvi_2019_06_10;"
 	touch $@
 
-db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table
+db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table ## Generate h3 table with average NDVI from 1 to 8 resolution.
 	psql -f tables/ndvi_2019_06_10_h3.sql
 	psql -c "call generate_overviews('ndvi_2019_06_10_h3', '{avg_ndvi}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);"
@@ -592,24 +592,24 @@ db/table/gdp_h3: db/table/kontur_population_h3 db/table/wb_gadm_gdp_countries
 	psql -f tables/gdp_h3.sql
 	touch $@
 
-data/water-polygons-split-3857.zip: | data
+data/water-polygons-split-3857.zip: | data ## Download OpenStreetMap water polygons (oceans and seas) archive.
 	wget https://osmdata.openstreetmap.de/download/water-polygons-split-3857.zip -O $@
 
-data/water_polygons.shp: data/water-polygons-split-3857.zip
+data/water_polygons.shp: data/water-polygons-split-3857.zip ## Unzip OpenStreetMap water polygons (oceans and seas) archive.
 	cd data; unzip -o water-polygons-split-3857.zip
 	touch $@
 
-db/table/water_polygons_vector: data/water_polygons.shp | db/table
+db/table/water_polygons_vector: data/water_polygons.shp | db/table ## Import and subdivide OpenStreetMap water polygons (oceans and seas) as water_polygons_vector(EPSG-3857).
 	psql -c "drop table if exists water_polygons_vector"
 	shp2pgsql -I -s 3857 data/water-polygons-split-3857/water_polygons.shp water_polygons_vector | psql -q
 	psql -f tables/water_polygons_vector.sql
 	touch $@
 
-db/table/osm_water_lines: db/index/osm_tags_idx | db/table
+db/table/osm_water_lines: db/index/osm_tags_idx | db/table ## Water line geometries extracted from OpenStreetMap.
 	psql -f tables/osm_water_lines.sql
 	touch $@
 
-db/table/osm_water_polygons: db/index/osm_tags_idx db/table/water_polygons_vector db/table/osm_water_lines | db/table
+db/table/osm_water_polygons: db/index/osm_tags_idx db/table/water_polygons_vector db/table/osm_water_lines | db/table ## Merge water geometries into one table as polygons (linestring objects are buffered out with 1m in EPSG-3857).
 	psql -f tables/osm_water_polygons.sql
 	touch $@
 
@@ -780,7 +780,7 @@ data/new_zealand_buildings/download: | data/new_zealand_buildings ## Download Ne
 	cd data/new_zealand_buildings; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg ./
 	touch $@
 
-db/table/new_zealand_buildings: data/new_zealand_buildings/download | db/table ## Create table with New Zealand buildings.
+db/table/new_zealand_buildings: data/new_zealand_buildings/download | db/table ## New Zealand buildings.
 	psql -c "drop table if exists new_zealand_buildings;"
 	time ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
 	touch $@

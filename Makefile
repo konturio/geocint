@@ -1202,6 +1202,7 @@ db/table/tile_logs: data/tile_logs/_download | db/table
 	find data/tile_logs/ -type f -size +10M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs from stdin with csv'"
 	psql -f tables/tile_stats.sql
 	psql -f tables/tile_logs_h3.sql
+	psql -c "call generate_overviews('tile_logs_h3', '{view_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 data/tiles/stats_tiles.tar.bz2: tile_generator/tile_generator db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors db/table/stat_h3 db/table/osm_meta | data/tiles

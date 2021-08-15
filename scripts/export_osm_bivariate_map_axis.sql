@@ -18,21 +18,6 @@ copy (
                                                                        'corner', corner))
                                    from bivariate_colors)
                             ),
-                           'correlationRates', (
-                               select
-                                   jsonb_agg(jsonb_build_object(
-                                                 'x', jsonb_build_object('quotient',
-                                                                         jsonb_build_array(x_num, x_den)),
-                                                 'y', jsonb_build_object('quotient',
-                                                                         jsonb_build_array(y_num, y_den)),
-                                                 'rate', correlation, -- TODO: remove after frontend
-                                                 'correlation', correlation,
-                                                 'quality', quality
-                                                 )
-                                             order by abs(correlation) * quality desc nulls last, abs(correlation) desc)
-                               from
-                                   bivariate_axis_correlation
-                           ),
                            'initAxis',
                            jsonb_build_object('x', jsonb_build_object('label', x.label, 'quotient',
                                                                       jsonb_build_array(x.numerator, x.denominator),

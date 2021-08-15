@@ -1174,6 +1174,9 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 
 db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis.sql
+	touch $@
+
+db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
 
@@ -1344,7 +1347,7 @@ deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
 	'
 	touch $@
 
-data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/population ## Crafting production friendly SQL dump
+data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivariate_axis db/table/bivariate_axis_correlation  db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/population ## Crafting production friendly SQL dump
 	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') <(pg_dump --clean --if-exists --no-owner -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays) scripts/population_api_dump_footer.sql | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@

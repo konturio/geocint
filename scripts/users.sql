@@ -11,7 +11,7 @@
       where resolution = zoom.tile_resolution
         and geom && ST_TileEnvelope(:z, :x, :y)
   )
-  select encode(ST_AsMVT(q, 'users', 8192, 'centroid') || ST_AsMVT(q2, 'hexagon', 8192, 'geom'), 'hex')
+  select ST_AsMVT(q, 'users', 8192, 'centroid') || ST_AsMVT(q2, 'hexagon', 8192, 'geom')
   from (
             select top_user, centroid, h3, zoom_lvl as zoom, is_local
             from user_hex

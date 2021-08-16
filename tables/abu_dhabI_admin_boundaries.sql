@@ -1,3 +1,4 @@
+-- NOTICE: there are no administrative boundaries of abu dhabi districts in osm. we use the boundaries from gadm
 drop table if exists abu_dhabi_admin_boundaries;
 create table abu_dhabi_admin_boundaries as (
     select g.gid, g.name, g.gadm_level, g.geom

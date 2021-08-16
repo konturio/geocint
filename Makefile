@@ -1002,7 +1002,7 @@ db/table/abu_dhabi_bivariate_pop_shops: db/table/abu_dhabi_admin_boundaries  db/
 	touch $@
 
 data/abu_dhabi_bivariate_pop_shops.csv: db/table/abu_dhabi_bivariate_pop_shops
-	psql -q -X -c 'copy (select h3, area, population, shops, bivariate_cell from abu_dhabi_bivariate_pop_shops) to stdout with csv header;' -U ykyslomed > $@
+	psql -q -X -c 'copy (select h3, area, population, shops, bivariate_cell from abu_dhabi_bivariate_pop_shops) to stdout with csv header;' > $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw
 	psql -c "create index on osm_population_raw using gist(geom)"

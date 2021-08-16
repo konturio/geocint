@@ -14,6 +14,7 @@ create table abu_dhabi_bivariate_pop_shops as (
     select p.h3,
            pop                                                                         "population",
            p.places,
+           -- generate bivariate legend cell labels
            chr(64 + ntile(3) over (order by p.places)) || ntile(3) over (order by pop) "bivariate_cell"
     from places p
              left outer join kontur_population_h3 k on (k.resolution = 8 and k.h3 = p.h3),

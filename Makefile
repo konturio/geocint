@@ -997,11 +997,11 @@ db/table/abu_dhabi_admin_boundaries: | db/table
 	psql -f tables/abu_dhabi_admin_boundaries.sql
 	touch $@
 
-db/table/abu_dhabi_eatery: db/table/osm db/table/abu_dhabi_admin_boundaries | db/table
+db/table/abu_dhabi_eatery: db/table/osm db/index/osm_tags_idx db/table/abu_dhabi_admin_boundaries | db/table
 	psql -f tables/abu_dhabi_eatery.sql
 	touch $@
 
-db/table/abu_dhabi_shops: db/table/osm db/table/abu_dhabi_admin_boundaries | db/table
+db/table/abu_dhabi_shops: db/table/osm db/index/osm_tags_idx db/table/abu_dhabi_admin_boundaries | db/table
 	psql -f tables/abu_dhabi_shops.sql
 	touch $@
 

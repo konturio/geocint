@@ -1,4 +1,4 @@
-* {color:black; text-halo-color: white; text-halo-radius: 2; text-opacity: 0.8; font-family: Roboto-Regular; text-padding: 10 }
+* {color:black; text-halo-color: white; text-halo-radius: 2; text-opacity: 0.8; font-family: "Noto Sans Regular"; text-padding: 10 }
 area|z0-[natural=coastline]                         { width: 2; opacity: 0.4; fill-color: white; z-index:1000; color:black}
 
 line[boundary=administrative]                       { opacity: 0.4 }
@@ -10,12 +10,12 @@ line|z5-[boundary=administrative][admin_level=6]    { width: .5; }
 line|z6-[boundary=administrative][admin_level=7]    { width: .5; }
 line|z8-[boundary=administrative][admin_level=8]    { width: .5; }
 
-node|z1-[place=ocean]          {text: name; }
-node|z1-[place=country]        {text: name:en;  font-size: 17; text-transform:uppercase; font-family: Roboto-Bold; z-index: 7 }
+node|z1-[place=ocean]          {text: name:en;}
+node|z1-[place=country]        {text-padding: 3; text: name:en;  font-size: 17; text-transform:uppercase; font-family: "Noto Sans Bold"; z-index: 7 }
 node|z4-[place=state]          {text: name;     font-size: 12; z-index: 4 }
 
-node|z3-[place=city]           {text: name;     font-size: 15; z-index: 5; font-family: Roboto-Medium; }
-node|z3-[place=city][capital?] {text: name;     font-size: 16; z-index: 6; font-family: Roboto-Medium; }
+node|z3-[place=city]           {text: name;     font-size: 15; z-index: 5; }
+node|z3-[place=city][capital?] {text: name;     font-size: 16; z-index: 6; }
 
 node|z6-[place=town]           {text: name;     font-size: 12; z-index: 3 }
 node|z7-[place=village]        {text: name;     font-size: 10; z-index: 2 }

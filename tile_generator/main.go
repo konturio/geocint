@@ -96,10 +96,10 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer out.Close()
 
 	// Write the body to file
 	bytes, err := io.Copy(out, bytes.NewReader(mvtTile))
+	out.Close()
 
 	log.Printf("z: %d x: %d y: %d bytes: %d", zxy.z, zxy.x, zxy.y, bytes)
 

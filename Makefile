@@ -164,7 +164,6 @@ db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table
 	psql -f tables/covid19_us_confirmed_in.sql
 	touch $@
 
-
 db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table
 	psql -c 'drop table if exists covid19_us_deaths_csv_in;'
 	psql -c 'create table covid19_us_deaths_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, population int, date timestamptz, value int);'
@@ -215,6 +214,7 @@ db/table/covid19_vaccine_accept_us_counties: data/covid19/vaccination/vaccine_ac
 
 db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_us_counties
 	psql -f tables/covid19_vaccine_accept_us_counties_h3.sql
+	psql -c "call generate_overviews('covid19_vaccine_accept_us_counties_h3', '{vaccine_value}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table
@@ -489,6 +489,8 @@ db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
 
 db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table
 	psql -f tables/ndvi_2019_06_10_h3.sql
+	psql -c "call generate_overviews('ndvi_2019_06_10_h3', '{avg_ndvi}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);"
 	touch $@
 
 db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.
@@ -497,6 +499,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Cou
 
 db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
+	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 data/gadm/gadm36_levels_shp.zip: | data/gadm
@@ -837,6 +840,7 @@ db/table/kontur_population_v2: data/kontur_population_v2/unzip ## Import populat
 
 db/table/kontur_population_v2_h3: db/table/kontur_population_v2 ## Generate h3 hexagon for population v2.
 	psql -f tables/kontur_population_v2_h3.sql
+	psql -c "call generate_overviews('kontur_population_v2_h3', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table
@@ -1082,19 +1086,22 @@ deploy/geocint/drp_buildings: data/drp_buildings_export | deploy/geocint
 data/census_gov: | data
 	mkdir $@
 
-data/census_gov/cb_2019_us_tract_500k.zip: | data/census_gov
-	# TODO: setup export https_proxy for file download because of forbidden connection US Census Bureau
-	wget "https://www2.census.gov/geo/tiger/GENZ2019/shp/cb_2019_us_tract_500k.zip" -O $@
+data/census_gov/cb_2019_us_tract_500k.zip: | data/census_gov ## Download census tract data from AWS S3 bucket.
+	cd data/census_gov; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/cb_2019_us_tract_500k.zip ./
 
 data/census_gov/cb_2019_us_tract_500k.shp: data/census_gov/cb_2019_us_tract_500k.zip
 	unzip -o data/census_gov/cb_2019_us_tract_500k.zip -d data/census_gov
 	touch $@
 
 db/table/us_census_tract_boundaries: data/census_gov/cb_2019_us_tract_500k.shp | db/table ## Import all US census tract boundaries into database
-	ogr2ogr --config PG_USE_COPY YES -s_srs EPSG:4269 -t_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/census_gov/cb_2019_us_tract_500k.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -lco OVERWRITE=YES -nln us_census_tract_boundaries
+	ogr2ogr --config PG_USE_COPY YES -overwrite -s_srs EPSG:4269 -t_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/census_gov/cb_2019_us_tract_500k.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -nln us_census_tract_boundaries
 	touch $@
 
-db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/census_gov/us_census_tracts_age.csv data/census_gov/us_census_tracts_commuting_characteristics.csv data/census_gov/us_census_tracts_disability_characteristics.csv data/census_gov/us_census_tracts_language_spoken_at_home.csv data/census_gov/us_census_tracts_poverty_of_families_last_12_months.csv | db/table
+data/census_gov/data_census_download: | data/census_gov ## Download thematic census tracts Zealand's buildings from AWS S3 bucket.
+	cd data/census_gov; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/ ./ --recursive --exclude "*" --include "*us_census_tracts_*"
+	touch $@
+
+db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/census_gov/data_census_download | db/table
 	psql -c 'drop table if exists us_census_tracts_stats_in;'
 	psql -c 'create table us_census_tracts_stats_in (id_tract text, tract_name text, pop_under_5_total float, pop_over_65_total float, families_total float, families_poverty_percent float, poverty_families_total float generated always as (families_total * families_poverty_percent / 100) stored, pop_disability_total float, pop_not_well_eng_speak float, pop_working_total float, pop_with_cars_percent float, pop_without_car float generated always as (pop_working_total - (pop_working_total * pop_with_cars_percent) / 100) stored);'
 	python3 scripts/normalize_census_data.py -c data/census_data_config.json -o data/census_gov/us_census_tracts_stats.csv
@@ -1167,6 +1174,9 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 
 db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis.sql
+	touch $@
+
+db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3 | data/tiles/stat
 	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
 
@@ -1195,6 +1205,7 @@ db/table/tile_logs: data/tile_logs/_download | db/table
 	find data/tile_logs/ -type f -size +10M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs from stdin with csv'"
 	psql -f tables/tile_stats.sql
 	psql -f tables/tile_logs_h3.sql
+	psql -c "call generate_overviews('tile_logs_h3', '{view_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 data/tiles/stats_tiles.tar.bz2: tile_generator/tile_generator db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors db/table/stat_h3 db/table/osm_meta | data/tiles
@@ -1336,7 +1347,7 @@ deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
 	'
 	touch $@
 
-data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/population ## Crafting production friendly SQL dump
+data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivariate_axis db/table/bivariate_axis_correlation  db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/population ## Crafting production friendly SQL dump
 	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') <(pg_dump --clean --if-exists --no-owner -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays) scripts/population_api_dump_footer.sql | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@
@@ -1384,7 +1395,6 @@ tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod
 db/function/basemap_mapsme: | kothic db/function
 	python2 kothic/src/komap.py \
 		--renderer=mvt-sql \
-		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
 		--stylesheet basemap/styles/ninja.mapcss \
 		--osm2pgsql-style basemap/osm2pgsql_styles/default.style \
 		| psql
@@ -1416,30 +1426,11 @@ data/basemap/metadata/geocint: | data/basemap/metadata
 	mkdir -p $@
 
 data/basemap/glyphs_all: | data/basemap/glyphs
-	mkdir -p data/basemap/glyphs/Roboto-Black
-	build-glyphs basemap/fonts/roboto/Roboto-Black.ttf data/basemap/glyphs/Roboto-Black
-	mkdir -p data/basemap/glyphs/Roboto-BlackItalic
-	build-glyphs basemap/fonts/roboto/Roboto-BlackItalic.ttf data/basemap/glyphs/Roboto-BlackItalic
-	mkdir -p data/basemap/glyphs/Roboto-Bold
-	build-glyphs basemap/fonts/roboto/Roboto-Bold.ttf data/basemap/glyphs/Roboto-Bold
-	mkdir -p data/basemap/glyphs/Roboto-BoldItalic
-	build-glyphs basemap/fonts/roboto/Roboto-BoldItalic.ttf data/basemap/glyphs/Roboto-BoldItalic
-	mkdir -p data/basemap/glyphs/Roboto-Italic
-	build-glyphs basemap/fonts/roboto/Roboto-Italic.ttf data/basemap/glyphs/Roboto-Italic
-	mkdir -p data/basemap/glyphs/Roboto-Light
-	build-glyphs basemap/fonts/roboto/Roboto-Light.ttf data/basemap/glyphs/Roboto-Light
-	mkdir -p data/basemap/glyphs/Roboto-LightItalic
-	build-glyphs basemap/fonts/roboto/Roboto-LightItalic.ttf data/basemap/glyphs/Roboto-LightItalic
-	mkdir -p data/basemap/glyphs/Roboto-Medium
-	build-glyphs basemap/fonts/roboto/Roboto-Medium.ttf data/basemap/glyphs/Roboto-Medium
-	mkdir -p data/basemap/glyphs/Roboto-MediumItalic
-	build-glyphs basemap/fonts/roboto/Roboto-MediumItalic.ttf data/basemap/glyphs/Roboto-MediumItalic
-	mkdir -p data/basemap/glyphs/Roboto-Regular
-	build-glyphs basemap/fonts/roboto/Roboto-Regular.ttf data/basemap/glyphs/Roboto-Regular
-	mkdir -p data/basemap/glyphs/Roboto-Thin
-	build-glyphs basemap/fonts/roboto/Roboto-Thin.ttf data/basemap/glyphs/Roboto-Thin
-	mkdir -p data/basemap/glyphs/Roboto-ThinItalic
-	build-glyphs basemap/fonts/roboto/Roboto-ThinItalic.ttf data/basemap/glyphs/Roboto-ThinItalic
+	rm -rf basemap/omt_fonts
+	git clone https://github.com/openmaptiles/fonts.git basemap/omt_fonts
+	cd basemap/omt_fonts; npm i
+	cd basemap/omt_fonts; node generate.js
+	cp -r basemap/omt_fonts/_output/. data/basemap/glyphs
 	touch $@
 
 data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zigzag

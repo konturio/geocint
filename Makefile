@@ -1018,7 +1018,7 @@ data/abu_dhabi_eatery.csv: db/table/abu_dhabi_eatery
 data/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops
 	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_food_shops) to stdout with csv header;' > $@
 
-data/abu_dhabi_bivariate_pop_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops
+data/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops
 	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
 
 data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.csv data/abu_dhabi_food_shops.csv data/abu_dhabi_bivariate_pop_food_shops.csv

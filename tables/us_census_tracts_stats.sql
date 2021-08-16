@@ -8,7 +8,7 @@ create table us_census_tracts_stats as (
            c.pop_disability_total   as pop_disability_total,
            c.pop_not_well_eng_speak as pop_not_well_eng_speak,
            c.pop_without_car        as pop_without_car,
-           b.geom
+           ST_Subdivide(b.geom)     as geom
     from us_census_tracts_stats_in c
              join us_census_tract_boundaries b
                   on c.id_tract = b.affgeoid

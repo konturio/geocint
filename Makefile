@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/abu_dhabi_bivariate_pop_shops.csv ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/abu_dhabi ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -997,12 +997,32 @@ db/table/abu_dhabi_admin_boundaries: | db/table
 	psql -f tables/abu_dhabi_admin_boundaries.sql
 	touch $@
 
-db/table/abu_dhabi_bivariate_pop_shops: db/table/abu_dhabi_admin_boundaries  db/table/kontur_population_h3 | db/table
+db/table/abu_dhabi_eatery: db/table/osm db/table/abu_dhabi_admin_boundaries | db/table
+	psql -f tables/abu_dhabi_eatery.sql
+	touch $@
+
+db/table/abu_dhabi_shops: db/table/osm db/table/abu_dhabi_admin_boundaries | db/table
+	psql -f tables/abu_dhabi_shops.sql
+	touch $@
+
+db/table/abu_dhabi_bivariate_pop_shops: db/table/abu_dhabi_eatery db/table/abu_dhabi_shops db/table/kontur_population_h3 | db/table
 	psql -f tables/abu_dhabi_bivariate_pop_shops.sql
 	touch $@
 
+data/abu_dhabi_admin_boundaries.geojson: db/table/abu_dhabi_admin_boundaries
+	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select gid, name, gadm_level, geom from abu_dhabi_admin_boundaries' -nln abu_dhabi_admin_boundaries
+
+data/abu_dhabi_eatery.csv: db/table/abu_dhabi_eatery
+	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_eatery) to stdout with csv header;' > $@
+
+data/abu_dhabi_shops.csv: db/table/abu_dhabi_shops
+	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_shops) to stdout with csv header;' > $@
+
 data/abu_dhabi_bivariate_pop_shops.csv: db/table/abu_dhabi_bivariate_pop_shops
-	psql -q -X -c 'copy (select h3, population, shops, bivariate_cell from abu_dhabi_bivariate_pop_shops) to stdout with csv header;' > $@
+	psql -q -X -c 'copy (select h3, population, places, bivariate_cell from abu_dhabi_bivariate_pop_shops) to stdout with csv header;' > $@
+
+data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.csv data/abu_dhabi_shops.csv data/abu_dhabi_bivariate_pop_shops.csv
+	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw
 	psql -c "create index on osm_population_raw using gist(geom)"

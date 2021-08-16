@@ -1001,12 +1001,12 @@ db/table/abu_dhabi_eatery: db/table/osm db/index/osm_tags_idx db/table/abu_dhabi
 	psql -f tables/abu_dhabi_eatery.sql
 	touch $@
 
-db/table/abu_dhabi_shops: db/table/osm db/index/osm_tags_idx db/table/abu_dhabi_admin_boundaries | db/table
-	psql -f tables/abu_dhabi_shops.sql
+db/table/abu_dhabi_food_shops: db/table/osm db/index/osm_tags_idx db/table/abu_dhabi_admin_boundaries | db/table
+	psql -f tables/abu_dhabi_food_shops.sql
 	touch $@
 
-db/table/abu_dhabi_bivariate_pop_shops: db/table/abu_dhabi_eatery db/table/abu_dhabi_shops db/table/kontur_population_h3 | db/table
-	psql -f tables/abu_dhabi_bivariate_pop_shops.sql
+db/table/abu_dhabi_bivariate_pop_food_shops: db/table/abu_dhabi_eatery db/table/abu_dhabi_food_shops db/table/kontur_population_h3 | db/table
+	psql -f tables/abu_dhabi_bivariate_pop_food_shops.sql
 	touch $@
 
 data/abu_dhabi_admin_boundaries.geojson: db/table/abu_dhabi_admin_boundaries
@@ -1015,13 +1015,13 @@ data/abu_dhabi_admin_boundaries.geojson: db/table/abu_dhabi_admin_boundaries
 data/abu_dhabi_eatery.csv: db/table/abu_dhabi_eatery
 	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_eatery) to stdout with csv header;' > $@
 
-data/abu_dhabi_shops.csv: db/table/abu_dhabi_shops
-	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_shops) to stdout with csv header;' > $@
+data/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops
+	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_food_shops) to stdout with csv header;' > $@
 
-data/abu_dhabi_bivariate_pop_shops.csv: db/table/abu_dhabi_bivariate_pop_shops
-	psql -q -X -c 'copy (select h3, population, places, bivariate_cell from abu_dhabi_bivariate_pop_shops) to stdout with csv header;' > $@
+data/abu_dhabi_bivariate_pop_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops
+	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
 
-data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.csv data/abu_dhabi_shops.csv data/abu_dhabi_bivariate_pop_shops.csv
+data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.csv data/abu_dhabi_food_shops.csv data/abu_dhabi_bivariate_pop_food_shops.csv
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

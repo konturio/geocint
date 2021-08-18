@@ -44,7 +44,7 @@ db/table: | db
 db/index: | db
 	mkdir -p $@
 
-data/in/raster: | data
+data/in: | data
 	mkdir -p $@
 
 data/tiles: | data
@@ -1148,11 +1148,11 @@ db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/procedure/
 	psql -c "call generate_overviews('us_census_tracts_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
 
-db/table/pf_days_maxtemp_in: data/in/probable_futures/20104.gremo.geojson | db/table ## TODO: add downloading
+db/table/pf_days_maxtemp_in: | db/table
 	psql -c 'drop table if exists pf_days_maxtemp_in;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20104.gremo.geojson -nln pf_days_maxtemp_in -lco GEOMETRY_NAME=geom
 
-db/table/pf_night_maxtemp_in: data/in/probable_futures/20204.gremo.geojson | db/table
+db/table/pf_night_maxtemp_in: | db/table
 	psql -c 'drop table if exists pf_nights_maxtemp_in;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20104.gremo.geojson -nln pf_days_maxtemp_in -lco GEOMETRY_NAME=geom
 

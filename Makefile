@@ -44,6 +44,9 @@ db/table: | db
 db/index: | db
 	mkdir -p $@
 
+data/in/raster: | data
+	mkdir -p $@
+
 data/tiles: | data
 	mkdir -p $@
 
@@ -1145,6 +1148,18 @@ db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/procedure/
 	psql -c "call generate_overviews('us_census_tracts_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
 
+db/table/pf_days_maxtemp_in: data/in/probable_futures/20104.gremo.geojson | db/table ## TODO: add downloading
+	psql -c 'drop table if exists pf_days_maxtemp_in;'
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20104.gremo.geojson -nln pf_days_maxtemp_in -lco GEOMETRY_NAME=geom
+
+db/table/pf_night_maxtemp_in: data/in/probable_futures/20204.gremo.geojson | db/table
+	psql -c 'drop table if exists pf_nights_maxtemp_in;'
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20104.gremo.geojson -nln pf_days_maxtemp_in -lco GEOMETRY_NAME=geom
+
+db/table/pf_maxtemp_idw_h3: db/table/pf_night_maxtemp_in db/table/pf_days_maxtemp_in | db/table
+	psql -f tables/pf_maxtemp_idw_h3.sql
+	touch $@
+
 db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table
 	psql -f tables/osm_addresses.sql
 	touch $@
@@ -1199,7 +1214,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_idw_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

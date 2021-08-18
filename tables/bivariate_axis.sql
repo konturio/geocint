@@ -77,7 +77,11 @@ create table stat_h3_quality as (
                 avg(a.evergreen_needle_leaved_forest) as agg_evergreen_needle_leaved_forest,
                 avg(a.shrubs) as agg_shrubs,
                 avg(a.herbage) as agg_herbage,
-                avg(a.unknown_forest) as agg_unknown_forest
+                avg(a.unknown_forest) as agg_unknown_forest,
+                avg(a.days_maxtemp_over_32c_1c) as agg_days_maxtemp_over_32c_1c,
+                avg(a.days_maxtemp_over_32c_2c) as agg_days_maxtemp_over_32c_2c,
+                avg(a.days_mintemp_above_25c_1c) as agg_days_mintemp_above_25c_1c,
+                avg(a.days_mintemp_above_25c_2c) as agg_days_mintemp_above_25c_2c
             from
                 stat_h3 a
             where

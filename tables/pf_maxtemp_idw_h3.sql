@@ -56,7 +56,7 @@ with nearest_points as (
              CROSS JOIN LATERAL (
         SELECT h3,
                pf_maxtemp_h3_r5.geom                                   as h3_geom,
-               ST_Distance(pf_maxtemp_h3_r5.geom, pf_maxtemp_all.geom) AS dist
+               ST_Distance(pf_maxtemp_h3_r5.geom::geography, pf_maxtemp_all.geom::geography) AS dist
         FROM pf_maxtemp_h3_r5
         ORDER BY pf_maxtemp_all.geom <-> pf_maxtemp_h3_r5.geom
         LIMIT 4

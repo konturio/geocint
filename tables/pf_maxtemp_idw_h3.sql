@@ -22,9 +22,8 @@ create table pf_maxtemp_h3_r4 as (select distinct h3_geo_to_h3(geom, 4) as h3
                                   from pf_maxtemp_all);
 
 drop table if exists pf_maxtemp_h3_r5;
-create table pf_maxtemp_h3_r5 as (select distinct h3_to_children(h3)                    as h3,
-                                                  ST_PointOnSurface(
-                                                          h3_to_children(h3)::geometry) as geom
+create table pf_maxtemp_h3_r5 as (select distinct h3_to_children(h3)           as h3,
+                                                  h3_to_children(h3)::geometry as geom
                                   from pf_maxtemp_h3_r4);
 create index on pf_maxtemp_h3_r5 using gist (geom);
 

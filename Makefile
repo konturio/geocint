@@ -44,9 +44,6 @@ db/table: | db
 db/index: | db
 	mkdir -p $@
 
-data/in: | data
-	mkdir -p $@
-
 data/tiles: | data
 	mkdir -p $@
 

@@ -200,6 +200,36 @@ values ('pop_without_car', 'Population without a car', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["neutral"], ["important"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('days_maxtemp_over_32c_1c', 'Days above 32C, recent', jsonb_build_array(
+        '© Probable Futures. https://probablefutures.org/'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('days_maxtemp_over_32c_2c', 'Days above 32C, potential(2C)', jsonb_build_array(
+        '© Probable Futures. https://probablefutures.org/'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('days_mintemp_above_25c_1c', 'Nights above 25C, recent', jsonb_build_array(
+        '© Probable Futures. https://probablefutures.org/'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('days_mintemp_above_25c_2c', 'Nights above 25C, potential(2C)', jsonb_build_array(
+        '© Probable Futures. https://probablefutures.org/'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('days_maxwetbulb_over_32c_1c', 'Days above 32C wet-bulb, recent', jsonb_build_array(
+        '© Probable Futures. https://probablefutures.org/'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('days_maxwetbulb_over_32c_2c', 'Days above 32C wet-bulb, potential(2C)', jsonb_build_array(
+        '© Probable Futures. https://probablefutures.org/'),
+        '[["good"], ["bad"]]'::jsonb);
+
 update bivariate_indicators
 set is_base = true
 where param_id in ('population', 'total_building_count', 'area_km2', 'one');

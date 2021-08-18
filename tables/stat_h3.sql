@@ -33,6 +33,12 @@ create table stat_h3_in as (
            coalesce(sum(pop_disability_total), 0) as pop_disability_total,
            coalesce(sum(pop_not_well_eng_speak), 0) as pop_not_well_eng_speak,
            coalesce(sum(pop_without_car), 0) as pop_without_car,
+           coalesce(sum(days_maxtemp_over_32c_1c), 0) as days_maxtemp_over_32c_1c,
+           coalesce(sum(days_maxtemp_over_32c_2c), 0) as days_maxtemp_over_32c_2c,
+           coalesce(sum(days_mintemp_above_25c_1c), 0) as days_mintemp_above_25c_1c,
+           coalesce(sum(days_mintemp_above_25c_2c), 0) as days_mintemp_above_25c_2c,
+           coalesce(sum(days_maxwetbulb_over_32c_1c), 0) as days_maxwetbulb_over_32c_1c,
+           coalesce(sum(days_maxwetbulb_over_32c_2c), 0) as days_maxwetbulb_over_32c_2c,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
@@ -44,6 +50,9 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     resolution
              from osm_object_count_grid_h3
              union all
@@ -56,6 +65,9 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     resolution
              from kontur_population_h3
              union all
@@ -68,6 +80,9 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     resolution
              from gdp_h3
              union all
@@ -80,6 +95,9 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     h3_get_resolution(h3) as resolution
              from user_hours_h3
              union all
@@ -92,6 +110,9 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     h3_get_resolution(h3) as resolution
              from residential_pop_h3
              union all
@@ -104,6 +125,9 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                     null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     resolution
              from tile_logs_h3
              union all
@@ -116,6 +140,9 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     resolution
              from building_count_grid_h3
              union all
@@ -128,6 +155,9 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     resolution
              from global_fires_stat_h3
              union all
@@ -140,6 +170,9 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     resolution
              from covid19_vaccine_accept_us_counties_h3
              union all
@@ -152,6 +185,9 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     resolution
              from covid19_dithered
              union all
@@ -164,6 +200,9 @@ create table stat_h3_in as (
                     population as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     resolution
              from kontur_population_v2_h3
              union all
@@ -175,7 +214,11 @@ create table stat_h3_in as (
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
                     null::float as population_v2, industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
-                    null::float as pop_not_well_eng_speak, null::float as pop_without_car, resolution
+                    null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
+                    resolution
              from osm_landuse_industrial_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -186,7 +229,11 @@ create table stat_h3_in as (
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
                     null::float as population_v2, null::float as industrial_area, volcanos_count, null::float as pop_under_5_total,
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
-                    null::float as pop_not_well_eng_speak, null::float as pop_without_car, resolution
+                    null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
+                    resolution
              from osm_volcanos_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -197,8 +244,26 @@ create table stat_h3_in as (
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, pop_under_5_total,
                     pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car,
+                    null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
+                    null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
+                    null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
                     resolution
              from us_census_tracts_stats_h3
+             union all
+             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
+                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
+                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
+                    null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
+                    null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
+                    null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
+                    null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    days_maxtemp_over_32c_1c::float, days_maxtemp_over_32c_2c::float,
+                    days_mintemp_above_25c_1c::float, days_mintemp_above_25c_2c::float,
+                    days_maxwetbulb_over_32c_1c::float, days_maxwetbulb_over_32c_2c::float,
+                    resolution
+             from pf_maxtemp_idw_h3
         ) z
     group by 2, 1
 );
@@ -239,5 +304,7 @@ create index stat_h3_brin_pt2 on stat_h3 using brin (
      gdp, highway_length_6_months, wildfires,
      building_count, geom, local_hours, osm_users, total_building_count, avg_ndvi, covid19_confirmed,
      population_v2, industrial_area, volcanos_count, pop_under_5_total, pop_over_65_total,
-     poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car, zoom
+     poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car,
+     days_maxtemp_over_32c_1c, days_maxtemp_over_32c_2c, days_mintemp_above_25c_1c, days_mintemp_above_25c_2c,
+     days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c, zoom
     );

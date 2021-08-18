@@ -81,7 +81,9 @@ create table stat_h3_quality as (
                 avg(a.days_maxtemp_over_32c_1c) as agg_days_maxtemp_over_32c_1c,
                 avg(a.days_maxtemp_over_32c_2c) as agg_days_maxtemp_over_32c_2c,
                 avg(a.days_mintemp_above_25c_1c) as agg_days_mintemp_above_25c_1c,
-                avg(a.days_mintemp_above_25c_2c) as agg_days_mintemp_above_25c_2c
+                avg(a.days_mintemp_above_25c_2c) as agg_days_mintemp_above_25c_2c,
+                avg(a.days_maxwetbulb_over_32c_1c) as agg_days_maxwetbulb_over_32c_1c,
+                avg(a.days_maxwetbulb_over_32c_2c) as agg_days_maxwetbulb_over_32c_2c
             from
                 stat_h3 a
             where

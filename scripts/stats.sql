@@ -40,10 +40,14 @@ from
             herbage,
             unknown_forest,
             avg_elevation,
+            days_maxtemp_over_32c_1c,
+            days_maxtemp_over_32c_2c,
+            days_mintemp_above_25c_1c,
+            days_mintemp_above_25c_2c,
+            days_maxwetbulb_over_32c_1c,
+            days_maxwetbulb_over_32c_2c,
             ST_AsMVTGeom(geom, ST_TileEnvelope(:z, :x, :y), 8192, 64, true) as geom
-        from
-            stat_h3
-        where
-                zoom = :z
-            and geom && ST_TileEnvelope(:z, :x, :y)
+        from stat_h3
+        where zoom = :z
+          and geom && ST_TileEnvelope(:z, :x, :y)
     ) as q;

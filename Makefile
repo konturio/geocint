@@ -1155,12 +1155,12 @@ db/table/pf_night_maxtemp_in: | db/table
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20204.gremo.geojson -nln pf_nights_maxtemp_in -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/pf_night_maxtemp_in: | db/table
+db/table/pf_days_wet_bulb_in: | db/table
 	psql -c 'drop table if exists pf_days_wet_bulb_in;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20304.gremo.geojson -nln pf_days_wet_bulb_in -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/pf_maxtemp_idw_h3: db/table/pf_night_maxtemp_in db/table/pf_days_maxtemp_in db/table/pf_night_maxtemp_in | db/table
+db/table/pf_maxtemp_idw_h3: db/table/pf_night_maxtemp_in db/table/pf_days_maxtemp_in db/table/pf_days_wet_bulb_in | db/table
 	psql -f tables/pf_maxtemp_idw_h3.sql
 	touch $@
 

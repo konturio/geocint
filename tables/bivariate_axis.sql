@@ -56,6 +56,7 @@ create table stat_h3_quality as (
                 avg(a.total_hours) as agg_total_hours,
                 avg(a.view_count) as agg_view_count,
                 avg(a.area_km2) as agg_area_km2,
+                avg(a.populated_area_km2) as agg_populated_area_km2,
                 avg(a.one) as agg_one,
                 avg(a.total_building_count) as agg_total_building_count,
                 avg(a.wildfires) as agg_wildfires,

@@ -15,6 +15,7 @@ from
             coalesce(max_ts, 0) as max_ts,
             coalesce(avgmax_ts, 0) as avgmax_ts,
             area_km2,
+            populated_area_km2,
             local_hours,
             total_hours,
             view_count,

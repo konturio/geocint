@@ -21,12 +21,12 @@ with sum_population as (
                                 else ST_Area(ST_Intersection(h.geom, b.geom)) / ST_Area(h.geom)
                         end) -- Calculate intersection area for each h3 cell and boundary polygon
                 ) as population
-		from osm_admin_subdivided b
-		join kontur_population_h3 h
-		        on ST_Intersects(h.geom, b.geom)
+        from osm_admin_subdivided b
+        join kontur_population_h3 h
+                on ST_Intersects(h.geom, b.geom)
                         and h.resolution = 8
                                 and h.population > 0
-		group by b.osm_id
+        group by b.osm_id
 )
 select
         b.osm_id,
@@ -36,26 +36,41 @@ select
         b.name,
         b.tags,
         p.population,
-        b.geom,
-        ST_GeneratePoints(b.geom, 50) pnt
+        b.geom
 from osm_admin_boundaries b
 left join sum_population p using(osm_id);
-create index on osm_admin_boundaries_in using gist(pnt);
-
---Prepare GADM with random points in polygons
-drop table if exists gadm_in;
-create table gadm_in as
-select
-        *,
-        ST_GeneratePoints(geom, 50) as pnt
-from gadm_boundaries;
-create index on gadm_in using gist(geom);
-create index on gadm_in using gist(pnt);
+create index on osm_admin_boundaries_in using gist(geom, ST_PointOnSurface(geom));
 
 
 -- Join OSM admin boundaries and HASC codes based on max IOU
-drop table if exists kontur_boundaries;
-create table kontur_boundaries as 
+drop table if exists public.kontur_boundaries;
+create table public.kontur_boundaries as
+with gadm_in as (
+        select b.osm_id,
+                g.hasc,
+                g.gadm_level,
+                b.iou
+        from public.gadm_boundaries g
+                left join lateral (
+                        select
+                                b.osm_id,
+                                ST_Area(ST_Intersection(b.geom, g.geom))::numeric /
+                                ST_Area(ST_Union(b.geom, g.geom)) as iou -- Calculate Intersection Over Union between OSM and GADM
+                        from (
+                                select b.osm_id,
+                                        b.geom
+                                from public.osm_admin_boundaries_in b
+                                where ST_Area(g.geom) / ST_Area(b.geom) between 0.1 and 10
+                                    and (ST_Intersects(g.geom, ST_PointOnSurface(b.geom))
+                                        or ST_Intersects(ST_PointOnSurface(g.geom), b.geom))
+                                order by abs(ST_Area(b.geom) - ST_Area(g.geom))
+                                offset 0
+                             ) b
+                        where ST_Intersects(g.geom, b.geom)
+                        order by 2 desc
+                        limit 1
+                        ) b on true
+)
 select
         b.osm_id,
         b.osm_type,
@@ -64,25 +79,15 @@ select
         g.gadm_level,
         b.name,
         g.hasc,
-        g.iou osm_gadm_iou,
+        g.iou as osm_gadm_iou,
         b.tags,
         b.population,
         b.geom
-from osm_admin_boundaries_in b
-left join lateral (
-		select
-				g.hasc,
-                g.gadm_level,
-                ST_Area(ST_Intersection(b.geom, g.geom))::numeric / ST_Area(ST_Union(b.geom, g.geom)) iou -- Calculate Intersection Over Union between OSM and GADM
-		from gadm_in g
-		where ST_Intersects(g.geom, b.pnt)
-                and ST_Intersects(g.pnt, b.geom)
-		order by 3 desc
-		limit 1
-) g on true;
+from
+        public.osm_admin_boundaries_in b
+left join gadm_in g using(osm_id);
 
 
--- Drop temporary tables 
-drop table if exists gadm_in;
+-- Drop temporary tables
 drop table if exists osm_admin_subdivided;
 drop table if exists osm_admin_boundaries_in;

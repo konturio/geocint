@@ -176,8 +176,21 @@ $$
 $$;
 drop table kontur_population_mid2;
 
+-- add populated area column
+drop table if exists kontur_population_mid4;
+create table kontur_population_mid4 as (
+    select p.h3,
+           p.population as population,
+           p.resolution,
+           h.area as populated_area
+    from kontur_population_mid3 p,
+         ST_HexagonFromH3(h3) h
+);
+
+drop table if exists kontur_population_mid3;
+
 -- populate people to lower resolution hexagons
-call generate_overviews('kontur_population_mid3', '{population}'::text[], '{sum}'::text[], 8);
+call generate_overviews('kontur_population_mid4', '{population, populated_area}'::text[], '{sum, sum}'::text[], 8);
 
 -- final table with population density, area, geometry and h3 hexagons
 drop table if exists kontur_population_h3;
@@ -185,12 +198,13 @@ create table kontur_population_h3 as (
     select p.resolution,
            h.geom,
            h.area,
+           p.populated_area,
            p.h3,
            p.population as population
-    from kontur_population_mid3 p,
+    from kontur_population_mid4 p,
          ST_HexagonFromH3(h3) h
 );
 
+drop table if exists kontur_population_mid4;
 create index on kontur_population_h3 using gist (resolution, geom);
 
-drop table if exists kontur_population_mid3;

@@ -39,18 +39,18 @@ select
         b.geom
 from osm_admin_boundaries b
 left join sum_population p using(osm_id);
-create index on osm_admin_boundaries_in using gist(geom, ST_PointOnSurface(geom));
+create index on osm_admin_boundaries_in using gist(geom, ST_Area(geom));
 
 
 -- Join OSM admin boundaries and HASC codes based on max IOU
-drop table if exists public.kontur_boundaries;
-create table public.kontur_boundaries as
+drop table if exists kontur_boundaries;
+create table kontur_boundaries as
 with gadm_in as (
         select b.osm_id,
                 g.hasc,
                 g.gadm_level,
                 b.iou
-        from public.gadm_boundaries g
+        from gadm_boundaries g
                 left join lateral (
                         select
                                 b.osm_id,
@@ -59,10 +59,9 @@ with gadm_in as (
                         from (
                                 select b.osm_id,
                                         b.geom
-                                from public.osm_admin_boundaries_in b
-                                where ST_Area(g.geom) / ST_Area(b.geom) between 0.1 and 10
-                                    and (ST_Intersects(g.geom, ST_PointOnSurface(b.geom))
-                                        or ST_Intersects(ST_PointOnSurface(g.geom), b.geom))
+                                from osm_admin_boundaries_in b
+                                where ST_Area(b.geom) between 0.1 * ST_Area(g.geom) and 10 * ST_Area(g.geom)
+                                    and (g.geom && b.geom)
                                 order by abs(ST_Area(b.geom) - ST_Area(g.geom))
                                 offset 0
                              ) b
@@ -84,7 +83,7 @@ select
         b.population,
         b.geom
 from
-        public.osm_admin_boundaries_in b
+        osm_admin_boundaries_in b
 left join gadm_in g using(osm_id);
 
 

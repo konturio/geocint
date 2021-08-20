@@ -124,8 +124,8 @@ $$
 drop table if exists bivariate_axis;
 create table bivariate_axis as (
     select
-        numerator,
-        denominator,
+        a.param_id as numerator,
+        b.param_id as denominator,
         min,
         p25,
         p75,
@@ -137,23 +137,12 @@ create table bivariate_axis as (
         '' as max_label,
         '' as label
     from
-        (
-            select
-                a.param_id as numerator,
-                b.param_id as denominator,
-                min,
-                p25,
-                p75,
-                max,
-                quality
-            from
-                bivariate_indicators                                    as a,
-                bivariate_indicators                                    as b,
-                calculate_axis_stops(a.param_id, b.param_id)            as f,
-                estimate_bivariate_axis_quality(a.param_id, b.param_id) as quality
-            where
-                a.param_id != b.param_id
-        ) z
+        bivariate_indicators                                    as a,
+        bivariate_indicators                                    as b,
+        calculate_axis_stops(a.param_id, b.param_id)            as f,
+        estimate_bivariate_axis_quality(a.param_id, b.param_id) as quality
+    where
+        a.param_id != b.param_id
 );
 
 analyse bivariate_axis;

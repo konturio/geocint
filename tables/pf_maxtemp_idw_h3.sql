@@ -158,4 +158,15 @@ $$
                 res = res - 1;
             end loop;
     end;
-$$;
+$$;-- The output table contains a lot of interpolated values that are all-zero.
+-- Trim them out, we don't need to output cells for them.
+delete
+from
+    pf_maxtemp_idw_h3
+where
+      days_maxtemp_over_32c_1c = 0
+  and days_maxtemp_over_32c_2c = 0
+  and days_mintemp_above_25c_1c = 0
+  and days_mintemp_above_25c_2c = 0
+  and days_maxwetbulb_over_32c_1c = 0
+  and days_maxwetbulb_over_32c_2c = 0;

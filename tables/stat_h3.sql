@@ -219,7 +219,7 @@ create table stat_h3_in as (
                     null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
                     null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
                     null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
-                    null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, resolution
+                    null::float as populated_area, resolution
              from osm_landuse_industrial_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -234,7 +234,7 @@ create table stat_h3_in as (
                     null::float as days_maxtemp_over_32c_1c, null::float as days_maxtemp_over_32c_2c,
                     null::float as days_mintemp_above_25c_1c, null::float as days_mintemp_above_25c_2c,
                     null::float as days_maxwetbulb_over_32c_1c, null::float as days_maxwetbulb_over_32c_2c,
-                    null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, resolution
+                    null::float as populated_area, resolution
              from osm_volcanos_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -263,7 +263,7 @@ create table stat_h3_in as (
                     days_maxtemp_over_32c_1c::float, days_maxtemp_over_32c_2c::float,
                     days_mintemp_above_25c_1c::float, days_mintemp_above_25c_2c::float,
                     days_maxwetbulb_over_32c_1c::float, days_maxwetbulb_over_32c_2c::float,
-                    resolution
+                    null::float as populated_area, resolution
              from pf_maxtemp_idw_h3
         ) z
     group by 2, 1

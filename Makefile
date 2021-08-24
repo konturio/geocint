@@ -1030,10 +1030,10 @@ data/uae: | data
 data/uae/uae_boundary.geojson: db/table/osm db/index/osm_tags_idx | data/uae
 	psql -q -X -c "\copy (select ST_AsGeoJSON(uae) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 307763 and tags @> '{\"boundary\":\"administrative\"}') uae) to stdout" | jq -c . > $@
 
-data/uae/uae-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/uae_boundary.geojson | data/uae
+data/uae/uae-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/uae/uae_boundary.geojson | data/uae
 	osmium extract -v -s smart -p data/uae/uae_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
-data/uae/uae-bicycle-latest: data/uae-latest.osm.pbf | data/uae
+data/uae/uae-bicycle-latest: data/uae/uae-latest.osm.pbf | data/uae
 	rm -f data/uae/uae-bicycle-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./uae-latest.osm.pbf data/uae/uae-bicycle-latest.osm.pbf

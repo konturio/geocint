@@ -502,14 +502,14 @@ db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table
 	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-data/gadm/gadm36_levels_shp.zip: | data/gadm
+data/gadm/gadm36_levels_shp.zip: | data/gadm ## Download GADM boundaries (Database of Global Administrative Areas) dataset.
 	wget https://web.archive.org/web/20190829093806if_/https://data.biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip -O $@
 
-data/gadm/gadm36_shp_files: data/gadm/gadm36_levels_shp.zip
+data/gadm/gadm36_shp_files: data/gadm/gadm36_levels_shp.zip ## Extract GADM boundaries (Database of Global Administrative Areas).
 	cd data/gadm; unzip -o gadm36_levels_shp.zip || true
 	touch $@
 
-db/table/gadm_boundaries: data/gadm/gadm36_shp_files | db/table
+db/table/gadm_boundaries: data/gadm/gadm36_shp_files | db/table ## GADM boundaries (Database of Global Administrative Areas) dataset.
 	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_0 -nlt MULTIPOLYGON data/gadm/gadm36_0.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
 	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_1 -nlt MULTIPOLYGON data/gadm/gadm36_1.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
 	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_2 -nlt MULTIPOLYGON data/gadm/gadm36_2.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
@@ -517,13 +517,13 @@ db/table/gadm_boundaries: data/gadm/gadm36_shp_files | db/table
 	psql -f tables/gadm_boundaries.sql
 	touch $@
 
-db/table/gadm_countries_boundary: db/table/gadm_boundaries
+db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries from GADM (Database of Global Administrative Areas) dataset.
 	psql -c "drop table if exists gadm_countries_boundary;"
 	psql -c "create table gadm_countries_boundary as select row_number() over() gid, gid gid_0, \"name\" name_0, geom from gadm_boundaries where gadm_level = 0;"
 	psql -c "alter table gadm_countries_boundary alter column geom type geometry(multipolygon, 3857) using ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
 
-db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 | db/table
+db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 

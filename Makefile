@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/abu_dhabi ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/abu_dhabi data/uae/uae-bicycle-latest ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1021,7 +1021,26 @@ data/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops
 data/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops
 	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
 
-data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.csv data/abu_dhabi_food_shops.csv data/abu_dhabi_bivariate_pop_food_shops.csv
+data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.csv data/abu_dhabi_food_shops.csv data/abu_dhabi_bivariate_pop_food_shops.csv data/abu_dhabi.osm.pbf | data
+	touch $@
+
+data/uae: | data
+	mkdir -p $@
+
+data/uae/uae_boundary.geojson: db/table/osm db/index/osm_tags_idx | data/uae
+	psql -q -X -c "\copy (select ST_AsGeoJSON(uae) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 307763 and tags @> '{\"boundary\":\"administrative\"}') uae) to stdout" | jq -c . > $@
+
+data/uae/uae-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/uae_boundary.geojson | data/uae
+	osmium extract -v -s smart -p data/uae/uae_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
+
+data/uae/uae-bicycle-latest: data/uae-latest.osm.pbf | data/uae
+	rm -f data/uae/uae-bicycle-latest.osrm*
+	# osrm-extract does not support renaming. symbolic link was used instead
+	ln -s ./uae-latest.osm.pbf data/uae/uae-bicycle-latest.osm.pbf
+	docker run -t -v "${PWD}/data/uae:/data" osrm/osrm-backend osrm-extract -p /opt/bicycle.lua /data/uae-bicycle-latest.osm.pbf
+	docker run -t -v "${PWD}/data/uae:/data" osrm/osrm-backend osrm-partition /data/uae-bicycle-latest.osrm
+	docker run -t -v "${PWD}/data/uae:/data" osrm/osrm-backend osrm-customize /data/uae-bicycle-latest.osrm
+	rm -f data/uae/uae-bicycle-latest.osm.pbf
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

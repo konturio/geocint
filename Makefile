@@ -1,4 +1,4 @@
-all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
+all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
 dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/abu_dhabi ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
@@ -8,13 +8,13 @@ prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_ap
 	touch $@
 	echo "Pipeline finished. Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-basemap_all: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build
+basemap_all: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build.
 	touch $@
 
-basemap_dev: deploy/geocint/basemap deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment
+basemap_dev: deploy/geocint/basemap deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment.
 	touch $@
 
-basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment
+basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
 	touch $@
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
@@ -23,55 +23,55 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/drp_regions
 	psql -f scripts/clean.sql
 
-data: ## Create folder for storing temporary file based datasets
+data: ## Create folder for storing temporary file based datasets.
 	mkdir -p $@
 
-db: ## Create folder for storing database objects creation footprints
+db: ## Create folder for storing database objects creation footprints.
 	mkdir -p $@
 
-reports: ## Create folder for storing reports
+reports: ## Create folder for storing reports.
 	mkdir -p $@
 
-db/function: | db ## Create folder for storing database functions footprints
+db/function: | db ## Create folder for storing database functions footprints.
 	mkdir -p $@
 
-db/procedure: | db ## Create folder for storing database procedures footprints
+db/procedure: | db ## Create folder for storing database procedures footprints.
 	mkdir -p $@
 
-db/table: | db ## Create folder for storing database tables footprints
+db/table: | db ## Create folder for storing database tables footprints.
 	mkdir -p $@
 
-db/index: | db ## Create folder for storing database indexes footprints
+db/index: | db ## Create folder for storing database indexes footprints.
 	mkdir -p $@
 
-data/tiles: | data ## Create folder for storing generated vector tiles
+data/tiles: | data ## Create folder for storing generated vector tiles.
 	mkdir -p $@
 
 data/tiles/stat: | data/tiles
 	mkdir -p $@
 
-data/population: | data
+data/population: | data ## Create folder for storing data_stat_h3 and bivariate datasets.
 	mkdir -p $@
 
-data/gadm: | data
+data/gadm: | data ## Create folder for storing downloaded GADM (Database of Global Administrative Areas) datasets.
 	mkdir -p $@
 
-data/wb: | data
+data/wb: | data ## Create folder for storing downloaded World Bank datasets.
 	mkdir -p $@
 
-data/wb/gdp: | data/wb
+data/wb/gdp: | data/wb ## Create folder for storing downloaded GDP (Gross domestic product) World Bank datasets.
 	mkdir -p $@
 
-data/gebco_2020_geotiff: | data
+data/gebco_2020_geotiff: | data ## Create folder for GEBCO (General Bathymetric Chart of the Oceans) dataset.
 	mkdir -p $@
 
 data/ndvi_2019_06_10: | data ## Create folder for NDVI rasters.
 	mkdir -p $@
 
-deploy:
+deploy:  ## Create folder for production data for further deployment.
 	mkdir -p $@
 
-deploy/lima: | deploy
+deploy/lima: | deploy ## We use lima.kontur.io as a production server.
 	mkdir -p $@
 
 deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test the software before setting it live at lima.kontur.io.
@@ -80,7 +80,7 @@ deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test the
 deploy/zigzag: | deploy
 	mkdir -p $@
 
-deploy/geocint: | deploy
+deploy/geocint: | deploy ## We use geocint as a GIS development server.
 	mkdir -p $@
 
 deploy/s3:
@@ -89,7 +89,7 @@ deploy/s3:
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx
 	touch $@
 
-deploy/geocint/belarus-latest.osm.pbf: data/belarus-latest.osm.pbf | deploy/geocint
+deploy/geocint/belarus-latest.osm.pbf: data/belarus-latest.osm.pbf | deploy/geocint ## Copy belarus-latest.osm.pbf to public_html folder to make it available online.
 	cp data/belarus-latest.osm.pbf ~/public_html/belarus-latest.osm.pbf
 	touch $@
 
@@ -97,14 +97,14 @@ deploy/lima/osrm-backend-by-car: deploy/geocint/belarus-latest.osm.pbf | deploy/
 	aws sqs send-message --output json --region eu-central-1 --queue-url https://sqs.eu-central-1.amazonaws.com/001426858141/PuppetmasterInbound.fifo --message-body '{"jsonrpc":"2.0","method":"rebuildDockerImage","params":{"imageName":"kontur-osrm-backend-by-car","osmPbfUrl":"https://geocint.kontur.io/gis/belarus-latest.osm.pbf"},"id":"'`uuid`'"}' --message-group-id rebuildDockerImage--kontur-osrm-backend-by-car
 	touch $@
 
-data/planet-latest.osm.pbf: | data
+data/planet-latest.osm.pbf: | data ## Download latest planet OSM pbf extraction through Bit torrent and rename it to planet-latest.osm.pbf.
 	rm -f data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
 	cd data; aria2c https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent --seed-time=0
 	mv data/planet-*.osm.pbf $@
 	rm -f data/planet-*.osm.pbf.torrent
 	touch $@
 
-data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
+data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data ## Update planet-latest.osm.pbf OpenStreetMap extract with hourly diff.
 	rm -f data/planet-diff.osc
 	if [ -f data/planet-latest.seq ]; then pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -f data/planet-latest.seq -o data/planet-diff.osc; else pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -O data/planet-latest.osm.pbf -f data/planet-latest.seq -o data/planet-diff.osc; fi ||true
 	rm -f data/planet-latest-updated.osm.pbf data/planet-latest-updated.osm.pbf.meta.json
@@ -113,11 +113,11 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
 	touch $@
 
-data/planet-check-refs: data/planet-latest-updated.osm.pbf | data
+data/planet-check-refs: data/planet-latest-updated.osm.pbf | data ## Check if planet-latest.osm.pbf OSM extraction is referentially complete using Osmium tool (osmcode.org/osmium-tool/manual.html#checking-references).
 	osmium check-refs -r --no-progress data/planet-latest.osm.pbf || touch data/planet-is-broken
 	touch $@
 
-data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data
+data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data ## Extract Belarus from planet-latest-updated.osm.pbf using Osmium tool.
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
 	touch $@
 
@@ -137,7 +137,7 @@ data/covid19/_us_csv: | data/covid19 ## Download US detailed daily COVID-19 data
 	unzip -p data/covid19/utah_covid19.zip 'Overview_COVID-19 Cases by Date of Symptom Onset or Diagnosis_'* > data/covid19/covid19_utah.csv
 	touch $@
 
-db/table/covid19_in: data/covid19/_global_csv | db/table
+db/table/covid19_in: data/covid19/_global_csv | db/table ## Normalized, merged, extracted latest data from CSSE COVID-19 global datasets.
 	psql -c 'drop table if exists covid19_csv_in;'
 	psql -c 'drop table if exists covid19_in;'
 	psql -c 'create table covid19_csv_in (province text, country text, lat float, lon float, date timestamptz, value int, status text);'
@@ -152,7 +152,7 @@ db/table/covid19_in: data/covid19/_global_csv | db/table
 	psql -c "create table covid19_in as (select province, country, lat, lon, status, max(date) as date, max(value) as value from covid19_csv_in group by 1,2,3,4,5);"
 	touch $@
 
-db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table
+db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table ## Normalized, merged data from CSSE COVID-19 US datasets (confirmed cases).
 	psql -c 'drop table if exists covid19_us_confirmed_csv_in;'
 	psql -c 'create table covid19_us_confirmed_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, date timestamptz, value int);'
 	rm -f data/covid19/time_series_us_confirmed_normalized.csv
@@ -164,7 +164,7 @@ db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table
 	psql -f tables/covid19_us_confirmed_in.sql
 	touch $@
 
-db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table
+db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table ## Normalized, merged data from CSSE COVID-19 US datasets (deaths).
 	psql -c 'drop table if exists covid19_us_deaths_csv_in;'
 	psql -c 'create table covid19_us_deaths_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, population int, date timestamptz, value int);'
 	rm -f data/covid19/time_series_us_deaths_normalized.csv
@@ -398,7 +398,7 @@ db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/
 data/copernicus_landcover: | data ## Create folder for Copernicus land cover data.
 	mkdir -p $@
 
-data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif: | data/copernicus_landcover ## Download Copernicus land cover raster locally.
+data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif: | data/copernicus_landcover ## Download Copernicus land cover raster.
 	cd data/copernicus_landcover; wget -c -nc https://zenodo.org/record/3939050/files/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif
 
 db/table/copernicus_landcover_raster: data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif | db/table ## Put land cover raster in table.

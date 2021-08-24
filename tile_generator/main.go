@@ -81,7 +81,6 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 	row := db.QueryRow(context.Background(), sql)
 	var mvtTile []byte
 	err := row.Scan(&mvtTile)
-	<-sem
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -100,6 +99,7 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 	// Write the body to file
 	bytes, err := io.Copy(out, bytes.NewReader(mvtTile))
 	out.Close()
+	<-sem
 
 	log.Printf("z: %d x: %d y: %d bytes: %d", zxy.z, zxy.x, zxy.y, bytes)
 

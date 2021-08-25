@@ -1,10 +1,10 @@
 drop table if exists pf_maxtemp_all;
-create table pf_maxtemp_all as (select di.days_maxtemp_over_32c_1c,
-                                       di.days_maxtemp_over_32c_2c,
-                                       ni.days_mintemp_above_25c_1c,
-                                       ni.days_mintemp_above_25c_2c,
-                                       bi.days_maxwetbulb_over_32c_1c,
-                                       bi.days_maxwetbulb_over_32c_2c,
+create table pf_maxtemp_all as (select di.days_maxtemp_over_32c_1c::float,
+                                       di.days_maxtemp_over_32c_2c::float,
+                                       ni.days_mintemp_above_25c_1c::float,
+                                       ni.days_mintemp_above_25c_2c::float,
+                                       bi.days_maxwetbulb_over_32c_1c::float,
+                                       bi.days_maxwetbulb_over_32c_2c::float,
                                        di.geom
                                 from pf_days_maxtemp_in as di
                                          join pf_nights_maxtemp_in as ni on ST_Intersects(di.geom, ni.geom)
@@ -32,13 +32,13 @@ drop table if exists pf_maxtemp_idw_h3;
 create table pf_maxtemp_idw_h3
 (
     h3                          h3index,
-    resolution                  integer,
-    days_maxtemp_over_32c_1c    integer,
-    days_maxtemp_over_32c_2c    integer,
-    days_mintemp_above_25c_1c   integer,
-    days_mintemp_above_25c_2c   integer,
-    days_maxwetbulb_over_32c_1c integer,
-    days_maxwetbulb_over_32c_2c integer
+    resolution                  float,
+    days_maxtemp_over_32c_1c    float,
+    days_maxtemp_over_32c_2c    float,
+    days_mintemp_above_25c_1c   float,
+    days_mintemp_above_25c_2c   float,
+    days_maxwetbulb_over_32c_1c float,
+    days_maxwetbulb_over_32c_2c float
 );
 
 
@@ -67,12 +67,12 @@ into pf_maxtemp_idw_h3 (h3, resolution,
                         days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c)
 select h3,
        5::integer,
-       floor(SUM(z1 / dist) / SUM(1 / dist)) as d32_1,
-       floor(SUM(z2 / dist) / SUM(1 / dist)) as d32_2,
-       floor(SUM(z3 / dist) / SUM(1 / dist)) as n25_1,
-       floor(SUM(z4 / dist) / SUM(1 / dist)) as n25_2,
-       floor(SUM(z5 / dist) / SUM(1 / dist)) as b32_1,
-       floor(SUM(z6 / dist) / SUM(1 / dist)) as b32_2
+       (SUM(z1 / dist) / SUM(1 / dist)) as d32_1,
+       (SUM(z2 / dist) / SUM(1 / dist)) as d32_2,
+       (SUM(z3 / dist) / SUM(1 / dist)) as n25_1,
+       (SUM(z4 / dist) / SUM(1 / dist)) as n25_2,
+       (SUM(z5 / dist) / SUM(1 / dist)) as b32_1,
+       (SUM(z6 / dist) / SUM(1 / dist)) as b32_2
 from nearest_points
 group by h3;
 
@@ -146,12 +146,12 @@ $$
                                                days_maxwetbulb_over_32c_2c)
                 select h3_to_parent(h3) as h3,
                        (res - 1)        as resolution,
-                       floor(avg(days_maxtemp_over_32c_1c)),
-                       floor(avg(days_maxtemp_over_32c_2c)),
-                       floor(avg(days_mintemp_above_25c_1c)),
-                       floor(avg(days_mintemp_above_25c_2c)),
-                       floor(avg(days_maxwetbulb_over_32c_1c)),
-                       floor(avg(days_maxwetbulb_over_32c_2c))
+                       (avg(days_maxtemp_over_32c_1c)),
+                       (avg(days_maxtemp_over_32c_2c)),
+                       (avg(days_mintemp_above_25c_1c)),
+                       (avg(days_mintemp_above_25c_2c)),
+                       (avg(days_maxwetbulb_over_32c_1c)),
+                       (avg(days_maxwetbulb_over_32c_2c))
                 from pf_maxtemp_idw_h3
                 where resolution = res
                 group by 1;

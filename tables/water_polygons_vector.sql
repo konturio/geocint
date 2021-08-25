@@ -9,8 +9,6 @@ with complex_areas_to_subdivide as (
 insert into water_polygons_vector (gid, fid, geom)
     select
         gid,fid, ST_Subdivide(geom, 100) as geom
-    from complex_areas_to_subdivide
-    order by 3;
+    from complex_areas_to_subdivide;
 
-vacuum full water_polygons_vector;
-vacuum analyze water_polygons_vector;
+vacuum full analyze water_polygons_vector;

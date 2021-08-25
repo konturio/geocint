@@ -18,7 +18,6 @@ create table osm_water_lines as (
     or tags @> '{"waterway":"ditch"}'
     or tags @> '{"waterway":"drain"}')
     and ST_GeometryType(geog::geometry) = 'ST_LineString'
-  order by _ST_SortableHash(geog::geometry)
 );
 
 create index on osm_water_lines using brin (geom);

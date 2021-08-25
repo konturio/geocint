@@ -1460,6 +1460,9 @@ data/basemap: | data
 data/basemap/glyphs: | data/basemap
 	mkdir -p $@
 
+data/basemap/sprite: | data/basemap
+	mkdir -p $@
+
 data/basemap/metadata: | data/basemap
 	mkdir -p $@
 
@@ -1483,6 +1486,13 @@ data/basemap/glyphs_all: | data/basemap/glyphs
 	cp -r basemap/omt_fonts/_output/. data/basemap/glyphs
 	touch $@
 
+data/basemap/sprite_all: | data/basemap/sprite
+	wget -O data/basemap/sprite/sprite@2x.png https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite@2x.png?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
+	wget -O data/basemap/sprite/sprite@2x.json https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite@2x.json?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
+	wget -O data/basemap/sprite/sprite.png https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite.png?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
+	wget -O data/basemap/sprite/sprite.json https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite.json?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
+	touch $@
+
 data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zigzag
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
@@ -1493,6 +1503,7 @@ data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zi
 		--tiles-max-zoom 9 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1530,6 +1541,7 @@ data/basemap/metadata/sonic/style_ninja.json: | kothic data/basemap/metadata/son
 		--tiles-max-zoom 9 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1567,6 +1579,7 @@ data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima
 		--tiles-max-zoom 9 \
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1604,6 +1617,7 @@ data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | ko
 		--tiles-max-zoom 14 \
 		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://geocint.kontur.io/basemap/sprite \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1642,14 +1656,14 @@ deploy/geocint/basemap: deploy/geocint/basemap_mapcss data/tiles/basemap_all dat
 	cp -r data/tiles/basemap/. /var/www/tiles/basemap
 	touch $@
 
-data/basemap/zigzag.tar.bz2: data/tiles/basemap_all data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json data/basemap/glyphs_all
-	tar cvf data/basemap/zigzag.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/zigzag .
+data/basemap/zigzag.tar.bz2: data/tiles/basemap_all data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json data/basemap/glyphs_all data/basemap/sprite_all
+	tar cvf $@ --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C sprite . -C ../metadata/zigzag .
 
-data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json data/basemap/glyphs_all
-	tar cvf data/basemap/sonic.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/sonic .
+data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json data/basemap/glyphs_all data/basemap/sprite_all
+	tar cvf $@ --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C sprite . -C ../metadata/sonic .
 
-data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json data/basemap/glyphs_all
-	tar cvf data/basemap/lima.tar.bz2 --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/lima .
+data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json data/basemap/glyphs_all data/basemap/sprite_all
+	tar cvf $@ --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/lima .
 
 deploy/zigzag/basemap: data/basemap/zigzag.tar.bz2 | deploy/zigzag
 	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'

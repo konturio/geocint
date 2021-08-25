@@ -1663,7 +1663,7 @@ data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/s
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C sprite . -C ../metadata/sonic .
 
 data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json data/basemap/glyphs_all data/basemap/sprite_all
-	tar cvf $@ --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C metadata/lima .
+	tar cvf $@ --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C sprite . -C ../metadata/lima .
 
 deploy/zigzag/basemap: data/basemap/zigzag.tar.bz2 | deploy/zigzag
 	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'

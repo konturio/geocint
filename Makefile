@@ -1,4 +1,4 @@
-all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets
+all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
 dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/abu_dhabi ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
@@ -8,13 +8,13 @@ prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_ap
 	touch $@
 	echo "Pipeline finished. Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-basemap_all: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build
+basemap_all: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build.
 	touch $@
 
-basemap_dev: deploy/geocint/basemap deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment
+basemap_dev: deploy/geocint/basemap deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment.
 	touch $@
 
-basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment
+basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
 	touch $@
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
@@ -23,55 +23,55 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/drp_regions
 	psql -f scripts/clean.sql
 
-data:
+data: ## Directory for storing temporary file based datasets.
 	mkdir -p $@
 
-db:
+db: ## Directory for storing database objects creation footprints.
 	mkdir -p $@
 
-reports:
+reports: ## Directory for storing reports.
 	mkdir -p $@
 
-db/function: | db
+db/function: | db ## Directory for storing database functions footprints.
 	mkdir -p $@
 
-db/procedure: | db
+db/procedure: | db ## Directory for storing database procedures footprints.
 	mkdir -p $@
 
-db/table: | db
+db/table: | db ## Directory for storing database tables footprints.
 	mkdir -p $@
 
-db/index: | db
+db/index: | db ## Directory for storing database indexes footprints.
 	mkdir -p $@
 
-data/tiles: | data
+data/tiles: | data ## Directory for storing generated vector tiles.
 	mkdir -p $@
 
 data/tiles/stat: | data/tiles
 	mkdir -p $@
 
-data/population: | data
+data/population: | data ## Directory for storing data_stat_h3 and bivariate datasets.
 	mkdir -p $@
 
-data/gadm: | data
+data/gadm: | data ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
 	mkdir -p $@
 
-data/wb: | data
+data/wb: | data ## Directory for storing downloaded World Bank datasets.
 	mkdir -p $@
 
-data/wb/gdp: | data/wb
+data/wb/gdp: | data/wb ## Directory for storing downloaded GDP (Gross domestic product) World Bank datasets.
 	mkdir -p $@
 
-data/gebco_2020_geotiff: | data
+data/gebco_2020_geotiff: | data ## Directory for GEBCO (General Bathymetric Chart of the Oceans) dataset.
 	mkdir -p $@
 
-data/ndvi_2019_06_10: | data
+data/ndvi_2019_06_10: | data ## Directory for NDVI rasters.
 	mkdir -p $@
 
-deploy:
+deploy:  ## Directory for deployment targets footprints.
 	mkdir -p $@
 
-deploy/lima: | deploy
+deploy/lima: | deploy ## We use lima.kontur.io as a production server.
 	mkdir -p $@
 
 deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test the software before setting it live at lima.kontur.io.
@@ -80,7 +80,7 @@ deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test the
 deploy/zigzag: | deploy
 	mkdir -p $@
 
-deploy/geocint: | deploy
+deploy/geocint: | deploy ## We use geocint as a GIS development server.
 	mkdir -p $@
 
 deploy/s3:
@@ -89,7 +89,7 @@ deploy/s3:
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx
 	touch $@
 
-deploy/geocint/belarus-latest.osm.pbf: data/belarus-latest.osm.pbf | deploy/geocint
+deploy/geocint/belarus-latest.osm.pbf: data/belarus-latest.osm.pbf | deploy/geocint ## Copy belarus-latest.osm.pbf to public_html folder to make it available online.
 	cp data/belarus-latest.osm.pbf ~/public_html/belarus-latest.osm.pbf
 	touch $@
 
@@ -97,14 +97,14 @@ deploy/lima/osrm-backend-by-car: deploy/geocint/belarus-latest.osm.pbf | deploy/
 	aws sqs send-message --output json --region eu-central-1 --queue-url https://sqs.eu-central-1.amazonaws.com/001426858141/PuppetmasterInbound.fifo --message-body '{"jsonrpc":"2.0","method":"rebuildDockerImage","params":{"imageName":"kontur-osrm-backend-by-car","osmPbfUrl":"https://geocint.kontur.io/gis/belarus-latest.osm.pbf"},"id":"'`uuid`'"}' --message-group-id rebuildDockerImage--kontur-osrm-backend-by-car
 	touch $@
 
-data/planet-latest.osm.pbf: | data
+data/planet-latest.osm.pbf: | data ## Download latest planet OSM pbf extraction through Bit torrent and rename it to planet-latest.osm.pbf.
 	rm -f data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
 	cd data; aria2c https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent --seed-time=0
 	mv data/planet-*.osm.pbf $@
 	rm -f data/planet-*.osm.pbf.torrent
 	touch $@
 
-data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
+data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data ## Update planet-latest.osm.pbf OpenStreetMap extract with hourly diff.
 	rm -f data/planet-diff.osc
 	if [ -f data/planet-latest.seq ]; then pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -f data/planet-latest.seq -o data/planet-diff.osc; else pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -O data/planet-latest.osm.pbf -f data/planet-latest.seq -o data/planet-diff.osc; fi ||true
 	rm -f data/planet-latest-updated.osm.pbf data/planet-latest-updated.osm.pbf.meta.json
@@ -113,31 +113,31 @@ data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data
 	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
 	touch $@
 
-data/planet-check-refs: data/planet-latest-updated.osm.pbf | data
+data/planet-check-refs: data/planet-latest-updated.osm.pbf | data ## Check if planet-latest.osm.pbf OSM extraction is referentially complete using Osmium tool (osmcode.org/osmium-tool/manual.html#checking-references).
 	osmium check-refs -r --no-progress data/planet-latest.osm.pbf || touch data/planet-is-broken
 	touch $@
 
-data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data
+data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data ## Extract Belarus from planet-latest-updated.osm.pbf using Osmium tool.
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
 	touch $@
 
-data/covid19: | data
+data/covid19: | data  ## Directory for storing temporary file based datasets on COVID-19
 	mkdir -p $@
 
-data/covid19/_global_csv: | data/covid19
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_confirmed_global.csv&filename=time_series_covid19_confirmed_global.csv" -O data/covid19/time_series_global_confirmed.csv
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_deaths_global.csv&filename=time_series_covid19_deaths_global.csv" -O data/covid19/time_series_global_deaths.csv
-	wget "https://data.humdata.org/hxlproxy/api/data-preview.csv?url=https%3A%2F%2Fraw.githubusercontent.com%2FCSSEGISandData%2FCOVID-19%2Fmaster%2Fcsse_covid_19_data%2Fcsse_covid_19_time_series%2Ftime_series_covid19_recovered_global.csv&filename=time_series_covid19_recovered_global.csv" -O data/covid19/time_series_global_recovered.csv
+data/covid19/_global_csv: | data/covid19 ## Download global daily COVID-19 data by confirmed/deaths/recovered cases in csv from github Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University.
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv" -O data/covid19/time_series_global_confirmed.csv
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv" -O data/covid19/time_series_global_deaths.csv
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv" -O data/covid19/time_series_global_recovered.csv
 	touch $@
 
-data/covid19/_us_csv: | data/covid19
+data/covid19/_us_csv: | data/covid19 ## Download US detailed daily COVID-19 data from github Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University.
 	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv" -O data/covid19/time_series_us_confirmed.csv
 	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv" -O data/covid19/time_series_us_deaths.csv
 	wget "https://coronavirus-dashboard.utah.gov/Utah_COVID19_data.zip" -O data/covid19/utah_covid19.zip
 	unzip -p data/covid19/utah_covid19.zip 'Overview_COVID-19 Cases by Date of Symptom Onset or Diagnosis_'* > data/covid19/covid19_utah.csv
 	touch $@
 
-db/table/covid19_in: data/covid19/_global_csv | db/table
+db/table/covid19_in: data/covid19/_global_csv | db/table ## Normalized, merged, extracted latest data from CSSE COVID-19 global datasets.
 	psql -c 'drop table if exists covid19_csv_in;'
 	psql -c 'drop table if exists covid19_in;'
 	psql -c 'create table covid19_csv_in (province text, country text, lat float, lon float, date timestamptz, value int, status text);'
@@ -152,7 +152,7 @@ db/table/covid19_in: data/covid19/_global_csv | db/table
 	psql -c "create table covid19_in as (select province, country, lat, lon, status, max(date) as date, max(value) as value from covid19_csv_in group by 1,2,3,4,5);"
 	touch $@
 
-db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table
+db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table ## Normalized, merged data from CSSE COVID-19 US datasets (confirmed cases).
 	psql -c 'drop table if exists covid19_us_confirmed_csv_in;'
 	psql -c 'create table covid19_us_confirmed_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, date timestamptz, value int);'
 	rm -f data/covid19/time_series_us_confirmed_normalized.csv
@@ -164,7 +164,7 @@ db/table/covid19_us_confirmed_in: data/covid19/_us_csv | db/table
 	psql -f tables/covid19_us_confirmed_in.sql
 	touch $@
 
-db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table
+db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table ## Normalized, merged data from CSSE COVID-19 US datasets (deaths).
 	psql -c 'drop table if exists covid19_us_deaths_csv_in;'
 	psql -c 'create table covid19_us_deaths_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, population int, date timestamptz, value int);'
 	rm -f data/covid19/time_series_us_deaths_normalized.csv
@@ -173,7 +173,7 @@ db/table/covid19_us_deaths_in: data/covid19/_us_csv | db/table
 	psql -f tables/covid19_us_deaths_in.sql
 	touch $@
 
-db/table/covid19_admin_boundaries: db/table/covid19_in db/index/osm_tags_idx
+db/table/covid19_admin_boundaries: db/table/covid19_in db/index/osm_tags_idx ## Admin boundaries for COVID-19 CSSE datasets extracted from OpenStreetMap (joined on coordinates and name matching).
 	psql -f tables/covid19_admin_boundaries.sql
 	touch $@
 
@@ -185,7 +185,7 @@ db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 db/table/covid19_us_co
 	psql -f tables/covid19_h3_r8.sql
 	touch $@
 
-db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table
+db/table/us_counties_boundary: data/gadm/gadm36_shp_files | db/table ## USA counties boundaries extracted from GADM (Database of Global Administrative Areas) admin_level_2 dataset.
 	psql -c 'drop table if exists gadm_us_counties_boundary;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
 	ogr2ogr -append -f PostgreSQL PG:"dbname='gis'" data/gadm/gadm36_1.shp -sql "select name_0 as name_1, name_1 as name_2, gid_1 as gid_2, hasc_1 as hasc_2 from gadm36_1 where gid_0 = 'PRI'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
@@ -262,7 +262,7 @@ db/procedure/generate_overviews: | db/procedure
 	psql -f procedures/generate_overviews.sql
 	touch $@
 
-db/table/osm_roads: db/table/osm db/index/osm_tags_idx
+db/table/osm_roads: db/table/osm db/index/osm_tags_idx ## Roads from OpenStreetMap.
 	psql -f tables/osm_roads.sql
 	touch $@
 
@@ -332,7 +332,7 @@ db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/tabl
 	psql -f tables/worldpop_population_boundary.sql
 	touch $@
 
-data/hrsl_cogs: | data ## Create folder for HRSL raster data.
+data/hrsl_cogs: | data ## Directory for HRSL raster data.
 	mkdir -p $@
 
 data/hrsl_cogs/download: | data/hrsl_cogs ## Download HRSL tifs from Data for Good at AWS S3.
@@ -349,19 +349,19 @@ db/table/hrsl_population_raster: data/hrsl_cogs/download | db/table ## Prepare t
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
 
-db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Create table with sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
+db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r8=hrsl_population_grid_h3_r8
 	touch $@
 
-db/table/hrsl_population_boundary: db/table/gadm_countries_boundary db/table/hrsl_population_raster | db/table ## Create table with boundaries where HRSL data is available.
+db/table/hrsl_population_boundary: db/table/gadm_countries_boundary db/table/hrsl_population_raster | db/table ## Boundaries where HRSL data is available.
 	psql -f tables/hrsl_population_boundary.sql
 	touch $@
 
-db/table/osm_unpopulated: db/index/osm_tags_idx | db/table
+db/table/osm_unpopulated: db/index/osm_tags_idx | db/table ## Unpopulated areas from OpenStreetMap further used in kontur_population dataset.
 	psql -f tables/osm_unpopulated.sql
 	touch $@
 
-db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Create table with sum of GHS globe raster values into h3 hexagons equaled to 8 resolution.
+db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r8=ghs_globe_population_grid_h3_r8
 	psql -c "delete from ghs_globe_population_grid_h3_r8 where population = 0;"
 	touch $@
@@ -395,34 +395,34 @@ db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/
 	psql -f tables/ghs_globe_residential_vector.sql
 	touch $@
 
-data/copernicus_landcover: | data
+data/copernicus_landcover: | data ## Directory for Copernicus land cover data.
 	mkdir -p $@
 
-data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif: | data/copernicus_landcover
+data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif: | data/copernicus_landcover ## Download Copernicus land cover raster.
 	cd data/copernicus_landcover; wget -c -nc https://zenodo.org/record/3939050/files/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif
 
-db/table/copernicus_landcover_raster: data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif | db/table
+db/table/copernicus_landcover_raster: data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif | db/table ## Put land cover raster in table.
 	psql -c "drop table if exists copernicus_landcover_raster"
 	raster2pgsql -M -Y -s 4326 data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif -t auto copernicus_landcover_raster | psql -q
 	psql -c "alter table copernicus_landcover_raster set (parallel_workers = 32);"
 	touch $@
 
-db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table
+db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table ## Count of 'urban' pixels from land cover raster into h3 hexagons on 8 resolution.
 	psql -f tables/copernicus_builtup_h3.sql
 	touch $@
 
-db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table
+db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table ## Forest area in km2 by types from land cover raster into h3 hexagons on 8 resolution.
 	psql -f tables/copernicus_forest_h3.sql
 	touch $@
 
-db/table/osm_residential_landuse: db/index/osm_tags_idx
+db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
 	psql -f tables/osm_residential_landuse.sql
 	touch $@
 
-data/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/gebco_2020_geotiff
+data/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/gebco_2020_geotiff ## Download GEBCO bathymetry zipped raster.
 	wget "https://www.bodc.ac.uk/data/open_download/gebco/gebco_2020/geotiff/" -O $@
 
-data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip: data/gebco_2020_geotiff/gebco_2020_geotiff.zip
+data/gebco_2020_geotiff/gebco_2020_geotiffs_unzip: data/gebco_2020_geotiff/gebco_2020_geotiff.zip ## Unzip GEBCO raster.
 	rm -f data/gebco_2020_geotiff/*.tif
 	cd data/gebco_2020_geotiff; unzip -o gebco_2020_geotiff.zip
 	rm -f data/gebco_2020_geotiff/*.pdf
@@ -470,15 +470,15 @@ db/table/gebco_2020_elevation_h3: db/table/gebco_2020_elevation | db/table ## Ge
 	psql -c "create index on gebco_2020_elevation_h3 (h3, avg_elevation);"
 	touch $@
 
-data/ndvi_2019_06_10/generate_ndvi_tifs: | data/ndvi_2019_06_10
+data/ndvi_2019_06_10/generate_ndvi_tifs: | data/ndvi_2019_06_10 ## NDVI rasters generated from Sentinel 2 data.
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && python3 /usr/bin/gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --outfile=ndvi.tif'
 	touch $@
 
-data/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/ndvi_2019_06_10/generate_ndvi_tifs
+data/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/ndvi_2019_06_10/generate_ndvi_tifs ## Reproject NDVI rasters to EPSG-4326.
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -overwrite -t_srs EPSG:4326 -of COG ndvi.tif /home/gis/geocint/data/ndvi_2019_06_10/ndvi_{#}_4326.tif'
 	touch $@
 
-db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
+db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table ## Put NDVI rasters in table.
 	psql -c "drop table if exists ndvi_2019_06_10;"
 	raster2pgsql -p -Y -s 4326 data/ndvi_2019_06_10/ndvi_1_4326.tif -t auto ndvi_2019_06_10 | psql -q
 	psql -c 'alter table ndvi_2019_06_10 drop CONSTRAINT ndvi_2019_06_10_pkey;'
@@ -487,7 +487,7 @@ db/table/ndvi_2019_06_10: data/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table
 	psql -c "vacuum analyze ndvi_2019_06_10;"
 	touch $@
 
-db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table
+db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table ## Generate h3 table with average NDVI from 1 to 8 resolution.
 	psql -f tables/ndvi_2019_06_10_h3.sql
 	psql -c "call generate_overviews('ndvi_2019_06_10_h3', '{avg_ndvi}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);"
@@ -502,14 +502,14 @@ db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table
 	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-data/gadm/gadm36_levels_shp.zip: | data/gadm
+data/gadm/gadm36_levels_shp.zip: | data/gadm ## Download GADM boundaries (Database of Global Administrative Areas) dataset.
 	wget https://web.archive.org/web/20190829093806if_/https://data.biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip -O $@
 
-data/gadm/gadm36_shp_files: data/gadm/gadm36_levels_shp.zip
+data/gadm/gadm36_shp_files: data/gadm/gadm36_levels_shp.zip ## Extract GADM boundaries (Database of Global Administrative Areas).
 	cd data/gadm; unzip -o gadm36_levels_shp.zip || true
 	touch $@
 
-db/table/gadm_boundaries: data/gadm/gadm36_shp_files | db/table
+db/table/gadm_boundaries: data/gadm/gadm36_shp_files | db/table ## GADM boundaries (Database of Global Administrative Areas) dataset.
 	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_0 -nlt MULTIPOLYGON data/gadm/gadm36_0.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
 	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_1 -nlt MULTIPOLYGON data/gadm/gadm36_1.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
 	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_2 -nlt MULTIPOLYGON data/gadm/gadm36_2.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
@@ -517,34 +517,34 @@ db/table/gadm_boundaries: data/gadm/gadm36_shp_files | db/table
 	psql -f tables/gadm_boundaries.sql
 	touch $@
 
-db/table/gadm_countries_boundary: db/table/gadm_boundaries
+db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries from GADM (Database of Global Administrative Areas) dataset.
 	psql -c "drop table if exists gadm_countries_boundary;"
 	psql -c "create table gadm_countries_boundary as select row_number() over() gid, gid gid_0, \"name\" name_0, geom from gadm_boundaries where gadm_level = 0;"
 	psql -c "alter table gadm_countries_boundary alter column geom type geometry(multipolygon, 3857) using ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
 
-db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 | db/table
+db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
-db/table/population_check_osm: db/table/kontur_boundaries | db/table
+db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
 	psql -f tables/population_check_osm.sql
 	touch $@
 
-reports/population_check_osm.csv: db/table/population_check_osm | reports
+reports/population_check_osm.csv: db/table/population_check_osm | reports ## Export population_check_osm table to .csv and send Top 5 most inconsistent results to Kontur Slack (#gis channel).
 	psql -q -X -c 'copy (select * from population_check_osm order by diff_pop desc) to stdout with csv header;' > $@
 	cat $@ | tail -n +2 | head -5 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 5 boundaries with population different from OSM"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-data/iso_codes.csv: | data
+data/iso_codes.csv: | data ## Download ISO codes for countries from wikidata.
 	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
 
-db/table/iso_codes: data/iso_codes.csv | db/table
+db/table/iso_codes: data/iso_codes.csv | db/table ## Download ISO codes for countries from wikidata.
 	psql -c 'drop table if exists iso_codes;'
 	psql -c 'create table iso_codes(iso_num integer, iso2 char(2), iso3 char(3), name text);'
 	cat data/iso_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy iso_codes from stdin with csv header;"
 	touch $@
 
-data/un_population.csv: | data
+data/un_population.csv: | data ## Download United Nations population division dataset.
 	wget 'https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv' -O $@
 
 db/table/un_population: data/un_population.csv | db/table
@@ -592,24 +592,24 @@ db/table/gdp_h3: db/table/kontur_population_h3 db/table/wb_gadm_gdp_countries
 	psql -f tables/gdp_h3.sql
 	touch $@
 
-data/water-polygons-split-3857.zip: | data
+data/water-polygons-split-3857.zip: | data ## Download OpenStreetMap water polygons (oceans and seas) archive.
 	wget https://osmdata.openstreetmap.de/download/water-polygons-split-3857.zip -O $@
 
-data/water_polygons.shp: data/water-polygons-split-3857.zip
+data/water_polygons.shp: data/water-polygons-split-3857.zip ## Unzip OpenStreetMap water polygons (oceans and seas) archive.
 	cd data; unzip -o water-polygons-split-3857.zip
 	touch $@
 
-db/table/water_polygons_vector: data/water_polygons.shp | db/table
+db/table/water_polygons_vector: data/water_polygons.shp | db/table ## Import and subdivide OpenStreetMap water polygons (oceans and seas) as water_polygons_vector(EPSG-3857).
 	psql -c "drop table if exists water_polygons_vector"
 	shp2pgsql -I -s 3857 data/water-polygons-split-3857/water_polygons.shp water_polygons_vector | psql -q
 	psql -f tables/water_polygons_vector.sql
 	touch $@
 
-db/table/osm_water_lines: db/index/osm_tags_idx | db/table
+db/table/osm_water_lines: db/index/osm_tags_idx | db/table ## Water line geometries extracted from OpenStreetMap.
 	psql -f tables/osm_water_lines.sql
 	touch $@
 
-db/table/osm_water_polygons: db/index/osm_tags_idx db/table/water_polygons_vector db/table/osm_water_lines | db/table
+db/table/osm_water_polygons: db/index/osm_tags_idx db/table/water_polygons_vector db/table/osm_water_lines | db/table ## Merge water geometries into one table as polygons (linestring objects are buffered out with 1m in EPSG-3857).
 	psql -f tables/osm_water_polygons.sql
 	touch $@
 
@@ -617,7 +617,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 | db/table ## Create general table for population data at hexagons.
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 | db/table ## General table for population data at hexagons.
 	# IMPORTANT: removed WorldPop dependencies - db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
@@ -780,7 +780,7 @@ data/new_zealand_buildings/download: | data/new_zealand_buildings ## Download Ne
 	cd data/new_zealand_buildings; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg ./
 	touch $@
 
-db/table/new_zealand_buildings: data/new_zealand_buildings/download | db/table ## Create table with New Zealand buildings.
+db/table/new_zealand_buildings: data/new_zealand_buildings/download | db/table ## New Zealand buildings.
 	psql -c "drop table if exists new_zealand_buildings;"
 	time ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
 	touch $@
@@ -822,7 +822,7 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
 
-data/kontur_population_v2: | data ## Create folder for Kontur Population v2.
+data/kontur_population_v2: | data ## Directory for Kontur Population v2.
 	mkdir -p $@
 
 data/kontur_population_v2/kontur_population_20200928.gpkg.gz: | data/kontur_population_v2 ## Download Kontur Population v2 gzip to geocint.

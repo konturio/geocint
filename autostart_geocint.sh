@@ -30,7 +30,7 @@ sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
 sudo pip3 install pandas
 
 # Pull and stash uncommitted changes from Git
-git pull --rebase --autostash || { git stash && git pull; }
+git pull --rebase --autostash || { git stash && git pull && echo 'git rebase autostash failed, stash and pull executed' | python3 scripts/slack_message.py geocint "Nightly build" cat; }
 
 profile_make clean
 

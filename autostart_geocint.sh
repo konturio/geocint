@@ -4,6 +4,8 @@ cleanup() {
   rm -f make.lock
 }
 
+echo "Geocint pipeline is starting nightly build!" | python3 scripts/slack_message.py geocint "Night build" cat
+
 # Terminate script after failed command execution
 set -e
 PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin"
@@ -28,10 +30,7 @@ sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
 sudo pip3 install pandas
 
 # Pull and stash uncommitted changes from Git
-git stash
-git pull
-
-echo "Geocint pipeline is starting nightly build!" | python3 scripts/slack_message.py geocint "Night build" cat
+git pull --rebase --autostash || { git stash && git pull; }
 
 profile_make clean
 

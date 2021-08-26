@@ -23,52 +23,52 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/drp_regions
 	psql -f scripts/clean.sql
 
-data: ## Create folder for storing temporary file based datasets.
+data: ## Directory for storing temporary file based datasets.
 	mkdir -p $@
 
-db: ## Create folder for storing database objects creation footprints.
+db: ## Directory for storing database objects creation footprints.
 	mkdir -p $@
 
-reports: ## Create folder for storing reports.
+reports: ## Directory for storing reports.
 	mkdir -p $@
 
-db/function: | db ## Create folder for storing database functions footprints.
+db/function: | db ## Directory for storing database functions footprints.
 	mkdir -p $@
 
-db/procedure: | db ## Create folder for storing database procedures footprints.
+db/procedure: | db ## Directory for storing database procedures footprints.
 	mkdir -p $@
 
-db/table: | db ## Create folder for storing database tables footprints.
+db/table: | db ## Directory for storing database tables footprints.
 	mkdir -p $@
 
-db/index: | db ## Create folder for storing database indexes footprints.
+db/index: | db ## Directory for storing database indexes footprints.
 	mkdir -p $@
 
-data/tiles: | data ## Create folder for storing generated vector tiles.
+data/tiles: | data ## Directory for storing generated vector tiles.
 	mkdir -p $@
 
 data/tiles/stat: | data/tiles
 	mkdir -p $@
 
-data/population: | data ## Create folder for storing data_stat_h3 and bivariate datasets.
+data/population: | data ## Directory for storing data_stat_h3 and bivariate datasets.
 	mkdir -p $@
 
-data/gadm: | data ## Create folder for storing downloaded GADM (Database of Global Administrative Areas) datasets.
+data/gadm: | data ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
 	mkdir -p $@
 
-data/wb: | data ## Create folder for storing downloaded World Bank datasets.
+data/wb: | data ## Directory for storing downloaded World Bank datasets.
 	mkdir -p $@
 
-data/wb/gdp: | data/wb ## Create folder for storing downloaded GDP (Gross domestic product) World Bank datasets.
+data/wb/gdp: | data/wb ## Directory for storing downloaded GDP (Gross domestic product) World Bank datasets.
 	mkdir -p $@
 
-data/gebco_2020_geotiff: | data ## Create folder for GEBCO (General Bathymetric Chart of the Oceans) dataset.
+data/gebco_2020_geotiff: | data ## Directory for GEBCO (General Bathymetric Chart of the Oceans) dataset.
 	mkdir -p $@
 
-data/ndvi_2019_06_10: | data ## Create folder for NDVI rasters.
+data/ndvi_2019_06_10: | data ## Directory for NDVI rasters.
 	mkdir -p $@
 
-deploy:  ## Create folder for production data for further deployment.
+deploy:  ## Directory for deployment targets footprints.
 	mkdir -p $@
 
 deploy/lima: | deploy ## We use lima.kontur.io as a production server.
@@ -121,7 +121,7 @@ data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_bou
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
 	touch $@
 
-data/covid19: | data  ## Create folder for storing temporary file based datasets on COVID-19
+data/covid19: | data  ## Directory for storing temporary file based datasets on COVID-19
 	mkdir -p $@
 
 data/covid19/_global_csv: | data/covid19 ## Download global daily COVID-19 data by confirmed/deaths/recovered cases in csv from github Data Repository by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University.
@@ -332,7 +332,7 @@ db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/tabl
 	psql -f tables/worldpop_population_boundary.sql
 	touch $@
 
-data/hrsl_cogs: | data ## Create folder for HRSL raster data.
+data/hrsl_cogs: | data ## Directory for HRSL raster data.
 	mkdir -p $@
 
 data/hrsl_cogs/download: | data/hrsl_cogs ## Download HRSL tifs from Data for Good at AWS S3.
@@ -361,7 +361,7 @@ db/table/osm_unpopulated: db/index/osm_tags_idx | db/table ## Unpopulated areas 
 	psql -f tables/osm_unpopulated.sql
 	touch $@
 
-db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Sum of GHS globe raster values into h3 hexagons equaled to 8 resolution.
+db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r8=ghs_globe_population_grid_h3_r8
 	psql -c "delete from ghs_globe_population_grid_h3_r8 where population = 0;"
 	touch $@
@@ -395,7 +395,7 @@ db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/
 	psql -f tables/ghs_globe_residential_vector.sql
 	touch $@
 
-data/copernicus_landcover: | data ## Create folder for Copernicus land cover data.
+data/copernicus_landcover: | data ## Directory for Copernicus land cover data.
 	mkdir -p $@
 
 data/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif: | data/copernicus_landcover ## Download Copernicus land cover raster.
@@ -470,7 +470,7 @@ db/table/gebco_2020_elevation_h3: db/table/gebco_2020_elevation | db/table ## Ge
 	psql -c "create index on gebco_2020_elevation_h3 (h3, avg_elevation);"
 	touch $@
 
-data/ndvi_2019_06_10/generate_ndvi_tifs: | data/ndvi_2019_06_10 ## Create NDVI rasters from Sentinel 2 data.
+data/ndvi_2019_06_10/generate_ndvi_tifs: | data/ndvi_2019_06_10 ## NDVI rasters generated from Sentinel 2 data.
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && python3 /usr/bin/gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --outfile=ndvi.tif'
 	touch $@
 
@@ -617,7 +617,7 @@ db/procedure/insert_projection_54009: | db/procedure
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 | db/table ## Create general table for population data at hexagons.
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 | db/table ## General table for population data at hexagons.
 	# IMPORTANT: removed WorldPop dependencies - db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
@@ -822,7 +822,7 @@ data/kontur_population.gpkg.gz: db/table/kontur_population_h3
 	ogr2ogr -f GPKG data/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
 	cd data/; pigz kontur_population.gpkg
 
-data/kontur_population_v2: | data ## Create folder for Kontur Population v2.
+data/kontur_population_v2: | data ## Directory for Kontur Population v2.
 	mkdir -p $@
 
 data/kontur_population_v2/kontur_population_20200928.gpkg.gz: | data/kontur_population_v2 ## Download Kontur Population v2 gzip to geocint.

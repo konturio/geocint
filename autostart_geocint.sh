@@ -28,7 +28,10 @@ sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
 sudo pip3 install pandas
 
 # Pull and stash uncommitted changes from Git
-git pull --rebase --autostash
+git stash
+git pull
+
+echo "Geocint pipeline is starting nightly build!" | python3 scripts/slack_message.py geocint "Night build" cat
 
 profile_make clean
 

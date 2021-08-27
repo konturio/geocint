@@ -5,7 +5,7 @@ select osm_id, admin_level, ST_Subdivide(geom) geom
 from osm_admin_boundaries;
 create index on osm_admin_subdivided using gist(geom);
 
-select count(*) from osm_admin_hierarchy;
+
 -- Build subregions hierarchy to sum subregions population
 drop table if exists osm_admin_hierarchy;
 create table osm_admin_hierarchy as
@@ -66,8 +66,7 @@ left join osm_admin_hierarchy s
                and h.osm_id <> s.osm_id
 where h.population > 0
 group by 1,2,3,4,5
-having sum(s.population) - h.population > 0
-order by "Population difference %" desc;
+having sum(s.population) - h.population > 0;
 
 
 --Drop temporary tables

@@ -570,7 +570,7 @@ db/table/osm_population_validation: db/table/osm_admin_boundaries | db/table ## 
 	touch $@
 
 reports/osm_population_validation.html: db/table/osm_population_validation | reports ## Generate report for OpenStreetMap users about population inconsistencies (see also db/table/osm_population_validation target).
-	echo '<meta charset="utf-8">' > $@ | psql -HXP footer=off -c 'select * from osm_population_validation;' | sed -e "s/\(<td align=\"left\">\)\([0-9]\{4,10\}\)\(<\/td>\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3/" >> $@
+	echo '<meta charset="utf-8">' > $@ | psql -HXP footer=off -c 'select * from osm_population_validation order by "Population difference %" desc;' | sed -e "s/\(<td align=\"left\">\)\([0-9]\{4,10\}\)\(<\/td>\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3/" >> $@
 
 db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
 	psql -f tables/population_check_osm.sql

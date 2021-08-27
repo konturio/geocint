@@ -76,15 +76,15 @@ def build_isochrones(queue: mp.Queue,
         n_points = 1
         with conn.cursor() as curs:
             curs.execute(f"""
-            select distinct ST_X(p2), ST_Y(p2)
-            from ST_Transform(ST_SetSRID(ST_MakePoint(%(x1)s, %(y1)s), 4326), 3857) p1,
-                {dst_points} t,
-                ST_Transform(t.geom, 4326) p2
-            where st_dwithin(p1, t.geom, %(max_distance)s)
-            """, {
-                "x1": x1,
-                "y1": y1,
-                "max_distance": max_distance,
+                select distinct ST_X(p2), ST_Y(p2)
+                from ST_Transform(ST_SetSRID(ST_MakePoint(%(x1)s, %(y1)s), 4326), 3857) p1,
+                    {dst_points} t,
+                    ST_Transform(t.geom, 4326) p2
+                where ST_DWithin(p1, t.geom, %(max_distance)s)
+                """, {
+                    "x1": x1,
+                    "y1": y1,
+                    "max_distance": max_distance,
             })
             for x2, y2 in curs:
                 # Split urls by coordinates count < OSRM max_table_size
@@ -131,9 +131,12 @@ def main(dsn, osrm_url, osrm_max_table, seconds, avg_speed, src_points, dst_poin
     conn = psycopg2.connect(dsn)
     with conn.cursor() as curs:
         curs.execute('select to_regclass(%s)', (output_table,))
-        if curs.fetchone()[0] != 'None':
+        if curs.fetchone()[0]:
             raise Exception(f'Table {output_table} already exists')
         curs.execute(f'create table {output_table} (x float, y float, geom geometry)')
+    conn.commit()
+    conn.close()
+
     # TODO: show progress
     max_distance = ceil(avg_speed * seconds)
     m = mp.Manager()
@@ -158,24 +161,23 @@ if __name__ == '__main__':
     parser.add_argument('--help', help='show this help message and exit', action='help')
 
     database = parser.add_argument_group(title='PostgreSQL connection options')
-    database.add_argument("-h", "--host", help="")
-    database.add_argument("-p", "--port", help="")
-    database.add_argument("-U", "--user", help="")
-    database.add_argument("-W", "--password", help="")
-    # database.add_argument("-w", "--no-password", help="", action='store_true')
-    database.add_argument("-d", "--dbname", help="")
+    database.add_argument("-h", "--host", help="Server host")
+    database.add_argument("-p", "--port", help="Server port")
+    database.add_argument("-U", "--user", help="User name")
+    database.add_argument("-W", "--password", help="Password")
+    database.add_argument("-d", "--dbname", help="Database name to connect")
 
     osrm = parser.add_argument_group('OSRM options')
     osrm.add_argument('-u', '--url', help='OSRM router url', default='http://localhost:5000/table/v1/car')
-    osrm.add_argument('-m', '--max-table-size', help='Max. locations supported in distance table query', default=100)
+    osrm.add_argument('-m', '--max-table-size', type=int, help='Max. locations supported in distance table query', default=100)
 
     isochrones = parser.add_argument_group('Isochrone build options')
-    isochrones.add_argument('-t', '--time', help='', required=True)
-    isochrones.add_argument('-s', '--avg-speed', help='', required=True)
+    isochrones.add_argument('-t', '--time', help='', required=True, type=int)
+    isochrones.add_argument('-s', '--avg-speed', help='', required=True, type=int)
 
-    parser.add_argument("points_from", help='Points table for build isochrones from')
-    parser.add_argument("points_to", help='Points table for build isochrones from')
-    parser.add_argument("output_table", help='Output table')
+    parser.add_argument("points_from", help='Points table for build isochrones from (SRID:3857)')
+    parser.add_argument("points_to", help='Points table for build isochrones to (SRID:3857)')
+    parser.add_argument("output_table", help='Output table (SRID:3857)')
     args = parser.parse_args()
 
     dsn = ' '.join(f'{arg.dest}={getattr(args, arg.dest)}' for arg in database._group_actions if

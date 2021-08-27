@@ -1021,9 +1021,7 @@ data/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops
 data/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops
 	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
 
-data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.csv data/abu_dhabi_food_shops.csv data/abu_dhabi_bivariate_pop_food_shops.csv
-	touch $@
-
+# FIXME: rewrite, waiting for merge #6671
 db/table/abu_dhabi_buildings: db/table/osm_buildings_use | db/table
 	psql -f tables/abu_dhabi_buildings.sql
 	touch $@
@@ -1035,6 +1033,9 @@ db/table/abu_dhabi_buildings_centroids: db/table/abu_dhabi_buildings | db/table
 
 db/table/abu_dhabi_bicycle_isochrones: db/table/abu_dhabi_buildings_centroids | db/table
 	python3 scripts/build_isochrones.py -u http://localhost:5000/table/v1/bicycle -t 600 -s 20 abu_dhabi_buildings_centroids abu_dhabi_buildings_centroids abu_dhabi_isochrones
+	touch $@
+
+data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.csv data/abu_dhabi_food_shops.csv data/abu_dhabi_bivariate_pop_food_shops.csv db/table/abu_dhabi_bicycle_isochrones
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

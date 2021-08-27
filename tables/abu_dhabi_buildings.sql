@@ -13,4 +13,7 @@ where b1.id in (select b2.id
                      public.osm_unpopulated u
                 where ST_Intersects(ST_Transform(b2.geom, 3857), u.geom));
 
+-- TODO: combine nearby buildings
+-- TODO: check geometry
+
 create index on abu_dhabi_buildings using gist(geom);

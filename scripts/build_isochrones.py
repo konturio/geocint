@@ -9,10 +9,11 @@ from threading import Thread
 import multiprocessing as mp
 from time import sleep, time, strftime, gmtime
 from math import ceil
+import urllib3
 
 MAX_CONCURRENT = 100
 PAGE_SIZE = 1000
-PROCESSES = 4
+PROCESSES = mp.cpu_count()
 
 
 async def fetch_table(session, semaphore, url):
@@ -63,7 +64,6 @@ def build_isochrones(queue: mp.Queue,
     with conn.cursor() as curs:
         curs.execute('create temp table isochrone_points (geom geometry);')
     while True:
-        # sleep(1)
         with conn.cursor() as curs:
             curs.execute('truncate pg_temp.isochrone_points;')
         if queue.empty():
@@ -71,6 +71,7 @@ def build_isochrones(queue: mp.Queue,
         x1, y1 = queue.get()
         url = f'{url_prefix}/{x1},{y1}'
         urls = [url]
+        n_points = 1
         with conn.cursor() as curs:
             curs.execute(f"""
                 select distinct round(ST_X(p2)::numeric, 6), round(ST_Y(p2)::numeric, 6)

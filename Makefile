@@ -1021,7 +1021,19 @@ data/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops
 data/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops
 	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
 
-data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.csv data/abu_dhabi_food_shops.csv data/abu_dhabi_bivariate_pop_food_shops.csv
+db/table/abu_dhabi_buildings_phase_1: | db/table
+	psql -c 'drop table if exists abu_dhabi_buildings_phase_1;'
+	psql -c 'create table abu_dhabi_buildings_phase_1 ("_height_confidence" float, sun_azimuth float, "_block_id" integer, sun_elevation float, osm_landuse_class text, is_residential text, shape_type text, processing_date date, sat_azimuth float, building_height float, id integer, sat_elevation float, geom geometry);'
+	ls data/abu_dhabi_buildings/phase_1/* | parallel 'ogr2ogr --config PG_USE_COPY YES -append -update -f PostgreSQL PG:"dbname=gis" {} -nln abu_dhabi_buildings_phase_1 -a_srs EPSG:4326'
+	psql -c 'create index on abu_dhabi_buildings_phase_1 using gist(geom);'
+	touch $@
+
+db/table/abu_dhabi_buildings: db/table/abu_dhabi_buildings_phase_1 db/table/osm_unpopulated | db/table
+	psql -f tables/abu_dhabi_buildings.sql
+	psql -c "vacuum analyze abu_dhabi_buildings;"
+	touch $@
+
+data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.csv data/abu_dhabi_food_shops.csv data/abu_dhabi_bivariate_pop_food_shops.csv db/table/abu_dhabi_buildings
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

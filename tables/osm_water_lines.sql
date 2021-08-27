@@ -19,5 +19,3 @@ create table osm_water_lines as (
     or tags @> '{"waterway":"drain"}')
     and ST_GeometryType(geog::geometry) = 'ST_LineString'
 );
-
-create index on osm_water_lines using brin (geom);

@@ -1,6 +1,6 @@
-drop table if exists osm_water_polygons_subdivided;
+drop table if exists osm_water_polygons_in_subdivided;
 
-create table osm_water_polygons_subdivided as (
+create table osm_water_polygons_in_subdivided as (
     select osm_type,
            osm_id,
            ST_Subdivide(ST_Transform(geog::geometry, 3857), 100) as geom

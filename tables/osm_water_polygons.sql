@@ -3,7 +3,7 @@ create table osm_water_polygons_unsorted as (
     select osm_type,
            osm_id,
            geom
-    from osm_water_polygons_subdivided
+    from osm_water_polygons_in_subdivided
 
     union all
 
@@ -29,3 +29,6 @@ create table osm_water_polygons as (
 drop table osm_water_polygons_unsorted;
 vacuum analyze osm_water_polygons;
 create index on osm_water_polygons using gist (geom);
+
+drop table if exists osm_water_polygons_in_subdivided;
+drop table if exists osm_water_lines_buffers_subdivided;

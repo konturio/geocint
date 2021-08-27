@@ -11,4 +11,6 @@ insert into water_polygons_vector (gid, fid, geom)
         gid,fid, ST_Subdivide(geom, 100) as geom
     from complex_areas_to_subdivide;
 
-vacuum full analyze water_polygons_vector;
+vacuum full water_polygons_vector;
+vacuum analyze water_polygons_vector;
+

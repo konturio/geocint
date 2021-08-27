@@ -613,11 +613,11 @@ db/table/osm_water_lines_buffers_subdivided: db/table/osm_water_lines | db/table
 	psql -f tables/osm_water_lines_buffers_subdivided.sql
 	touch $@
 
-db/table/osm_water_polygons_subdivided: db/index/osm_tags_idx | db/table
-	psql -f tables/osm_water_polygons_subdivided.sql
+db/table/osm_water_polygons_in_subdivided: db/index/osm_tags_idx | db/table
+	psql -f tables/osm_water_polygons_in_subdivided.sql
 	touch $@
 
-db/table/osm_water_polygons: db/table/osm_water_polygons_subdivided db/table/water_polygons_vector db/table/osm_water_lines_buffers_subdivided | db/table ## Merge water geometries into one table as polygons (linestring objects are buffered out with 1m in EPSG-3857).
+db/table/osm_water_polygons: db/table/osm_water_polygons_in_subdivided db/table/water_polygons_vector db/table/osm_water_lines_buffers_subdivided | db/table ## Merge water geometries into one table as polygons (linestring objects are buffered out with 1m in EPSG-3857).
 	psql -f tables/osm_water_polygons.sql
 	touch $@
 

@@ -1027,10 +1027,10 @@ data/abu_dhabi: data/abu_dhabi_admin_boundaries.geojson data/abu_dhabi_eatery.cs
 data/uae_routing/uae_boundary.geojson: db/table/osm db/index/osm_tags_idx
 	psql -q -X -c "\copy (select ST_AsGeoJSON(uae) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 307763 and tags @> '{\"boundary\":\"administrative\"}') uae) to stdout" | jq -c . > $@
 
-data/uae_routing/uae-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/uae/uae_boundary.geojson
-	osmium extract -v -s smart -p data/uae/uae_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
+data/uae_routing/uae-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/uae_routing/uae_boundary.geojson
+	osmium extract -v -s smart -p data/uae_routing/uae_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
-data/uae_routing/uae-bicycle-latest: data/uae/uae-latest.osm.pbf | data/uae
+data/uae_routing/uae-bicycle-latest: data/uae_routing/uae-latest.osm.pbf data/uae_routing/uae_boundary.geojson data/uae_routing/uae-latest.osm.pbf
 	rm -f data/uae_routing/uae-bicycle-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./uae-latest.osm.pbf data/uae_routing/uae-bicycle-latest.osm.pbf
@@ -1040,7 +1040,7 @@ data/uae_routing/uae-bicycle-latest: data/uae/uae-latest.osm.pbf | data/uae
 	rm -f data/uae_routing/uae-bicycle-latest.osm.pbf
 	touch $@
 
-data/uae_routing/uae-bike-latest: data/uae/uae-latest.osm.pbf | data/uae
+data/uae_routing/uae-bike-latest: data/uae_routing/uae-latest.osm.pbf data/uae_routing/uae_boundary.geojson data/uae_routing/uae-latest.osm.pbf
 	rm -f data/uae_routing/uae-bike-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./uae-latest.osm.pbf data/uae_routing/uae-bike-latest.osm.pbf

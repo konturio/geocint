@@ -41,7 +41,7 @@ def populate_queue(queue: mp.Queue, dsn: AnyStr, points_table: AnyStr):
     conn = psycopg2.connect(dsn)
     with conn.cursor() as curs:
         curs.execute(f"""
-            select ST_X(tr), ST_Y(tr)
+            select round(ST_X(tr), 6), round(ST_Y(tr), 6)
             from {points_table} t,
                  ST_Transform(t.geom, 4326) tr
         """)
@@ -76,7 +76,7 @@ def build_isochrones(queue: mp.Queue,
         n_points = 1
         with conn.cursor() as curs:
             curs.execute(f"""
-                select distinct ST_X(p2), ST_Y(p2)
+                select distinct round(ST_X(p2), 6), round(ST_Y(p2), 6)
                 from ST_Transform(ST_SetSRID(ST_MakePoint(%(x1)s, %(y1)s), 4326), 3857) p1,
                     {dst_points} t,
                     ST_Transform(t.geom, 4326) p2

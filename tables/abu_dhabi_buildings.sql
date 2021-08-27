@@ -1,3 +1,4 @@
+-- FIXME: rewrite, waiting for merge #6671
 drop table if exists abu_dhabi_buildings;
 create table abu_dhabi_buildings with (parallel_workers = 32) as (
     select distinct osm_id,

@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_population_validation reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_population_validation.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -565,13 +565,12 @@ db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundari
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
-db/table/osm_population_validation: db/table/osm_admin_boundaries | db/table
+db/table/osm_population_validation: db/table/osm_admin_boundaries | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
 	psql -f tables/osm_population_validation.sql
 	touch $@
 
-reports/osm_population_validation.html: db/table/osm_population_validation | reports
-	psql -HX -c 'select * from osm_population_validation;' > $@
-	touch $@
+reports/osm_population_validation.html: db/table/osm_population_validation | reports ## Generate report for OpenStreetMap users about population inconsistencies (see also db/table/osm_population_validation target).
+	echo '<meta charset="utf-8">' > $@ | psql -HXP footer=off -c 'select * from osm_population_validation;' | sed -e "s/\(<td align=\"left\">\)\([0-9]\{4,10\}\)\(<\/td>\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3/" >> $@
 
 db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
 	psql -f tables/population_check_osm.sql

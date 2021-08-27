@@ -51,7 +51,7 @@ create table hierarchy_position as
 drop table if exists osm_population_validation;
 create table osm_population_validation as
 select
-       h.osm_id                                                    as "OSM ID",
+       h.osm_id::text                                              as "OSM ID",
        h.name                                                      as "Name",
        h.name_en                                                   as "Name En",
        h.admin_level                                               as "Admin level",

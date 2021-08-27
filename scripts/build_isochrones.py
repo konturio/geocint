@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
-from typing import AnyStr
+from typing import AnyStr  # TODO: add typings to functions parameters
 import argparse
 import asyncio
-import aiohttp
+import aiohttp  # TODO: use urllib3 pool instead
 import psycopg2
 from psycopg2.extras import execute_values
 from threading import Thread
 import multiprocessing as mp
 from time import sleep, time, strftime, gmtime
 from math import ceil
-import urllib3
 
 MAX_CONCURRENT = 100
 PAGE_SIZE = 1000
-PROCESSES = mp.cpu_count()
+PROCESSES = mp.cpu_count()  # FIXME: got the error "Too many open files" when cpu_count > 8
 
 
 async def fetch_table(session, semaphore, url):
@@ -24,6 +23,7 @@ async def fetch_table(session, semaphore, url):
 
 
 def process_answer(answer):
+    # TODO: simplify
     points = (dest['location'] for dest in answer['destinations'])
     etas = answer['durations'][0]
     return tuple((*z[0], z[1]) for z in zip(points, etas) if z[1] is not None)
@@ -127,7 +127,7 @@ def build_isochrones(queue: mp.Queue,
 
 def main(dsn, osrm_url, osrm_max_table, seconds, avg_speed, src_points, dst_points, output_table):
     start = time()
-    # TODO: show progress
+    # TODO: add progress bar (tqdm?)
     max_distance = ceil(avg_speed * seconds)
     m = mp.Manager()
     queue = m.Queue()
@@ -169,8 +169,11 @@ if __name__ == '__main__':
     isochrones.add_argument('-s', '--avg-speed', help='', required=True, type=int)
 
     parser.add_argument("points_from", help='Points table for build isochrones from (SRID:3857)')
-    parser.add_argument("points_to", help='Points table for build isochrones to (SRID:3857)')
+    parser.add_argument("points_to",
+                        help='Points table for build isochrones to (SRID:3857)'
+                        )  # TODO: move to optional argument, if not set - use points_from
     parser.add_argument("output_table", help='Output table (SRID:3857)')
+    # TODO: add an argument to copy columns from points_from table to output_table
     args = parser.parse_args()
 
     dsn = ' '.join(f'{arg.dest}={getattr(args, arg.dest)}' for arg in database._group_actions if
@@ -197,6 +200,7 @@ if __name__ == '__main__':
             output_table=args.output_table
         )
     except Exception as e:
+        # TODO: handle KeyboardInterrupt error
         with conn.cursor() as curs:
             curs.execute(f'drop table if exists {args.output_table};')
         conn.commit()

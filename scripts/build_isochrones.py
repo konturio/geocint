@@ -7,7 +7,7 @@ import psycopg2
 from psycopg2.extras import execute_values
 from threading import Thread
 import multiprocessing as mp
-from time import sleep
+from time import sleep, time, strftime, gmtime
 from math import ceil
 
 MAX_CONCURRENT = 100
@@ -41,7 +41,7 @@ def populate_queue(queue: mp.Queue, dsn: AnyStr, points_table: AnyStr):
     conn = psycopg2.connect(dsn)
     with conn.cursor() as curs:
         curs.execute(f"""
-            select round(ST_X(tr), 6), round(ST_Y(tr), 6)
+            select round(ST_X(tr)::numeric, 6), round(ST_Y(tr)::numeric, 6)
             from {points_table} t,
                  ST_Transform(t.geom, 4326) tr
         """)
@@ -62,7 +62,6 @@ def build_isochrones(queue: mp.Queue,
     conn.autocommit = True
     with conn.cursor() as curs:
         curs.execute('create temp table isochrone_points (geom geometry);')
-    i = 0
     while True:
         # sleep(1)
         with conn.cursor() as curs:
@@ -70,21 +69,19 @@ def build_isochrones(queue: mp.Queue,
         if queue.empty():
             break
         x1, y1 = queue.get()
-        i += 1
         url = f'{url_prefix}/{x1},{y1}'
         urls = [url]
-        n_points = 1
         with conn.cursor() as curs:
             curs.execute(f"""
-                select distinct round(ST_X(p2), 6), round(ST_Y(p2), 6)
+                select distinct round(ST_X(p2)::numeric, 6), round(ST_Y(p2)::numeric, 6)
                 from ST_Transform(ST_SetSRID(ST_MakePoint(%(x1)s, %(y1)s), 4326), 3857) p1,
                     {dst_points} t,
                     ST_Transform(t.geom, 4326) p2
                 where ST_DWithin(p1, t.geom, %(max_distance)s)
                 """, {
-                    "x1": x1,
-                    "y1": y1,
-                    "max_distance": max_distance,
+                "x1": x1,
+                "y1": y1,
+                "max_distance": max_distance,
             })
             for x2, y2 in curs:
                 # Split urls by coordinates count < OSRM max_table_size
@@ -128,15 +125,7 @@ def build_isochrones(queue: mp.Queue,
 
 
 def main(dsn, osrm_url, osrm_max_table, seconds, avg_speed, src_points, dst_points, output_table):
-    conn = psycopg2.connect(dsn)
-    with conn.cursor() as curs:
-        curs.execute('select to_regclass(%s)', (output_table,))
-        if curs.fetchone()[0]:
-            raise Exception(f'Table {output_table} already exists')
-        curs.execute(f'create table {output_table} (x float, y float, geom geometry)')
-    conn.commit()
-    conn.close()
-
+    start = time()
     # TODO: show progress
     max_distance = ceil(avg_speed * seconds)
     m = mp.Manager()
@@ -155,6 +144,8 @@ def main(dsn, osrm_url, osrm_max_table, seconds, avg_speed, src_points, dst_poin
 
     populate_thread.join()
 
+    print('Done in', strftime('%H:%M:%S', gmtime(time() - start)))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Calculate isochrones between 2 point tables", add_help=False)
@@ -169,7 +160,8 @@ if __name__ == '__main__':
 
     osrm = parser.add_argument_group('OSRM options')
     osrm.add_argument('-u', '--url', help='OSRM router url', default='http://localhost:5000/table/v1/car')
-    osrm.add_argument('-m', '--max-table-size', type=int, help='Max. locations supported in distance table query', default=100)
+    osrm.add_argument('-m', '--max-table-size', type=int, help='Max. locations supported in distance table query',
+                      default=100)
 
     isochrones = parser.add_argument_group('Isochrone build options')
     isochrones.add_argument('-t', '--time', help='', required=True, type=int)
@@ -183,13 +175,30 @@ if __name__ == '__main__':
     dsn = ' '.join(f'{arg.dest}={getattr(args, arg.dest)}' for arg in database._group_actions if
                    getattr(args, arg.dest) is not None)
 
-    main(
-        dsn=dsn,
-        osrm_url=args.url.rstrip(),
-        osrm_max_table=args.max_table_size,
-        seconds=args.time,
-        avg_speed=args.avg_speed,
-        src_points=args.points_from,
-        dst_points=args.points_to,
-        output_table=args.output_table
-    )
+    # Check existence of output table and create it
+    conn = psycopg2.connect(dsn)
+    with conn.cursor() as curs:
+        curs.execute('select to_regclass(%s)', (args.output_table,))
+        if curs.fetchone()[0]:
+            raise Exception(f'Table {args.output_table} already exists')
+        curs.execute(f'create table {args.output_table} (x float, y float, geom geometry)')
+    conn.commit()
+
+    try:
+        main(
+            dsn=dsn,
+            osrm_url=args.url.rstrip(),
+            osrm_max_table=args.max_table_size,
+            seconds=args.time,
+            avg_speed=args.avg_speed,
+            src_points=args.points_from,
+            dst_points=args.points_to,
+            output_table=args.output_table
+        )
+    except Exception as e:
+        with conn.cursor() as curs:
+            curs.execute(f'drop table if exists {args.output_table};')
+        conn.commit()
+        raise e
+    finally:
+        conn.close()

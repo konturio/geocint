@@ -142,7 +142,7 @@ create table bivariate_axis as (
         calculate_axis_stops(a.param_id, b.param_id)            as f,
         estimate_bivariate_axis_quality(a.param_id, b.param_id) as quality
     where
-        a.param_id != b.param_id
+        b.is_base and a.param_id != b.param_id
 );
 
 analyse bivariate_axis;

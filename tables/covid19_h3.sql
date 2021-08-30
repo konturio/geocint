@@ -97,11 +97,12 @@ create table covid19_hex as (
     order by a.date, b.h3
 );
 
-drop table if exists covid19_dithered;
-create table covid19_dithered (
+drop table if exists covid19_h3;
+create table covid19_h3 (
     like covid19_hex
 );
 
+--dithering
 do
 $$
     declare
@@ -125,7 +126,7 @@ $$
                 out_recovered = least(floor(err_recovered), out_confirmed);
                 out_dead = least(floor(err_dead), out_confirmed);
                 insert into
-                    covid19_dithered (geom, h3, date, population, admin_id, total_population, resolution,
+                    covid19_h3 (geom, h3, date, population, admin_id, total_population, resolution,
                                       confirmed, recovered, dead)
                 values
                 (row.geom,
@@ -147,33 +148,8 @@ $$
     end;
 $$;
 
+create index on covid19_h3 using gist (date, geom);
 
-do
-$$
-    declare
-        res integer;
-    begin
-        res = 8;
-        while res > 0
-            loop
-                insert into covid19_dithered (h3, resolution, date, population, total_population, confirmed,
-                                              recovered, dead)
-                select
-                       h3_to_parent(h3) as h3,
-                       (res - 1) as resolution,
-                       max(date) as date,
-                       sum(population) as population,
-                       sum(total_population) as total_population,
-                       sum(confirmed) as confirmed,
-                       sum(recovered) as recovered,
-                       sum(dead) as dead
-                from covid19_dithered
-                where resolution = res
-                group by 1;
-                res = res - 1;
-            end loop;
-    end;
-$$;
-
-create index on covid19_dithered using gist (date, geom);
-
+drop table if exists covid19_population_h3_r8;
+drop table if exists covid19_hex;
+drop table if exists covid19_log;

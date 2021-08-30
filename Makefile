@@ -418,8 +418,7 @@ data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data/in/raster
 	wget https://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_SMOD_POP_GLOBE_R2016A/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k/V1-0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -O $@
 
 data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif: data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip | data/mid
-	mkdir -p data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0
-	unzip -o data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -d data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/
+	unzip -o data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -d data/mid/
 
 db/table/ghs_globe_residential_raster: data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_residential_raster"
@@ -632,7 +631,7 @@ data/in/water-polygons-split-3857.zip: | data/in ## Download OpenStreetMap water
 
 data/mid/water_polygons/water_polygons.shp: data/in/water-polygons-split-3857.zip | data/mid ## Unzip OpenStreetMap water polygons (oceans and seas) archive.
 	mkdir -p data/mid/water_polygons
-	unzip -o data/in/water-polygons-split-3857.zip -d data/mid/water_polygons/
+	unzip -jo data/in/water-polygons-split-3857.zip -d data/mid/water_polygons/
 
 db/table/water_polygons_vector: data/mid/water_polygons/water_polygons.shp | db/table ## Import and subdivide OpenStreetMap water polygons (oceans and seas) as water_polygons_vector(EPSG-3857).
 	psql -c "drop table if exists water_polygons_vector;"
@@ -804,7 +803,7 @@ data/mid/microsoft_buildings: | data/mid
 	mkdir -p $@
 
 data/mid/microsoft_buildings/unzip: data/in/microsoft_buildings/download | data/mid/microsoft_buildings
-	cd data/in/microsoft_buildings; ls *.zip | parallel "unzip -o {} -d data/mid/microsoft_buildings/"
+	cd data/in/microsoft_buildings; ls *.zip | parallel "unzip -o {} -d ../../mid/microsoft_buildings/"
 	touch $@
 
 db/table/microsoft_buildings: data/mid/microsoft_buildings/unzip | db/table
@@ -847,7 +846,7 @@ data/mid/geoalert_urban_mapping: | data/mid
 	mkdir -p $@
 
 data/mid/geoalert_urban_mapping/unzip: data/in/geoalert_urban_mapping/download | data/mid/geoalert_urban_mapping
-	cd data/in/geoalert_urban_mapping; ls *.zip | parallel "unzip -o {} -d data/mid/geoalert_urban_mapping/"
+	cd data/in/geoalert_urban_mapping; ls *.zip | parallel "unzip -o {} -d ../../mid/geoalert_urban_mapping/"
 	touch $@
 
 db/table/geoalert_urban_mapping: data/mid/geoalert_urban_mapping/unzip | db/table

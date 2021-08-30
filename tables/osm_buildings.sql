@@ -32,4 +32,7 @@ create table osm_buildings as (
       and not (tags ->> 'building') = 'no'
     order by _ST_SortableHash(geog::geometry)
 );
+
+alter table osm_buildings set (parallel_workers=32);
+
 create index on osm_buildings using brin (geom);

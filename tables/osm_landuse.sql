@@ -19,4 +19,6 @@ create table osm_landuse as (
     order by _ST_SortableHash(geog::geometry)
 );
 
+alter table osm_landuse set (parallel_workers=32);
+
 create index on osm_landuse using brin(geom);

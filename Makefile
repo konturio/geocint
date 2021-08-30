@@ -1282,7 +1282,7 @@ db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float db/functio
 	psql -f tables/osm_buildings.sql
 	touch $@
 
-db/table/osm_buildings_use: db/table/osm_buildings db/table/osm_landuse ## Set use in buildings table from landuse table.
+db/table/osm_buildings_use: db/table/osm_building_count_grid_h3_r8 db/table/osm_landuse ## Set use in buildings table from landuse table.
 	psql -f tables/osm_buildings_use.sql
 	touch $@
 

@@ -1,4 +1,5 @@
-create index concurrently on osm_buildings using gist (geom) where use is null;
+create index if not exists osm_buildings_geom_idx_nulluse on osm_buildings using gist (geom) where use is null;
+
 update osm_buildings b
 set use = case
               when amenity in
@@ -43,3 +44,8 @@ where use is null
     or leisure = 'sports_centre'
     or tourism = 'museum'
     or residential in ('rural', 'urban'));
+
+--half of a table is updated
+
+vacuum full osm_buildings;
+vacuum analyze osm_buildings;

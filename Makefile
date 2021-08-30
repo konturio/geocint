@@ -331,17 +331,19 @@ db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_activ
 	psql -f tables/osm_users_hex.sql
 	touch $@
 
-data/in/raster/worldpop: | data/in/raster
+data/in/raster/worldpop: | data/in/raster ## derectory for World Pop tifs
 	mkdir -p $@
 
 data/in/raster/worldpop/download: | data/in/raster/worldpop ## Download World Pop tifs from worldpop.org.
 	python3 scripts/parser_worldpop_tif_urls.py | parallel -j10 wget -nc -c -P data/in/raster/worldpop -i -
 	touch $@
 
-data/mid/worldpop/tiled_rasters: data/in/raster/worldpop/download | data/mid ## Tile raw stripped TIFs.
-	mkdir -p data/mid/worldpop
-	rm -r data/mid/worldpop/tiled_*.tif
-	find data/worldpop/raster/in/*.tif -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co BIGTIFF=IF_SAFER -of COG {} data/mid/worldpop/tiled_{/}'
+data/mid/worldpop: | data/mid ## Temporary worldpop dir for tiled tifs
+	mkdir -p $@
+
+data/mid/worldpop/tiled_rasters: data/in/raster/worldpop/download | data/mid/worldpop ## Tile raw stripped TIFs.
+	rm -f data/mid/worldpop/tiled_*.tif
+	find data/in/raster/worldpop/*.tif -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co BIGTIFF=IF_SAFER -of COG {} data/mid/worldpop/tiled_{/}'
 	touch $@
 
 db/table/worldpop_population_raster: data/mid/worldpop/tiled_rasters | db/table ## Import raster data and create table with tiled data.

@@ -5,7 +5,6 @@ select osm_id, admin_level, ST_Subdivide(geom) geom
 from osm_admin_boundaries;
 create index on osm_admin_subdivided using gist(geom);
 
-select count(*) from osm_admin_hierarchy;
 -- Build subregions hierarchy to sum subregions population
 drop table if exists osm_admin_hierarchy;
 create table osm_admin_hierarchy as
@@ -49,7 +48,7 @@ create table hierarchy_position as
 --Sum populaion of subregions for every boundary
 --and compare it with population from OSM key (if any)
 drop table if exists osm_population_validation;
-create table osm_population_validation as
+create table osm_population_validation as;
 select
        h.osm_id::text                                              as "OSM ID",
        h.name                                                      as "Name",

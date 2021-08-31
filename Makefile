@@ -805,7 +805,7 @@ data/mid/microsoft_buildings: | data/mid
 	mkdir -p $@
 
 data/mid/microsoft_buildings/unzip: data/in/microsoft_buildings/download | data/mid/microsoft_buildings
-	cd data/in/microsoft_buildings; ls *.zip | parallel "unzip -o {} -d ../../mid/microsoft_buildings/"
+	ls data/in/microsoft_buildings/*.zip | parallel "unzip -o {} -d data/mid/microsoft_buildings/"
 	touch $@
 
 db/table/microsoft_buildings: data/mid/microsoft_buildings/unzip | db/table
@@ -848,7 +848,7 @@ data/mid/geoalert_urban_mapping: | data/mid
 	mkdir -p $@
 
 data/mid/geoalert_urban_mapping/unzip: data/in/geoalert_urban_mapping/download | data/mid/geoalert_urban_mapping
-	cd data/in/geoalert_urban_mapping; ls *.zip | parallel "unzip -o {} -d ../../mid/geoalert_urban_mapping/"
+	ls data/in/geoalert_urban_mapping/*.zip | parallel "unzip -o {} -d data/mid/geoalert_urban_mapping/"
 	touch $@
 
 db/table/geoalert_urban_mapping: data/mid/geoalert_urban_mapping/unzip | db/table

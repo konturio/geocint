@@ -331,17 +331,19 @@ db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_activ
 	psql -f tables/osm_users_hex.sql
 	touch $@
 
-data/in/raster/worldpop: | data/in/raster
+data/in/raster/worldpop: | data/in/raster ## derectory for World Pop tifs
 	mkdir -p $@
 
 data/in/raster/worldpop/download: | data/in/raster/worldpop ## Download World Pop tifs from worldpop.org.
 	python3 scripts/parser_worldpop_tif_urls.py | parallel -j10 wget -nc -c -P data/in/raster/worldpop -i -
 	touch $@
 
-data/mid/worldpop/tiled_rasters: data/in/raster/worldpop/download | data/mid ## Tile raw stripped TIFs.
-	mkdir -p data/mid/worldpop
-	rm -r data/mid/worldpop/tiled_*.tif
-	find data/worldpop/raster/in/*.tif -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co BIGTIFF=IF_SAFER -of COG {} data/mid/worldpop/tiled_{/}'
+data/mid/worldpop: | data/mid ## Temporary worldpop dir for tiled tifs
+	mkdir -p $@
+
+data/mid/worldpop/tiled_rasters: data/in/raster/worldpop/download | data/mid/worldpop ## Tile raw stripped TIFs.
+	rm -f data/mid/worldpop/tiled_*.tif
+	find data/in/raster/worldpop/*.tif -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co BIGTIFF=IF_SAFER -of COG {} data/mid/worldpop/tiled_{/}'
 	touch $@
 
 db/table/worldpop_population_raster: data/mid/worldpop/tiled_rasters | db/table ## Import raster data and create table with tiled data.
@@ -418,8 +420,7 @@ data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data/in/raster
 	wget https://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_SMOD_POP_GLOBE_R2016A/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k/V1-0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -O $@
 
 data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif: data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip | data/mid
-	mkdir -p data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0
-	unzip -o data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -d data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/
+	unzip -o data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -d data/mid/
 
 db/table/ghs_globe_residential_raster: data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_residential_raster"
@@ -632,7 +633,7 @@ data/in/water-polygons-split-3857.zip: | data/in ## Download OpenStreetMap water
 
 data/mid/water_polygons/water_polygons.shp: data/in/water-polygons-split-3857.zip | data/mid ## Unzip OpenStreetMap water polygons (oceans and seas) archive.
 	mkdir -p data/mid/water_polygons
-	unzip -o data/in/water-polygons-split-3857.zip -d data/mid/water_polygons/
+	unzip -jo data/in/water-polygons-split-3857.zip -d data/mid/water_polygons/
 
 db/table/water_polygons_vector: data/mid/water_polygons/water_polygons.shp | db/table ## Import and subdivide OpenStreetMap water polygons (oceans and seas) as water_polygons_vector(EPSG-3857).
 	psql -c "drop table if exists water_polygons_vector;"
@@ -804,7 +805,7 @@ data/mid/microsoft_buildings: | data/mid
 	mkdir -p $@
 
 data/mid/microsoft_buildings/unzip: data/in/microsoft_buildings/download | data/mid/microsoft_buildings
-	cd data/in/microsoft_buildings; ls *.zip | parallel "unzip -o {} -d data/mid/microsoft_buildings/"
+	ls data/in/microsoft_buildings/*.zip | parallel "unzip -o {} -d data/mid/microsoft_buildings/"
 	touch $@
 
 db/table/microsoft_buildings: data/mid/microsoft_buildings/unzip | db/table
@@ -847,7 +848,7 @@ data/mid/geoalert_urban_mapping: | data/mid
 	mkdir -p $@
 
 data/mid/geoalert_urban_mapping/unzip: data/in/geoalert_urban_mapping/download | data/mid/geoalert_urban_mapping
-	cd data/in/geoalert_urban_mapping; ls *.zip | parallel "unzip -o {} -d data/mid/geoalert_urban_mapping/"
+	ls data/in/geoalert_urban_mapping/*.zip | parallel "unzip -o {} -d data/mid/geoalert_urban_mapping/"
 	touch $@
 
 db/table/geoalert_urban_mapping: data/mid/geoalert_urban_mapping/unzip | db/table

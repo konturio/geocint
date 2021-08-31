@@ -4,11 +4,11 @@ alter table water_polygons_vector alter COLUMN geom type geometry;
 with complex_areas_to_subdivide as (
     delete from water_polygons_vector
     where ST_NPoints(geom) > 100
-    returning gid, fid, geom
+    returning gid, geom
 )
-insert into water_polygons_vector (gid, fid, geom)
+insert into water_polygons_vector (gid, geom)
     select
-        gid,fid, ST_Subdivide(geom, 100) as geom
+        gid, ST_Subdivide(geom, 100) as geom
     from complex_areas_to_subdivide;
 
 vacuum full water_polygons_vector;

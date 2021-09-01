@@ -154,7 +154,7 @@ create table stat_h3_in as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, resolution
-             from covid19_dithered
+             from covid19_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,

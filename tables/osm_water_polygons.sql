@@ -2,20 +2,8 @@ drop table if exists osm_water_polygons_unsorted;
 create table osm_water_polygons_unsorted as (
     select osm_type,
            osm_id,
-           ST_Subdivide(ST_Transform(geog::geometry, 3857), 100) as geom
-    from osm
-    where (tags ? 'water'
-        or tags @> '{"natural":"water"}'
-        or tags @> '{"waterway":"riverbank"}'
-        or tags @> '{"waterway":"river"}'
-        or tags @> '{"waterway":"stream"}'
-        or tags @> '{"waterway":"canal"}'
-        or tags @> '{"waterway":"ditch"}'
-        or tags @> '{"waterway":"drain"}'
-        or tags @> '{"landuse":"reservoir"}'
-        )
-      and ST_GeometryType(geog::geometry) != 'ST_Point'
-      and ST_GeometryType(geog::geometry) != 'ST_LineString'
+           geom
+    from osm_water_polygons_in_subdivided
 
     union all
 
@@ -28,8 +16,8 @@ create table osm_water_polygons_unsorted as (
 
     select osm_type,
            osm_id,
-           ST_Subdivide(ST_Buffer(geom, 1), 100) as geom
-    from osm_water_lines
+           geom
+    from osm_water_lines_buffers_subdivided
 );
 
 drop table if exists osm_water_polygons;
@@ -41,3 +29,6 @@ create table osm_water_polygons as (
 drop table osm_water_polygons_unsorted;
 vacuum analyze osm_water_polygons;
 create index on osm_water_polygons using gist (geom);
+
+drop table if exists osm_water_polygons_in_subdivided;
+drop table if exists osm_water_lines_buffers_subdivided;

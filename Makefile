@@ -1121,7 +1121,7 @@ db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table
 	psql -c "create table osm_buildings_minsk as (select building, street, hno, levels, height, use, \"name\", geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name\":\"Минск\", \"boundary\":\"administrative\"}' and osm_id = 59195 and osm_type = 'relation'), 0));"
 	touch $@
 
-data/out/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk_use | data/out
+data/out/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk | data/out
 	rm -f $@
 	rm -f data/out/osm_buildings_minsk.geojson*
 	ogr2ogr -f GeoJSON data/out/osm_buildings_minsk.geojson PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_minsk' -nln osm_buildings_minsk

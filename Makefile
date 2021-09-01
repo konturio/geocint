@@ -332,7 +332,7 @@ db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_activ
 	psql -f tables/osm_users_hex.sql
 	touch $@
 
-data/in/raster/worldpop: | data/in/raster ## derectory for World Pop tifs
+data/in/raster/worldpop: | data/in/raster ## directory for World Pop tifs
 	mkdir -p $@
 
 data/in/raster/worldpop/download: | data/in/raster/worldpop ## Download World Pop tifs from worldpop.org.
@@ -1116,12 +1116,12 @@ db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews 
 	psql -c "call generate_overviews('osm_volcanos_h3', '{volcanos_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table
+db/table/osm_buildings_minsk: db/table/osm_buildings | db/table
 	psql -c "drop table if exists osm_buildings_minsk;"
 	psql -c "create table osm_buildings_minsk as (select building, street, hno, levels, height, use, \"name\", geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name\":\"Минск\", \"boundary\":\"administrative\"}' and osm_id = 59195 and osm_type = 'relation'), 0));"
 	touch $@
 
-data/out/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk | data/out
+data/out/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk_use | data/out
 	rm -f $@
 	rm -f data/out/osm_buildings_minsk.geojson*
 	ogr2ogr -f GeoJSON data/out/osm_buildings_minsk.geojson PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_minsk' -nln osm_buildings_minsk
@@ -1231,8 +1231,8 @@ db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float db/functio
 	psql -f tables/osm_buildings.sql
 	touch $@
 
-db/table/osm_buildings_use: db/table/osm_buildings db/table/osm_landuse ## Set use in buildings table from landuse table.
-	psql -f tables/osm_buildings_use.sql
+db/table/osm_buildings_minsk_use: db/table/osm_buildings_minsk db/table/osm_landuse ## Set use in buildings table from landuse table.
+	psql -f tables/osm_buildings_minsk_use.sql
 	touch $@
 
 db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_residential_vector | db/table

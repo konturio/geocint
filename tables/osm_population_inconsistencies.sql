@@ -59,8 +59,8 @@ having sum(b.population) filter(where b.admin_level = c.child_level) > s.populat
 
 
 -- Generate final report table
-drop table if exists osm_population_inconsitencies;
-create table osm_population_inconsitencies as
+drop table if exists osm_population_inconsistencies;
+create table osm_population_inconsistencies as
 with unnested as (
     select unnest(array_prepend(osm_id, children)) osm_id
     from (select * from osm_admin_hierarchy order by pop_diff_percent desc) a

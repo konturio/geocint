@@ -1,4 +1,5 @@
-create index if not exists osm_buildings_geom_idx_nulluse on osm_buildings using gist (geom) where use is null;
+drop index if exists osm_buildings_geom_idx_nulluse;
+create index osm_buildings_geom_idx_nulluse on osm_buildings using gist (geom) where use is null;
 
 update osm_buildings b
 set use = case
@@ -45,7 +46,5 @@ where use is null
     or tourism = 'museum'
     or residential in ('rural', 'urban'));
 
---half of a table is updated
-
-vacuum full osm_buildings;
+-- half of a table is updated
 vacuum analyze osm_buildings;

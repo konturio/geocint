@@ -33,6 +33,6 @@ create table osm_buildings as (
     order by _ST_SortableHash(geog::geometry)
 );
 
-alter table osm_buildings set (parallel_workers=32);
+alter table osm_buildings set (parallel_workers=32); -- critical way
 
-create index on osm_buildings using brin (geom);
+create index on osm_buildings using brin (geom); -- order by _ST_SortableHash

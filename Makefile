@@ -4,7 +4,7 @@ dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/ge
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz deploy/geocint/drp_buildings ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Pipeline finished. Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -20,7 +20,7 @@ basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/drp_regions
+	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/vaccination/vaccine_acceptance_us_counties.csv
 	psql -f scripts/clean.sql
 
 data: ## Directory for storing temporary file based datasets.
@@ -1131,57 +1131,6 @@ deploy/s3/osm_buildings_minsk: data/out/osm_buildings_minsk.geojson.gz | deploy/
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body data/out/osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/table/osm_buildings_japan: db/table/osm_buildings_use | db/table
-	psql -f tables/osm_buildings_japan.sql
-	touch $@
-
-data/out/osm_buildings_japan.gpkg.gz: db/table/osm_buildings_japan | data/out
-	rm -f $@
-	rm -f data/out/osm_buildings_japan.gpkg
-	ogr2ogr -f GPKG data/out/osm_buildings_japan.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_japan' -lco "SPATIAL_INDEX=NO" -nln osm_buildings_japan
-	cd data/out/; pigz osm_buildings_japan.gpkg
-
-deploy/geocint/osm_buildings_japan.gpkg.gz: data/out/osm_buildings_japan.gpkg.gz | deploy/geocint
-	cp -vp data/out/osm_buildings_japan.gpkg.gz ~/public_html/osm_buildings_japan.gpkg.gz
-	touch $@
-
-data/drp_buildings: | data
-	mkdir -p $@
-
-db/table/drp_regions: data/drp_regions.csv | db/table
-	psql -c 'drop table if exists drp_regions;'
-	psql -c 'create table drp_regions (osm_id bigint, city_name text, country text);'
-	cat data/drp_regions.csv | psql -c "copy drp_regions (osm_id, city_name, country) from stdin with csv header delimiter ';' ;"
-	touch $@
-
-db/table/osm_boundary_drp: db/table/drp_regions db/table/osm_admin_boundaries | db/table
-	psql -f tables/osm_boundary_drp.sql
-	touch $@
-
-db/table/osm_buildings_drp: db/table/osm_boundary_drp db/table/osm_buildings_use | db/table
-	psql -f tables/osm_buildings_drp.sql
-	touch $@
-
-db/table/microsoft_buildings_drp: db/table/osm_boundary_drp db/table/microsoft_buildings | db/table
-	psql -f tables/microsoft_buildings_drp.sql
-	touch $@
-
-data/out/drp_buildings: | data/out
-	mkdir $@
-
-data/out/drp_buildings_export: data/drp_buildings data/drp_regions.csv db/table/osm_boundary_drp db/table/osm_buildings_drp db/table/microsoft_buildings_drp | data/out/drp_buildings
-	rm -f data/out/drp_buildings/drp_buildings_*.gpkg
-	rm -f data/out/drp_buildings/drp_buildings_*.gpkg.gz
-	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -lco OVERWRITE=YES -lco SPATIAL_INDEX=NO -nln boundary -f GPKG data/out/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select osm_id as id, city_name, country, geom from drp_regions where city_name = '{}' \" "
-	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln osm_buildings -f GPKG data/out/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select building, street, hno, levels, height, use, name, geom from osm_buildings_drp where city_name = '{}' \" "
-	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln microsoft_buildings -f GPKG data/out/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select id, geom from microsoft_buildings_drp where city_name = '{}' \" "
-	pigz data/out/drp_buildings/drp_buildings_*.gpkg
-	touch $@
-
-deploy/geocint/drp_buildings: data/out/drp_buildings_export | deploy/geocint
-	cp -vp data/out/drp_buildings/drp_buildings_*.gpkg.gz ~/public_html/
-	touch $@
-
 data/in/census_gov: | data/in
 	mkdir $@
 
@@ -1282,7 +1231,7 @@ db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float db/functio
 	psql -f tables/osm_buildings.sql
 	touch $@
 
-db/table/osm_buildings_use: db/table/osm_building_count_grid_h3_r8 db/table/osm_landuse ## Set use in buildings table from landuse table.
+db/table/osm_buildings_use: db/table/osm_buildings db/table/osm_landuse ## Set use in buildings table from landuse table.
 	psql -f tables/osm_buildings_use.sql
 	touch $@
 

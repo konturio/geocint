@@ -1,7 +1,7 @@
-drop index if exists osm_buildings_minsk_geom_idx_nulluse;
-create index osm_buildings_minsk_geom_idx_nulluse on osm_buildings_minsk using gist (geom) where use is null;
+drop index if exists osm_buildings_geom_idx_nulluse;
+create index osm_buildings_geom_idx_nulluse on osm_buildings using gist (geom) where use is null;
 
-update osm_buildings_minsk b
+update osm_buildings b
 set use = case
               when amenity in
                    ('bank', 'bus_station', 'cafe', 'car_wash', 'casino', 'childcare', 'cinema', 'clinic', 'college',
@@ -47,4 +47,4 @@ where use is null
     or residential in ('rural', 'urban'));
 
 -- half of a table is updated
-vacuum analyze osm_buildings_minsk;
+vacuum analyze osm_buildings;

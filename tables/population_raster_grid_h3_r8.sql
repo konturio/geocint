@@ -1,5 +1,3 @@
-alter table :population_raster
-    set (parallel_workers = 32);
 
 drop table if exists :population_raster_grid_h3_r8;
 create table :population_raster_grid_h3_r8 as (

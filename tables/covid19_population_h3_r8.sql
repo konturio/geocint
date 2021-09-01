@@ -8,7 +8,6 @@ create table covid19_population_h3_r8 as (
     where resolution = 8
 );
 
-alter table covid19_population_h3_r8 set (parallel_workers = 32);
 create index on covid19_population_h3_r8 using gist ((h3::geometry));
 
 update covid19_population_h3_r8 h

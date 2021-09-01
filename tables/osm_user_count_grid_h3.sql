@@ -21,4 +21,3 @@ create table osm_user_count_grid_h3 as (
 
 create index on osm_user_count_grid_h3 (h3);
 
-alter table osm_user_count_grid_h3 set (parallel_workers = 32);

@@ -691,10 +691,10 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-data/in/global_fires/download_new_updates: | data/in
+data/in/global_fires/new_updates: | data/in
 	mkdir -p $@
 
-data/in/global_fires/download_new_updates: | data/in/global_fires
+data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates
 	rm -f data/in/global_fires/new_updates/*.csv
 	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
 	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
@@ -714,7 +714,7 @@ db/table/global_fires: data/in/global_fires/download_new_updates data/in/global_
 	psql -c "create index if not exists global_fires_hash_idx on global_fires (hash);"
 	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
 	psql -c "delete from global_fires where id in(select id from(select id, row_number() over(partition by hash order by id) as row_num from global_fires) t where t.row_num > 1);"
-	rm data/in/global_fires/*.csv
+	rm -f data/in/global_fires/*.csv
 	touch $@
 
 db/table/global_fires_stat_h3: db/table/global_fires

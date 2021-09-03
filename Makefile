@@ -711,6 +711,7 @@ db/table/global_fires: data/in/global_fires/download_new_updates data/in/global_
 	rm -f data/in/global_fires/*_proc.csv
 	ls data/in/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {}"
 	ls data/in/global_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy global_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
+	psql -c "vacuum analyze global_fires;"
 	psql -c "create index if not exists global_fires_hash_idx on global_fires (hash);"
 	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
 	psql -c "delete from global_fires where id in(select id from(select id, row_number() over(partition by hash order by id) as row_num from global_fires) t where t.row_num > 1);"

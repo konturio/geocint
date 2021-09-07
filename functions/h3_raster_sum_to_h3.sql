@@ -11,7 +11,7 @@ select
     h3_geo_to_h3(ST_Transform(geom,4326)::box::point, res) as h3,
     sum(val) as sum
 from
-    ST_PixelAsPolygons(rast)
+    ST_PixelAsCentroids(rast)
 where val != 'NaN' and val != 0
 group by 1;
 $$

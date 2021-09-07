@@ -8,7 +8,7 @@ create or replace function h3_raster_sum_to_h3
     )
 as $$
 select
-    h3_geo_to_h3(ST_Transform(geom,4326)::box::point, res) as h3,
+    h3_geo_to_h3(ST_Transform(geom, 4326), res) as h3,
     sum(val) as sum
 from
     ST_PixelAsCentroids(rast)

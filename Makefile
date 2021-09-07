@@ -1076,7 +1076,7 @@ data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bi
 
 db/table/abu_dhabi_buildings: | db/table
 	psql -c 'drop table if exists abu_dhabi_buildings;'
-	psql -c 'create table abu_dhabi_buildings ("_height_confidence" float, sun_azimuth float, "_block_id" integer, sun_elevation float, osm_landuse_class text, is_residential text, shape_type text, processing_date date, sat_azimuth float, building_height float, id integer, sat_elevation float, geom geometry);'
+	psql -c 'create table abu_dhabi_buildings ("_height_confidence" float, sun_azimuth float, "_block_id" integer, sun_elevation float, osm_landuse_class text, is_residential text, shape_type text, processing_date date, sat_azimuth float, building_height float, id integer, sat_elevation float, geom geometry(Geometry, 4326));'
 	ogr2ogr --config PG_USE_COPY YES -append -a_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/abu_dhabi_buildings/abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings
 	psql -c 'create index on abu_dhabi_buildings using gist(geom);';
 	touch $@

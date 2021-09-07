@@ -1089,15 +1089,11 @@ data/out/abu_dhabi/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops | dat
 data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops | data/out/abu_dhabi
 	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
 
-db/table/abu_dhabi_buildings_phase_1: | db/table
-	psql -c 'drop table if exists abu_dhabi_buildings_phase_1;'
-	psql -c 'create table abu_dhabi_buildings_phase_1 ("_height_confidence" float, sun_azimuth float, "_block_id" integer, sun_elevation float, osm_landuse_class text, is_residential text, shape_type text, processing_date date, sat_azimuth float, building_height float, id integer, sat_elevation float, geom geometry);'
-	ls data/abu_dhabi_buildings/phase_1/*.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -a_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" {} -nln abu_dhabi_buildings_phase_1'
-	touch $@
-
-db/table/abu_dhabi_buildings: db/table/abu_dhabi_buildings_phase_1 db/table/osm_water_polygons | db/table
-	psql -f tables/abu_dhabi_buildings.sql
-	psql -c "vacuum analyze abu_dhabi_buildings;"
+db/table/abu_dhabi_buildings: | db/table
+	psql -c 'drop table if exists abu_dhabi_buildings;'
+	psql -c 'create table abu_dhabi_buildings ("_height_confidence" float, sun_azimuth float, "_block_id" integer, sun_elevation float, osm_landuse_class text, is_residential text, shape_type text, processing_date date, sat_azimuth float, building_height float, id integer, sat_elevation float, geom geometry);'
+	ogr2ogr --config PG_USE_COPY YES -append -a_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/abu_dhabi_buildings/abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings
+	psql -c 'create index on abu_dhabi_buildings using gist(geom);';
 	touch $@
 
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv

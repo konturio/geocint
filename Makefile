@@ -1,10 +1,10 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/population_check_osm.csv db/table/iso_codes reports/population_check_world db/table/abu_dhabi_buildings data/out/abu_dhabi_export  ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/geocint/osm_buildings_japan.gpkg.gz deploy/geocint/drp_buildings ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Pipeline finished. Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -20,7 +20,7 @@ basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/drp_regions
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv
 	psql -f scripts/clean.sql
 
 data: ## Directory for storing temporary file based datasets.
@@ -212,12 +212,13 @@ db/table/covid19_admin_boundaries: db/table/covid19_in db/index/osm_tags_idx ## 
 	psql -f tables/covid19_admin_boundaries.sql
 	touch $@
 
-db/table/covid19_population_h3_r8: db/table/kontur_population_h3 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
+db/table/covid19_population_h3_r8: db/table/kontur_population_h3 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table ## Genereate table of Covid19 cases (worldwide and USA) in h3 8 resolution from Kontur population dataset and used boundaries
 	psql -f tables/covid19_population_h3_r8.sql
 	touch $@
 
-db/table/covid19_h3_r8: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table
-	psql -f tables/covid19_h3_r8.sql
+db/table/covid19_h3: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table ## calculate cases rate, dither and generate overviews of covid19_population_h3_r8
+	psql -f tables/covid19_h3.sql
+	psql -c "call generate_overviews('covid19_h3', '{date, population, total_population, confirmed, recovered, dead}'::text[], '{max, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
 
 db/table/us_counties_boundary: data/mid/gadm/gadm36_shp_files | db/table ## USA counties boundaries extracted from GADM (Database of Global Administrative Areas) admin_level_2 dataset.
@@ -230,7 +231,7 @@ db/table/us_counties_boundary: data/mid/gadm/gadm36_shp_files | db/table ## USA 
 	psql -f tables/us_counties_boundary.sql
 	touch $@
 
-db/table/covid19_us_counties: db/table/covid19_us_confirmed_in db/table/covid19_us_deaths_in db/table/us_counties_boundary | db/table
+db/table/covid19_us_counties: db/table/covid19_us_confirmed_in db/table/covid19_us_deaths_in db/table/us_counties_boundary | db/table ## USA counties subdivided geometries
 	psql -f tables/covid19_us_counties.sql
 	touch $@
 
@@ -331,21 +332,23 @@ db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_activ
 	psql -f tables/osm_users_hex.sql
 	touch $@
 
-data/in/raster/worldpop: | data/in/raster
+data/in/raster/worldpop: | data/in/raster ## directory for World Pop tifs
 	mkdir -p $@
 
 data/in/raster/worldpop/download: | data/in/raster/worldpop ## Download World Pop tifs from worldpop.org.
 	python3 scripts/parser_worldpop_tif_urls.py | parallel -j10 wget -nc -c -P data/in/raster/worldpop -i -
 	touch $@
 
-data/mid/worldpop/tiled_rasters: data/in/raster/worldpop/download | data/mid ## Tile raw stripped TIFs.
-	mkdir -p data/mid/worldpop
-	rm -r data/mid/worldpop/tiled_*.tif
-	find data/worldpop/raster/in/*.tif -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co BIGTIFF=IF_SAFER -of COG {} data/mid/worldpop/tiled_{/}'
+data/mid/worldpop: | data/mid ## Temporary worldpop dir for tiled tifs
+	mkdir -p $@
+
+data/mid/worldpop/tiled_rasters: data/in/raster/worldpop/download | data/mid/worldpop ## Tile raw stripped TIFs.
+	rm -f data/mid/worldpop/tiled_*.tif
+	find data/in/raster/worldpop/*.tif -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co BIGTIFF=IF_SAFER -of COG {} data/mid/worldpop/tiled_{/}'
 	touch $@
 
 db/table/worldpop_population_raster: data/mid/worldpop/tiled_rasters | db/table ## Import raster data and create table with tiled data.
-	psql -c "drop table if exists worldpop_population_raster"
+	psql -c "drop table if exists worldpop_population_raster;"
 	raster2pgsql -p -Y -s 4326 data/mid/worldpop/tiled_*.tif -t auto worldpop_population_raster | psql -q
 	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
 	ls -Sr data/mid/worldpop/tiled_*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
@@ -357,10 +360,10 @@ db/table/worldpop_population_grid_h3_r8: db/table/worldpop_population_raster ## 
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=worldpop_population_raster -v population_raster_grid_h3_r8=worldpop_population_raster_grid_h3_r8
 	touch $@
 
-db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate table with countries for WorldPop rasters.
+db/table/worldpop_country_codes: data/in/raster/worldpop/download | db/table ## Generate table with countries for WorldPop rasters.
 	psql -c "drop table if exists worldpop_country_codes;"
 	psql -c "create table worldpop_country_codes (code varchar(3) not null, primary key (code));"
-	ls data/worldpop/*.tif | parallel --eta psql -c "\"insert into worldpop_country_codes(code) select upper(substr('{/.}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{/.}', 1, 3)));\""
+	ls data/in/raster/worldpop/*.tif | parallel --eta psql -c "\"insert into worldpop_country_codes(code) select upper(substr('{/.}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{/.}', 1, 3)));\""
 	touch $@
 
 db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.
@@ -378,7 +381,7 @@ db/table/hrsl_population_raster: data/in/raster/hrsl_cogs/download | db/table ##
 	psql -c "drop table if exists hrsl_population_raster;"
 	raster2pgsql -p -Y -s 4326 data/in/raster/hrsl_cogs/hrsl_general/v1.5/*.tif -t auto hrsl_population_raster | psql -q
 	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
-	find data/in/raster/hrsl_cogs/hrsl_general -name "*.tif" -type f -printf "%f %p\n" | sed -E 's/.*-v(([[:digit:]]\.?)+)\.tif(.*)/\1 \0/;s/-v([[:digit:]]\.?)+\.tif//1' | sort -Vrk1,1 | sort -uk2,2 | cut -d\  -f2- | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
+	find data/in/raster/hrsl_cogs/hrsl_general -name "*.tif" -type f -printf "%f %p\n" | sed -E 's/.*-v(([[:digit:]]\.?)+)\.tif(.*)/\1 \0/;s/-v([[:digit:]]\.?)+\.tif//1' | sort -Vrk1,1 | sort -uk2,2 | cut -d ' ' -f3- | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
 	psql -c "alter table hrsl_population_raster set (parallel_workers = 32);"
 	psql -c "create index hrsl_population_raster_rast_idx on hrsl_population_raster using gist (ST_ConvexHull(rast));"
 	psql -c "vacuum analyze hrsl_population_raster;"
@@ -403,10 +406,12 @@ db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster d
 
 data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip: | data/in/raster
 	wget http://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_MT_GLOBE_R2019A/GHS_POP_E2015_GLOBE_R2019A_54009_250/V1-0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip -O $@
+	touch $@
 
 data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif: data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip | data/mid
 	mkdir -p data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0
 	unzip -o data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip -d data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/
+	touch $@
 
 db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_population_raster"
@@ -416,10 +421,11 @@ db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_
 
 data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data/in/raster
 	wget https://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_SMOD_POP_GLOBE_R2016A/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k/V1-0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -O $@
+	touch $@
 
 data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif: data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip | data/mid
-	mkdir -p data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0
-	unzip -o data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -d data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/
+	unzip -o data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -d data/mid/
+	touch $@
 
 db/table/ghs_globe_residential_raster: data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_residential_raster"
@@ -563,6 +569,18 @@ db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundari
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
+reports/osm_gadm_comparison.html: db/table/kontur_boundaries db/table/gadm_boundaries | reports ## Validate OSM boundaries that OSM has no less polygons than GADM and generate html report for OpenStreetMap users.
+	# Besides generating HTML table we also inject charset tag and clickable links into it using sed utility.
+	{ echo '<meta charset="utf-8">'; psql -HXP footer=off -f tables/osm_gadm_comparison.sql | sed -z 's/\(<td align=\"left\">\)\([0-9]\{4,\}\)\(<\/td>\)\(\n\s\{4\}<td align=\"left\">[0-9]\+<\/td>\n\s\{4\}<td align=\"left\">\)\([^<>]\+\)\(<\/td>\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3\4<a href=\"http\:\/\/localhost\:8111\/load_object\?new_layer=true\&objects=r\2\&relation_members=true\">\5<\/a>\6/g'; } > $@
+
+db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
+	psql -f tables/osm_population_inconsistencies.sql
+	touch $@
+
+reports/osm_population_inconsistencies.html: db/table/osm_population_inconsistencies | reports ## Generate report for OpenStreetMap users about population inconsistencies (see also db/table/osm_population_inconsistencies target).
+	# Besides generating HTML table we also inject charset tag and clickable links into it using sed utility.
+	{ echo '<meta charset="utf-8">' ; psql -HXP footer=off -c 'select * from osm_population_inconsistencies;' | sed -z 's/\(<td align=\"left\">\)\([0-9]\{4,\}\)\(<\/td>\)\(\n\s\{4\}<td align=\"left\">\)\([^<>]\+\)\(<\/td>\n\s\{4\}<td align=\"right\">\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3\4<a href=\"http\:\/\/localhost\:8111\/load_object\?new_layer=true\&objects=r\2\&relation_members=true\">\5<\/a>\6/g'; } > $@
+
 db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
 	psql -f tables/population_check_osm.sql
 	touch $@
@@ -629,12 +647,14 @@ db/table/gdp_h3: db/table/kontur_population_h3 db/table/wb_gadm_gdp_countries
 
 data/in/water-polygons-split-3857.zip: | data/in ## Download OpenStreetMap water polygons (oceans and seas) archive.
 	wget https://osmdata.openstreetmap.de/download/water-polygons-split-3857.zip -O $@
+	touch $@
 
-data/mid/water_polygons/water_polygons.shp: data/in/water-polygons-split-3857.zip | data/mid ## Unzip OpenStreetMap water polygons (oceans and seas) archive.
+data/mid/water_polygons/water_polygons_shapefile: data/in/water-polygons-split-3857.zip | data/mid ## Unzip OpenStreetMap water polygons (oceans and seas) archive.
 	mkdir -p data/mid/water_polygons
-	unzip -o data/in/water-polygons-split-3857.zip -d data/mid/water_polygons/
+	unzip -jo data/in/water-polygons-split-3857.zip -d data/mid/water_polygons/
+	touch $@
 
-db/table/water_polygons_vector: data/mid/water_polygons/water_polygons.shp | db/table ## Import and subdivide OpenStreetMap water polygons (oceans and seas) as water_polygons_vector(EPSG-3857).
+db/table/water_polygons_vector: data/mid/water_polygons/water_polygons_shapefile | db/table ## Import and subdivide OpenStreetMap water polygons (oceans and seas) as water_polygons_vector(EPSG-3857).
 	psql -c "drop table if exists water_polygons_vector;"
 	shp2pgsql -I -s 3857 data/mid/water_polygons/water_polygons.shp water_polygons_vector | psql -q
 	psql -f tables/water_polygons_vector.sql
@@ -677,10 +697,10 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-data/in/global_fires/download_new_updates: | data/in
+data/in/global_fires/new_updates: | data/in
 	mkdir -p $@
 
-data/in/global_fires/download_new_updates: | data/in/global_fires
+data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates
 	rm -f data/in/global_fires/new_updates/*.csv
 	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
 	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
@@ -697,10 +717,11 @@ db/table/global_fires: data/in/global_fires/download_new_updates data/in/global_
 	rm -f data/in/global_fires/*_proc.csv
 	ls data/in/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {}"
 	ls data/in/global_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy global_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
+	psql -c "vacuum analyze global_fires;"
 	psql -c "create index if not exists global_fires_hash_idx on global_fires (hash);"
 	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
 	psql -c "delete from global_fires where id in(select id from(select id, row_number() over(partition by hash order by id) as row_num from global_fires) t where t.row_num > 1);"
-	rm data/in/global_fires/*.csv
+	rm -f data/in/global_fires/*.csv
 	touch $@
 
 db/table/global_fires_stat_h3: db/table/global_fires
@@ -804,7 +825,7 @@ data/mid/microsoft_buildings: | data/mid
 	mkdir -p $@
 
 data/mid/microsoft_buildings/unzip: data/in/microsoft_buildings/download | data/mid/microsoft_buildings
-	cd data/in/microsoft_buildings; ls *.zip | parallel "unzip -o {} -d data/mid/microsoft_buildings/"
+	ls data/in/microsoft_buildings/*.zip | parallel "unzip -o {} -d data/mid/microsoft_buildings/"
 	touch $@
 
 db/table/microsoft_buildings: data/mid/microsoft_buildings/unzip | db/table
@@ -847,7 +868,7 @@ data/mid/geoalert_urban_mapping: | data/mid
 	mkdir -p $@
 
 data/mid/geoalert_urban_mapping/unzip: data/in/geoalert_urban_mapping/download | data/mid/geoalert_urban_mapping
-	cd data/in/geoalert_urban_mapping; ls *.zip | parallel "unzip -o {} -d data/mid/geoalert_urban_mapping/"
+	ls data/in/geoalert_urban_mapping/*.zip | parallel "unzip -o {} -d data/mid/geoalert_urban_mapping/"
 	touch $@
 
 db/table/geoalert_urban_mapping: data/mid/geoalert_urban_mapping/unzip | db/table
@@ -1059,6 +1080,16 @@ db/table/abu_dhabi_bivariate_pop_food_shops: db/table/abu_dhabi_eatery db/table/
 	psql -f tables/abu_dhabi_bivariate_pop_food_shops.sql
 	touch $@
 
+data/in/abu_dhabi_geoalert_v2.geojson: | data/in
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v2.geojson $@ --profile geocint_pipeline_sender
+
+db/table/abu_dhabi_buildings: data/in/abu_dhabi_buildings/abu_dhabi_geoalert_v2.geojson | db/table
+	psql -c 'drop table if exists abu_dhabi_buildings;'
+	psql -c 'create table abu_dhabi_buildings ("_height_confidence" float, sun_azimuth float, "_block_id" integer, sun_elevation float, osm_landuse_class text, is_residential text, shape_type text, processing_date date, sat_azimuth float, building_height float, id integer, sat_elevation float, geom geometry(Geometry, 4326));'
+	ogr2ogr --config PG_USE_COPY YES -append -a_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings
+	psql -c 'create index on abu_dhabi_buildings using gist(geom);';
+	touch $@
+
 data/out/abu_dhabi: | data/out
 	mkdir -p $@
 
@@ -1073,13 +1104,6 @@ data/out/abu_dhabi/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops | dat
 
 data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops | data/out/abu_dhabi
 	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
-
-db/table/abu_dhabi_buildings: | db/table
-	psql -c 'drop table if exists abu_dhabi_buildings;'
-	psql -c 'create table abu_dhabi_buildings ("_height_confidence" float, sun_azimuth float, "_block_id" integer, sun_elevation float, osm_landuse_class text, is_residential text, shape_type text, processing_date date, sat_azimuth float, building_height float, id integer, sat_elevation float, geom geometry(Geometry, 4326));'
-	ogr2ogr --config PG_USE_COPY YES -append -a_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/abu_dhabi_buildings/abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings
-	psql -c 'create index on abu_dhabi_buildings using gist(geom);';
-	touch $@
 
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv
 	touch $@
@@ -1124,57 +1148,6 @@ data/out/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk | data/out
 
 deploy/s3/osm_buildings_minsk: data/out/osm_buildings_minsk.geojson.gz | deploy/s3
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body data/out/osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
-	touch $@
-
-db/table/osm_buildings_japan: db/table/osm_buildings_use | db/table
-	psql -f tables/osm_buildings_japan.sql
-	touch $@
-
-data/out/osm_buildings_japan.gpkg.gz: db/table/osm_buildings_japan | data/out
-	rm -f $@
-	rm -f data/out/osm_buildings_japan.gpkg
-	ogr2ogr -f GPKG data/out/osm_buildings_japan.gpkg PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_japan' -lco "SPATIAL_INDEX=NO" -nln osm_buildings_japan
-	cd data/out/; pigz osm_buildings_japan.gpkg
-
-deploy/geocint/osm_buildings_japan.gpkg.gz: data/out/osm_buildings_japan.gpkg.gz | deploy/geocint
-	cp -vp data/out/osm_buildings_japan.gpkg.gz ~/public_html/osm_buildings_japan.gpkg.gz
-	touch $@
-
-data/drp_buildings: | data
-	mkdir -p $@
-
-db/table/drp_regions: data/drp_regions.csv | db/table
-	psql -c 'drop table if exists drp_regions;'
-	psql -c 'create table drp_regions (osm_id bigint, city_name text, country text);'
-	cat data/drp_regions.csv | psql -c "copy drp_regions (osm_id, city_name, country) from stdin with csv header delimiter ';' ;"
-	touch $@
-
-db/table/osm_boundary_drp: db/table/drp_regions db/table/osm_admin_boundaries | db/table
-	psql -f tables/osm_boundary_drp.sql
-	touch $@
-
-db/table/osm_buildings_drp: db/table/osm_boundary_drp db/table/osm_buildings_use | db/table
-	psql -f tables/osm_buildings_drp.sql
-	touch $@
-
-db/table/microsoft_buildings_drp: db/table/osm_boundary_drp db/table/microsoft_buildings | db/table
-	psql -f tables/microsoft_buildings_drp.sql
-	touch $@
-
-data/out/drp_buildings: | data/out
-	mkdir $@
-
-data/out/drp_buildings_export: data/drp_buildings data/drp_regions.csv db/table/osm_boundary_drp db/table/osm_buildings_drp db/table/microsoft_buildings_drp | data/out/drp_buildings
-	rm -f data/out/drp_buildings/drp_buildings_*.gpkg
-	rm -f data/out/drp_buildings/drp_buildings_*.gpkg.gz
-	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -lco OVERWRITE=YES -lco SPATIAL_INDEX=NO -nln boundary -f GPKG data/out/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select osm_id as id, city_name, country, geom from drp_regions where city_name = '{}' \" "
-	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln osm_buildings -f GPKG data/out/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select building, street, hno, levels, height, use, name, geom from osm_buildings_drp where city_name = '{}' \" "
-	tail -n +2 data/drp_regions.csv | grep -o -P '(?<=;).*(?=;)' | parallel "ogr2ogr -append -update -lco SPATIAL_INDEX=NO -nln microsoft_buildings -f GPKG data/out/drp_buildings/drp_buildings_{}.gpkg PG:'dbname=gis' -sql \"select id, geom from microsoft_buildings_drp where city_name = '{}' \" "
-	pigz data/out/drp_buildings/drp_buildings_*.gpkg
-	touch $@
-
-deploy/geocint/drp_buildings: data/out/drp_buildings_export | deploy/geocint
-	cp -vp data/out/drp_buildings/drp_buildings_*.gpkg.gz ~/public_html/
 	touch $@
 
 data/in/census_gov: | data/in
@@ -1285,7 +1258,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3_r8 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_idw_h3 | db/table
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_idw_h3 | db/table
 	psql -f tables/stat_h3.sql
 	touch $@
 

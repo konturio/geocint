@@ -10,6 +10,6 @@ create table abu_dhabi_food_shops as (
       and o.tags ->> 'shop' in
           ('alcohol', 'bakery', 'beverages', 'brewing_supplies', 'butcher', 'cheese', 'chocolate', 'coffee',
            'confectionery', 'convenience', 'deli', 'dairy', 'farm', 'frozen_food', 'greengrocer', 'health_food',
-           'ice_cream', 'pasta', 'pastry', 'seafood', 'spices', 'tea', 'water', 'department_store', 'general', 'kiosk',
-           'mall', 'supermarket', 'wholesale')
+           'ice_cream', 'pasta', 'pastry', 'seafood', 'spices', 'tea', 'water', 'general', 'kiosk', 'supermarket',
+           'wholesale')
 );

@@ -16,8 +16,7 @@ with sum_population as (
                 b.osm_id,
                 sum(h.population *
                         (case
-                                when ST_Within(h.geom, b.geom)
-                                        then 1
+                                when ST_Within(h.geom, b.geom) then 1
                                 else ST_Area(ST_Intersection(h.geom, b.geom)) / ST_Area(h.geom)
                         end) -- Calculate intersection area for each h3 cell and boundary polygon
                 ) as population
@@ -46,7 +45,9 @@ create index on osm_admin_boundaries_in using gist(geom, ST_Area(geom));
 drop table if exists kontur_boundaries;
 create table kontur_boundaries as
 with gadm_in as (
-        select b.osm_id,
+        select distinct on (g.geom)              -- (because of duplicates in GADM dataset)
+                b.osm_id,
+                g.id,
                 g.hasc,
                 g.gadm_level,
                 b.iou
@@ -54,14 +55,14 @@ with gadm_in as (
                 left join lateral (
                         select
                                 b.osm_id,
+                                -- Calculate Intersection Over Union between OSM and GADM:
                                 ST_Area(ST_Intersection(b.geom, g.geom))::numeric /
-                                ST_Area(ST_Union(b.geom, g.geom)) as iou -- Calculate Intersection Over Union between OSM and GADM
+                                ST_Area(ST_Union(b.geom, g.geom)) as iou
                         from (
-                                select b.osm_id,
-                                        b.geom
+                                select b.osm_id, b.geom
                                 from osm_admin_boundaries_in b
                                 where ST_Area(b.geom) between 0.1 * ST_Area(g.geom) and 10 * ST_Area(g.geom)
-                                    and (g.geom && b.geom)
+                                        and (g.geom && b.geom)
                                 order by abs(ST_Area(b.geom) - ST_Area(g.geom))
                                 offset 0
                              ) b
@@ -69,24 +70,28 @@ with gadm_in as (
                         order by 2 desc
                         limit 1
                         ) b on true
+        order by g.geom, g.gadm_level desc
 )
-select
+select distinct on ( b.osm_id)
         b.osm_id,
+        g.id as gadm_id,
         b.osm_type,
         b.boundary,
         b.admin_level,
-        g.gadm_level,
         b.name,
         g.hasc,
+        g.gadm_level,
         g.iou as osm_gadm_iou,
         b.tags,
         b.population,
         b.geom
 from
         osm_admin_boundaries_in b
-left join gadm_in g using(osm_id);
+left join gadm_in g using(osm_id)
+order by b.osm_id, g.iou desc;
 
 
 -- Drop temporary tables
 drop table if exists osm_admin_subdivided;
 drop table if exists osm_admin_boundaries_in;
+

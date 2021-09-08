@@ -1108,7 +1108,7 @@ data/out/uae_routing/uae-latest.osm.pbf: data/planet-latest-updated.osm.pbf data
 	osmium extract -v -s smart -p data/out/uae_routing/uae_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
 data/out/uae_routing/uae-bicycle-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson | data/out/uae_routing
-	rm -f data/out/uae_routing/uae-bicycle-latest.osrm.*
+	rm -f data/out/uae_routing/uae-bicycle-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./uae-latest.osm.pbf data/out/uae_routing/uae-bicycle-latest.osm.pbf
 	ln -s ../../../supplemental/OSRM/profiles/bicycle.lua data/out/uae_routing/bicycle.lua
@@ -1120,7 +1120,7 @@ data/out/uae_routing/uae-bicycle-latest: data/out/uae_routing/uae-latest.osm.pbf
 	touch $@
 
 data/out/uae_routing/uae-bike-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson | data/out/uae_routing
-	rm -f data/out/uae_routing/uae-bike-latest.osrm.*
+	rm -f data/out/uae_routing/uae-bike-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./uae-latest.osm.pbf data/out/uae_routing/uae-bike-latest.osm.pbf
 	ln -s ../../../supplemental/OSRM/profiles/bike.lua data/out/uae_routing/bike.lua

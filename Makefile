@@ -1084,10 +1084,7 @@ data/in/abu_dhabi_geoalert_v2.geojson: | data/in
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v2.geojson $@ --profile geocint_pipeline_sender
 
 db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v2.geojson | db/table
-	psql -c 'drop table if exists abu_dhabi_buildings;'
-	psql -c 'create table abu_dhabi_buildings ("_height_confidence" float, sun_azimuth float, "_block_id" integer, sun_elevation float, osm_landuse_class text, is_residential text, shape_type text, processing_date date, sat_azimuth float, building_height float, id integer, sat_elevation float, geom geometry(Geometry, 4326));'
-	ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings
-	psql -c 'create index on abu_dhabi_buildings using gist(geom);';
+	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom -lco SPATIAL_INDEX=GIST
 	touch $@
 
 data/out/abu_dhabi: | data/out

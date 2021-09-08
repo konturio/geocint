@@ -8,18 +8,18 @@ from osm_admin_boundaries;
 create index on osm_admin_subdivided using gist(geom);
 
 
--- Sum population from h3 to osm admin boundaries
+-- Sum population from h3 to osm admin boundaries (rounding to integers)
 drop table if exists osm_admin_boundaries_in;
 create table osm_admin_boundaries_in as
 with sum_population as (
         select
                 b.osm_id,
-                sum(h.population *
+                round(sum(h.population *
                         (case
                                 when ST_Within(h.geom, b.geom) then 1
                                 else ST_Area(ST_Intersection(h.geom, b.geom)) / ST_Area(h.geom)
                         end) -- Calculate intersection area for each h3 cell and boundary polygon
-                ) as population
+                )) as population
         from osm_admin_subdivided b
         join kontur_population_h3 h
                 on ST_Intersects(h.geom, b.geom)
@@ -70,7 +70,7 @@ with gadm_in as (
                         order by 2 desc
                         limit 1
                         ) b on true
-        order by g.geom, g.gadm_level desc
+        order by g.geom, g.gadm_level
 )
 select distinct on ( b.osm_id)
         b.osm_id,
@@ -88,7 +88,7 @@ select distinct on ( b.osm_id)
 from
         osm_admin_boundaries_in b
 left join gadm_in g using(osm_id)
-order by b.osm_id, g.iou desc;
+order by b.osm_id, g.hasc is not null desc, g.iou desc;
 
 
 -- Drop temporary tables

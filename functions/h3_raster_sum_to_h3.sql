@@ -14,7 +14,7 @@ from
     ST_PixelAsPolygons(rast),
     cast(ST_Transform(geom, 4326)::box as point) p
 where val != 'NaN' and val != 0
-and p != '(Infinite, Infinite)'
+and p != '(Infinity, Infinity)'
 group by 1;
 $$
     language sql

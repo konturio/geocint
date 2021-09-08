@@ -1120,7 +1120,7 @@ data/out/uae_routing/uae-bicycle-latest: data/out/uae_routing/uae-latest.osm.pbf
 	touch $@
 
 data/out/uae_routing/uae-bike-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson | data/out/uae_routing
-	rm -f data/out/uae_routing/uae-bike-latest.osrm*
+	rm -f data/out/uae_routing/uae-bike-latest.osrm.*
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./uae-latest.osm.pbf data/out/uae_routing/uae-bike-latest.osm.pbf
 	ln -s ../../../supplemental/OSRM/profiles/bike.lua data/out/uae_routing/bike.lua
@@ -1128,7 +1128,7 @@ data/out/uae_routing/uae-bike-latest: data/out/uae_routing/uae-latest.osm.pbf da
 	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-partition /data/uae-bike-latest.osrm
 	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-customize /data/uae-bike-latest.osrm
 	rm -f data/out/uae_routing/uae-bike-latest.osm.pbf
-	m -f data/out/uae_routing/bike.lua
+	rm -f data/out/uae_routing/bike.lua
 	touch $@
 
 data/out/uae_routing/build: data/out/uae_routing/uae-bicycle-latest data/out/uae_routing/uae-bike-latest | data/out/uae_routing

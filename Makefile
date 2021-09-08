@@ -1098,7 +1098,7 @@ data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bi
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv
 	touch $@
 
-data/out/uae_routing: | data/in
+data/out/uae_routing: | data/out
 	mkdir -p $@
 
 data/out/uae_routing/uae_boundary.geojson: db/table/osm db/index/osm_tags_idx

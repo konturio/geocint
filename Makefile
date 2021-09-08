@@ -1101,13 +1101,13 @@ data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson
 data/out/uae_routing: | data/out
 	mkdir -p $@
 
-data/out/uae_routing/uae_boundary.geojson: db/table/osm db/index/osm_tags_idx
+data/out/uae_routing/uae_boundary.geojson: db/table/osm db/index/osm_tags_idx | data/out/uae_routing
 	psql -q -X -c "\copy (select ST_AsGeoJSON(uae) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 307763 and tags @> '{\"boundary\":\"administrative\"}') uae) to stdout" | jq -c . > $@
 
-data/out/uae_routing/uae-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/uae_routing/uae_boundary.geojson
+data/out/uae_routing/uae-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/uae_routing/uae_boundary.geojson | data/out/uae_routing
 	osmium extract -v -s smart -p data/out/uae_routing/uae_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
-data/out/uae_routing/uae-bicycle-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson
+data/out/uae_routing/uae-bicycle-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson | data/out/uae_routing
 	rm -f data/out/uae_routing/uae-bicycle-latest.osrm.*
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./uae-latest.osm.pbf data/out/uae_routing/uae-bicycle-latest.osm.pbf
@@ -1119,7 +1119,7 @@ data/out/uae_routing/uae-bicycle-latest: data/out/uae_routing/uae-latest.osm.pbf
 	rm -f data/out/uae_routing/bicycle.lua
 	touch $@
 
-data/out/uae_routing/uae-bike-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson
+data/out/uae_routing/uae-bike-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson | data/out/uae_routing
 	rm -f data/out/uae_routing/uae-bike-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./uae-latest.osm.pbf data/out/uae_routing/uae-bike-latest.osm.pbf
@@ -1131,7 +1131,7 @@ data/out/uae_routing/uae-bike-latest: data/out/uae_routing/uae-latest.osm.pbf da
 	m -f data/out/uae_routing/bike.lua
 	touch $@
 
-data/out/uae_routing/build: data/out/uae_routing/uae-bicycle-latest data/out/uae_routing/uae-bike-latest
+data/out/uae_routing/build: data/out/uae_routing/uae-bicycle-latest data/out/uae_routing/uae-bike-latest | data/out/uae_routing
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

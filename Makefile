@@ -1110,8 +1110,8 @@ data/out/uae_routing/uae-latest.osm.pbf: data/planet-latest-updated.osm.pbf data
 data/out/uae_routing/uae-bicycle-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson
 	rm -f data/out/uae_routing/uae-bicycle-latest.osrm.*
 	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae-bicycle-latest.osm.pbf
-	ln -s data/out/uae_routing/bicycle.lua supplemental/OSRM/profiles/bicycle.lua
+	ln -s ./uae-latest.osm.pbf data/out/uae_routing/uae-bicycle-latest.osm.pbf
+	ln -s ../../../supplemental/OSRM/profiles/bicycle.lua data/out/uae_routing/bicycle.lua
 	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-extract -p /data/bicycle.lua /data/uae-bicycle-latest.osm.pbf
 	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-partition /data/uae-bicycle-latest.osrm
 	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-customize /data/uae-bicycle-latest.osrm
@@ -1122,8 +1122,8 @@ data/out/uae_routing/uae-bicycle-latest: data/out/uae_routing/uae-latest.osm.pbf
 data/out/uae_routing/uae-bike-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson
 	rm -f data/out/uae_routing/uae-bike-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae-bike-latest.osm.pbf
-	ln -s data/out/uae_routing/bike.lua supplemental/OSRM/profiles/bike.lua
+	ln -s ./uae-latest.osm.pbf data/out/uae_routing/uae-bike-latest.osm.pbf
+	ln -s ../../../supplemental/OSRM/profiles/bike.lua data/out/uae_routing/bike.lua
 	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-extract -p /data/bike.lua /data/uae-bike-latest.osm.pbf
 	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-partition /data/uae-bike-latest.osrm
 	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-customize /data/uae-bike-latest.osrm

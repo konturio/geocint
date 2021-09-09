@@ -68,7 +68,7 @@ data/out/global_fires: | data/out
 data/tiles/stat: | data/tiles
 	mkdir -p $@
 
-data/population: | data ## Directory for storing data_stat_h3 and bivariate datasets.
+data/population: | data ## Directory for storing data_stat_h3 and bivariate datasets dump.
 	mkdir -p $@
 
 data/in/gadm: | data/in ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
@@ -1458,9 +1458,18 @@ deploy/sonic/population_api_tables: deploy/s3/test/population_api_tables | deplo
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
-deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/lima
+deploy/s3/prod/population_api_tables: deploy/s3/test/population_api_tables | deploy/s3 ## AWS-side copying population_api_tables dump from test folder to prod one.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/population_api_tables data/population/population_api_tables.sqld.gz | deploy/s3 ## Checking if dump on AWS is not older than local file.
+	bash scripts/check_population_api_tables_dump_dates.sh
+	touch $@
+
+deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_mdate | deploy/lima ## Getting population_api_tables dump from AWS private prod folder and restoring it.
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible lima_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible lima_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'
 	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@

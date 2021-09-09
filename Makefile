@@ -19,7 +19,7 @@ basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
-	rm -rf deploy/ data/basemap data/tiles/basemap data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
+	rm -rf deploy/ kothic data/basemap data/tiles/basemap data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
 	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv
 	psql -f scripts/clean.sql
 
@@ -1471,8 +1471,14 @@ db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
 	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --flat-nodes data/planet-latest-updated-flat-nodes --slim --drop --create data/planet-latest-updated.osm.pbf
 	touch $@
 
-db/table/osm2pgsql_mix_in_coastlines: db/table/osm2pgsql db/table/water_polygons_vector | db/table
-	psql -c "insert into planet_osm_polygon (osm_id, \"natural\", way, way_area) select 0 as osm_id, 'coastline' as \"natural\", geom as way, ST_Area(geom) as way_area from water_polygons_vector;"
+# db/table/osm2pgsql_mix_in_coastlines: db/table/osm2pgsql db/table/water_polygons_vector | db/table
+	# psql -c "insert into planet_osm_polygon (osm_id, \"natural\", way, way_area) select 0 as osm_id, 'coastline' as \"natural\", geom as way, ST_Area(geom) as way_area from water_polygons_vector;"
+	# touch $@
+
+db/index/osm2pgsql_idx: db/table/osm2pgsql | db/index
+	psql -c "create index on planet_osm_point using gist (way);"
+	psql -c "create index on planet_osm_line using gist (way);"
+	psql -c "create index on planet_osm_polygon using gist (way);"
 	touch $@
 
 kothic:
@@ -1489,7 +1495,8 @@ db/function/basemap_mapsme: | kothic db/function
 		| psql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql_mix_in_coastlines | data/tiles
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/index/osm2pgsql_idx | data/tiles
+	psql -c "update basemap_mvts set dirty = true;"
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 

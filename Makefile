@@ -1080,7 +1080,7 @@ db/table/abu_dhabi_bivariate_pop_food_shops: db/table/abu_dhabi_eatery db/table/
 	psql -f tables/abu_dhabi_bivariate_pop_food_shops.sql
 	touch $@
 
-data/in/abu_dhabi_geoalert_v2.geojson: | data/in
+data/in/abu_dhabi_geoalert_v2.geojson: | data/in ## Buildings dataset for Abu Dhabi
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v2.geojson $@ --profile geocint_pipeline_sender
 
 db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v2.geojson | db/table
@@ -1439,7 +1439,7 @@ data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivaria
 	mv $@__TMP $@
 	touch $@
 
-deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3
+deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3 ## Putting population_api_tables dump from local folder to AWS test folder in private bucket.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
 	aws s3 cp data/population/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@

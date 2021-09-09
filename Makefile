@@ -1471,16 +1471,6 @@ db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
 	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --flat-nodes data/planet-latest-updated-flat-nodes --slim --drop --create data/planet-latest-updated.osm.pbf
 	touch $@
 
-# db/table/osm2pgsql_mix_in_coastlines: db/table/osm2pgsql db/table/water_polygons_vector | db/table
-	# psql -c "insert into planet_osm_polygon (osm_id, \"natural\", way, way_area) select 0 as osm_id, 'coastline' as \"natural\", geom as way, ST_Area(geom) as way_area from water_polygons_vector;"
-	# touch $@
-
-db/index/osm2pgsql_idx: db/table/osm2pgsql | db/index
-	psql -c "create index on planet_osm_point using gist (way);"
-	psql -c "create index on planet_osm_line using gist (way);"
-	psql -c "create index on planet_osm_polygon using gist (way);"
-	touch $@
-
 kothic:
 	git clone -b master --single-branch https://github.com/kothic/kothic.git
 
@@ -1495,7 +1485,7 @@ db/function/basemap_mapsme: | kothic db/function
 		| psql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/index/osm2pgsql_idx | data/tiles
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql | data/tiles
 	psql -c "update basemap_mvts set dirty = true; vacuum analyse basemap_mvts;"
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@

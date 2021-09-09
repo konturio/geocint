@@ -42,7 +42,7 @@ reviewed and tested by other team members, and will automatically produce new ar
  - functions/ - service SQL functions, used in more than a single other file
  - procedures/ - service SQL procedures, used in more than a single other file
  - scripts/ - scripts that perform transformation on top of table without creating new one
- - supplemental/ - additional files, used for CI/CD
+ - supplemental/ - additional files (OSRM profiles)
  - tables/ - SQL that generates a table named after the script
  - tile_generator/ - a service that produces vector tiles
  - data/ - file-based input and output data

@@ -1468,7 +1468,7 @@ deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
-	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all data/planet-latest-updated-flat-nodes --slim --drop --create data/planet-latest-updated.osm.pbf
+	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --create data/planet-latest-updated.osm.pbf
 	touch $@
 
 kothic:

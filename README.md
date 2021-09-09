@@ -35,12 +35,21 @@ reviewed and tested by other team members, and will automatically produce new ar
  - Complex python scripts should become less complex bash+sql scripts.
  - Java services are out of scope of geocint.
 
-### Directory structure:
+### Directory and files structure:
+ - autostart_geocint.sh - script, that runs the pipeline: prod/dev division, cleaning targets and posting info messages
  - Makefile - maps dependencies between generation stages
- - data/ - file-based input and output data
- - tables/ - SQL that generates a table named after the script
+ - basemap/ - scripts and styles for basemap production
+ - functions/ - service SQL functions, used in more than a single other file
+ - procedures/ - service SQL procedures, used in more than a single other file
  - scripts/ - scripts that perform transformation on top of table without creating new one
- - functions/ - service SQL functions used in more than a single other file
+ - supplemental/ - additional files, used for CI/CD
+ - tables/ - SQL that generates a table named after the script
+ - tile_generator/ - a service that produces vector tiles
+ - data/ - file-based input and output data
+   - data/in - all input data, downloaded elsewhere
+   - data/in/raster - all downloaded geotiffs
+   - data/mid - all intermediate data (retiles, unpacks, reprojections and etc) which can removed after each launch
+   - data/out - all generated final data (tiles, dumps, unloading for the clients and etc)
 
 ### scripts/create_geocint_user.sh
 

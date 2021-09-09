@@ -1496,7 +1496,7 @@ db/function/basemap_mapsme: | kothic db/function
 	touch $@
 
 data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/index/osm2pgsql_idx | data/tiles
-	psql -c "update basemap_mvts set dirty = true;"
+	psql -c "update basemap_mvts set dirty = true; vacuum analyse basemap_mvts;"
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 

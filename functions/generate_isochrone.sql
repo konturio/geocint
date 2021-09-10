@@ -4,7 +4,11 @@ create or replace function generate_isochrone(
     "time" double precision, -- time in minutes
     profile text -- OSRM profile,
 )
-    returns table(minutes integer, isochrone geometry)
+    returns table
+            (
+                minute   integer,
+                isochrone geometry
+            )
     stable
     cost 10000
     language sql
@@ -37,20 +41,23 @@ with etas as (
               ST_EndPoint(s.seg_geom) "finish"
          where e1.node = s.node_from
            and e2.node = s.node_to)
-select minutes,
-       ST_ChaikinSmoothing(
-               ST_CollectionExtract(
-                       ST_Union(
-                               ST_ConvexHull(
-                                       ST_LocateBetweenElevations(
-                                               ST_Boundary(geom),
-                                               (minutes - 1) * 60,
-                                               minutes * 60
+select minute,
+       ST_Force2D(
+               ST_ChaikinSmoothing(
+                       ST_CollectionExtract(
+                               ST_Union(
+                                       ST_ConvexHull(
+                                               ST_LocateBetweenElevations(
+                                                       ST_Boundary(geom),
+                                                       (minute - 1) * 60,
+                                                       minute * 60
+                                                   )
                                            )
-                                   )
-                           ), 3
-                   ))
+                                   ), 3
+                           )
+                   )
+           )
 from delaunay,
-     generate_series(1, ceil("time")::integer) minutes
-group by minutes;
+     generate_series(1, ceil("time")::integer) minute
+group by minute;
 $$;

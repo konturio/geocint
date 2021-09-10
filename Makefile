@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export data/out/uae_routing/build ## [FINAL] Builds all targets for development. Run on every branch.
+dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export data/out/routing/build ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1098,40 +1098,40 @@ data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bi
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv
 	touch $@
 
-data/out/uae_routing: | data/out
+data/out/routing: | data/out ## Folder for OSRM routing files
 	mkdir -p $@
 
-data/out/uae_routing/uae_boundary.geojson: db/table/osm db/index/osm_tags_idx | data/out/uae_routing
-	psql -q -X -c "\copy (select ST_AsGeoJSON(uae) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 307763 and tags @> '{\"boundary\":\"administrative\"}') uae) to stdout" | jq -c . > $@
+data/out/routing/aoi_boundary.geojson: db/table/osm db/index/osm_tags_idx | data/out/routing ## Get boundaries of Belarus, UAE, Kosovo.
+	psql -q -X -c "\copy (select ST_AsGeoJSON(aoi) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id in (59065, 307763, 2088990) and tags @> '{\"boundary\":\"administrative\"}') aoi) to stdout" | jq -c . > $@
 
-data/out/uae_routing/uae-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/uae_routing/uae_boundary.geojson | data/out/uae_routing
-	osmium extract -v -s smart -p data/out/uae_routing/uae_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
+data/out/routing/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Extract from planet-latest-updated.osm.pbf by aoi_boundary.geojson using Osmium tool.
+	osmium extract -v -s smart -p data/out/routing/aoi_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
-data/out/uae_routing/uae-bicycle-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson | data/out/uae_routing
-	rm -f data/out/uae_routing/uae-bicycle-latest.osrm*
+data/out/routing/aoi-bicycle-latest: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bicycle profile
+	rm -f data/out/routing/aoi-bicycle-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s ./uae-latest.osm.pbf data/out/uae_routing/uae-bicycle-latest.osm.pbf
-	ln -s ../../../supplemental/OSRM/profiles/bicycle.lua data/out/uae_routing/bicycle.lua
-	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-extract -p /data/bicycle.lua /data/uae-bicycle-latest.osm.pbf
-	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-partition /data/uae-bicycle-latest.osrm
-	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-customize /data/uae-bicycle-latest.osrm
-	rm -f data/out/uae_routing/uae-bicycle-latest.osm.pbf
-	rm -f data/out/uae_routing/bicycle.lua
+	ln -s ./aoi-latest.osm.pbf data/out/routing/aoi-bicycle-latest.osm.pbf
+	ln -s ../../../supplemental/OSRM/profiles/bicycle.lua data/out/routing/bicycle.lua
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/bicycle.lua /data/aoi-bicycle-latest.osm.pbf
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/aoi-bicycle-latest.osrm
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/aoi-bicycle-latest.osrm
+	rm -f data/out/routing/aoi-bicycle-latest.osm.pbf
+	rm -f data/out/routing/bicycle.lua
 	touch $@
 
-data/out/uae_routing/uae-bike-latest: data/out/uae_routing/uae-latest.osm.pbf data/out/uae_routing/uae_boundary.geojson | data/out/uae_routing
-	rm -f data/out/uae_routing/uae-bike-latest.osrm*
+data/out/routing/aoi-bike-latest: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bike profile
+	rm -f data/out/routing/aoi-bike-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s ./uae-latest.osm.pbf data/out/uae_routing/uae-bike-latest.osm.pbf
-	ln -s ../../../supplemental/OSRM/profiles/bike.lua data/out/uae_routing/bike.lua
-	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-extract -p /data/bike.lua /data/uae-bike-latest.osm.pbf
-	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-partition /data/uae-bike-latest.osrm
-	docker run -t -v "${PWD}/data/out/uae_routing:/data" osrm/osrm-backend osrm-customize /data/uae-bike-latest.osrm
-	rm -f data/out/uae_routing/uae-bike-latest.osm.pbf
-	rm -f data/out/uae_routing/bike.lua
+	ln -s ./aoi-latest.osm.pbf data/out/routing/aoi-bike-latest.osm.pbf
+	ln -s ../../../supplemental/OSRM/profiles/bike.lua data/out/routing/bike.lua
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/bike.lua /data/aoi-bike-latest.osm.pbf
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/aoi-bike-latest.osrm
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/aoi-bike-latest.osrm
+	rm -f data/out/routing/aoi-bike-latest.osm.pbf
+	rm -f data/out/routing/bike.lua
 	touch $@
 
-data/out/uae_routing/build: data/out/uae_routing/uae-bicycle-latest data/out/uae_routing/uae-bike-latest | data/out/uae_routing
+data/out/routing/build: data/out/routing/aoi-bicycle-latest data/out/routing/aoi-bike-latest | data/out/routing  ##
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

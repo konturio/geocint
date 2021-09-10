@@ -1,10 +1,10 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_bicycle_isochrones ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-prod:  deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: basemap_prod deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Pipeline finished. Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -19,8 +19,8 @@ basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
-	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/covid19/_global_csv data/covid19/_us_csv data/tile_logs/_download data/global_fires/download_new_updates db/table/morocco_buildings_manual db/table/morocco_buildings_manual_roofprints data/covid19/vaccination/vaccine_acceptance_us_counties.csv
+	rm -rf deploy/ kothic data/basemap data/tiles/basemap data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv
 	psql -f scripts/clean.sql
 
 data: ## Directory for storing temporary file based datasets.
@@ -68,7 +68,7 @@ data/out/global_fires: | data/out
 data/tiles/stat: | data/tiles
 	mkdir -p $@
 
-data/population: | data ## Directory for storing data_stat_h3 and bivariate datasets.
+data/population: | data ## Directory for storing data_stat_h3 and bivariate datasets dump.
 	mkdir -p $@
 
 data/in/gadm: | data/in ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
@@ -95,17 +95,23 @@ deploy:  ## Directory for deployment targets footprints.
 deploy/lima: | deploy ## We use lima.kontur.io as a production server.
 	mkdir -p $@
 
-deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test the software before setting it live at lima.kontur.io.
+deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test software before setting it live to prod
 	mkdir -p $@
 
-deploy/zigzag: | deploy
+deploy/zigzag: | deploy ## target-created directory for deployments on test server zigzag.kontur.io
 	mkdir -p $@
 
 deploy/geocint: | deploy ## We use geocint as a GIS development server.
 	mkdir -p $@
 
-deploy/s3:
-	mkdir -p $@/test
+deploy/s3: | deploy ## Target-created directory for deployments on S3.
+	mkdir -p $@
+
+deploy/s3/test: | deploy/s3 ## target-created directory for deployments on S3 test division.
+	mkdir -p $@
+
+deploy/s3/prod: | deploy/s3 ## target-created directory for deployments on S3 prod division.
+	mkdir -p $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx
 	touch $@
@@ -348,7 +354,7 @@ data/mid/worldpop/tiled_rasters: data/in/raster/worldpop/download | data/mid/wor
 	touch $@
 
 db/table/worldpop_population_raster: data/mid/worldpop/tiled_rasters | db/table ## Import raster data and create table with tiled data.
-	psql -c "drop table if exists worldpop_population_raster"
+	psql -c "drop table if exists worldpop_population_raster;"
 	raster2pgsql -p -Y -s 4326 data/mid/worldpop/tiled_*.tif -t auto worldpop_population_raster | psql -q
 	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
 	ls -Sr data/mid/worldpop/tiled_*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
@@ -360,10 +366,10 @@ db/table/worldpop_population_grid_h3_r8: db/table/worldpop_population_raster ## 
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=worldpop_population_raster -v population_raster_grid_h3_r8=worldpop_population_raster_grid_h3_r8
 	touch $@
 
-db/table/worldpop_country_codes: data/worldpop/download | db/table ## Generate table with countries for WorldPop rasters.
+db/table/worldpop_country_codes: data/in/raster/worldpop/download | db/table ## Generate table with countries for WorldPop rasters.
 	psql -c "drop table if exists worldpop_country_codes;"
 	psql -c "create table worldpop_country_codes (code varchar(3) not null, primary key (code));"
-	ls data/worldpop/*.tif | parallel --eta psql -c "\"insert into worldpop_country_codes(code) select upper(substr('{/.}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{/.}', 1, 3)));\""
+	ls data/in/raster/worldpop/*.tif | parallel --eta psql -c "\"insert into worldpop_country_codes(code) select upper(substr('{/.}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{/.}', 1, 3)));\""
 	touch $@
 
 db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.
@@ -406,10 +412,12 @@ db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster d
 
 data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip: | data/in/raster
 	wget http://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_MT_GLOBE_R2019A/GHS_POP_E2015_GLOBE_R2019A_54009_250/V1-0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip -O $@
+	touch $@
 
 data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif: data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip | data/mid
 	mkdir -p data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0
 	unzip -o data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip -d data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/
+	touch $@
 
 db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_population_raster"
@@ -419,9 +427,11 @@ db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_
 
 data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data/in/raster
 	wget https://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_SMOD_POP_GLOBE_R2016A/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k/V1-0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -O $@
+	touch $@
 
 data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif: data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip | data/mid
 	unzip -o data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip -d data/mid/
+	touch $@
 
 db/table/ghs_globe_residential_raster: data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_residential_raster"
@@ -643,12 +653,14 @@ db/table/gdp_h3: db/table/kontur_population_h3 db/table/wb_gadm_gdp_countries
 
 data/in/water-polygons-split-3857.zip: | data/in ## Download OpenStreetMap water polygons (oceans and seas) archive.
 	wget https://osmdata.openstreetmap.de/download/water-polygons-split-3857.zip -O $@
+	touch $@
 
-data/mid/water_polygons/water_polygons.shp: data/in/water-polygons-split-3857.zip | data/mid ## Unzip OpenStreetMap water polygons (oceans and seas) archive.
+data/mid/water_polygons/water_polygons_shapefile: data/in/water-polygons-split-3857.zip | data/mid ## Unzip OpenStreetMap water polygons (oceans and seas) archive.
 	mkdir -p data/mid/water_polygons
 	unzip -jo data/in/water-polygons-split-3857.zip -d data/mid/water_polygons/
+	touch $@
 
-db/table/water_polygons_vector: data/mid/water_polygons/water_polygons.shp | db/table ## Import and subdivide OpenStreetMap water polygons (oceans and seas) as water_polygons_vector(EPSG-3857).
+db/table/water_polygons_vector: data/mid/water_polygons/water_polygons_shapefile | db/table ## Import and subdivide OpenStreetMap water polygons (oceans and seas) as water_polygons_vector(EPSG-3857).
 	psql -c "drop table if exists water_polygons_vector;"
 	shp2pgsql -I -s 3857 data/mid/water_polygons/water_polygons.shp water_polygons_vector | psql -q
 	psql -f tables/water_polygons_vector.sql
@@ -1074,6 +1086,13 @@ db/table/abu_dhabi_bivariate_pop_food_shops: db/table/abu_dhabi_eatery db/table/
 	psql -f tables/abu_dhabi_bivariate_pop_food_shops.sql
 	touch $@
 
+data/in/abu_dhabi_geoalert_v2.geojson: | data/in ## Buildings dataset for Abu Dhabi
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v2.geojson $@ --profile geocint_pipeline_sender
+
+db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v2.geojson | db/table
+	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
+	touch $@
+
 data/out/abu_dhabi: | data/out
 	mkdir -p $@
 
@@ -1187,22 +1206,29 @@ db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/procedure/
 	psql -c "call generate_overviews('us_census_tracts_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
 
-db/table/pf_days_maxtemp_in: | db/table
+data/in/probable_futures: | data/in ## Create folder for Probable Futures dataset.
+	mkdir $@
+
+data/in/probable_futures/data_sync: | data/in/probable_futures ## Sync PF GeoJSONs from AWS S3 bucket with local dir.
+	aws s3 sync s3://geodata-eu-central-1-kontur/private/geocint/in/probable_futures data/in/probable_futures/ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/pf_days_maxtemp_in: data/in/probable_futures/data_sync | db/table ## Count (in days) above 32C (90F).
 	psql -c 'drop table if exists pf_days_maxtemp_in;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20104.gremo.geojson -nln pf_days_maxtemp_in -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/pf_night_maxtemp_in: | db/table
+db/table/pf_night_maxtemp_in: data/in/probable_futures/data_sync | db/table ## Count nights above 20C (68F).
 	psql -c 'drop table if exists pf_nights_maxtemp_in;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20204.gremo.geojson -nln pf_nights_maxtemp_in -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/pf_days_wet_bulb_in: | db/table
+db/table/pf_days_wet_bulb_in: data/in/probable_futures/data_sync | db/table ## Count (in days) above 32C (wet-bulb).
 	psql -c 'drop table if exists pf_days_wet_bulb_in;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20304.gremo.geojson -nln pf_days_wet_bulb_in -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/pf_maxtemp_idw_h3: db/table/pf_night_maxtemp_in db/table/pf_days_maxtemp_in db/table/pf_days_wet_bulb_in | db/table
+db/table/pf_maxtemp_idw_h3: db/table/pf_night_maxtemp_in db/table/pf_days_maxtemp_in db/table/pf_days_wet_bulb_in | db/table ## Collect PF tables into one, IDW interpolation on level 5, overviews for other h3 levels
 	psql -f tables/pf_maxtemp_idw_h3.sql
 	touch $@
 
@@ -1223,7 +1249,7 @@ data/out/osm_addresses_minsk.geojson.gz: db/table/osm_addresses_minsk | data/out
 	ogr2ogr -f GeoJSON data/out/osm_addresses_minsk.geojson PG:'dbname=gis' -sql "select * from osm_addresses_minsk" -nln osm_addresses_minsk
 	pigz data/out/osm_addresses_minsk.geojson
 
-deploy/s3/test/osm_addresses_minsk: data/out/osm_addresses_minsk.geojson.gz | deploy/s3
+deploy/s3/test/osm_addresses_minsk: data/out/osm_addresses_minsk.geojson.gz | deploy/s3/test
 	aws s3api copy-object --copy-source geodata-us-east-1-kontur/public/geocint/test/osm_addresses_minsk.geojson.gz --bucket geodata-us-east-1-kontur --key public/geocint/test/osm_addresses_minsk.geojson.gz.bak --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/test/osm_addresses_minsk.geojson.gz --body data/out/osm_addresses_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
@@ -1443,7 +1469,7 @@ data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivaria
 	mv $@__TMP $@
 	touch $@
 
-deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3
+deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3/test ## Putting population_api_tables dump from local folder to AWS test folder in private bucket.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
 	aws s3 cp data/population/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
@@ -1462,19 +1488,24 @@ deploy/sonic/population_api_tables: deploy/s3/test/population_api_tables | deplo
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
-deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/lima
+deploy/s3/prod/population_api_tables: deploy/s3/test/population_api_tables | deploy/s3/prod ## AWS-side copying population_api_tables dump from test folder to prod one.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/population_api_tables data/population/population_api_tables.sqld.gz | deploy/s3/prod ## Checking if dump on AWS is not older than local file.
+	bash scripts/check_population_api_tables_dump_dates.sh
+	touch $@
+
+deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_mdate | deploy/lima ## Getting population_api_tables dump from AWS private prod folder and restoring it.
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible lima_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible lima_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'
 	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
-	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --flat-nodes data/planet-latest-updated-flat-nodes --slim --drop --create data/planet-latest-updated.osm.pbf
-	touch $@
-
-db/table/osm2pgsql_mix_in_coastlines: db/table/osm2pgsql db/table/water_polygons_vector | db/table
-	psql -c "insert into planet_osm_polygon (osm_id, \"natural\", way, way_area) select 0 as osm_id, 'coastline' as \"natural\", geom as way, ST_Area(geom) as way_area from water_polygons_vector;"
+	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --create data/planet-latest-updated.osm.pbf
 	touch $@
 
 kothic:
@@ -1491,7 +1522,8 @@ db/function/basemap_mapsme: | kothic db/function
 		| psql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql_mix_in_coastlines | data/tiles
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql | data/tiles
+	psql -c "update basemap_mvts set dirty = true;"
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 

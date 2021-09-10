@@ -27,6 +27,3 @@ create table building_count_grid_h3 as (
          ) z
     group by 1
 );
-
-alter table building_count_grid_h3
-    set (parallel_workers = 32);

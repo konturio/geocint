@@ -85,6 +85,5 @@ from
     complex_areas_to_subdivide;
 
 vacuum full covid19_admin_subdivided;
-alter table covid19_admin_subdivided set (parallel_workers = 32);
 
 drop table if exists tmp_all_admin;

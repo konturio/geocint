@@ -358,7 +358,6 @@ db/table/worldpop_population_raster: data/mid/worldpop/tiled_rasters | db/table 
 	raster2pgsql -p -Y -s 4326 data/mid/worldpop/tiled_*.tif -t auto worldpop_population_raster | psql -q
 	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
 	ls -Sr data/mid/worldpop/tiled_*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
-	psql -c "alter table worldpop_population_raster set (parallel_workers = 32);"
 	psql -c "vacuum analyze worldpop_population_raster;"
 	touch $@
 
@@ -388,7 +387,6 @@ db/table/hrsl_population_raster: data/in/raster/hrsl_cogs/download | db/table ##
 	raster2pgsql -p -Y -s 4326 data/in/raster/hrsl_cogs/hrsl_general/v1.5/*.tif -t auto hrsl_population_raster | psql -q
 	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
 	find data/in/raster/hrsl_cogs/hrsl_general -name "*.tif" -type f -printf "%f %p\n" | sed -E 's/.*-v(([[:digit:]]\.?)+)\.tif(.*)/\1 \0/;s/-v([[:digit:]]\.?)+\.tif//1' | sort -Vrk1,1 | sort -uk2,2 | cut -d ' ' -f3- | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
-	psql -c "alter table hrsl_population_raster set (parallel_workers = 32);"
 	psql -c "create index hrsl_population_raster_rast_idx on hrsl_population_raster using gist (ST_ConvexHull(rast));"
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
@@ -422,7 +420,6 @@ data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54
 db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_population_raster"
 	raster2pgsql -M -Y -s 54009 data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif -t auto ghs_globe_population_raster | psql -q
-	psql -c "alter table ghs_globe_population_raster set (parallel_workers=32);"
 	touch $@
 
 data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data/in/raster
@@ -451,7 +448,6 @@ data/in/raster/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete
 db/table/copernicus_landcover_raster: data/in/raster/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif | db/table ## Put land cover raster in table.
 	psql -c "drop table if exists copernicus_landcover_raster;"
 	raster2pgsql -M -Y -s 4326 data/in/raster/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif -t auto copernicus_landcover_raster | psql -q
-	psql -c "alter table copernicus_landcover_raster set (parallel_workers = 32);"
 	touch $@
 
 db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table ## Count of 'urban' pixels from land cover raster into h3 hexagons on 8 resolution.
@@ -531,7 +527,6 @@ db/table/ndvi_2019_06_10: data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/tabl
 	raster2pgsql -p -Y -s 4326 data/mid/ndvi_2019_06_10/ndvi_1_4326.tif -t auto ndvi_2019_06_10 | psql -q
 	psql -c 'alter table ndvi_2019_06_10 drop constraint if exists ndvi_2019_06_10_pkey;'
 	ls data/mid/ndvi_2019_06_10/*.tif | parallel --eta 'raster2pgsql -a -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
-	psql -c "alter table ndvi_2019_06_10 set (parallel_workers = 32);"
 	psql -c "vacuum analyze ndvi_2019_06_10;"
 	touch $@
 

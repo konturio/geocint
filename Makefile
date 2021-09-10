@@ -95,17 +95,23 @@ deploy:  ## Directory for deployment targets footprints.
 deploy/lima: | deploy ## We use lima.kontur.io as a production server.
 	mkdir -p $@
 
-deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test the software before setting it live at lima.kontur.io.
+deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test software before setting it live to prod
 	mkdir -p $@
 
-deploy/zigzag: | deploy
+deploy/zigzag: | deploy ## target-created directory for deployments on test server zigzag.kontur.io
 	mkdir -p $@
 
 deploy/geocint: | deploy ## We use geocint as a GIS development server.
 	mkdir -p $@
 
-deploy/s3:
-	mkdir -p $@/test
+deploy/s3: | deploy ## Target-created directory for deployments on S3.
+	mkdir -p $@
+
+deploy/s3/test: | deploy/s3 ## target-created directory for deployments on S3 test division.
+	mkdir -p $@
+
+deploy/s3/prod: | deploy/s3 ## target-created directory for deployments on S3 prod division.
+	mkdir -p $@
 
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx
 	touch $@
@@ -1292,7 +1298,7 @@ data/out/osm_addresses_minsk.geojson.gz: db/table/osm_addresses_minsk | data/out
 	ogr2ogr -f GeoJSON data/out/osm_addresses_minsk.geojson PG:'dbname=gis' -sql "select * from osm_addresses_minsk" -nln osm_addresses_minsk
 	pigz data/out/osm_addresses_minsk.geojson
 
-deploy/s3/test/osm_addresses_minsk: data/out/osm_addresses_minsk.geojson.gz | deploy/s3
+deploy/s3/test/osm_addresses_minsk: data/out/osm_addresses_minsk.geojson.gz | deploy/s3/test
 	aws s3api copy-object --copy-source geodata-us-east-1-kontur/public/geocint/test/osm_addresses_minsk.geojson.gz --bucket geodata-us-east-1-kontur --key public/geocint/test/osm_addresses_minsk.geojson.gz.bak --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/test/osm_addresses_minsk.geojson.gz --body data/out/osm_addresses_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
@@ -1512,7 +1518,7 @@ data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivaria
 	mv $@__TMP $@
 	touch $@
 
-deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3 ## Putting population_api_tables dump from local folder to AWS test folder in private bucket.
+deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3/test ## Putting population_api_tables dump from local folder to AWS test folder in private bucket.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
 	aws s3 cp data/population/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
@@ -1531,12 +1537,12 @@ deploy/sonic/population_api_tables: deploy/s3/test/population_api_tables | deplo
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
-deploy/s3/prod/population_api_tables: deploy/s3/test/population_api_tables | deploy/s3 ## AWS-side copying population_api_tables dump from test folder to prod one.
+deploy/s3/prod/population_api_tables: deploy/s3/test/population_api_tables | deploy/s3/prod ## AWS-side copying population_api_tables dump from test folder to prod one.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
-deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/population_api_tables data/population/population_api_tables.sqld.gz | deploy/s3 ## Checking if dump on AWS is not older than local file.
+deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/population_api_tables data/population/population_api_tables.sqld.gz | deploy/s3/prod ## Checking if dump on AWS is not older than local file.
 	bash scripts/check_population_api_tables_dump_dates.sh
 	touch $@
 

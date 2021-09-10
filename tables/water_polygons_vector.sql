@@ -1,4 +1,5 @@
 alter table water_polygons_vector drop constraint water_polygons_vector_pkey;
+alter table water_polygons_vector drop column x, drop column y;
 alter table water_polygons_vector alter COLUMN geom type geometry;
 
 with complex_areas_to_subdivide as (

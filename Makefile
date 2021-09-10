@@ -1189,22 +1189,29 @@ db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/procedure/
 	psql -c "call generate_overviews('us_census_tracts_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
 
-db/table/pf_days_maxtemp_in: | db/table
+data/in/probable_futures: | data/in ## Create folder for Probable Futures dataset.
+	mkdir $@
+
+data/in/probable_futures/data_sync: | data/in/probable_futures ## Sync PF GeoJSONs from AWS S3 bucket with local dir.
+	aws s3 sync s3://geodata-eu-central-1-kontur/private/geocint/in/probable_futures data/in/probable_futures/ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/pf_days_maxtemp_in: data/in/probable_futures/data_sync | db/table ## Count (in days) above 32C (90F).
 	psql -c 'drop table if exists pf_days_maxtemp_in;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20104.gremo.geojson -nln pf_days_maxtemp_in -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/pf_night_maxtemp_in: | db/table
+db/table/pf_night_maxtemp_in: data/in/probable_futures/data_sync | db/table ## Count nights above 20C (68F).
 	psql -c 'drop table if exists pf_nights_maxtemp_in;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20204.gremo.geojson -nln pf_nights_maxtemp_in -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/pf_days_wet_bulb_in: | db/table
+db/table/pf_days_wet_bulb_in: data/in/probable_futures/data_sync | db/table ## Count (in days) above 32C (wet-bulb).
 	psql -c 'drop table if exists pf_days_wet_bulb_in;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20304.gremo.geojson -nln pf_days_wet_bulb_in -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/pf_maxtemp_idw_h3: db/table/pf_night_maxtemp_in db/table/pf_days_maxtemp_in db/table/pf_days_wet_bulb_in | db/table
+db/table/pf_maxtemp_idw_h3: db/table/pf_night_maxtemp_in db/table/pf_days_maxtemp_in db/table/pf_days_wet_bulb_in | db/table ## Collect PF tables into one, IDW interpolation on level 5, overviews for other h3 levels
 	psql -f tables/pf_maxtemp_idw_h3.sql
 	touch $@
 

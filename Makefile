@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev:  deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export data/out/routing/build ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings data/out/routing/build ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -19,7 +19,7 @@ basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
-	rm -rf deploy/ data/basemap data/tiles/basemap data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
+	rm -rf deploy/ kothic data/basemap data/tiles/basemap data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
 	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv
 	psql -f scripts/clean.sql
 
@@ -68,7 +68,7 @@ data/out/global_fires: | data/out
 data/tiles/stat: | data/tiles
 	mkdir -p $@
 
-data/population: | data ## Directory for storing data_stat_h3 and bivariate datasets.
+data/population: | data ## Directory for storing data_stat_h3 and bivariate datasets dump.
 	mkdir -p $@
 
 data/in/gadm: | data/in ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
@@ -1080,6 +1080,13 @@ db/table/abu_dhabi_bivariate_pop_food_shops: db/table/abu_dhabi_eatery db/table/
 	psql -f tables/abu_dhabi_bivariate_pop_food_shops.sql
 	touch $@
 
+data/in/abu_dhabi_geoalert_v2.geojson: | data/in ## Buildings dataset for Abu Dhabi
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v2.geojson $@ --profile geocint_pipeline_sender
+
+db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v2.geojson | db/table
+	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
+	touch $@
+
 data/out/abu_dhabi: | data/out
 	mkdir -p $@
 
@@ -1468,7 +1475,7 @@ data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivaria
 	mv $@__TMP $@
 	touch $@
 
-deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3
+deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3 ## Putting population_api_tables dump from local folder to AWS test folder in private bucket.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
 	aws s3 cp data/population/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
@@ -1487,19 +1494,24 @@ deploy/sonic/population_api_tables: deploy/s3/test/population_api_tables | deplo
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
-deploy/lima/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/lima
+deploy/s3/prod/population_api_tables: deploy/s3/test/population_api_tables | deploy/s3 ## AWS-side copying population_api_tables dump from test folder to prod one.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/population_api_tables data/population/population_api_tables.sqld.gz | deploy/s3 ## Checking if dump on AWS is not older than local file.
+	bash scripts/check_population_api_tables_dump_dates.sh
+	touch $@
+
+deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_mdate | deploy/lima ## Getting population_api_tables dump from AWS private prod folder and restoring it.
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible lima_population_api -m copy -a 'src=data/population/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz'
+	ansible lima_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'
 	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
-	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --flat-nodes data/planet-latest-updated-flat-nodes --slim --drop --create data/planet-latest-updated.osm.pbf
-	touch $@
-
-db/table/osm2pgsql_mix_in_coastlines: db/table/osm2pgsql db/table/water_polygons_vector | db/table
-	psql -c "insert into planet_osm_polygon (osm_id, \"natural\", way, way_area) select 0 as osm_id, 'coastline' as \"natural\", geom as way, ST_Area(geom) as way_area from water_polygons_vector;"
+	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --create data/planet-latest-updated.osm.pbf
 	touch $@
 
 kothic:
@@ -1516,7 +1528,8 @@ db/function/basemap_mapsme: | kothic db/function
 		| psql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql_mix_in_coastlines | data/tiles
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql | data/tiles
+	psql -c "update basemap_mvts set dirty = true;"
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 

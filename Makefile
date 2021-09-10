@@ -1515,15 +1515,16 @@ kothic:
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod
 	cd tile_generator; go get; go build -o tile_generator
 
-db/function/basemap_mapsme: | kothic db/function
+db/function/basemap: | kothic db/function
 	python2 kothic/src/komap.py \
 		--renderer=mvt-sql \
 		--stylesheet basemap/styles/ninja.mapcss \
 		--osm2pgsql-style basemap/osm2pgsql_styles/default.style \
+		--locale en,ru,be,pl,uk \
 		| psql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql | data/tiles
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap db/table/osm2pgsql | data/tiles
 	psql -c "update basemap_mvts set dirty = true;"
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
@@ -1578,6 +1579,7 @@ data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zi
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
+		--locale en \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1591,6 +1593,7 @@ data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigz
 		--tiles-max-zoom 9 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zigzag
@@ -1603,6 +1606,7 @@ data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zi
 		--tiles-max-zoom 9 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/sonic/style_ninja.json: | kothic data/basemap/metadata/sonic
@@ -1616,6 +1620,7 @@ data/basemap/metadata/sonic/style_ninja.json: | kothic data/basemap/metadata/son
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
+		--locale en \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1629,6 +1634,7 @@ data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
 		--tiles-max-zoom 9 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/sonic
@@ -1641,6 +1647,7 @@ data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/son
 		--tiles-max-zoom 9 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima
@@ -1654,6 +1661,7 @@ data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
+		--locale en \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1667,6 +1675,7 @@ data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
 		--tiles-max-zoom 9 \
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
@@ -1679,6 +1688,7 @@ data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 		--tiles-max-zoom 9 \
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | kothic data/basemap/metadata/geocint
@@ -1692,6 +1702,7 @@ data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | ko
 		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://geocint.kontur.io/basemap/sprite \
+		--locale en \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1705,6 +1716,7 @@ data/basemap/metadata/geocint/style_day.json: | kothic data/basemap/metadata/geo
 		--tiles-max-zoom 14 \
 		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/geocint
@@ -1717,6 +1729,7 @@ data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/g
 		--tiles-max-zoom 14 \
 		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja.json data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json

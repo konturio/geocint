@@ -99,5 +99,3 @@ begin
     return;
 end;
 $$;
-
-alter function calculate_etas(geometry, double precision, double precision, text) owner to gis;

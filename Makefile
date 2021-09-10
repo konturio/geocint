@@ -1114,31 +1114,68 @@ data/out/routing/aoi_boundary.geojson: db/table/osm db/index/osm_tags_idx | data
 data/out/routing/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Extract from planet-latest-updated.osm.pbf by aoi_boundary.geojson using Osmium tool.
 	osmium extract -v -s smart -p data/out/routing/aoi_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
-data/out/routing/aoi-bicycle-latest: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bicycle profile.
-	rm -f data/out/routing/aoi-bicycle-latest.osrm*
+data/out/routing/bicycle: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bicycle profile.
+	rm -f data/out/routing/bicycle.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s ./aoi-latest.osm.pbf data/out/routing/aoi-bicycle-latest.osm.pbf
+	ln -s ./aoi-latest.osm.pbf data/out/routing/bicycle.osm.pbf
 	ln -s ../../../supplemental/OSRM/profiles/bicycle.lua data/out/routing/bicycle.lua
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/bicycle.lua /data/aoi-bicycle-latest.osm.pbf
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/aoi-bicycle-latest.osrm
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/aoi-bicycle-latest.osrm
-	rm -f data/out/routing/aoi-bicycle-latest.osm.pbf
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/bicycle.lua /data/bicycle.osm.pbf
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/bicycle.osrm
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/bicycle.osrm
+	rm -f data/out/routing/bicycle.osm.pbf
 	rm -f data/out/routing/bicycle.lua
 	touch $@
 
-data/out/routing/aoi-bike-latest: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bike profile.
-	rm -f data/out/routing/aoi-bike-latest.osrm*
+data/out/routing/bike: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bike profile.
+	rm -f data/out/routing/bike.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s ./aoi-latest.osm.pbf data/out/routing/aoi-bike-latest.osm.pbf
+	ln -s ./aoi-latest.osm.pbf data/out/routing/bike.osm.pbf
 	ln -s ../../../supplemental/OSRM/profiles/bike.lua data/out/routing/bike.lua
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/bike.lua /data/aoi-bike-latest.osm.pbf
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/aoi-bike-latest.osrm
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/aoi-bike-latest.osrm
-	rm -f data/out/routing/aoi-bike-latest.osm.pbf
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/bike.lua /data/bike.osm.pbf
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/bike.osrm
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/bike.osrm
+	rm -f data/out/routing/bike.osm.pbf
 	rm -f data/out/routing/bike.lua
 	touch $@
 
-data/out/routing/build: data/out/routing/aoi-bicycle-latest data/out/routing/aoi-bike-latest | data/out/routing  ## Routing build target.
+data/out/routing/car: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for car profile.
+	rm -f data/out/routing/car.osrm*
+	# osrm-extract does not support renaming. symbolic link was used instead
+	ln -s ./aoi-latest.osm.pbf data/out/routing/car.osm.pbf
+	ln -s ../../../supplemental/OSRM/profiles/car.lua data/out/routing/car.lua
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/car.lua /data/car.osm.pbf
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/car.osrm
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/car.osrm
+	rm -f data/out/routing/car.osm.pbf
+	rm -f data/out/routing/car.lua
+	touch $@
+
+data/out/routing/car-emergency: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for car-emergency profile.
+	rm -f data/out/routing/car-emergency.osrm*
+	# osrm-extract does not support renaming. symbolic link was used instead
+	ln -s ./aoi-latest.osm.pbf data/out/routing/car-emergency.osm.pbf
+	ln -s ../../../supplemental/OSRM/profiles/car-emergency.lua data/out/routing/car-emergency.lua
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/car-emergency.lua /data/car-emergency.osm.pbf
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/car-emergency.osrm
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/car-emergency.osrm
+	rm -f data/out/routing/car-emergency.osm.pbf
+	rm -f data/out/routing/car-emergency.lua
+	touch $@
+
+data/out/routing/foot: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for foot profile.
+	rm -f data/out/routing/foot.osrm*
+	# osrm-extract does not support renaming. symbolic link was used instead
+	ln -s ./aoi-latest.osm.pbf data/out/routing/foot.osm.pbf
+	ln -s ../../../supplemental/OSRM/profiles/foot.lua data/out/routing/foot.lua
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/foot.lua /data/foot.osm.pbf
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/foot.osrm
+	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/foot.osrm
+	rm -f data/out/routing/foot.osm.pbf
+	rm -f data/out/routing/foot.lua
+	touch $@
+
+data/out/routing/build: data/out/routing/bicycle data/out/routing/bike data/out/routing/car data/out/routing/car-emergency data/out/routing/foot | data/out/routing  ## Routing build target.
+	# TODO: create a script to build osrm data with multiple profiles
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

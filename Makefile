@@ -1520,7 +1520,7 @@ db/function/basemap: | kothic db/function
 		--renderer=mvt-sql \
 		--stylesheet basemap/styles/ninja.mapcss \
 		--osm2pgsql-style basemap/osm2pgsql_styles/default.style \
-		--locale en \
+		--locale en,ru,be,pl,uk \
 		| psql
 	touch $@
 

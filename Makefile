@@ -1098,16 +1098,16 @@ data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bi
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv
 	touch $@
 
-data/out/routing: | data/out ## Folder for OSRM routing files
+data/out/routing: | data/out ## Folder for OSRM routing files.
 	mkdir -p $@
 
 data/out/routing/aoi_boundary.geojson: db/table/osm db/index/osm_tags_idx | data/out/routing ## Get boundaries of Belarus, UAE, Kosovo.
-	psql -q -X -c "\copy (select ST_AsGeoJSON(aoi) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id in (59065, 307763, 2088990) and tags @> '{\"boundary\":\"administrative\"}') aoi) to stdout" | jq -c . > $@
+	psql -q -X -c "\copy (select ST_AsGeoJSON(aoi) from (select ST_Union(geog::geometry) as polygon from osm where osm_type = 'relation' and osm_id in (59065, 307763, 2088990) and tags @> '{\"boundary\":\"administrative\"}') aoi) to stdout" | jq -c . > $@
 
 data/out/routing/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Extract from planet-latest-updated.osm.pbf by aoi_boundary.geojson using Osmium tool.
 	osmium extract -v -s smart -p data/out/routing/aoi_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
-data/out/routing/aoi-bicycle-latest: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bicycle profile
+data/out/routing/aoi-bicycle-latest: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bicycle profile.
 	rm -f data/out/routing/aoi-bicycle-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./aoi-latest.osm.pbf data/out/routing/aoi-bicycle-latest.osm.pbf
@@ -1119,7 +1119,7 @@ data/out/routing/aoi-bicycle-latest: data/out/routing/aoi-latest.osm.pbf data/ou
 	rm -f data/out/routing/bicycle.lua
 	touch $@
 
-data/out/routing/aoi-bike-latest: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bike profile
+data/out/routing/aoi-bike-latest: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bike profile.
 	rm -f data/out/routing/aoi-bike-latest.osrm*
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./aoi-latest.osm.pbf data/out/routing/aoi-bike-latest.osm.pbf
@@ -1131,7 +1131,7 @@ data/out/routing/aoi-bike-latest: data/out/routing/aoi-latest.osm.pbf data/out/r
 	rm -f data/out/routing/bike.lua
 	touch $@
 
-data/out/routing/build: data/out/routing/aoi-bicycle-latest data/out/routing/aoi-bike-latest | data/out/routing  ##
+data/out/routing/build: data/out/routing/aoi-bicycle-latest data/out/routing/aoi-bike-latest | data/out/routing  ## Routing build target.
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

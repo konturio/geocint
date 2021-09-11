@@ -38,5 +38,3 @@ create table covid19_us_counties as (
 drop table if exists covid19_us_counties_in;
 create index on covid19_us_counties using gist (geom);
 vacuum analyse covid19_us_counties;
-alter table covid19_us_counties
-    set (parallel_workers = 32);

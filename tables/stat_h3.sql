@@ -206,8 +206,6 @@ create table stat_h3_in as (
     group by 2, 1
 );
 
-alter table stat_h3_in
-    set (parallel_workers=32);
 
 drop table if exists stat_h3;
 create table stat_h3 as (

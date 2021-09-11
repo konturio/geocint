@@ -27,7 +27,6 @@ create table copernicus_forest_h3_in as (
 -- p.val list based on Discrete classification coding
 -- from Copernicus Global Land Service: https://zenodo.org/record/4723921#.YQmESVMzaDV
 
-alter table copernicus_forest_h3_in set (parallel_workers = 32);
 
 -- generate overviews
 -- TODO: rewrite generated_overviews() procedure to receive expression to "method" parameter for column

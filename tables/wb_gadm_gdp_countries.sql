@@ -13,8 +13,5 @@ create table wb_gadm_gdp_countries as (
         join lateral (select gdp, year from wb_gdp g where g.code = b.gid_0 order by year desc limit 1) g on true
 );
 
-alter table wb_gadm_gdp_countries
-    set (parallel_workers=32);
-
 
 vacuum analyse wb_gadm_gdp_countries;

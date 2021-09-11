@@ -14,13 +14,13 @@ Measure = require("lib/measure")
 function setup()
   return {
     properties = {
-      max_speed_for_map_matching      = 50/3.6, -- 180kmph -> m/s
+      max_speed_for_map_matching      = 50/3.6, -- 50kmph -> m/s
       -- For routing based on duration, but weighted for preferring certain roads
-      weight_name                     = 'routability',
+      -- weight_name                     = 'routability',
       -- For shortest duration without penalties for accessibility
       -- weight_name                     = 'duration',
       -- For shortest distance without penalties for accessibility
-      -- weight_name                     = 'distance',
+      weight_name                     = 'distance',
       process_call_tagless_node      = false,
       u_turn_penalty                 = 20,
       continue_straight_at_waypoint  = true,

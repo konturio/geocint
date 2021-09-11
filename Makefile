@@ -1109,8 +1109,8 @@ data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson
 data/out/routing: | data/out ## Folder for OSRM routing files.
 	mkdir -p $@
 
-data/out/routing/aoi_boundary.geojson: db/table/osm db/index/osm_tags_idx | data/out/routing ## Get boundaries of Belarus, UAE, Kosovo.
-	psql -q -X -c "\copy (select ST_AsGeoJSON(aoi) from (select ST_Union(geog::geometry) as polygon from osm where osm_type = 'relation' and osm_id in (59065, 307763, 2088990) and tags @> '{\"boundary\":\"administrative\"}') aoi) to stdout" | jq -c . > $@
+data/out/routing/aoi_boundary.geojson: db/table/kontur_boundaries | data/out/routing ## Get boundaries of Belarus, UAE, Kosovo.
+	psql -q -X -c "\copy (select ST_AsGeoJSON(aoi) from (select ST_Union(geom) as polygon from kontur_boundaries where tags ->> 'name:en' in ('Belarus', 'Kosovo', 'United Arab Emirates') and gadm_level = 0) aoi) to stdout" | jq -c . > $@
 
 data/out/routing/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Extract from planet-latest-updated.osm.pbf by aoi_boundary.geojson using Osmium tool.
 	osmium extract -v -s smart -p data/out/routing/aoi_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite

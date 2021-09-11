@@ -46,19 +46,19 @@ begin
                    end "geom",
                min(agg_cost)
         from pgr_drivingDistance(
-                     'select seg_id as id, ' ||
-                     '       node_from as source, ' ||
-                     '       node_to as target, ' ||
-                     '       length as cost, ' ||
-                     '       length as reverse_cost' ||
-                     ' from osm_road_segments' ||
-                     ' where length is not null and ' ||
-                     ' ST_Intersects(seg_geom, ''' || max_area::text ||
-                     '''::geometry)',
-                     array [start_node]::bigint[],
-                     max_distance,
-                     false,
-                     true
+                                                         'select seg_id as id, ' ||
+                                                         '       node_from as source, ' ||
+                                                         '       node_to as target, ' ||
+                                                         '       length as cost, ' ||
+                                                         '       length as reverse_cost' ||
+                                                         ' from osm_road_segments' ||
+                                                         ' where length is not null and ' ||
+                                                         ' ST_Intersects(seg_geom, ''' || max_area::text ||
+                                                         '''::geometry)',
+                                                         array [start_node]::bigint[],
+                                                         max_distance,
+                                                         false,
+                                                         true
                  ) d,
              osm_road_segments s
         where d.edge = s.seg_id
@@ -70,14 +70,16 @@ begin
             continue when visited_nodes @> end_nodes;
             -- send requests to OSRM
             with etas as (
-                select row_number() over () "id",
+                select row_number() over ()                                                                                    "id",
                        jsonb_array_elements((r::jsonb -> 'routes' -> 0 -> 'legs' -> 0 -> 'annotation' -> 'nodes') - 0)::bigint "node", -- exclude first node
                        jsonb_array_elements(r::jsonb -> 'routes' -> 0 -> 'legs' -> 0 -> 'annotation' -> 'duration')::float     "duration"
                 from http_get('http://localhost:5000/route/v1/' || profile || '/' ||
                               ST_X(start_point) || ',' || ST_Y(start_point) || ';' ||
                               ST_X(end_point) || ',' || ST_Y(end_point) ||
-                              '?steps=false&annotations=nodes&annotations=duration&alternatives=false&overview=false'
+                              '?steps=false&annotations=nodes&annotations=duration&alternatives=false&overview=false',
+                              '{400}'
                          ) r
+                where r is not null
             ),
                  etas_sum as (
                      select etas.node, sum(duration) over (order by id) "agg_duration"

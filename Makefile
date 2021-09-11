@@ -1112,7 +1112,8 @@ data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson
 	touch $@
 
 db/table/abu_dhabi_bicycle_isochrones: db/table/abu_dhabi_buildings | db/table
-	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into isochrones select " $1 ", ST_Union(isochrone) from generate_isochrone('\''" $2 "'\'', 15, 10, '\''bicycle'\'')"}' | parallel -j32 "psql -X -c {}"
+	docker run -d -p 5000:5000 -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-routed --algorithm mld /data/bicycle.osrm
+	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into isochrones(id, geom) select " $1 ", ST_Union(geom) from generate_isochrone('\''" $2 "'\'', 15, 10, '\''bicycle'\'') geom"}' | parallel -j32 --eta "psql -X -c {}"
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

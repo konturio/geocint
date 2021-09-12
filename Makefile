@@ -1120,9 +1120,9 @@ data/out/routing/bicycle: data/out/routing/aoi-latest.osm.pbf data/out/routing/a
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./aoi-latest.osm.pbf data/out/routing/bicycle.osm.pbf
 	cp -r supplemental/OSRM/profiles data/out/routing/
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/bicycle.lua /data/bicycle.osm.pbf
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/bicycle.osrm
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/bicycle.osrm
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/bicycle.lua /data/bicycle.osm.pbf
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/bicycle.osrm
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/bicycle.osrm
 	rm -f data/out/routing/bicycle.osm.pbf
 	rm -rf data/out/routing/profiles
 	touch $@
@@ -1132,9 +1132,9 @@ data/out/routing/motorbike: data/out/routing/aoi-latest.osm.pbf data/out/routing
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./aoi-latest.osm.pbf data/out/routing/motorbike.osm.pbf
 	cp -r supplemental/OSRM/profiles data/out/routing/
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/motorbike.lua /data/motorbike.osm.pbf
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/motorbike.osrm
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/motorbike.osrm
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/motorbike.lua /data/motorbike.osm.pbf
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/motorbike.osrm
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/motorbike.osrm
 	rm -f data/out/routing/motorbike.osm.pbf
 	rm -rf data/out/routing/profiles
 	touch $@
@@ -1144,9 +1144,9 @@ data/out/routing/car: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_b
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./aoi-latest.osm.pbf data/out/routing/car.osm.pbf
 	cp -r supplemental/OSRM/profiles data/out/routing/
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/car.lua /data/car.osm.pbf
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/car.osrm
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/car.osrm
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/car.lua /data/car.osm.pbf
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/car.osrm
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/car.osrm
 	rm -f data/out/routing/car.osm.pbf
 	rm -rf data/out/routing/profiles
 	touch $@
@@ -1156,9 +1156,9 @@ data/out/routing/car-emergency: data/out/routing/aoi-latest.osm.pbf data/out/rou
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./aoi-latest.osm.pbf data/out/routing/car-emergency.osm.pbf
 	cp -r supplemental/OSRM/profiles data/out/routing/
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/car-emergency.lua /data/car-emergency.osm.pbf
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/car-emergency.osrm
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/car-emergency.osrm
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/car-emergency.lua /data/car-emergency.osm.pbf
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/car-emergency.osrm
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/car-emergency.osrm
 	rm -f data/out/routing/car-emergency.osm.pbf
 	rm -rf data/out/routing/profiles
 	touch $@
@@ -1168,9 +1168,9 @@ data/out/routing/foot: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_
 	# osrm-extract does not support renaming. symbolic link was used instead
 	ln -s ./aoi-latest.osm.pbf data/out/routing/foot.osm.pbf
 	cp -r supplemental/OSRM/profiles data/out/routing/
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/foot.lua /data/foot.osm.pbf
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/foot.osrm
-	docker run -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/foot.osrm
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/foot.lua /data/foot.osm.pbf
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/foot.osrm
+	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/foot.osrm
 	rm -f data/out/routing/foot.osm.pbf
 	rm -rf data/out/routing/profiles
 	touch $@

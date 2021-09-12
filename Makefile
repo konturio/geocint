@@ -593,7 +593,7 @@ db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check ho
 
 reports/population_check_osm.csv: db/table/population_check_osm | reports ## Export population_check_osm table to .csv and send Top 5 most inconsistent results to Kontur Slack (#gis channel).
 	psql -q -X -c 'copy (select * from population_check_osm order by diff_pop desc) to stdout with csv header;' > $@
-	cat $@ | tail -n +2 | head -5 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 5 boundaries with population different from OSM"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
+	cat $@ | tail -n +2 | head -5 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $$1 "|" $$2">", $$7}' | { echo "Top 5 boundaries with population different from OSM"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/iso_codes.csv: | data ## Download ISO codes for countries from wikidata.
 	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
@@ -622,7 +622,7 @@ db/table/un_population: data/un_population.csv | db/table
 
 #reports/population_check_un.csv: db/table/population_check_un | reports
 #	psql -c 'copy (select * from population_check_un order by diff_pop) to stdout with csv header;' > $@
-#	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
+#	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $$1 "|" $$2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 reports/population_check_world: db/table/kontur_population_h3 db/table/un_population | reports
 	psql -q -X -t -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = date_part('year', current_date) and name = 'World')) from kontur_population_h3 where resolution = 8;" > $@
@@ -1111,9 +1111,30 @@ data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bi
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv
 	touch $@
 
-db/table/abu_dhabi_bicycle_isochrones: db/table/abu_dhabi_buildings | db/table
-	docker run -d -p 5000:5000 -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-routed --algorithm mld /data/bicycle.osrm
-	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into isochrones(id, geom) select " $1 ", ST_Union(geom) from generate_isochrone('\''" $2 "'\'', 15, 10, '\''bicycle'\'') geom"}' | parallel -j32 --eta "psql -X -c {}"
+db/function/http_get: | db/function
+	psql -f functions/http_get.sql
+	touch $@
+
+db/function/osrm_table: db/function/http_get | db/function
+	psql -f functions/osrm_table.sql
+	touch $@
+
+db/function/build_isochrone: db/function/osrm_table db/table/osm_road_segments | db/function
+	psql -f functions/build_isochrone.sql
+	touch $@
+
+db/table/abu_dhabi_bicycle_isochrones: db/table/abu_dhabi_buildings db/function/build_isochrone | db/table
+	psql -c 'drop table if exists abu_dhabi_bicycle_isochrones;'
+	psql -c 'create table abu_dhabi_bicycle_isochrones(id bigint, geom geometry);'
+	# docker stop if running and remove
+	docker stop osrm_bicycle_router || true && docker rm osrm_bicycle_router || true
+	# run osrm_bicycle_router docker
+	docker run --rm --name osrm_bicycle_router -d -p 5000:5000 -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-routed --algorithm mld /data/bicycle.osrm
+	# wait for the port
+	until nc -w 10 localhost 5000; do sleep 0.1; done
+	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into abu_dhabi_bicycle_isochrones(id, geom) select " $$1 ", geom from build_isochrone('\''" $$2 "'\'', 15, 10, '\''bicycle'\'') geom"}' | parallel -j32 --eta "psql -X -c {}"
+	docker stop osrm_bicycle_router || true && docker rm osrm_bicycle_router || true
+	psql -c 'vacuum analyze abu_dhabi_bicycle_isochrones;'
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

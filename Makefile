@@ -1119,6 +1119,7 @@ db/function/build_isochrone: db/function/osrm_table db/table/osm_road_segments |
 	touch $@
 
 db/table/abu_dhabi_bicycle_isochrones: db/table/abu_dhabi_buildings db/function/build_isochrone | db/table
+	# TODO: add dependency data/out/routing/bicycle after MR 6673
 	psql -c 'drop table if exists abu_dhabi_bicycle_isochrones;'
 	psql -c 'create table abu_dhabi_bicycle_isochrones(id bigint, geom geometry);'
 	# docker stop if running and remove

@@ -1,9 +1,9 @@
 create or replace function build_isochrone(
     source geometry, -- source point
     max_speed float, -- maximum speed in kmph
-    time_limit float, -- max
+    time_limit float, -- limit in minutes
     profile text, -- OSRM profile
-    isochrone_interval float = null
+    isochrone_interval float = null -- if not null - split isochrone by the interval in minutes
 )
     returns table
             (
@@ -22,11 +22,13 @@ declare
     max_area     geometry;
     accuracy     float = 50;
 begin
+    -- convert to seconds
     isochrone_interval = coalesce(isochrone_interval, time_limit) * 60;
 
     -- convert speed to mps and time to seconds
     max_distance = max_speed / 3.6 * time_limit * 60;
 
+    -- calculate the maximum possible area
     max_area = ST_Buffer(
             (
                 case GeometryType(source)
@@ -39,7 +41,7 @@ begin
             max_distance
         )::geometry;
 
-    -- choose id ang geom of the nearest node in roads
+    -- choose id and geom of the nearest node in roads
     select (array [node_from, node_to])[p.path[1]], p.geom
     from (select *
           from osm_road_segments

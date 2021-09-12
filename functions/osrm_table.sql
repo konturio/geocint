@@ -10,6 +10,7 @@ create or replace function osrm_table(
     language sql
 as
 $$
+-- OSRM tables service is limited to 100 locations by default
 select jsonb_array_elements_text(
                    (http_get('http://localhost:5000/table/v1/' || profile || '/' ||
                              ST_X(source) || ',' || ST_Y(source) || ';' ||

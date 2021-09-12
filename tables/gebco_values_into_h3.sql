@@ -1,5 +1,3 @@
-alter table :table_name
-    set (parallel_workers = 32);
 
 drop table if exists :table_name_h3;
 create table :table_name_h3 as (

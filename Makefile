@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings db/table/abu_dhabi_bicycle_isochrones ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings db/table/abu_dhabi_bicycle_isochrones ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -68,7 +68,7 @@ data/out/global_fires: | data/out
 data/tiles/stat: | data/tiles
 	mkdir -p $@
 
-data/population: | data ## Directory for storing data_stat_h3 and bivariate datasets dump.
+data/out/population: | data/out ## Directory for storing data_stat_h3 and bivariate datasets dump.
 	mkdir -p $@
 
 data/in/gadm: | data/in ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
@@ -358,7 +358,6 @@ db/table/worldpop_population_raster: data/mid/worldpop/tiled_rasters | db/table 
 	raster2pgsql -p -Y -s 4326 data/mid/worldpop/tiled_*.tif -t auto worldpop_population_raster | psql -q
 	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
 	ls -Sr data/mid/worldpop/tiled_*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
-	psql -c "alter table worldpop_population_raster set (parallel_workers = 32);"
 	psql -c "vacuum analyze worldpop_population_raster;"
 	touch $@
 
@@ -388,7 +387,6 @@ db/table/hrsl_population_raster: data/in/raster/hrsl_cogs/download | db/table ##
 	raster2pgsql -p -Y -s 4326 data/in/raster/hrsl_cogs/hrsl_general/v1.5/*.tif -t auto hrsl_population_raster | psql -q
 	psql -c 'alter table hrsl_population_raster drop CONSTRAINT hrsl_population_raster_pkey;'
 	find data/in/raster/hrsl_cogs/hrsl_general -name "*.tif" -type f -printf "%f %p\n" | sed -E 's/.*-v(([[:digit:]]\.?)+)\.tif(.*)/\1 \0/;s/-v([[:digit:]]\.?)+\.tif//1' | sort -Vrk1,1 | sort -uk2,2 | cut -d ' ' -f3- | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto hrsl_population_raster | psql -q'
-	psql -c "alter table hrsl_population_raster set (parallel_workers = 32);"
 	psql -c "create index hrsl_population_raster_rast_idx on hrsl_population_raster using gist (ST_ConvexHull(rast));"
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
@@ -422,7 +420,6 @@ data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54
 db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif | db/table
 	psql -c "drop table if exists ghs_globe_population_raster"
 	raster2pgsql -M -Y -s 54009 data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif -t auto ghs_globe_population_raster | psql -q
-	psql -c "alter table ghs_globe_population_raster set (parallel_workers=32);"
 	touch $@
 
 data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data/in/raster
@@ -451,7 +448,6 @@ data/in/raster/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete
 db/table/copernicus_landcover_raster: data/in/raster/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif | db/table ## Put land cover raster in table.
 	psql -c "drop table if exists copernicus_landcover_raster;"
 	raster2pgsql -M -Y -s 4326 data/in/raster/copernicus_landcover/PROBAV_LC100_global_v3.0.1_2019-nrt_Discrete-Classification-map_EPSG-4326.tif -t auto copernicus_landcover_raster | psql -q
-	psql -c "alter table copernicus_landcover_raster set (parallel_workers = 32);"
 	touch $@
 
 db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table ## Count of 'urban' pixels from land cover raster into h3 hexagons on 8 resolution.
@@ -531,7 +527,6 @@ db/table/ndvi_2019_06_10: data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/tabl
 	raster2pgsql -p -Y -s 4326 data/mid/ndvi_2019_06_10/ndvi_1_4326.tif -t auto ndvi_2019_06_10 | psql -q
 	psql -c 'alter table ndvi_2019_06_10 drop constraint if exists ndvi_2019_06_10_pkey;'
 	ls data/mid/ndvi_2019_06_10/*.tif | parallel --eta 'raster2pgsql -a -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
-	psql -c "alter table ndvi_2019_06_10 set (parallel_workers = 32);"
 	psql -c "vacuum analyze ndvi_2019_06_10;"
 	touch $@
 
@@ -1090,7 +1085,7 @@ data/in/abu_dhabi_geoalert_v2.geojson: | data/in ## Buildings dataset for Abu Dh
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v2.geojson $@ --profile geocint_pipeline_sender
 
 db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v2.geojson | db/table
-	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
+	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
 	touch $@
 
 data/out/abu_dhabi: | data/out
@@ -1473,21 +1468,44 @@ deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima
 	'
 	touch $@
 
-data/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivariate_axis db/table/bivariate_axis_correlation  db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/population ## Crafting production friendly SQL dump
+data/out/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## Crafting production friendly SQL dump
 	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') <(pg_dump --clean --if-exists --no-owner -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays) scripts/population_api_dump_footer.sql | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@
 
-deploy/s3/test/population_api_tables: data/population/population_api_tables.sqld.gz | deploy/s3/test ## Putting population_api_tables dump from local folder to AWS test folder in private bucket.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
-	aws s3 cp data/population/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz --profile geocint_pipeline_sender
+data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## Crafting production friendly SQL dump for stat_h3 table
+	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') < scripts/population_api_dump_footer.sql | pigz" > $@__TMP
+	mv $@__TMP $@
 	touch $@
 
-deploy/zigzag/population_api_tables: deploy/s3/test/population_api_tables | deploy/zigzag
+data/out/population/bivariate_tables.sqld.gz: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## Crafting bivariate tables SQL dump
+	bash -c "pg_dump --clean --if-exists --no-owner -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | pigz" > $@__TMP
+	mv $@__TMP $@
+	touch $@
+
+deploy/s3/test/population_api_tables: data/out/population/population_api_tables.sqld.gz | deploy/s3/test ## Putting population_api_tables dump from local folder to AWS test folder in private bucket.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender
+	aws s3 cp data/out/population/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/s3/test/stat_h3_dump: data/out/population/stat_h3.sqld.gz | deploy/s3/test ## Putting stat_h3 dump from local folder to AWS test folder in private bucket.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz.bak --profile geocint_pipeline_sender
+	aws s3 cp data/out/population/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/s3/test/bivariate_tables_dump: data/out/population/bivariate_tables.sqld.gz | deploy/s3/test ## Putting stat_h3 dump from local folder to AWS test folder in private bucket.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz.bak --profile geocint_pipeline_sender
+	aws s3 cp data/out/population/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/zigzag/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/zigzag ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it.
 	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible zigzag_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'
-	ansible zigzag_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
-	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
+	ansible zigzag_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
+	ansible zigzag_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
+	ansible zigzag_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
+	ansible zigzag_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/stat_h3.sqld.gz'
+	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
+	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
 deploy/sonic/population_api_tables: deploy/s3/test/population_api_tables | deploy/sonic
@@ -1502,7 +1520,7 @@ deploy/s3/prod/population_api_tables: deploy/s3/test/population_api_tables | dep
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
-deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/population_api_tables data/population/population_api_tables.sqld.gz | deploy/s3/prod ## Checking if dump on AWS is not older than local file.
+deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/population_api_tables data/out/population/population_api_tables.sqld.gz | deploy/s3 ## Checking if dump on AWS is not older than local file.
 	bash scripts/check_population_api_tables_dump_dates.sh
 	touch $@
 
@@ -1523,15 +1541,16 @@ kothic:
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod
 	cd tile_generator; go get; go build -o tile_generator
 
-db/function/basemap_mapsme: | kothic db/function
+db/function/basemap: | kothic db/function
 	python2 kothic/src/komap.py \
 		--renderer=mvt-sql \
 		--stylesheet basemap/styles/ninja.mapcss \
 		--osm2pgsql-style basemap/osm2pgsql_styles/default.style \
+		--locale en,ru,be,pl,uk \
 		| psql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap_mapsme db/table/osm2pgsql | data/tiles
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap db/table/osm2pgsql db/table/water_polygons_vector | data/tiles
 	psql -c "update basemap_mvts set dirty = true;"
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
@@ -1586,6 +1605,7 @@ data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zi
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
+		--locale en \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1599,6 +1619,7 @@ data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigz
 		--tiles-max-zoom 9 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zigzag
@@ -1611,6 +1632,7 @@ data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zi
 		--tiles-max-zoom 9 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/sonic/style_ninja.json: | kothic data/basemap/metadata/sonic
@@ -1624,6 +1646,7 @@ data/basemap/metadata/sonic/style_ninja.json: | kothic data/basemap/metadata/son
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
+		--locale en \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1637,6 +1660,7 @@ data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
 		--tiles-max-zoom 9 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/sonic
@@ -1649,6 +1673,7 @@ data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/son
 		--tiles-max-zoom 9 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima
@@ -1662,6 +1687,7 @@ data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
+		--locale en \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1675,6 +1701,7 @@ data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima
 		--tiles-max-zoom 9 \
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
@@ -1687,6 +1714,7 @@ data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 		--tiles-max-zoom 9 \
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | kothic data/basemap/metadata/geocint
@@ -1700,6 +1728,7 @@ data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | ko
 		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://geocint.kontur.io/basemap/sprite \
+		--locale en \
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
@@ -1713,6 +1742,7 @@ data/basemap/metadata/geocint/style_day.json: | kothic data/basemap/metadata/geo
 		--tiles-max-zoom 14 \
 		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/geocint
@@ -1725,6 +1755,7 @@ data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/g
 		--tiles-max-zoom 14 \
 		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja.json data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json

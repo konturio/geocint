@@ -9,8 +9,6 @@ create table tile_stats as (
     group by 1, 2, 3, 4
 );
 
-alter table tile_stats
-    set (parallel_workers=32);
 drop table if exists tile_stats_z17;
 create table tile_stats_z17 as (
     select 17                               as z,

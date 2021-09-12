@@ -1,5 +1,3 @@
-alter table global_fires
-    set (parallel_workers = 32);
 
 set timezone to 'UTC';
 
@@ -14,8 +12,6 @@ create table global_fires_stat_h3 as (
     group by 1
 );
 
-alter table global_fires_stat_h3
-    set (parallel_workers = 32);
 
 do
 $$

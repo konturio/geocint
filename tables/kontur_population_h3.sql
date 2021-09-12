@@ -23,8 +23,6 @@ create table kontur_population_in as (
     group by 1
 );
 
-alter table kontur_population_in
-    set (parallel_workers=32);
 
 -- generate geometries and areas for hexagons
 drop table if exists kontur_population_mid1;
@@ -36,8 +34,6 @@ create table kontur_population_mid1 as (
              join ST_HexagonFromH3(h3) hex on true
 );
 
-alter table kontur_population_mid1
-    set (parallel_workers=32);
 create index on kontur_population_mid1 using brin (geom);
 
 drop table kontur_population_in;
@@ -93,8 +89,6 @@ create table kontur_population_mid2 as (
 
 drop table kontur_population_mid1;
 
-alter table kontur_population_mid2
-    set (parallel_workers=32);
 
 create index on kontur_population_mid2 (probably_unpopulated) where probably_unpopulated;
 

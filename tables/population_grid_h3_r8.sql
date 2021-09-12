@@ -54,5 +54,3 @@ set population = coalesce(hrsl_pop, ghs_pop);
 
 vacuum full analyze population_grid_h3_r8;
 create index on population_grid_h3_r8 using gist (geom, population);
-alter table population_grid_h3_r8
-    set (parallel_workers = 32);

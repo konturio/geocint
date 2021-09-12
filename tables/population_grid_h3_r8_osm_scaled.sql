@@ -89,8 +89,6 @@ create table population_grid_h3_upd as (
 
 create index on population_grid_h3_upd using gist (geom);
 
-alter table population_grid_h3_upd
-    set (parallel_workers = 32);
 
 -- put osm_population_raw into population_grid_h3_r8 model
 

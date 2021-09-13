@@ -20,7 +20,6 @@ declare
     start_point  geometry;
     max_distance float;
     max_area     geometry;
-    accuracy     float = 50;
 begin
     -- convert to seconds
     isochrone_interval = coalesce(isochrone_interval, time_limit) * 60;
@@ -111,7 +110,7 @@ begin
              delaunay_triangles as (
                  select (ST_Dump(ST_ConstrainedDelaunayTriangles(ST_Collect(points.geom)))).geom
                  from (
-                          select distinct on (ST_Force2D(t.geom)) ST_Segmentize(t.geom::geography, accuracy)::geometry "geom"
+                          select distinct on (ST_Force2D(t.geom)) t.geom "geom"
                           from time_annotated_tree t
                       ) points
              ),

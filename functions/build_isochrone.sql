@@ -83,12 +83,9 @@ begin
              ),
              time_annotated_tree as (
                  select tree.seg_id,
-                        ST_SetSRID(
-                                ST_MakeLine(
-                                        ST_MakePoint(ST_X(point_from), ST_Y(point_from), t1.eta),
-                                        ST_MakePoint(ST_X(point_to), ST_Y(point_to), t2.eta)
-                                    ),
-                                4326
+                        ST_MakeLine(
+                                ST_PointZ(ST_X(point_from), ST_Y(point_from), t1.eta, 4326),
+                                ST_PointZ(ST_X(point_to), ST_Y(point_to), t2.eta, 4326)
                             ) "geom"
                  from tree,
                       osrm_table t1,
@@ -115,7 +112,7 @@ begin
                                        ST_Union(
                                                ST_ConvexHull(
                                                        ST_LocateBetweenElevations(
-                                                               ST_Boundary(d.geom),
+                                                               d.geom,
                                                                (num - 1) * isochrone_interval,
                                                                num * isochrone_interval
                                                            )

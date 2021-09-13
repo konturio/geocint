@@ -1,5 +1,5 @@
-drop table if exists abu_dhabi_buildings_population2;
-create table abu_dhabi_buildings_population2 as (
+drop table if exists abu_dhabi_buildings_population;
+create table abu_dhabi_buildings_population as (
     with population as (
         select distinct p.*
         from abu_dhabi_admin_boundaries b,

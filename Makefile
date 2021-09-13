@@ -1088,6 +1088,15 @@ db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v2.geojson | db/table
 	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
 	touch $@
 
+db/table/abu_dhabi_buildings_population: db/table/abu_dhabi_admin_boundaries db/table/abu_dhabi_buildings db/table/kontur_population_h3 | db/table
+	psql -f tables/abu_dhabi_buildings_population.sql
+	touch $@
+
+db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population | db/table
+	# TODO: add dependency db/table/abu_dhabi_isochrones_bicycle_10m after MR 6674
+	psql -f tables/abu_dhabi_pds_bicycle_10min
+	touch $@
+
 data/out/abu_dhabi: | data/out
 	mkdir -p $@
 
@@ -1103,7 +1112,10 @@ data/out/abu_dhabi/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops | dat
 data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops | data/out/abu_dhabi
 	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
 
-data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv
+data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson: db/table/abu_dhabi_pds_bicycle_10min | data/out/abu_dhabi
+	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select id, population, pds, geom from abu_dhabi_pds_bicycle_10min' -nln abu_dhabi_pds_bicycle_10min
+
+data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

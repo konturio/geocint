@@ -28,17 +28,7 @@ begin
     max_distance = max_speed / 3.6 * time_limit * 60;
 
     -- calculate the maximum possible area
-    max_area = ST_Buffer(
-            (
-                case GeometryType(source)
-                    when 'POINT' then source
-                    when 'LINESTRING' then ST_LineInterpolatePoint(source, 0.5)
-                    else
-                        ST_Centroid(source)
-                    end
-                )::geography,
-            max_distance
-        )::geometry;
+    max_area = ST_Buffer(ST_PointOnSurface(source)::geography, max_distance)::geometry;
 
     -- choose id and geom of the nearest node in roads
     select (array [node_from, node_to])[p.path[1]], p.geom

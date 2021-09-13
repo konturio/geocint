@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings db/table/abu_dhabi_bicycle_isochrones ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings db/table/abu_dhabi_isochrones_bicycle_10m ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1118,19 +1118,19 @@ db/function/build_isochrone: db/function/osrm_table db/table/osm_road_segments |
 	psql -f functions/build_isochrone.sql
 	touch $@
 
-db/table/abu_dhabi_bicycle_isochrones: db/table/abu_dhabi_buildings db/function/build_isochrone | db/table
+db/table/abu_dhabi_isochrones_bicycle_10m: db/table/abu_dhabi_buildings db/function/build_isochrone | db/table
 	# TODO: add dependency data/out/routing/bicycle after MR 6673
-	psql -c 'drop table if exists abu_dhabi_bicycle_isochrones;'
-	psql -c 'create table abu_dhabi_bicycle_isochrones(id bigint, geom geometry);'
+	psql -c 'drop table if exists abu_dhabi_isochrones_bicycle_10m;'
+	psql -c 'create table abu_dhabi_isochrones_bicycle_10m(building_id bigint, geom geometry);'
 	# docker stop if running and remove
 	docker stop osrm_bicycle_router || true && docker rm osrm_bicycle_router || true
 	# run osrm_bicycle_router docker
 	docker run --rm --name osrm_bicycle_router -d -p 5000:5000 -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-routed --algorithm mld /data/bicycle.osrm
-	# wait for the port
+	# wait for the port 5000
 	until nc -w 10 localhost 5000; do sleep 0.1; done
-	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into abu_dhabi_bicycle_isochrones(id, geom) select " $$1 ", geom from build_isochrone('\''" $$2 "'\'', 15, 10, '\''bicycle'\'') geom"}' | parallel -j32 --eta "psql -X -c {}"
+	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into abu_dhabi_isochrones_bicycle_10m(building_id, geom) select " $$1 ", geom from build_isochrone('\''" $$2 "'\'', 15, 10, '\''bicycle'\'') geom"}' | parallel -j32 --eta "psql -X -c {}"
 	docker stop osrm_bicycle_router || true && docker rm osrm_bicycle_router || true
-	psql -c 'vacuum analyze abu_dhabi_bicycle_isochrones;'
+	psql -c 'vacuum analyze abu_dhabi_isochrones_bicycle_10m;'
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

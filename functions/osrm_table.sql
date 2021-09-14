@@ -12,7 +12,14 @@ as
 $$
 -- OSRM tables service is limited to 100 locations by default
 select jsonb_array_elements_text(
-                   (http_get('http://localhost:5000/table/v1/' || profile || '/' ||
+                   (http_get('http://localhost:' ||
+                             case profile
+                                 when 'foot' then 5000
+                                 when 'bicycle' then 5001
+                                 when 'car' then 5002
+                                 when 'emergency' then 5003
+                                 end ||
+                             '/table/v1/' || profile || '/' ||
                              ST_X(source) || ',' || ST_Y(source) || ';' ||
                              string_agg(ST_X(geom) || ',' || ST_Y(geom), ';') || '?sources=0'
                         )::jsonb -> 'durations' -> 0) - 0 -- remove source eta

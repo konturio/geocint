@@ -1119,17 +1119,10 @@ db/function/build_isochrone: db/function/osrm_table db/table/osm_road_segments |
 	touch $@
 
 db/table/abu_dhabi_isochrones_bicycle_10m: db/table/abu_dhabi_buildings db/function/build_isochrone | db/table
-	# TODO: add dependency data/out/routing/bicycle after MR 6673
+	# TODO: add dependency deploy/geocint/docker_osrm_bicycle after MR 6673
 	psql -c 'drop table if exists abu_dhabi_isochrones_bicycle_10m;'
 	psql -c 'create table abu_dhabi_isochrones_bicycle_10m(building_id bigint, geom geometry);'
-	# docker stop if running and remove
-	docker stop osrm_bicycle_router || true && docker rm osrm_bicycle_router || true
-	# run osrm_bicycle_router docker
-	docker run --rm --name osrm_bicycle_router -d -p 5000:5000 -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-routed --algorithm mld /data/bicycle.osrm
-	# wait for the port 5000
-	until nc -w 10 localhost 5000; do sleep 0.1; done
 	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into abu_dhabi_isochrones_bicycle_10m(building_id, geom) select " $$1 ", geom from build_isochrone('\''" $$2 "'\'', 15, 10, '\''bicycle'\'') geom"}' | parallel -j32 --eta "psql -X -c {}"
-	docker stop osrm_bicycle_router || true && docker rm osrm_bicycle_router || true
 	psql -c 'vacuum analyze abu_dhabi_isochrones_bicycle_10m;'
 	touch $@
 

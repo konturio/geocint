@@ -1106,77 +1106,57 @@ data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bi
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv
 	touch $@
 
-data/out/routing: | data/out ## Folder for OSRM routing files.
-	mkdir -p $@
-
-data/out/routing/aoi_boundary.geojson: db/table/kontur_boundaries | data/out/routing ## Get boundaries of Belarus, UAE, Kosovo.
+data/out/aoi_boundary.geojson: db/table/kontur_boundaries | data/out ## Get boundaries of Belarus, UAE, Kosovo.
 	psql -q -X -c "\copy (select ST_AsGeoJSON(aoi) from (select ST_Union(geom) as polygon from kontur_boundaries where tags ->> 'name:en' in ('Belarus', 'Kosovo', 'United Arab Emirates') and gadm_level = 0) aoi) to stdout" | jq -c . > $@
 
-data/out/routing/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Extract from planet-latest-updated.osm.pbf by aoi_boundary.geojson using Osmium tool.
-	osmium extract -v -s smart -p data/out/routing/aoi_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
+data/out/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/aoi_boundary.geojson | data/out ## Extract from planet-latest-updated.osm.pbf by aoi_boundary.geojson using Osmium tool.
+	osmium extract -v -s smart -p data/out/aoi_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
-data/out/routing/bicycle: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bicycle profile.
-	rm -f data/out/routing/bicycle.osrm*
-	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s ./aoi-latest.osm.pbf data/out/routing/bicycle.osm.pbf
-	cp -r supplemental/OSRM/profiles data/out/routing/
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/bicycle.lua /data/bicycle.osm.pbf
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/bicycle.osrm
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/bicycle.osrm
-	rm -f data/out/routing/bicycle.osm.pbf
-	rm -rf data/out/routing/profiles
+deploy/geocint/docker_osrm_foot: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by foot profile
+	# build docker image
+	docker build --build-arg PORT=5000 --build-arg OSRM_PROFILE=foot --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-foot --no-cache .
+	# stop and remove previous container if exists
+	docker ps -q --filter "name=kontur-osrm-backend-by-foot" | xargs -I'{}' -r docker container stop {}
+	docker ps -aq --filter "name=kontur-osrm-backend-by-foot" | xargs -I'{}' -r docker container rm {}
+	# start docker in new container
+	docker container create -p 5000:5000 --restart always --name kontur-osrm-backend-by-foot kontur-osrm-backend-by-foot
+	docker container start kontur-osrm-backend-by-foot
 	touch $@
 
-data/out/routing/motorbike: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for bike profile.
-	rm -f data/out/routing/motorbike.osrm*
-	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s ./aoi-latest.osm.pbf data/out/routing/motorbike.osm.pbf
-	cp -r supplemental/OSRM/profiles data/out/routing/
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/motorbike.lua /data/motorbike.osm.pbf
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/motorbike.osrm
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/motorbike.osrm
-	rm -f data/out/routing/motorbike.osm.pbf
-	rm -rf data/out/routing/profiles
+deploy/geocint/docker_osrm_bicycle: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by bicycle profile
+	# build docker image
+	docker build --build-arg PORT=5001 --build-arg OSRM_PROFILE=bicycle --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-bicycle --no-cache .
+	# stop and remove previous container if exists
+	docker ps -q --filter "name=kontur-osrm-backend-by-bicycle" | xargs -I'{}' -r docker container stop {}
+	docker ps -aq --filter "name=kontur-osrm-backend-by-bicycle" | xargs -I'{}' -r docker container rm {}
+	# start docker in new container
+	docker container create -p 5001:5001 --restart always --name kontur-osrm-backend-by-bicycle kontur-osrm-backend-by-bicycle
+	docker container start kontur-osrm-backend-by-bicycle
 	touch $@
 
-data/out/routing/car: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for car profile.
-	rm -f data/out/routing/car.osrm*
-	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s ./aoi-latest.osm.pbf data/out/routing/car.osm.pbf
-	cp -r supplemental/OSRM/profiles data/out/routing/
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/car.lua /data/car.osm.pbf
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/car.osrm
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/car.osrm
-	rm -f data/out/routing/car.osm.pbf
-	rm -rf data/out/routing/profiles
+deploy/geocint/docker_osrm_car: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car profile
+	# build docker image
+	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car --no-cache .
+	# stop and remove previous container if exists
+	docker ps -q --filter "name=kontur-osrm-backend-by-car" | xargs -I'{}' -r docker container stop {}
+	docker ps -aq --filter "name=kontur-osrm-backend-by-car" | xargs -I'{}' -r docker container rm {}
+	# start docker in new container
+	docker container create -p 5002:5002 --restart always --name kontur-osrm-backend-by-car kontur-osrm-backend-by-car
+	docker container start kontur-osrm-backend-by-car
 	touch $@
 
-data/out/routing/car-emergency: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for car-emergency profile.
-	rm -f data/out/routing/car-emergency.osrm*
-	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s ./aoi-latest.osm.pbf data/out/routing/car-emergency.osm.pbf
-	cp -r supplemental/OSRM/profiles data/out/routing/
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/car-emergency.lua /data/car-emergency.osm.pbf
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/car-emergency.osrm
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/car-emergency.osrm
-	rm -f data/out/routing/car-emergency.osm.pbf
-	rm -rf data/out/routing/profiles
+deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car emergency profile
+	# build docker image
+	docker build --build-arg PORT=5003 --build-arg OSRM_PROFILE=car-emergency --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car-emergency --no-cache .
+	# stop and remove previous container if exists
+	docker ps -q --filter "name=kontur-osrm-backend-by-car-emergency" | xargs -I'{}' -r docker container stop {}
+	docker ps -aq --filter "name=kontur-osrm-backend-by-car-emergency" | xargs -I'{}' -r docker container rm {}
+	# start docker in new container
+	docker container create -p 5003:5003 --restart always --name kontur-osrm-backend-by-car-emergency kontur-osrm-backend-by-car-emergency
+	docker container start kontur-osrm-backend-by-car-emergency
 	touch $@
 
-data/out/routing/foot: data/out/routing/aoi-latest.osm.pbf data/out/routing/aoi_boundary.geojson | data/out/routing ## Create OSRM files for foot profile.
-	rm -f data/out/routing/foot.osrm*
-	# osrm-extract does not support renaming. symbolic link was used instead
-	ln -s ./aoi-latest.osm.pbf data/out/routing/foot.osm.pbf
-	cp -r supplemental/OSRM/profiles data/out/routing/
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-extract -p /data/profiles/foot.lua /data/foot.osm.pbf
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-partition /data/foot.osrm
-	docker run --rm -t -v "${PWD}/data/out/routing:/data" osrm/osrm-backend osrm-customize /data/foot.osrm
-	rm -f data/out/routing/foot.osm.pbf
-	rm -rf data/out/routing/profiles
-	touch $@
-
-data/out/routing/build: data/out/routing/bicycle data/out/routing/motorbike data/out/routing/car data/out/routing/car-emergency data/out/routing/foot | data/out/routing  ## Routing build target.
-	# TODO: create a script to build osrm data with multiple profiles
+deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency | deploy/geocint  ## Routing build target.
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

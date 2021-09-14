@@ -1,0 +1,24 @@
+FROM osrm/osrm-backend:latest
+
+ARG OSRM_PROFILE
+ARG PORT
+ENV OSRM_PROFILE=$OSRM_PROFILE PORT=$PORT
+
+# Copy files to docker
+COPY data/out/routing/aoi-latest.osm.pbf /data/
+COPY supplemental/OSRM/profiles /data/profiles
+
+# Generate OSRM files
+RUN osrm-extract -p /data/profiles/${OSRM_PROFILE}.lua /data/aoi-latest.osm.pbf
+RUN osrm-partition /data/aoi-latest.osrm
+RUN osrm-customize /data/aoi-latest.osrm
+
+# Cleanup
+RUN rm -f /data/aoi-latest.osm.pbf
+RUN rm -rf /data/profiles
+RUN rm -f /opt/* # Remove leftover profiles from parent docker
+
+# Start OSRM router
+CMD osrm-routed --port ${PORT} --algorithm mld /data/aoi-latest.osrm
+
+EXPOSE ${PORT}

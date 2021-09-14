@@ -5,7 +5,7 @@ ARG PORT
 ENV OSRM_PROFILE=$OSRM_PROFILE PORT=$PORT
 
 # Copy files to docker
-COPY data/out/routing/aoi-latest.osm.pbf /data/
+COPY data/out/aoi-latest.osm.pbf /data/
 COPY supplemental/OSRM/profiles /data/profiles
 
 # Generate OSRM files

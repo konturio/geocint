@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings data/out/routing/build ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings deploy/geocint/docker_osrm_build ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1112,7 +1112,7 @@ data/out/aoi_boundary.geojson: db/table/kontur_boundaries | data/out ## Get boun
 data/out/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/aoi_boundary.geojson | data/out ## Extract from planet-latest-updated.osm.pbf by aoi_boundary.geojson using Osmium tool.
 	osmium extract -v -s smart -p data/out/aoi_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
-deploy/geocint/docker_osrm_foot: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by foot profile
+deploy/geocint/docker_osrm_foot: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by foot profile.
 	# build docker image
 	docker build --build-arg PORT=5000 --build-arg OSRM_PROFILE=foot --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-foot --no-cache .
 	# stop and remove previous container if exists
@@ -1123,7 +1123,7 @@ deploy/geocint/docker_osrm_foot: data/out/aoi-latest.osm.pbf | deploy/geocint ##
 	docker container start kontur-osrm-backend-by-foot
 	touch $@
 
-deploy/geocint/docker_osrm_bicycle: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by bicycle profile
+deploy/geocint/docker_osrm_bicycle: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by bicycle profile.
 	# build docker image
 	docker build --build-arg PORT=5001 --build-arg OSRM_PROFILE=bicycle --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-bicycle --no-cache .
 	# stop and remove previous container if exists
@@ -1134,7 +1134,7 @@ deploy/geocint/docker_osrm_bicycle: data/out/aoi-latest.osm.pbf | deploy/geocint
 	docker container start kontur-osrm-backend-by-bicycle
 	touch $@
 
-deploy/geocint/docker_osrm_car: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car profile
+deploy/geocint/docker_osrm_car: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car profile.
 	# build docker image
 	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car --no-cache .
 	# stop and remove previous container if exists
@@ -1145,7 +1145,7 @@ deploy/geocint/docker_osrm_car: data/out/aoi-latest.osm.pbf | deploy/geocint ## 
 	docker container start kontur-osrm-backend-by-car
 	touch $@
 
-deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car emergency profile
+deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car emergency profile.
 	# build docker image
 	docker build --build-arg PORT=5003 --build-arg OSRM_PROFILE=car-emergency --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car-emergency --no-cache .
 	# stop and remove previous container if exists
@@ -1156,7 +1156,7 @@ deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/g
 	docker container start kontur-osrm-backend-by-car-emergency
 	touch $@
 
-deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency | deploy/geocint  ## Routing build target.
+deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency | deploy/geocint  ## Docker build target.
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw

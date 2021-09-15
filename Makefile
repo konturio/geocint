@@ -22,6 +22,8 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	rm -rf deploy/ kothic data/basemap data/tiles/basemap data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
 	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv
 	psql -f scripts/clean.sql
+	docker image prune --force --filter label=stage=osrm-builder
+	docker image prune --force --filter label=stage=osrm-backend
 
 data: ## Temporary file based datasets. Located on bcache. Some files could be returned to SSD.
 	mkdir -p $@
@@ -1121,61 +1123,45 @@ data/out/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/aoi_bou
 deploy/geocint/docker_osrm_foot: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by foot profile.
 	# build docker image
 	docker build --build-arg PORT=5000 --build-arg OSRM_PROFILE=foot --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-foot --no-cache .
-	docker image prune --force --filter label=stage=osrm-builder-foot
 	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-foot$$" | xargs -I'{}' -r docker container stop {}
 	# remove container
 	docker ps -aq --filter "name=^kontur-osrm-backend-by-foot$$" | xargs -I'{}' -r docker container rm {}
-	# remove old images
-	docker image prune --force --filter label=name=kontur-osrm-backend-by-foot
 	# start docker in new container
-	docker container create -p 5000:5000 --restart always --name kontur-osrm-backend-by-foot kontur-osrm-backend-by-foot
-	docker container start kontur-osrm-backend-by-foot
+	docker run -d -p 5000:5000 --restart always --name kontur-osrm-backend-by-foot kontur-osrm-backend-by-foot
 	touch $@
 
 deploy/geocint/docker_osrm_bicycle: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by bicycle profile.
 	# build docker image
 	docker build --build-arg PORT=5001 --build-arg OSRM_PROFILE=bicycle --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-bicycle --no-cache .
-	docker image prune --force --filter label=stage=osrm-builder-bicycle
 	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-bicycle$$" | xargs -I'{}' -r docker container stop {}
 	# remove container
 	docker ps -aq --filter "name=^kontur-osrm-backend-by-bicycle$$" | xargs -I'{}' -r docker container rm {}
-	# remove old images
-	docker image prune --force --filter label=name=kontur-osrm-backend-by-bicycle
 	# start docker in new container
-	docker container create -p 5001:5001 --restart always --name kontur-osrm-backend-by-bicycle kontur-osrm-backend-by-bicycle
-	docker container start kontur-osrm-backend-by-bicycle
+	docker run -d -p 5001:5001 --restart always --name kontur-osrm-backend-by-bicycle kontur-osrm-backend-by-bicycle
 	touch $@
 
 deploy/geocint/docker_osrm_car: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car profile.
 	# build docker image
 	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car --no-cache .
-	docker image prune --force --filter label=stage=osrm-builder-car
 	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-car$$" | xargs -I'{}' -r docker container stop {}
 	# remove container
 	docker ps -aq --filter "name=^kontur-osrm-backend-by-car$$" | xargs -I'{}' -r docker container rm {}
-	# remove old images
-	docker image prune --force --filter label=name=kontur-osrm-backend-by-car
 	# start docker in new container
-	docker container create -p 5002:5002 --restart always --name kontur-osrm-backend-by-car kontur-osrm-backend-by-car
-	docker container start kontur-osrm-backend-by-car
+	docker run -d -p 5002:5002 --restart always --name kontur-osrm-backend-by-car kontur-osrm-backend-by-car
 	touch $@
 
 deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car emergency profile.
 	# build docker image
 	docker build --build-arg PORT=5003 --build-arg OSRM_PROFILE=car-emergency --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car-emergency --no-cache .
-	docker image prune --force --filter label=stage=osrm-builder-car-emergency
 	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-car-emergency$$" | xargs -I'{}' -r docker container stop {}
 	# remove container
 	docker ps -aq --filter "name=^kontur-osrm-backend-by-car-emergency$$" | xargs -I'{}' -r docker container rm {}
-	# remove old images
-	docker image prune --force --filter label=name=kontur-osrm-backend-by-car-emergency
 	# start docker in new container
-	docker container create -p 5003:5003 --restart always --name kontur-osrm-backend-by-car-emergency kontur-osrm-backend-by-car-emergency
-	docker container start kontur-osrm-backend-by-car-emergency
+	docker run -d -p 5003:5003 --restart always --name kontur-osrm-backend-by-car-emergency kontur-osrm-backend-by-car-emergency
 	touch $@
 
 deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency | deploy/geocint  ## Docker build target.

@@ -1,7 +1,7 @@
 # Stage 1 - Generate osrm data
 FROM osrm/osrm-backend:latest as builder
 ARG OSRM_PROFILE
-LABEL stage=osrm-builder-$OSRM_PROFILE
+LABEL stage=osrm-builder
 ENV OSRM_PROFILE=$OSRM_PROFILE
 
 # Copy files to docker
@@ -20,8 +20,7 @@ RUN rm -rf /data/profiles
 # Stage 2 - docker image
 FROM osrm/osrm-backend:latest
 ARG PORT
-ARG OSRM_PROFILE
-LABEL name=kontur-osrm-backend-by-$OSRM_PROFILE
+LABEL name=osrm-backend
 ENV PORT=$PORT
 COPY --from=builder /data/ /data/
 CMD osrm-routed --port ${PORT} --algorithm mld --max-table-size 10000 /data/aoi-latest.osrm

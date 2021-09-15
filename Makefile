@@ -1506,7 +1506,7 @@ deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table
-	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 32 --hstore-all --create data/planet-latest-updated.osm.pbf
+	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 16 --hstore-all --create data/planet-latest-updated.osm.pbf
 	touch $@
 
 kothic:
@@ -1526,7 +1526,7 @@ db/function/basemap: | kothic db/function
 
 data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap db/table/osm2pgsql db/table/water_polygons_vector | data/tiles
 	psql -c "update basemap_mvts set dirty = true;"
-	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
+	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 
 data/basemap: | data

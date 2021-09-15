@@ -1,8 +1,8 @@
-FROM osrm/osrm-backend:latest
-
+# Stage 1 - Generate osrm data
+FROM osrm/osrm-backend:latest as builder
 ARG OSRM_PROFILE
-ARG PORT
-ENV OSRM_PROFILE=$OSRM_PROFILE PORT=$PORT
+LABEL stage=osrm-builder-$OSRM_PROFILE
+ENV OSRM_PROFILE=$OSRM_PROFILE
 
 # Copy files to docker
 COPY data/out/aoi-latest.osm.pbf /data/
@@ -16,9 +16,11 @@ RUN osrm-customize /data/aoi-latest.osrm
 # Cleanup
 RUN rm -f /data/aoi-latest.osm.pbf
 RUN rm -rf /data/profiles
-RUN rm -f /opt/* # Remove leftover profiles from parent docker
 
-# Start OSRM router
+# Stage 2 - docker image
+FROM osrm/osrm-backend:latest
+ARG PORT
+ENV PORT=$PORT
+COPY --from=builder /data/ /data/
 CMD osrm-routed --port ${PORT} --algorithm mld --max-table-size 10000 /data/aoi-latest.osrm
-
 EXPOSE ${PORT}

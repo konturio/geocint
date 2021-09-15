@@ -82,18 +82,18 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 	var mvtTile []byte
 	err := row.Scan(&mvtTile)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
 	}
 
 	err = os.MkdirAll(dir, 0777)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
 	}
 
 	// Create the file
 	out, err := os.Create(filePath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
 	}
 
 	// Write the body to file

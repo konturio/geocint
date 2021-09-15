@@ -20,6 +20,8 @@ RUN rm -rf /data/profiles
 # Stage 2 - docker image
 FROM osrm/osrm-backend:latest
 ARG PORT
+ARG OSRM_PROFILE
+LABEL name=kontur-osrm-backend-by-$OSRM_PROFILE
 ENV PORT=$PORT
 COPY --from=builder /data/ /data/
 CMD osrm-routed --port ${PORT} --algorithm mld --max-table-size 10000 /data/aoi-latest.osrm

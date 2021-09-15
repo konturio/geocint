@@ -1178,7 +1178,7 @@ deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/g
 	docker container start kontur-osrm-backend-by-car-emergency
 	touch $@
 
-deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency | deploy/geocint  ## Docker build target.
+deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency | deploy/geocint  ## Deploy all OSRM Docker builds after their runs started.
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw ## Geometry index on osm_population_raw table.

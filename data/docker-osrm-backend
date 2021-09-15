@@ -19,6 +19,6 @@ RUN rm -rf /data/profiles
 RUN rm -f /opt/* # Remove leftover profiles from parent docker
 
 # Start OSRM router
-CMD osrm-routed --port ${PORT} --algorithm mld /data/aoi-latest.osrm
+CMD osrm-routed --port ${PORT} --algorithm mld --max-table-size 10000 /data/aoi-latest.osrm
 
 EXPOSE ${PORT}

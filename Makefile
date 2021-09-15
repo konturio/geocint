@@ -1116,11 +1116,12 @@ deploy/geocint/docker_osrm_foot: data/out/aoi-latest.osm.pbf | deploy/geocint ##
 	# build docker image
 	docker build --build-arg PORT=5000 --build-arg OSRM_PROFILE=foot --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-foot --no-cache .
 	docker image prune --force --filter label=stage=osrm-builder-foot
-	# stop and remove previous container if exists
+	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-foot$$" | xargs -I'{}' -r docker container stop {}
-	docker ps -aq --filter "name=^kontur-osrm-backend-by-foot$$" | xargs -I'{}' -r docker container rm {}
 	# remove old images
-	docker ps -aq --filter="name=^kontur-osrm-backend-by-foot$$" | tail -n +2 | awk '{print $$2}' | xargs -I'{}' -r docker rmi {}
+	docker ps -a --filter="name=^kontur-osrm-backend-by-foot$$" | tail -n +2 | awk '{print $$2}' | xargs -I'{}' -r docker rmi {}
+	# remove container
+	docker ps -aq --filter "name=^kontur-osrm-backend-by-foot$$" | xargs -I'{}' -r docker container rm {}
 	# start docker in new container
 	docker container create -p 5000:5000 --restart always --name kontur-osrm-backend-by-foot kontur-osrm-backend-by-foot
 	docker container start kontur-osrm-backend-by-foot
@@ -1130,11 +1131,12 @@ deploy/geocint/docker_osrm_bicycle: data/out/aoi-latest.osm.pbf | deploy/geocint
 	# build docker image
 	docker build --build-arg PORT=5001 --build-arg OSRM_PROFILE=bicycle --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-bicycle --no-cache .
 	docker image prune --force --filter label=stage=osrm-builder-bicycle
-	# stop and remove previous container if exists
+	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-bicycle$$" | xargs -I'{}' -r docker container stop {}
-	docker ps -aq --filter "name=^kontur-osrm-backend-by-bicycle$$" | xargs -I'{}' -r docker container rm {}
 	# remove old images
-	docker ps -aq --filter="name=^kontur-osrm-backend-by-bicycle$$" | tail -n +2 | awk '{print $$2}' | xargs -I'{}' -r docker rmi {}
+	docker ps -a --filter="name=^kontur-osrm-backend-by-bicycle$$" | tail -n +2 | awk '{print $$2}' | xargs -I'{}' -r docker rmi {}
+	# remove container
+	docker ps -aq --filter "name=^kontur-osrm-backend-by-bicycle$$" | xargs -I'{}' -r docker container rm {}
 	# start docker in new container
 	docker container create -p 5001:5001 --restart always --name kontur-osrm-backend-by-bicycle kontur-osrm-backend-by-bicycle
 	docker container start kontur-osrm-backend-by-bicycle
@@ -1144,11 +1146,12 @@ deploy/geocint/docker_osrm_car: data/out/aoi-latest.osm.pbf | deploy/geocint ## 
 	# build docker image
 	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car --no-cache .
 	docker image prune --force --filter label=stage=osrm-builder-car
-	# stop and remove previous container if exists
+	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-car$$" | xargs -I'{}' -r docker container stop {}
-	docker ps -aq --filter "name=^kontur-osrm-backend-by-car$$" | xargs -I'{}' -r docker container rm {}
 	# remove old images
-	docker ps -aq --filter="name=^kontur-osrm-backend-by-car$$" | tail -n +2 | awk '{print $$2}' | xargs -I'{}' -r docker rmi {}
+	docker ps -a --filter="name=^kontur-osrm-backend-by-car$$" | tail -n +2 | awk '{print $$2}' | xargs -I'{}' -r docker rmi {}
+	# remove container
+	docker ps -aq --filter "name=^kontur-osrm-backend-by-car$$" | xargs -I'{}' -r docker container rm {}
 	# start docker in new container
 	docker container create -p 5002:5002 --restart always --name kontur-osrm-backend-by-car kontur-osrm-backend-by-car
 	docker container start kontur-osrm-backend-by-car
@@ -1158,11 +1161,12 @@ deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/g
 	# build docker image
 	docker build --build-arg PORT=5003 --build-arg OSRM_PROFILE=car-emergency --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car-emergency --no-cache .
 	docker image prune --force --filter label=stage=osrm-builder-car-emergency
-	# stop and remove previous container if exists
+	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-car-emergency$$" | xargs -I'{}' -r docker container stop {}
-	docker ps -aq --filter "name=^kontur-osrm-backend-by-car-emergency$$" | xargs -I'{}' -r docker container rm {}
 	# remove old images
-	docker ps -aq --filter="name=^kontur-osrm-backend-by-car-emergency$$" | tail -n +2 | awk '{print $$2}' | xargs -I'{}' -r docker rmi {}
+	docker ps -a --filter="name=^kontur-osrm-backend-by-car-emergency$$" | tail -n +2 | awk '{print $$2}' | xargs -I'{}' -r docker rmi {}
+	# remove container
+	docker ps -aq --filter "name=^kontur-osrm-backend-by-car-emergency$$" | xargs -I'{}' -r docker container rm {}
 	# start docker in new container
 	docker container create -p 5003:5003 --restart always --name kontur-osrm-backend-by-car-emergency kontur-osrm-backend-by-car-emergency
 	docker container start kontur-osrm-backend-by-car-emergency

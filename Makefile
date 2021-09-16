@@ -1172,7 +1172,7 @@ db/table/osm_population_raw_idx: db/table/osm_population_raw ## Geometry index o
 	touch $@
 
 db/table/population_grid_h3_r8_osm_scaled: db/table/population_grid_h3_r8 db/procedure/decimate_admin_level_in_osm_population_raw db/table/osm_population_raw_idx ## population_grid_h3_r8 dataset revised using continuous population layer (from OpenStreetMap admin boundaries dataset).
- 	psql -f tables/population_grid_h3_r8_osm_scaled.sql
+	psql -f tables/population_grid_h3_r8_osm_scaled.sql
 	touch $@
 
 db/table/osm_landuse: db/table/osm db/index/osm_tags_idx | db/table ## Landuse polygons extracted from OpenStreetMap.

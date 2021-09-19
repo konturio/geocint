@@ -263,7 +263,8 @@ db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_
 
 db/table/osm: data/planet-latest-updated.osm.pbf | db/table ## Daily Planet OpenStreetMap dataset.
 	psql -c "drop table if exists osm;"
-	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=100 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=100 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=100 OSMIUM_MAX_WORK_QUEUE_SIZE=100 numactl --preferred=1 -N 1 osmium export -i dense_mmap_array -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
+	# Pin osmium to CPU1 and disable HT on it
+	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=800 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=800 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=800 OSMIUM_MAX_WORK_QUEUE_SIZE=100 numactl --preferred=1 -N 1 osmium export -i dense_mmap_array -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
 	psql -c "alter table osm set (parallel_workers = 32);"
 	touch $@
 
@@ -1570,7 +1571,8 @@ deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
-	osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 16 --hstore-all --create data/planet-latest-updated.osm.pbf
+	# pin osm2pgsql to CPU0 and disable HT for it
+	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 8 --hstore-all --create data/planet-latest-updated.osm.pbf
 	touch $@
 
 kothic: ## Clone Kothic from GIT

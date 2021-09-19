@@ -1575,13 +1575,13 @@ db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table ## Yet another
 	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 8 --hstore-all --create data/planet-latest-updated.osm.pbf
 	touch $@
 
-kothic: ## Clone Kothic from GIT
+kothic/src/komap.py: ## Clone Kothic from GIT
 	git clone -b master --single-branch https://github.com/kothic/kothic.git
 
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
 	cd tile_generator; go get; go build -o tile_generator
 
-db/function/basemap: | kothic db/function ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
+db/function/basemap: kothic/src/komap.py | db/function ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
 	python2 kothic/src/komap.py \
 		--renderer=mvt-sql \
 		--stylesheet basemap/styles/ninja.mapcss \
@@ -1634,7 +1634,7 @@ data/basemap/sprite_all: | data/basemap/sprite ## Build sprites currently fetche
 	wget -O data/basemap/sprite/sprite.json https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite.json?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
 	touch $@
 
-data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Zigzag server.
+data/basemap/metadata/zigzag/style_ninja.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Zigzag server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1649,7 +1649,7 @@ data/basemap/metadata/zigzag/style_ninja.json: | kothic data/basemap/metadata/zi
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
-data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigzag ## Generating of Day style JSON for Zigzag server.
+data/basemap/metadata/zigzag/style_day.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Day style JSON for Zigzag server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1662,7 +1662,7 @@ data/basemap/metadata/zigzag/style_day.json: | kothic data/basemap/metadata/zigz
 		--locale en \
 		> $@
 
-data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zigzag ## Generating of Night style JSON for Zigzag server.
+data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for Zigzag server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1675,7 +1675,7 @@ data/basemap/metadata/zigzag/style_night.json: | kothic data/basemap/metadata/zi
 		--locale en \
 		> $@
 
-data/basemap/metadata/sonic/style_ninja.json: | kothic data/basemap/metadata/sonic ## Generating of Ninja style JSON for Sonic server.
+data/basemap/metadata/sonic/style_ninja.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for Sonic server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1690,7 +1690,7 @@ data/basemap/metadata/sonic/style_ninja.json: | kothic data/basemap/metadata/son
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
-data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic ## Generating of Day style JSON for Sonic server.
+data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Day style JSON for Sonic server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1703,7 +1703,7 @@ data/basemap/metadata/sonic/style_day.json: | kothic data/basemap/metadata/sonic
 		--locale en \
 		> $@
 
-data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/sonic ## Generating of Night style JSON for Sonic server.
+data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Night style JSON for Sonic server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1716,7 +1716,7 @@ data/basemap/metadata/sonic/style_night.json: | kothic data/basemap/metadata/son
 		--locale en \
 		> $@
 
-data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima ## Generating of Ninja style JSON for Lima server.
+data/basemap/metadata/lima/style_ninja.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for Lima server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1731,7 +1731,7 @@ data/basemap/metadata/lima/style_ninja.json: | kothic data/basemap/metadata/lima
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
-data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima ## Generating of Day style JSON for Lima server.
+data/basemap/metadata/lima/style_day.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Day style JSON for Lima server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1744,7 +1744,7 @@ data/basemap/metadata/lima/style_day.json: | kothic data/basemap/metadata/lima #
 		--locale en \
 		> $@
 
-data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima ## Generating of Night style JSON for Lima server.
+data/basemap/metadata/lima/style_night.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for Lima server.
 	python2 kothic/src/libkomb.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1757,7 +1757,7 @@ data/basemap/metadata/lima/style_night.json: | kothic data/basemap/metadata/lima
 		--locale en \
 		> $@
 
-data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | kothic data/basemap/metadata/geocint ## Generating of Ninja style JSON for Geocint server.
+data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/geocint ## Generating of Ninja style JSON for Geocint server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1772,7 +1772,7 @@ data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss | ko
 		> $@
 	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
 
-data/basemap/metadata/geocint/style_day.json: | kothic data/basemap/metadata/geocint ## Generating of Day style JSON for Geocint server.
+data/basemap/metadata/geocint/style_day.json: kothic/src/komap.py | data/basemap/metadata/geocint ## Generating of Day style JSON for Geocint server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1785,7 +1785,7 @@ data/basemap/metadata/geocint/style_day.json: | kothic data/basemap/metadata/geo
 		--locale en \
 		> $@
 
-data/basemap/metadata/geocint/style_night.json: | kothic data/basemap/metadata/geocint ## Generating of Night style JSON for Geocint server.
+data/basemap/metadata/geocint/style_night.json: kothic/src/komap.py | data/basemap/metadata/geocint ## Generating of Night style JSON for Geocint server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \

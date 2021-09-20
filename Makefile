@@ -1106,11 +1106,7 @@ data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bi
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv
 	touch $@
 
-db/function/http_get: | db/function
-	psql -f functions/http_get.sql
-	touch $@
-
-db/function/osrm_table: db/function/http_get | db/function
+db/function/osrm_table: | db/function
 	psql -f functions/osrm_table.sql
 	touch $@
 

@@ -522,7 +522,7 @@ data/mid/ndvi_2019_06_10/generate_ndvi_tifs: | data/mid/ndvi_2019_06_10 ## NDVI 
 	touch $@
 
 data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/mid/ndvi_2019_06_10/generate_ndvi_tifs ## Reproject NDVI rasters to EPSG-4326.
-	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel -j8 --eta 'cd {} && gdalwarp -overwrite -t_srs EPSG:4326 -of COG ndvi.tif /home/gis/geocint/data/mid/ndvi_2019_06_10/ndvi_{#}_4326.tif'
+	find /home/gis/sentinel-2-2019/2019/6/10/* -type d -printf "%p %f\n" | awk '{print "cd " $$1 " && gdalwarp --config CPL_DEBUG ON -overwrite -t_srs EPSG:4326 -of COG ndvi.tif /home/gis/geocint/data/mid/ndvi_2019_06_10/ndvi_"  $$2 "_4326.tif"}' | parallel --eta {}
 	touch $@
 
 db/table/ndvi_2019_06_10: data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table ## Put NDVI rasters in table.

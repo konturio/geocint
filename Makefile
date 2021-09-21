@@ -521,8 +521,8 @@ data/mid/ndvi_2019_06_10/generate_ndvi_tifs: | data/mid/ndvi_2019_06_10 ## NDVI 
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && python3 /usr/bin/gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --outfile=ndvi.tif'
 	touch $@
 
-data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/mid/ndvi_2019_06_10/generate_ndvi_tifs | data/mid/ndvi_2019_06_10 ## Reproject NDVI rasters to EPSG-4326.
-	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && GDAL_CACHEMAX=10000 gdalwarp -multi -overwrite -t_srs EPSG:4326 -of COG ndvi.tif /home/gis/geocint/data/mid/ndvi_2019_06_10/ndvi_{#}_4326.tif'
+data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/mid/ndvi_2019_06_10/generate_ndvi_tifs ## Reproject NDVI rasters to EPSG-4326.
+	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel -j8 --eta 'cd {} && gdalwarp -overwrite -t_srs EPSG:4326 -of COG ndvi.tif /home/gis/geocint/data/mid/ndvi_2019_06_10/ndvi_{#}_4326.tif'
 	touch $@
 
 db/table/ndvi_2019_06_10: data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table ## Put NDVI rasters in table.

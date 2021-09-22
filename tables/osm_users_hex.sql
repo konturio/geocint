@@ -1,4 +1,4 @@
----use more osm_local_avtive_uaers
+---use more osm_local_active_users
 
 drop table if exists osm_users_hex_in;
 create table osm_users_hex_in as (select *

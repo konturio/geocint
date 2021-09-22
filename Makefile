@@ -1167,7 +1167,7 @@ deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/g
 
 deploy/geocint/docker_osrm_motorbike: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by motorbike profile.
 	# build docker image
-	docker build --build-arg PORT=5004 --build-arg OSRM_PROFILE=motorbike --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-motorbike --no-cache .
+	docker build --build-arg PORT=5004 --build-arg OSRM_PROFILE=motorbike --file scripts/dockerfile-osrm-backend --tag kontur-osrm-backend-by-motorbike --no-cache .
 	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-motorbike$$" | xargs -I'{}' -r docker container stop {}
 	# remove container

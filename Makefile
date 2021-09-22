@@ -522,7 +522,6 @@ data/mid/ndvi_2019_06_10/generate_ndvi_tifs: | data/mid/ndvi_2019_06_10 ## NDVI 
 	touch $@
 
 data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/mid/ndvi_2019_06_10/generate_ndvi_tifs ## Reproject NDVI rasters to EPSG-4326.
-	# Remove tile overviews creation due large sizes of output rasters
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && gdalwarp -multi -overwrite -t_srs EPSG:4326 -of COG -co OVERVIEWS=NONE ndvi.tif /home/gis/geocint/data/mid/ndvi_2019_06_10/ndvi_{#}_4326.tif'
 	touch $@
 

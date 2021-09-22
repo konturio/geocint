@@ -7,7 +7,7 @@ create table abu_dhabi_buildings_population as (
         where p.resolution = 8
           and ST_Intersects(ST_Transform(b.geom, 3857), p.geom)
     ),
-         population_volume as (
+         sum_buildings_volume as (
              select p.h3,
                     p.population,
                     p_4326 "geom",
@@ -25,7 +25,7 @@ create table abu_dhabi_buildings_population as (
            round(sum(ST_Area(ST_Intersection(p.geom, b.geom)::geography) * b.building_height / volume *
                      population)) "population",
            b.geom
-    from population_volume p,
+    from sum_buildings_volume p,
          abu_dhabi_buildings b
     where ST_Intersects(p.geom, b.geom)
     group by b.id, b.geom

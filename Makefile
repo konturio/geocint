@@ -1112,16 +1112,16 @@ data/out/abu_dhabi/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops | dat
 data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops | data/out/abu_dhabi ## H3 bivariate layer with population vs food shops for Abu Dhabi exported to csv.
 	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
 
-db/table/abu_dhabi_buildings_population: db/table/abu_dhabi_admin_boundaries db/table/abu_dhabi_buildings db/table/kontur_population_h3 | db/table
+db/table/abu_dhabi_buildings_population: db/table/abu_dhabi_admin_boundaries db/table/abu_dhabi_buildings db/table/kontur_population_h3 | db/table ## Distribute Kontur population by buildings in Abu Dhabi.
 	psql -f tables/abu_dhabi_buildings_population.sql
 	touch $@
 
-db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population | db/table
+db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population | db/table ## Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
 	# TODO: add dependency db/table/abu_dhabi_isochrones_bicycle_10m after MR 6674
 	psql -f tables/abu_dhabi_pds_bicycle_10min.sql
 	touch $@
 
-data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson: db/table/abu_dhabi_pds_bicycle_10min | data/out/abu_dhabi
+data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson: db/table/abu_dhabi_pds_bicycle_10min | data/out/abu_dhabi ## Export to GeoJson Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
 	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select id, population, pds, geom from abu_dhabi_pds_bicycle_10min' -nln abu_dhabi_pds_bicycle_10min
 
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson ## Make sure all Abu Dhabi datasets have been exported.

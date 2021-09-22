@@ -45,7 +45,7 @@ begin
     return query
         with tree as materialized (
             select *
-            from osm_road_segments
+            from osm_road_segments s
             where ST_Intersects(seg_geom, max_area)
         ),
              driving_distance as (
@@ -57,7 +57,8 @@ begin
                                           '       length as reverse_cost' ||
                                           ' from osm_road_segments' ||
                                           ' where ' ||
-                                          ' ST_Intersects(seg_geom, ''' || max_area::text ||
+                                          ' ST_Intersects(seg_geom, ''' ||
+                                          max_area::text ||
                                           '''::geometry)',
                                           array [start_node]::bigint[],
                                           max_distance,
@@ -67,61 +68,63 @@ begin
                       osm_road_segments s
                  where d.edge = s.seg_id
              ),
-             osrm_table as (
-                 select unnest(array_agg(id)) "node_id",
-                        osrm_table(
-                                start_point,
-                                array_agg(node.geom),
-                                profile
-                            )                 "eta"
-                 from (
-                          select distinct (array [node_from, node_to])[p.path[1]] "id", -- get node_id using dump.path
-                                          p.geom
-                          from driving_distance d,
-                               ST_DumpPoints(d.seg_geom) p
-                      ) node
+             driving_distance_extra as (
+                 select seg_id, node_from, node_to, seg_geom
+                 from driving_distance
+                 union all
+                 select t.seg_id, t.node_from, t.node_to, t.seg_geom
+                 from tree t
+                          left join driving_distance d1
+                                    on d1.seg_id = t.seg_id
+                          left join driving_distance d2
+                                    on t.node_from = d2.node
+                          left join driving_distance d3
+                                    on t.node_to = d3.node
+                 where d1.seg_id is null
+                   and coalesce(d2.seg_id, d3.seg_id) is not null
              ),
-             time_annotated_tree as (
-                 select tree.seg_id,
-                        ST_MakeLine(
-                                ST_PointZ(ST_X(point_from), ST_Y(point_from), t1.eta, 4326),
-                                ST_PointZ(ST_X(point_to), ST_Y(point_to), t2.eta, 4326)
-                            ) "geom"
-                 from tree,
-                      osrm_table t1,
-                      osrm_table t2,
-                      lateral (VALUES (ST_StartPoint(tree.seg_geom), ST_EndPoint(tree.seg_geom))) as v(point_from, point_to)
-                 where tree.node_from = t1.node_id
-                   and tree.node_to = t2.node_id
+             points as (
+                 select distinct (array [node_from, node_to])[p.path[1]] "node_id",
+                                 p.geom
+                 from driving_distance_extra,
+                      ST_DumpPoints(seg_geom) p
+             ),
+             etas as (
+                 select o.*
+                 from osrm_table_eta(
+                              array [start_point],
+                              (select array_agg(p.geom) from points p),
+                              profile
+                          ) o
+             ),
+             points_eta as (
+                 select p.node_id, ST_SetSRID(ST_MakePoint(ST_X(point), ST_Y(point), eta), 3857) "geom"
+                 from etas e,
+                      points p,
+                      ST_Transform(p.geom, 3857) "point"
+                 where ST_Equals(e.finish, p.geom)
              ),
              delaunay_triangles as (
-                 select (ST_Dump(ST_ConstrainedDelaunayTriangles(ST_Collect(points.geom)))).geom
-                 from (
-                          select distinct on (ST_Force2D(t.geom)) t.geom "geom"
-                          from time_annotated_tree t
-                      ) points
+                 select (ST_Dump(ST_ConstrainedDelaunayTriangles(ST_Collect(e.geom)))).geom
+                 from points_eta e
              ),
              delaunay_minmax as (
                  select d.geom, ST_ZMin(d.geom) "min", ST_ZMax(d.geom) "max"
                  from delaunay_triangles d
              )
-        select (num * isochrone_interval) / 60,
-               ST_MakeValid(
-                       ST_ChaikinSmoothing(
-                               ST_CollectionExtract(
-                                       ST_Union(
-                                               ST_ConvexHull(
-                                                       ST_LocateBetweenElevations(
-                                                               d.geom,
-                                                               (num - 1) * isochrone_interval,
-                                                               num * isochrone_interval
-                                                           )
-                                                   )
-                                           ),
-                                       3
-                                   )
+        select num * isochrone_interval / 60 "minutes",
+               ST_ChaikinSmoothing(
+                       ST_CollectionExtract(
+                               ST_Union(
+                                       ST_LocateBetweenElevations(
+                                               d.geom,
+                                               (num - 1) * isochrone_interval,
+                                               num * isochrone_interval
+                                           )
+                                   ),
+                               3
                            )
-                   ) "geom"
+                   )                         "geom"
         from generate_series(1, ceil(time_limit * 60 / isochrone_interval)::integer) num,
              lateral (
                  select t.geom

@@ -1118,7 +1118,7 @@ db/table/abu_dhabi_isochrones_bicycle_10m: db/table/abu_dhabi_buildings db/funct
 	# TODO: add dependency deploy/geocint/docker_osrm_bicycle after MR 6673
 	psql -c 'drop table if exists abu_dhabi_isochrones_bicycle_10m;'
 	psql -c 'create table abu_dhabi_isochrones_bicycle_10m(building_id bigint, geom geometry);'
-	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into abu_dhabi_isochrones_bicycle_10m(building_id, geom) select " $$1 ", geom from build_isochrone('\''" $$2 "'\'', 15, 10, '\''bicycle'\'') geom"}' | parallel -j32 --eta "psql -X -c {}"
+	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into abu_dhabi_isochrones_bicycle_10m(building_id, geom) select " $$1 ", geom from build_isochrone('\''" $$2 "'\'', 15, 10, '\''bicycle'\'') geom"}' | parallel --eta "psql -X -c {}"
 	psql -c 'vacuum analyze abu_dhabi_isochrones_bicycle_10m;'
 	touch $@
 

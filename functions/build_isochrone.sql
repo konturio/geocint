@@ -45,11 +45,13 @@ begin
     into start_node, start_point;
 
     return query
-        with tree as materialized (
+        -- get road segments in max_area
+        with segments as materialized (
             select *
             from osm_road_segments s
             where ST_Intersects(seg_geom, max_area)
         ),
+             -- extract spanning tree with distances less then max_distance
              driving_distance as (
                  select d.node, s.seg_id, s.node_from, s.node_to, s.seg_geom
                  from pgr_drivingdistance('select seg_id as id, ' ||
@@ -70,12 +72,13 @@ begin
                       osm_road_segments s
                  where d.edge = s.seg_id
              ),
-             driving_distance_extra as (
+             -- build spanning tree with extra edges
+             spanning_tree as (
                  select seg_id, node_from, node_to, seg_geom
                  from driving_distance
                  union all
                  select t.seg_id, t.node_from, t.node_to, t.seg_geom
-                 from tree t
+                 from segments t
                           left join driving_distance d1
                                     on d1.seg_id = t.seg_id
                           left join driving_distance d2
@@ -85,39 +88,38 @@ begin
                  where d1.seg_id is null
                    and coalesce(d2.seg_id, d3.seg_id) is not null
              ),
-             points as (
+             -- extract nodes from spanning tree
+             nodes as (
                  select distinct (array [node_from, node_to])[p.path[1]] "node_id",
                                  p.geom
-                 from driving_distance_extra,
+                 from spanning_tree,
                       ST_DumpPoints(seg_geom) p
              ),
+             -- calculate ETAs using OSRM tables
              etas as (
                  select coalesce(o1.eta, o2.eta) "eta", coalesce(o1.finish, o2.start) "geom"
                  from (
                           select array [start_point] "sources",
                                  array_agg(p.geom)   "destinations"
-                          from points p
+                          from nodes p
                       ) p
                           left join osrm_table_etas(sources, destinations, profile) o1
                                     on (not reversed)
                           left join osrm_table_etas(destinations, sources, profile) o2
                                     on (reversed)
              ),
-             points_eta as (
-                 select p.node_id, ST_PointZ(ST_X(point), ST_Y(point), eta, 3857) "geom"
-                 from etas e,
-                      points p,
-                      ST_Transform(p.geom, 3857) "point"
-                 where ST_Equals(e.geom, p.geom)
-             ),
+             -- build a Constrained Delaunay triangulation around the nodes
              delaunay_triangles as (
-                 select (ST_Dump(ST_ConstrainedDelaunayTriangles(ST_Collect(e.geom)))).geom
-                 from points_eta e
+                 select (ST_Dump(ST_ConstrainedDelaunayTriangles(ST_Collect(ST_PointZ(ST_X(point), ST_Y(point), eta, 3857))))).geom
+                 from etas e,
+                      ST_Transform(e.geom, 3857) "point"
              ),
+             -- extract min and max ETA from triangles
              delaunay_minmax as (
                  select d.geom, ST_ZMin(d.geom) "min", ST_ZMax(d.geom) "max"
                  from delaunay_triangles d
              )
+        -- build isochrone
         select num * isochrone_interval / 60 "minutes",
                ST_ChaikinSmoothing(
                        ST_CollectionExtract(

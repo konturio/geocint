@@ -1168,15 +1168,15 @@ deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/g
 deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency | deploy/geocint  ## Deploy all OSRM Docker builds after their runs started.
 	touch $@
 
-db/function/osrm_table_etas: deploy/geocint/docker_osrm_build | db/function
+db/function/osrm_table_etas: deploy/geocint/docker_osrm_build | db/function ## OSRM table function.
 	psql -f functions/osrm_table_etas.sql
 	touch $@
 
-db/function/build_isochrone: db/function/osrm_table_etas db/table/osm_road_segments | db/function
+db/function/build_isochrone: db/function/osrm_table_etas db/table/osm_road_segments | db/function ## Isochrone construction function.
 	psql -f functions/build_isochrone.sql
 	touch $@
 
-db/table/abu_dhabi_isochrones_bicycle_10m: db/table/abu_dhabi_buildings db/function/build_isochrone | db/table
+db/table/abu_dhabi_isochrones_bicycle_10m: db/table/abu_dhabi_buildings db/function/build_isochrone | db/table ## Calculate 10-minutes isochrones for Abu Dhabi by bicycle.
 	psql -c 'drop table if exists abu_dhabi_isochrones_bicycle_10m;'
 	psql -c 'create table abu_dhabi_isochrones_bicycle_10m(building_id bigint, geom geometry);'
 	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into abu_dhabi_isochrones_bicycle_10m(building_id, geom) select " $$1 ", geom from build_isochrone('\''" $$2 "'\'', 15, 10, '\''bicycle'\'') geom"}' | parallel --eta "psql -X -c {}"

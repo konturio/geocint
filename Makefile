@@ -1118,7 +1118,7 @@ db/table/abu_dhabi_buildings_population: db/table/abu_dhabi_admin_boundaries db/
 
 db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population | db/table
 	# TODO: add dependency db/table/abu_dhabi_isochrones_bicycle_10m after MR 6674
-	psql -f tables/abu_dhabi_pds_bicycle_10min
+	psql -f tables/abu_dhabi_pds_bicycle_10min.sql
 	touch $@
 
 data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson: db/table/abu_dhabi_pds_bicycle_10min | data/out/abu_dhabi

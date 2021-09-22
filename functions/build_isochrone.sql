@@ -91,7 +91,7 @@ begin
              ),
              etas as (
                  select o.*
-                 from osrm_table_eta(
+                 from osrm_table_etas(
                               array [start_point],
                               (select array_agg(p.geom) from points p),
                               profile

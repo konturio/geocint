@@ -1090,10 +1090,10 @@ db/table/abu_dhabi_bivariate_pop_food_shops: db/table/abu_dhabi_eatery db/table/
 	psql -f tables/abu_dhabi_bivariate_pop_food_shops.sql
 	touch $@
 
-data/in/abu_dhabi_geoalert_v2.geojson: | data/in ## Download buildings dataset from Geoalert for Abu Dhabi.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v2.geojson $@ --profile geocint_pipeline_sender
+data/in/geoalert_results_v3.geojson: | data/in ## Download buildings dataset from Geoalert for Abu Dhabi.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/geoalert_results_v3.geojson $@ --profile geocint_pipeline_sender
 
-db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v2.geojson | db/table ## Buildings dataset from Geoalert for Abu Dhabi imported into database.
+db/table/abu_dhabi_buildings: data/in/geoalert_results_v3.geojson | db/table ## Buildings dataset from Geoalert for Abu Dhabi imported into database.
 	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
 	touch $@
 

@@ -3,7 +3,8 @@ create or replace function build_isochrone(
     max_speed float, -- maximum speed in kmph
     time_limit float, -- limit in minutes
     profile text, -- OSRM profile
-    isochrone_interval float = null -- if not null - split isochrone by the interval in minutes
+    isochrone_interval float = null, -- if not null - split isochrone by the interval in minutes
+    reversed boolean = false -- calculate reversed routes
 )
     returns table
             (
@@ -22,10 +23,11 @@ declare
     max_area     geometry;
 begin
     -- convert to seconds
-    isochrone_interval = coalesce(isochrone_interval, time_limit) * 60;
+    time_limit = time_limit * 60;
+    isochrone_interval = coalesce(isochrone_interval * 60, time_limit);
 
     -- convert speed to mps and time to seconds
-    max_distance = max_speed / 3.6 * time_limit * 60;
+    max_distance = max_speed / 3.6 * time_limit;
 
     -- calculate the maximum possible area
     max_area = ST_Buffer(ST_PointOnSurface(source)::geography, max_distance)::geometry;
@@ -90,19 +92,23 @@ begin
                       ST_DumpPoints(seg_geom) p
              ),
              etas as (
-                 select o.*
-                 from osrm_table_etas(
-                              array [start_point],
-                              (select array_agg(p.geom) from points p),
-                              profile
-                          ) o
+                 select coalesce(o1.eta, o2.eta) "eta", coalesce(o1.finish, o2.start) "geom"
+                 from (
+                          select array [start_point] "sources",
+                                 array_agg(p.geom)   "destinations"
+                          from points p
+                      ) p
+                          left join osrm_table_etas(sources, destinations, profile) o1
+                                    on (not reversed)
+                          left join osrm_table_etas(destinations, sources, profile) o2
+                                    on (reversed)
              ),
              points_eta as (
-                 select p.node_id, ST_SetSRID(ST_MakePoint(ST_X(point), ST_Y(point), eta), 3857) "geom"
+                 select p.node_id, ST_PointZ(ST_X(point), ST_Y(point), eta, 3857) "geom"
                  from etas e,
                       points p,
                       ST_Transform(p.geom, 3857) "point"
-                 where ST_Equals(e.finish, p.geom)
+                 where ST_Equals(e.geom, p.geom)
              ),
              delaunay_triangles as (
                  select (ST_Dump(ST_ConstrainedDelaunayTriangles(ST_Collect(e.geom)))).geom
@@ -125,7 +131,7 @@ begin
                                3
                            )
                    )                         "geom"
-        from generate_series(1, ceil(time_limit * 60 / isochrone_interval)::integer) num,
+        from generate_series(1, ceil(time_limit / isochrone_interval)::integer) num,
              lateral (
                  select t.geom
                  from delaunay_minmax t

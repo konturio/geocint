@@ -522,7 +522,7 @@ data/mid/ndvi_2019_06_10/generate_ndvi_tifs: | data/mid/ndvi_2019_06_10 ## NDVI 
 	touch $@
 
 data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/mid/ndvi_2019_06_10/generate_ndvi_tifs ## Reproject NDVI rasters to EPSG-4326.
-	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -overwrite -t_srs EPSG:4326 -of COG ndvi.tif /home/gis/geocint/data/mid/ndvi_2019_06_10/ndvi_{#}_4326.tif'
+	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && gdalwarp -multi -overwrite -t_srs EPSG:4326 -of COG -co OVERVIEWS=NONE ndvi.tif /home/gis/geocint/data/mid/ndvi_2019_06_10/ndvi_{#}_4326.tif'
 	touch $@
 
 db/table/ndvi_2019_06_10: data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table ## Put NDVI rasters in table.
@@ -1123,7 +1123,7 @@ data/out/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/aoi_bou
 
 deploy/geocint/docker_osrm_foot: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by foot profile.
 	# build docker image
-	docker build --build-arg PORT=5000 --build-arg OSRM_PROFILE=foot --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-foot --no-cache .
+	docker build --build-arg PORT=5000 --build-arg OSRM_PROFILE=foot --file scripts/dockerfile-osrm-backend --tag kontur-osrm-backend-by-foot --no-cache .
 	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-foot$$" | xargs -I'{}' -r docker container stop {}
 	# remove container
@@ -1134,7 +1134,7 @@ deploy/geocint/docker_osrm_foot: data/out/aoi-latest.osm.pbf | deploy/geocint ##
 
 deploy/geocint/docker_osrm_bicycle: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by bicycle profile.
 	# build docker image
-	docker build --build-arg PORT=5001 --build-arg OSRM_PROFILE=bicycle --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-bicycle --no-cache .
+	docker build --build-arg PORT=5001 --build-arg OSRM_PROFILE=bicycle --file scripts/dockerfile-osrm-backend --tag kontur-osrm-backend-by-bicycle --no-cache .
 	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-bicycle$$" | xargs -I'{}' -r docker container stop {}
 	# remove container
@@ -1145,7 +1145,7 @@ deploy/geocint/docker_osrm_bicycle: data/out/aoi-latest.osm.pbf | deploy/geocint
 
 deploy/geocint/docker_osrm_car: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car profile.
 	# build docker image
-	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car --no-cache .
+	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car --file scripts/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car --no-cache .
 	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-car$$" | xargs -I'{}' -r docker container stop {}
 	# remove container
@@ -1156,7 +1156,7 @@ deploy/geocint/docker_osrm_car: data/out/aoi-latest.osm.pbf | deploy/geocint ## 
 
 deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car emergency profile.
 	# build docker image
-	docker build --build-arg PORT=5003 --build-arg OSRM_PROFILE=car-emergency --file data/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car-emergency --no-cache .
+	docker build --build-arg PORT=5003 --build-arg OSRM_PROFILE=car-emergency --file scripts/dockerfile-osrm-backend --tag kontur-osrm-backend-by-car-emergency --no-cache .
 	# stop container
 	docker ps -q --filter "name=^kontur-osrm-backend-by-car-emergency$$" | xargs -I'{}' -r docker container stop {}
 	# remove container

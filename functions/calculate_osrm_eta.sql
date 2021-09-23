@@ -1,4 +1,4 @@
-create or replace function osrm_table_etas(
+create or replace function calculate_osrm_eta(
     sources geometry[], -- source geometries
     destinations geometry[], -- destination geometries
     profile text, -- OSRM profile

@@ -103,9 +103,9 @@ begin
                                  array_agg(p.geom)   "destinations"
                           from nodes p
                       ) p
-                          left join osrm_table_etas(sources, destinations, profile) o1
+                          left join calculate_osrm_eta(sources, destinations, profile) o1
                                     on (not reversed)
-                          left join osrm_table_etas(destinations, sources, profile) o2
+                          left join calculate_osrm_eta(destinations, sources, profile) o2
                                     on (reversed)
              ),
              -- build a Constrained Delaunay triangulation around the nodes
@@ -119,26 +119,28 @@ begin
                  select d.geom, ST_ZMin(d.geom) "min", ST_ZMax(d.geom) "max"
                  from delaunay_triangles d
              )
-        -- build isochrone
-        select num * isochrone_interval / 60 "minutes",
-               ST_ChaikinSmoothing(
-                       ST_CollectionExtract(
-                               ST_Union(
-                                       ST_LocateBetweenElevations(
-                                               d.geom,
-                                               (num - 1) * isochrone_interval,
-                                               num * isochrone_interval
-                                           )
-                                   ),
-                               3
+             -- build isochrone
+        select i * isochrone_interval / 60 "minute",
+               ST_MakeValid(
+                       ST_ChaikinSmoothing(
+                               ST_CollectionExtract(
+                                       ST_Union(
+                                               ST_LocateBetweenElevations(
+                                                       d.geom,
+                                                       (i - 1) * isochrone_interval,
+                                                       i * isochrone_interval
+                                                   )
+                                           ),
+                                       3
+                                   )
                            )
-                   )                         "geom"
-        from generate_series(1, ceil(time_limit / isochrone_interval)::integer) num,
+                   )                            "geom"
+        from generate_series(1, ceil(time_limit / isochrone_interval)::integer) i,
              lateral (
                  select t.geom
                  from delaunay_minmax t
-                 where min <= num * isochrone_interval
-                   and max >= (num - 1) * isochrone_interval
+                 where min <= i * isochrone_interval
+                   and max >= (i - 1) * isochrone_interval
                  ) d
         group by 1;
 end;

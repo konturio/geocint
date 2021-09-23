@@ -1179,11 +1179,11 @@ deploy/geocint/docker_osrm_motorbike: data/out/aoi-latest.osm.pbf | deploy/geoci
 deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency deploy/geocint/docker_osrm_motorbike | deploy/geocint  ## Deploy all OSRM Docker builds after their runs started.
 	touch $@
 
-db/function/osrm_table_etas: deploy/geocint/docker_osrm_build | db/function ## OSRM table function.
-	psql -f functions/osrm_table_etas.sql
+db/function/calculate_osrm_eta: deploy/geocint/docker_osrm_build | db/function ## ETA calculation function using OSRM router.
+	psql -f functions/calculate_osrm_eta.sql
 	touch $@
 
-db/function/build_isochrone: db/function/osrm_table_etas db/table/osm_road_segments | db/function ## Isochrone construction function.
+db/function/build_isochrone: db/function/calculate_osrm_eta db/table/osm_road_segments | db/function ## Isochrone construction function.
 	psql -f functions/build_isochrone.sql
 	touch $@
 

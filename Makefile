@@ -1165,7 +1165,18 @@ deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/g
 	docker run -d -p 5003:5003 --restart always --name kontur-osrm-backend-by-car-emergency kontur-osrm-backend-by-car-emergency
 	touch $@
 
-deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency | deploy/geocint  ## Deploy all OSRM Docker builds after their runs started.
+deploy/geocint/docker_osrm_motorbike: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by motorbike profile.
+	# build docker image
+	docker build --build-arg PORT=5004 --build-arg OSRM_PROFILE=motorbike --file scripts/dockerfile-osrm-backend --tag kontur-osrm-backend-by-motorbike --no-cache .
+	# stop container
+	docker ps -q --filter "name=^kontur-osrm-backend-by-motorbike$$" | xargs -I'{}' -r docker container stop {}
+	# remove container
+	docker ps -aq --filter "name=^kontur-osrm-backend-by-motorbike$$" | xargs -I'{}' -r docker container rm {}
+	# start docker in new container
+	docker run -d -p 5004:5004 --restart always --name kontur-osrm-backend-by-motorbike kontur-osrm-backend-by-motorbike
+	touch $@
+
+deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency deploy/geocint/docker_osrm_motorbike | deploy/geocint  ## Deploy all OSRM Docker builds after their runs started.
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw ## Geometry index on osm_population_raw table.

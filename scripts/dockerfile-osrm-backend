@@ -2,10 +2,10 @@
 FROM osrm/osrm-backend:latest as builder
 ARG OSRM_PROFILE
 ARG OSM_FILE
-LABEL name=osrm-builder-${OSRM_PROFILE}
+LABEL stage=osrm-builder
 ENV OSRM_PROFILE=${OSRM_PROFILE}
 
-#Copy files to docker
+# Copy files to docker
 COPY supplemental/OSRM/profiles /data/profiles
 COPY ${OSM_FILE} /data/data.osm.pbf
 
@@ -21,8 +21,7 @@ RUN rm -rf /data/profiles
 # Stage 2 - docker image
 FROM osrm/osrm-backend:latest
 ARG PORT
-ARG OSRM_PROFILE
-LABEL name=osrm-backend-${OSRM_PROFILE}
+LABEL stage=osrm-backend
 ENV PORT=$PORT
 COPY --from=builder /data/ /data/
 CMD osrm-routed --port ${PORT} --algorithm mld --max-table-size 10000 /data/data.osrm

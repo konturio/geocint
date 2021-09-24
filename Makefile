@@ -1116,8 +1116,7 @@ db/table/abu_dhabi_buildings_population: db/table/abu_dhabi_admin_boundaries db/
 	psql -f tables/abu_dhabi_buildings_population.sql
 	touch $@
 
-db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population | db/table ## Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
-	# TODO: add dependency db/table/abu_dhabi_isochrones_bicycle_10m after MR 6674
+db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population db/table/abu_dhabi_isochrones_bicycle_10m | db/table ## Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
 	psql -f tables/abu_dhabi_pds_bicycle_10min.sql
 	touch $@
 

@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings deploy/geocint/docker_osrm_build ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings deploy/geocint/docker_osrm_build db/table/abu_dhabi_isochrones_bicycle_10m ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1177,6 +1177,21 @@ deploy/geocint/docker_osrm_motorbike: data/out/aoi-latest.osm.pbf | deploy/geoci
 	touch $@
 
 deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency deploy/geocint/docker_osrm_motorbike | deploy/geocint  ## Deploy all OSRM Docker builds after their runs started.
+	touch $@
+
+db/function/calculate_osrm_eta: deploy/geocint/docker_osrm_build | db/function ## ETA calculation function using OSRM router.
+	psql -f functions/calculate_osrm_eta.sql
+	touch $@
+
+db/function/build_isochrone: db/function/calculate_osrm_eta db/table/osm_road_segments | db/function ## Isochrone construction function.
+	psql -f functions/build_isochrone.sql
+	touch $@
+
+db/table/abu_dhabi_isochrones_bicycle_10m: db/table/abu_dhabi_buildings db/function/build_isochrone | db/table ## Calculate 10-minutes isochrones for Abu Dhabi by bicycle.
+	psql -c 'drop table if exists abu_dhabi_isochrones_bicycle_10m;'
+	psql -c 'create table abu_dhabi_isochrones_bicycle_10m(building_id bigint, geom geometry);'
+	psql -X -c 'copy (select id, geom from abu_dhabi_buildings) to stdout' | awk '{print "insert into abu_dhabi_isochrones_bicycle_10m(building_id, geom) select " $$1 ", geom from build_isochrone('\''" $$2 "'\'', 15, 10, '\''bicycle'\'') geom"}' | parallel --eta "psql -X -c {}"
+	psql -c 'vacuum analyze abu_dhabi_isochrones_bicycle_10m;'
 	touch $@
 
 db/table/osm_population_raw_idx: db/table/osm_population_raw ## Geometry index on osm_population_raw table.

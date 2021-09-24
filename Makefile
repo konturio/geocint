@@ -1120,23 +1120,23 @@ data/out/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/aoi_bou
 	osmium extract -v -s smart -p data/out/aoi_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
 deploy/geocint/docker_osrm_foot: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by foot profile.
-	scripts/create_docker_osrm_backend.sh foot 5000 data/out/aoi-latest.osm.pbf
+	sh scripts/create_docker_osrm_backend.sh foot 5000 data/out/aoi-latest.osm.pbf
 	touch $@
 
 deploy/geocint/docker_osrm_bicycle: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by bicycle profile.
-	scripts/create_docker_osrm_backend.sh bicycle 5001 data/out/aoi-latest.osm.pbf
+	sh scripts/create_docker_osrm_backend.sh bicycle 5001 data/out/aoi-latest.osm.pbf
 	touch $@
 
 deploy/geocint/docker_osrm_car: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car profile.
-	scripts/create_docker_osrm_backend.sh car 5002 data/out/aoi-latest.osm.pbf
+	sh scripts/create_docker_osrm_backend.sh car 5002 data/out/aoi-latest.osm.pbf
 	touch $@
 
 deploy/geocint/docker_osrm_car_emergency: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by car emergency profile.
-	scripts/create_docker_osrm_backend.sh car-emergency 5003 data/out/aoi-latest.osm.pbf
+	sh scripts/create_docker_osrm_backend.sh car-emergency 5003 data/out/aoi-latest.osm.pbf
 	touch $@
 
 deploy/geocint/docker_osrm_motorbike: data/out/aoi-latest.osm.pbf | deploy/geocint ## Create and run docker container with OSRM router by motorbike profile.
-	scripts/create_docker_osrm_backend.sh motorbike 5004 data/out/aoi-latest.osm.pbf
+	sh scripts/create_docker_osrm_backend.sh motorbike 5004 data/out/aoi-latest.osm.pbf
 	touch $@
 
 deploy/geocint/docker_osrm_build: deploy/geocint/docker_osrm_foot deploy/geocint/docker_osrm_bicycle deploy/geocint/docker_osrm_car deploy/geocint/docker_osrm_car_emergency deploy/geocint/docker_osrm_motorbike | deploy/geocint  ## Deploy all OSRM Docker builds after their runs started.

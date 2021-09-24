@@ -20,7 +20,7 @@ fi
 PROFILE=$1
 PORT=$2
 OSM_FILE=$3
-NAME=kontur-osrm-backend-by-${PROFILE}
+NAME=kontur-osrm-backend-${PROFILE}
 
 # build docker image
 docker build --build-arg PORT=${PORT} --build-arg OSRM_PROFILE=${PROFILE} --build-arg OSM_FILE=${OSM_FILE} --file ${SCRIPT_PATH}/dockerfile-osrm-backend --tag ${NAME} --no-cache ${SCRIPT_PATH}/..
@@ -31,5 +31,5 @@ docker ps -aq --filter name=^${NAME}$ | xargs -I'{}' -r docker container rm {}
 # start docker in new container
 docker run -d -p ${PORT}:${PORT} --restart always --name ${NAME} ${NAME}
 # clean previous images
-docker image prune --force --filter label=name=osrm-builder-by-${PROFILE}
-docker image prune --force --filter label=name=osrm-backend-by-${PROFILE}
+docker image prune --force --filter label=name=osrm-builder-${PROFILE}
+docker image prune --force --filter label=name=osrm-backend-${PROFILE}

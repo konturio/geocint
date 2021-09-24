@@ -15,7 +15,7 @@ RUN osrm-partition /data/data.osrm
 RUN osrm-customize /data/data.osrm
 
 # Cleanup
-RUN rm -f /data/osm-data.osm.pbf
+RUN rm -f /data/data.osm.pbf
 RUN rm -rf /data/profiles
 
 # Stage 2 - docker image

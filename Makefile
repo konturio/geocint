@@ -1216,9 +1216,12 @@ db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table #
 	touch $@
 
 db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## H3 hexagons grid with aggregated count volcanoes from OpenStreetMap dataset.
-	psql -f tables/osm_volcanos.sql # Extract volcanoes points from OpenStreetMap dataset.
-	psql -f tables/count_points_inside_h3.sql -v table=osm_volcanos -v table_h3=osm_volcanos_h3 -v item_count=volcanos_count # Count volcanoes within H3 grid hexagons of resolution = 8.
-	psql -c "call generate_overviews('osm_volcanos_h3', '{volcanos_count}'::text[], '{sum}'::text[], 8);" # Generate overviews fro resolution < 8 hexagons.
+	# Extract volcanoes points from OpenStreetMap dataset.
+	psql -f tables/osm_volcanos.sql
+	# Count volcanoes within H3 grid hexagons of resolution = 8.
+	psql -f tables/count_points_inside_h3.sql -v table=osm_volcanos -v table_h3=osm_volcanos_h3 -v item_count=volcanos_count
+	# Generate overviews for resolution < 8 hexagons.
+	psql -c "call generate_overviews('osm_volcanos_h3', '{volcanos_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table ## Minsk buildings extracted from OpenStreetMap dataset.

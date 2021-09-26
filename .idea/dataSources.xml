@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="geocint" uuid="f41c87f4-66a0-4b9c-b84d-7cf064c8bb47">
+    <data-source source="LOCAL" name="gis@geocint" uuid="479be074-ac53-4dba-ad8c-e0f54f445df7">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://192.168.100.6:5432/gis</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/gis</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="root@localhost" uuid="2c386521-7811-4e7d-a82c-d492a6a2c5b6">
+    <data-source source="LOCAL" name="ykyslomed@geocint" uuid="310d0cbe-2372-46e6-b413-3ddc6d89e133">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:5432/root</jdbc-url>
+      <jdbc-url>jdbc:postgresql://localhost:5432/gis</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
 </project>

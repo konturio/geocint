@@ -1552,16 +1552,19 @@ data/out/population/bivariate_tables.sqld.gz: db/table/bivariate_axis db/table/b
 	touch $@
 
 deploy/s3/test/population_api_tables: data/out/population/population_api_tables.sqld.gz | deploy/s3/test ## Putting population_api_tables dump from local folder to AWS test folder in private bucket.
+	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
 	aws s3 cp data/out/population/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
 deploy/s3/test/stat_h3_dump: data/out/population/stat_h3.sqld.gz | deploy/s3/test ## Putting stat_h3 dump from local folder to AWS test folder in private bucket.
+	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz.bak --profile geocint_pipeline_sender || true
 	aws s3 cp data/out/population/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
 deploy/s3/test/bivariate_tables_dump: data/out/population/bivariate_tables.sqld.gz | deploy/s3/test ## Putting stat_h3 dump from local folder to AWS test folder in private bucket.
+	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
 	aws s3 cp data/out/population/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
@@ -1584,6 +1587,7 @@ deploy/sonic/population_api_tables: deploy/s3/test/population_api_tables | deplo
 	touch $@
 
 deploy/s3/prod/population_api_tables: deploy/s3/test/population_api_tables | deploy/s3/prod ## AWS-side copying population_api_tables dump from test folder to prod one.
+	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@

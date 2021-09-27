@@ -10,7 +10,7 @@ line|z5-[boundary=administrative][admin_level=6]    { width: .5; }
 line|z6-[boundary=administrative][admin_level=7]    { width: .5; }
 line|z8-[boundary=administrative][admin_level=8]    { width: .5; }
 
-node|z1-[place=ocean]          {text: name:en;}
+node|z1-[place=ocean]          {text: name:en; font-size: 22; text-transform: uppercase; font-family: "Noto Sans Italic" }
 node|z1-[place=country]        {text-padding: 3; text: name:en;  font-size: 17; text-transform:uppercase; font-family: "Noto Sans Bold"; z-index: 7 }
 node|z4-[place=state]          {text: name;     font-size: 12; z-index: 4 }
 

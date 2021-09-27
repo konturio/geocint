@@ -1136,24 +1136,27 @@ data/out/aoi_boundary.geojson: db/table/kontur_boundaries | data/out ## Get boun
 data/out/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/aoi_boundary.geojson | data/out ## Extract from planet-latest-updated.osm.pbf by aoi_boundary.geojson using Osmium tool.
 	osmium extract -v -s smart -p data/out/aoi_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
 
-data/out/docker/osrm_backend_foot: data/out/aoi-latest.osm.pbf | data/out/docker ## Build docker image with OSRM router by foot profile.
-	docker build --build-arg PORT=5000 --build-arg OSRM_PROFILE=foot --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-foot --no-cache .
+data/out/docker/osrm_context.tar: data/out/aoi-latest.osm.pbf | data/out/docker ## Create tar-file with context for OSRM docker build.
+	tar cvf $@ data/out/aoi-latest.osm.pbf supplemental/OSRM/profiles scripts/dockerfile-osrm-backend
+
+data/out/docker/osrm_backend_foot: data/out/docker/osrm_context.tar | data/out/docker ## Build docker image with OSRM router by foot profile.
+	docker build --build-arg PORT=5000 --build-arg OSRM_PROFILE=foot --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-foot --no-cache - < data/out/docker/osrm_context.tar
 	touch $@
 
-data/out/docker/osrm_backend_bicycle: data/out/aoi-latest.osm.pbf | data/out/docker ## Build docker image with OSRM router by bicycle profile.
-	docker build --build-arg PORT=5001 --build-arg OSRM_PROFILE=bicycle --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-bicycle --no-cache .
+data/out/docker/osrm_backend_bicycle: data/out/docker/osrm_context.tar | data/out/docker ## Build docker image with OSRM router by bicycle profile.
+	docker build --build-arg PORT=5001 --build-arg OSRM_PROFILE=bicycle --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-bicycle --no-cache - < data/out/docker/osrm_context.tar
 	touch $@
 
-data/out/docker/osrm_backend_car: data/out/aoi-latest.osm.pbf | data/out/docker ## Build docker image with OSRM router by car profile.
-	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-car --no-cache .
+data/out/docker/osrm_backend_car: data/out/docker/osrm_context.tar | data/out/docker ## Build docker image with OSRM router by car profile.
+	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-car --no-cache - < data/out/docker/osrm_context.tar
 	touch $@
 
-data/out/docker/osrm_backend_car_emergency: data/out/aoi-latest.osm.pbf | data/out/docker ## Build docker image with OSRM router by car-emergency profile.
-	docker build --build-arg PORT=5003 --build-arg OSRM_PROFILE=car-emergency --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-car-emergency --no-cache .
+data/out/docker/osrm_backend_car_emergency: data/out/docker/osrm_context.tar | data/out/docker ## Build docker image with OSRM router by car-emergency profile.
+	docker build --build-arg PORT=5003 --build-arg OSRM_PROFILE=car-emergency --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-car-emergency --no-cache - < data/out/docker/osrm_context.tar
 	touch $@
 
-data/out/docker/osrm_backend_motorbike: data/out/aoi-latest.osm.pbf | data/out/docker ## Build docker image with OSRM router by motorbike profile.
-	docker build --build-arg PORT=5004 --build-arg OSRM_PROFILE=motorbike --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-motorbike --no-cache .
+data/out/docker/osrm_backend_motorbike: data/out/docker/osrm_context.tar | data/out/docker ## Build docker image with OSRM router by motorbike profile.
+	docker build --build-arg PORT=5004 --build-arg OSRM_PROFILE=motorbike --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-motorbike --no-cache - < data/out/docker/osrm_context.tar
 	touch $@
 
 deploy/geocint/docker_osrm_backend_foot: data/out/docker/osrm_backend_foot | deploy/geocint ## Restart docker container with OSRM router by foot profile.

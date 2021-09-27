@@ -24,7 +24,8 @@ try:
         username=username,
         channel=channel,
         text=text,
-        type="mrkdwn"
+        type="mrkdwn",
+        unfurl_links=False
     )
 except SlackApiError as e:
     # You will get a SlackApiError if "ok" is False

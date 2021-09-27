@@ -22,11 +22,15 @@ create table abu_dhabi_buildings_population as (
              group by p.h3, p.population, p_4326
          )
     select b.id,
-           round(sum(ST_Area(ST_Intersection(p.geom, b.geom)::geography) * b.building_height / volume *
-                     population)) "population",
-           b.geom
+           round(
+                   sum(ST_Area(ST_Intersection(p.geom, b.geom)::geography) * b.building_height / volume * population)
+               )                      "population",
+           ST_Transform(b.geom, 3857) "geom"
     from sum_buildings_volume p,
          abu_dhabi_buildings b
     where ST_Intersects(p.geom, b.geom)
     group by b.id, b.geom
+    order by b.id
 );
+
+create index on abu_dhabi_buildings_population using gist (geom);

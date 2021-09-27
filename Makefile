@@ -1125,7 +1125,7 @@ db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population db
 	touch $@
 
 data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson: db/table/abu_dhabi_pds_bicycle_10min | data/out/abu_dhabi ## Export to GeoJson Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
-	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select id, population, pds, geom from abu_dhabi_pds_bicycle_10min' -nln abu_dhabi_pds_bicycle_10min
+	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select id, population, pds, ST_Transform(geom, 4326) "geom" from abu_dhabi_pds_bicycle_10min' -nln abu_dhabi_pds_bicycle_10min
 
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson ## Make sure all Abu Dhabi datasets have been exported.
 	touch $@

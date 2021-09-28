@@ -6,4 +6,5 @@ create table abu_dhabi_pds_bicycle_10min as (
          abu_dhabi_buildings_population p2
     where p1.id = isochrone.building_id
     and ST_Intersects(isochrone.geom, p2.geom)
+    group by p1.id, p1.population, p1.geom
 );

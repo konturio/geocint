@@ -1677,7 +1677,7 @@ data/basemap/metadata/zigzag/style_ninja.json: kothic/src/komap.py | data/basema
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/ninja.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 8 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
@@ -1692,7 +1692,7 @@ data/basemap/metadata/zigzag/style_day.json: kothic/src/komap.py | data/basemap/
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 8 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
@@ -1705,7 +1705,7 @@ data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py | data/basema
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 8 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
@@ -1718,7 +1718,7 @@ data/basemap/metadata/sonic/style_ninja.json: kothic/src/komap.py | data/basemap
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/ninja.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 8 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
@@ -1733,7 +1733,7 @@ data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/m
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 8 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
@@ -1746,7 +1746,7 @@ data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py | data/basemap
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 8 \
 		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
@@ -1759,7 +1759,7 @@ data/basemap/metadata/lima/style_ninja.json: kothic/src/komap.py | data/basemap/
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/ninja.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 8 \
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
@@ -1774,20 +1774,20 @@ data/basemap/metadata/lima/style_day.json: kothic/src/komap.py | data/basemap/me
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 8 \
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
 
 data/basemap/metadata/lima/style_night.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for Lima server.
-	python2 kothic/src/libkomb.py \
+	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 8 \
 		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
@@ -1800,8 +1800,8 @@ data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss koth
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/ninja.mapcss \
-		--tiles-max-zoom 14 \
-		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
+		--tiles-max-zoom 8 \
+		--tiles-url https://geocint.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://geocint.kontur.io/basemap/sprite \
 		--locale en \
@@ -1815,8 +1815,8 @@ data/basemap/metadata/geocint/style_day.json: kothic/src/komap.py | data/basemap
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
-		--tiles-max-zoom 14 \
-		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
+		--tiles-max-zoom 8 \
+		--tiles-url https://geocint.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
@@ -1828,8 +1828,8 @@ data/basemap/metadata/geocint/style_night.json: kothic/src/komap.py | data/basem
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
-		--tiles-max-zoom 14 \
-		--tiles-url https://geocint.kontur.io/pgtileserv/public.basemap/{z}/{x}/{y}.pbf \
+		--tiles-max-zoom 8 \
+		--tiles-url https://geocint.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
@@ -1841,6 +1841,10 @@ deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja.json da
 	touch $@
 
 deploy/geocint/basemap: deploy/geocint/basemap_mapcss data/tiles/basemap_all data/basemap/glyphs_all | deploy/geocint ## Deploy glyphs and tiles for vector tiles on geocint.
+	rm -rf /var/www/tiles/basemap_new; mkdir -p /var/www/tiles/basemap_new
+	cp -a data/tiles/basemap/. /var/www/tiles/basemap_new/
+	rm -rf /var/www/tiles/basemap_old
+	mv /var/www/tiles/basemap /var/www/tiles/basemap_old; mv /var/www/tiles/basemap_new /var/www/tiles/basemap
 	cp -r data/basemap/glyphs/. /var/www/html/basemap/glyphs
 	touch $@
 

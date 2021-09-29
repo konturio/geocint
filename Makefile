@@ -1609,7 +1609,7 @@ deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	# pin osm2pgsql to CPU0 and disable HT for it
-	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/default.style --number-processes 8 --hstore-all --create data/planet-latest-updated.osm.pbf
+	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/planet-latest-updated.osm.pbf
 	touch $@
 
 kothic/src/komap.py: ## Clone Kothic from GIT

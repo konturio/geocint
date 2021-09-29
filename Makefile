@@ -1539,11 +1539,6 @@ deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima ## Deploy 
 	'
 	touch $@
 
-data/out/population/population_api_tables.sqld.gz: db/table/stat_h3 db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## Crafting production friendly SQL dump
-	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') <(pg_dump --clean --if-exists --no-owner -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays) scripts/population_api_dump_footer.sql | pigz" > $@__TMP
-	mv $@__TMP $@
-	touch $@
-
 data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## Crafting production friendly SQL dump for stat_h3 table
 	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') < scripts/population_api_dump_footer.sql | pigz" > $@__TMP
 	mv $@__TMP $@
@@ -1552,12 +1547,6 @@ data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## C
 data/out/population/bivariate_tables.sqld.gz: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## Crafting bivariate tables SQL dump
 	bash -c "pg_dump --clean --if-exists --no-owner -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | pigz" > $@__TMP
 	mv $@__TMP $@
-	touch $@
-
-deploy/s3/test/population_api_tables: data/out/population/population_api_tables.sqld.gz | deploy/s3/test ## Putting population_api_tables dump from local folder to AWS test folder in private bucket.
-	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
-	aws s3 cp data/out/population/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
 deploy/s3/test/stat_h3_dump: data/out/population/stat_h3.sqld.gz | deploy/s3/test ## Putting stat_h3 dump from local folder to AWS test folder in private bucket.
@@ -1582,28 +1571,40 @@ deploy/zigzag/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/
 	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
-deploy/sonic/population_api_tables: deploy/s3/test/population_api_tables | deploy/sonic ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on Sonic server.
+deploy/sonic/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/sonic ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on Sonic server.
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'
-	ansible sonic_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
-	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
+	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
+	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
+	ansible sonic_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
+	ansible sonic_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/stat_h3.sqld.gz'
+	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
+	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
-deploy/s3/prod/population_api_tables: deploy/s3/test/population_api_tables | deploy/s3/prod ## AWS-side copying population_api_tables dump from test folder to prod one.
+deploy/s3/prod/stat_h3_dump: deploy/s3/test/stat_h3_dump | deploy/s3/prod ## AWS-side copying stat_h3 table dump from test folder to prod one.
 	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/population_api_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/population_api_tables.sqld.gz --profile geocint_pipeline_sender
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz.bak --profile geocint_pipeline_sender || true
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
-deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/population_api_tables data/out/population/population_api_tables.sqld.gz | deploy/s3 ## Checking if dump on AWS is not older than local file.
+deploy/s3/prod/bivariate_tables_dump: deploy/s3/test/bivariate_tables_dump | deploy/s3/prod ## AWS-side copying bivariate tables dump from test folder to prod one.
+	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/stat_h3_dump deploy/s3/prod/bivariate_tables_dump data/out/population/stat_h3.sqld.gz data/out/population/bivariate_tables.sqld.gz | deploy/s3/prod ## Checking if dumps on AWS is not older than local file.
 	bash scripts/check_population_api_tables_dump_dates.sh
 	touch $@
 
 deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_mdate | deploy/lima ## Getting population_api_tables dump from AWS private prod folder and restoring it.
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible lima_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/population_api_tables.sqld.gz dest=$$HOME/tmp/population_api_tables.sqld.gz mode=get'
-	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/population_api_tables.sqld.gz'
-	ansible lima_population_api -m file -a 'path=$$HOME/tmp/population_api_tables.sqld.gz state=absent'
+	ansible lima_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
+	ansible lima_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
+	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
+	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/stat_h3.sqld.gz'
+	ansible lima_population_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
+	ansible lima_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).

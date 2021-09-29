@@ -17,7 +17,7 @@ local prefix = 'planet_osm'
 
 -- Set this to true if multipolygons should be written as multipolygons into
 -- db (what used to be option -G|--multi-geometry).
-local multi_geometry = false
+local multi_geometry = true
 
 -- Set this to true if you want an hstore column (what used to be option
 -- -k|--hstore). Can not be true if "hstore_all" is true.

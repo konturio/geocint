@@ -40,11 +40,6 @@ local hstore_match_only = false
 -- hstore column.
 local hstore_column = nil
 
--- There is some very old specialized handling of route relations in osm2pgsql,
--- which you probably don't need. This is disabled here, but you can enable
--- it by setting this to true. If you don't understand this, leave it alone.
-local enable_legacy_route_processing = false
-
 -- ---------------------------------------------------------------------------
 
 if hstore and hstore_all then
@@ -645,45 +640,6 @@ function osm2pgsql.process_relation(object)
 
     if not next(output) and not next(output_hstore) then
         return
-    end
-
-    if enable_legacy_route_processing and (hstore or hstore_all) and type == 'route' then
-        if not object.tags.route_name then
-            output_hstore.route_name = object.tags.name
-        end
-
-        local state = object.tags.state
-        if state ~= 'alternate' and state ~= 'connection' then
-            state = 'yes'
-        end
-
-        local network = object.tags.network
-        if network == 'lcn' then
-            output_hstore.lcn = output_hstore.lcn or state
-            output_hstore.lcn_ref = output_hstore.lcn_ref or object.tags.ref
-        elseif network == 'rcn' then
-            output_hstore.rcn = output_hstore.rcn or state
-            output_hstore.rcn_ref = output_hstore.rcn_ref or object.tags.ref
-        elseif network == 'ncn' then
-            output_hstore.ncn = output_hstore.ncn or state
-            output_hstore.ncn_ref = output_hstore.ncn_ref or object.tags.ref
-        elseif network == 'lwn' then
-            output_hstore.lwn = output_hstore.lwn or state
-            output_hstore.lwn_ref = output_hstore.lwn_ref or object.tags.ref
-        elseif network == 'rwn' then
-            output_hstore.rwn = output_hstore.rwn or state
-            output_hstore.rwn_ref = output_hstore.rwn_ref or object.tags.ref
-        elseif network == 'nwn' then
-            output_hstore.nwn = output_hstore.nwn or state
-            output_hstore.nwn_ref = output_hstore.nwn_ref or object.tags.ref
-        end
-
-        local pc = object.tags.preferred_color
-        if pc == '0' or pc == '1' or pc == '2' or pc == '3' or pc == '4' then
-            output_hstore.route_pref_color = pc
-        else
-            output_hstore.route_pref_color = '0'
-        end
     end
 
     local make_boundary = false

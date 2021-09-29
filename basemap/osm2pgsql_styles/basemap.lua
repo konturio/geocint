@@ -25,7 +25,7 @@ local hstore = false
 
 -- Set this to true if you want all tags in an hstore column (what used to
 -- be option -j|--hstore-all). Can not be true if "hstore" is true.
-local hstore_all = false
+local hstore_all = true
 
 -- Only keep objects that have a value in one of the non-hstore columns
 -- (normal action with --hstore is to keep all objects). Equivalent to
@@ -360,25 +360,22 @@ local tables = {}
 tables.point = osm2pgsql.define_table{
     name = prefix .. '_point',
     ids = { type = 'node', id_column = 'osm_id' },
-    columns = gen_columns(point_columns, hstore or hstore_all, nil, 'point')
+    columns = gen_columns(point_columns, hstore or hstore_all, nil, 'point'),
+    cluster = 'no'
 }
 
 tables.line = osm2pgsql.define_table{
     name = prefix .. '_line',
     ids = { type = 'way', id_column = 'osm_id' },
-    columns = gen_columns(non_point_columns, hstore or hstore_all, false, 'linestring')
+    columns = gen_columns(non_point_columns, hstore or hstore_all, false, 'linestring'),
+    cluster = 'no'
 }
 
 tables.polygon = osm2pgsql.define_table{
     name = prefix .. '_polygon',
     ids = { type = 'area', id_column = 'osm_id' },
-    columns = gen_columns(non_point_columns, hstore or hstore_all, true, 'geometry')
-}
-
-tables.roads = osm2pgsql.define_table{
-    name = prefix .. '_roads',
-    ids = { type = 'way', id_column = 'osm_id' },
-    columns = gen_columns(non_point_columns, hstore or hstore_all, false, 'linestring')
+    columns = gen_columns(non_point_columns, hstore or hstore_all, true, 'geometry'),
+    cluster = 'no'
 }
 
 local z_order_lookup = {
@@ -417,22 +414,15 @@ end
 
 function get_z_order(tags)
     local z_order = 100 * math.floor(tonumber(tags.layer or '0') or 0)
-    local roads = false
 
     local highway = tags['highway']
     if highway then
         local r = z_order_lookup[highway] or {0, false}
         z_order = z_order + r[1]
-        roads = r[2]
     end
 
     if tags.railway then
         z_order = z_order + 35
-        roads = true
-    end
-
-    if tags.boundary and tags.boundary == 'administrative' then
-        roads = true
     end
 
     if as_bool(tags.bridge) then
@@ -443,7 +433,7 @@ function get_z_order(tags)
         z_order = z_order - 100
     end
 
-    return z_order, roads
+    return z_order
 end
 
 function make_check_in_list_func(list)
@@ -607,7 +597,7 @@ function osm2pgsql.process_way(object)
         polygon = true
     end
 
-    local z_order, roads = get_z_order(object.tags)
+    local z_order = get_z_order(object.tags)
     output.z_order = z_order
 
     output.tags = output_hstore
@@ -622,9 +612,6 @@ function osm2pgsql.process_way(object)
     else
         output.way = { create = 'line', split_at = max_length }
         tables.line:add_row(output)
-        if roads then
-            tables.roads:add_row(output)
-        end
     end
 end
 
@@ -709,7 +696,7 @@ function osm2pgsql.process_relation(object)
         make_polygon = true
     end
 
-    local z_order, roads = get_z_order(object.tags)
+    local z_order = get_z_order(object.tags)
     output.z_order = z_order
 
     output.tags = output_hstore
@@ -721,9 +708,6 @@ function osm2pgsql.process_relation(object)
     if not make_polygon then
         output.way = { create = 'line', split_at = max_length }
         tables.line:add_row(output)
-        if roads then
-            tables.roads:add_row(output)
-        end
     end
 
     if make_boundary or make_polygon then
@@ -734,3 +718,4 @@ function osm2pgsql.process_relation(object)
         tables.polygon:add_row(output)
     end
 end
+

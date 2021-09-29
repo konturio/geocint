@@ -373,64 +373,6 @@ tables.polygon = osm2pgsql.define_table{
     cluster = 'no'
 }
 
-local z_order_lookup = {
-    proposed = {1, false},
-    construction = {2, false},
-    steps = {10, false},
-    cycleway = {10, false},
-    bridleway = {10, false},
-    footway = {10, false},
-    path = {10, false},
-    track = {11, false},
-    service = {15, false},
-
-    tertiary_link = {24, false},
-    secondary_link = {25, true},
-    primary_link = {27, true},
-    trunk_link = {28, true},
-    motorway_link = {29, true},
-
-    raceway = {30, false},
-    pedestrian = {31, false},
-    living_street = {32, false},
-    road = {33, false},
-    unclassified = {33, false},
-    residential = {33, false},
-    tertiary = {34, false},
-    secondary = {36, true},
-    primary = {37, true},
-    trunk = {38, true},
-    motorway = {39, true}
-}
-
-function as_bool(value)
-    return value == 'yes' or value == 'true' or value == '1'
-end
-
-function get_z_order(tags)
-    local z_order = 100 * math.floor(tonumber(tags.layer or '0') or 0)
-
-    local highway = tags['highway']
-    if highway then
-        local r = z_order_lookup[highway] or {0, false}
-        z_order = z_order + r[1]
-    end
-
-    if tags.railway then
-        z_order = z_order + 35
-    end
-
-    if as_bool(tags.bridge) then
-        z_order = z_order + 100
-    end
-
-    if as_bool(tags.tunnel) then
-        z_order = z_order - 100
-    end
-
-    return z_order
-end
-
 function make_check_in_list_func(list)
     local h = {}
     for _, k in ipairs(list) do
@@ -592,9 +534,6 @@ function osm2pgsql.process_way(object)
         polygon = true
     end
 
-    local z_order = get_z_order(object.tags)
-    output.z_order = z_order
-
     output.tags = output_hstore
 
     if hstore_column then
@@ -652,9 +591,6 @@ function osm2pgsql.process_relation(object)
         make_polygon = true
     end
 
-    local z_order = get_z_order(object.tags)
-    output.z_order = z_order
-
     output.tags = output_hstore
 
     if hstore_column then
@@ -674,4 +610,3 @@ function osm2pgsql.process_relation(object)
         tables.polygon:add_row(output)
     end
 end
-

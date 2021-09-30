@@ -1629,7 +1629,7 @@ db/function/basemap: kothic/src/komap.py | db/function ## Generate SQL functions
 
 data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap db/table/osm2pgsql db/table/water_polygons_vector | data/tiles ## Generating vector tiles.
 	psql -c "update basemap_mvts set dirty = true;"
-	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
+	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 9 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 
 data/basemap: | data ## Directory for MAPCSS styles, icon sprites and font glyphs used with vector tiles.

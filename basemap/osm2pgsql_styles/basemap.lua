@@ -13,7 +13,7 @@ local srid = 3857
 local keep_coastlines = false
 
 -- Set this to the table name prefix (what used to be option -p|--prefix).
-local prefix = 'planet_osm'
+local prefix = 'planet_osm_new'
 
 -- Set this to true if multipolygons should be written as multipolygons into
 -- db (what used to be option -G|--multi-geometry).

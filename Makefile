@@ -1615,9 +1615,16 @@ deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
-db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
+db/table/osm2pgsql_new: data/planet-latest-updated.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	# pin osm2pgsql to CPU0 and disable HT for it
 	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/planet-latest-updated.osm.pbf
+	touch $@
+
+db/table/osm2pgsql: db/table/osm2pgsql_new | db/table ## Replace previous previous osm2pgsql import with the new one
+	psql -1 -c "drop table if exists planet_osm_polygon; alter table planet_osm_new_polygon rename to planet_osm_polygon; drop table if exists planet_osm_line; alter table planet_osm_new_line rename to planet_osm_line; drop table if exists planet_osm_point; alter table planet_osm_new_point rename to planet_osm_point;"
+	psql -c "alter index if exists planet_osm_new_polygon_way_idx rename to planet_osm_polygon_way_idx;"
+	psql -c "alter index if exists planet_osm_new_line_way_idx rename to planet_osm_line_way_idx;"
+	psql -c "alter index if exists planet_osm_new_point_way_idx rename to planet_osm_point_way_idx;"
 	touch $@
 
 kothic/src/komap.py: ## Clone Kothic from GIT

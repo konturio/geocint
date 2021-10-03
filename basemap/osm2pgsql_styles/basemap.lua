@@ -326,8 +326,6 @@ function gen_columns(text_columns, with_hstore, area, geometry_type)
         add_column(c, 'text')
     end
 
-    add_column('z_order', 'int')
-
     if area ~= nil then
         if area then
             add_column('way_area', 'area')
@@ -555,7 +553,7 @@ function osm2pgsql.process_relation(object)
     end
 
     local type = object.tags.type
-    if (type ~= 'route') and (type ~= 'multipolygon') and (type ~= 'boundary') then
+    if type ~= 'multipolygon' then
         return
     end
     object.tags.type = nil
@@ -581,13 +579,8 @@ function osm2pgsql.process_relation(object)
         return
     end
 
-    local make_boundary = false
     local make_polygon = false
-    if type == 'boundary' then
-        make_boundary = true
-    elseif type == 'multipolygon' and object.tags.boundary then
-        make_boundary = true
-    elseif type == 'multipolygon' then
+    if type == 'multipolygon' then
         make_polygon = true
     end
 
@@ -602,7 +595,7 @@ function osm2pgsql.process_relation(object)
         tables.line:add_row(output)
     end
 
-    if make_boundary or make_polygon then
+    if make_polygon then
         output.way = { create = 'area' }
         if not multi_geometry then
             output.way.split_at = 'multi'

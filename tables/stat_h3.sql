@@ -209,7 +209,41 @@ create table stat_h3_in as (
 
 drop table if exists stat_h3;
 create table stat_h3 as (
-    select a.*,
+    select a.h3,
+           hex.area / 1000000.0 as area_km2,
+           a.populated_area_km2,
+           a.population,
+           a.count,
+           a.building_count,
+           a.highway_length,
+           a.resolution,
+           a.zoom,
+           a.one,
+           a.total_building_count,
+           a.count_6_months,
+           a.building_count_6_months,
+           a.highway_length_6_months,
+           a.osm_users,
+           a.residential,
+           a.gdp,
+           a.min_ts,
+           a.max_ts,
+           a.avgmax_ts,
+           a.local_hours,
+           a.total_hours,
+           a.view_count,
+           a.wildfires,
+           a.covid19_vaccines,
+           a.covid19_confirmed,
+           a.population_v2,
+           a.industrial_area,
+           a.volcanos_count,
+           a.pop_under_5_total,
+           a.pop_over_65_total,
+           a.poverty_families_total,
+           a.pop_disability_total,
+           a.pop_not_well_eng_speak,
+           a.pop_without_car,
            (coalesce(b.avg_slope, 0))::float as avg_slope,
            (coalesce(g.avg_elevation, 0))::float as avg_elevation,
            (coalesce(cf.forest_area, 0))::float as forest,
@@ -224,7 +258,6 @@ create table stat_h3 as (
            (coalesce(pf.days_mintemp_above_25c_2c, 0))::float as days_mintemp_above_25c_2c,
            (coalesce(pf.days_maxwetbulb_over_32c_1c, 0))::float as days_maxwetbulb_over_32c_1c,
            (coalesce(pf.days_maxwetbulb_over_32c_2c, 0))::float as days_maxwetbulb_over_32c_2c,
-           hex.area / 1000000.0 as area_km2,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2020_slopes_h3 b on (a.h3 = b.h3)
@@ -239,15 +272,19 @@ vacuum analyze stat_h3;
 create index on stat_h3 using gist (geom, zoom);
 -- cannot create index with more than 32 columns, so create more indexes
 create index stat_h3_brin_pt1 on stat_h3 using brin (
-     area_km2, building_count_6_months, covid19_vaccines, max_ts, population,
-     total_hours, avgmax_ts, count, forest, evergreen_needle_leaved_forest,
-     shrubs, herbage, unknown_forest, highway_length, min_ts, residential,
-     view_count, count_6_months, avg_slope, one, resolution, avg_elevation);
+                                                     area_km2, populated_area_km2, population, count, building_count,
+                                                     highway_length, resolution, zoom, geom, one, total_building_count,
+                                                     covid19_vaccines, max_ts, total_hours, avgmax_ts, forest,
+                                                     evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest,
+                                                     min_ts, residential, view_count, count_6_months);
 create index stat_h3_brin_pt2 on stat_h3 using brin (
-     gdp, highway_length_6_months, wildfires, populated_area_km2,
-     building_count, geom, local_hours, osm_users, total_building_count, avg_ndvi, covid19_confirmed,
-     population_v2, industrial_area, volcanos_count, pop_under_5_total, pop_over_65_total,
-     poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car,
-     days_maxtemp_over_32c_1c, days_maxtemp_over_32c_2c, days_mintemp_above_25c_1c, days_mintemp_above_25c_2c,
-     days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c, zoom
+                                                     gdp, highway_length_6_months, wildfires, avg_elevation,
+                                                     building_count_6_months, local_hours, osm_users,
+                                                     avg_ndvi, covid19_confirmed,
+                                                     population_v2, industrial_area, volcanos_count, pop_under_5_total,
+                                                     pop_over_65_total, poverty_families_total, pop_disability_total,
+                                                     pop_not_well_eng_speak, pop_without_car,
+                                                     days_maxtemp_over_32c_1c, days_maxtemp_over_32c_2c,
+                                                     days_mintemp_above_25c_1c, days_mintemp_above_25c_2c,
+                                                     days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c, avg_slope
     );

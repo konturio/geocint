@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries reports/osm_gadm_comparison.html reports/osm_population_inconsistencies.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings deploy/geocint/docker_osrm_backend db/table/abu_dhabi_isochrones_bicycle_10m ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.html deploy/geocint/osm_gadm_comparison.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings deploy/geocint/docker_osrm_backend db/table/abu_dhabi_isochrones_bicycle_10m ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -581,13 +581,21 @@ reports/osm_gadm_comparison.html: db/table/kontur_boundaries db/table/gadm_bound
 	# Besides generating HTML table we also inject charset tag and clickable links into it using sed utility.
 	{ echo '<meta charset="utf-8">'; psql -HXP footer=off -f tables/osm_gadm_comparison.sql | sed -z 's/\(<td align=\"left\">\)\([0-9]\{4,\}\)\(<\/td>\)\(\n\s\{4\}<td align=\"left\">[0-9]\+<\/td>\n\s\{4\}<td align=\"left\">\)\([^<>]\+\)\(<\/td>\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3\4<a href=\"http\:\/\/localhost\:8111\/load_object\?new_layer=true\&objects=r\2\&relation_members=true\">\5<\/a>\6/g'; } > $@
 
+deploy/geocint/osm_gadm_comparison.html: reports/osm_gadm_comparison.html | deploy/geocint ## Copy OSM-GADM comparison report to public_html folder to make it available online.
+	cp reports/osm_gadm_comparison.html ~/public_html/osm_gadm_comparison.html
+	touch $@
+
 db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
 	psql -f tables/osm_population_inconsistencies.sql
 	touch $@
 
 reports/osm_population_inconsistencies.html: db/table/osm_population_inconsistencies | reports ## Generate report for OpenStreetMap users about population inconsistencies (see also db/table/osm_population_inconsistencies target).
 	# Besides generating HTML table we also inject charset tag and clickable links into it using sed utility.
-	{ echo '<meta charset="utf-8">' ; psql -HXP footer=off -c 'select * from osm_population_inconsistencies;' | sed -z 's/\(<td align=\"left\">\)\([0-9]\{4,\}\)\(<\/td>\)\(\n\s\{4\}<td align=\"left\">\)\([^<>]\+\)\(<\/td>\n\s\{4\}<td align=\"right\">\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3\4<a href=\"http\:\/\/localhost\:8111\/load_object\?new_layer=true\&objects=r\2\&relation_members=true\">\5<\/a>\6/g'; } > $@
+	{ echo '<meta charset="utf-8">' ; psql -HXP footer=off -c 'select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id;' | sed -z 's/\(<td align=\"left\">\)\([0-9]\{4,\}\)\(<\/td>\)\(\n\s\{4\}<td align=\"left\">\)\([^<>]\+\)\(<\/td>\n\s\{4\}<td align=\"right\">\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3\4<a href=\"http\:\/\/localhost\:8111\/load_object\?new_layer=true\&objects=r\2\&relation_members=true\">\5<\/a>\6/g'; } > $@
+
+deploy/geocint/osm_population_inconsistencies.html: reports/osm_population_inconsistencies.html | deploy/geocint ## Copy osm population inconsistencies report to public_html folder to make it available online.
+	cp reports/osm_population_inconsistencies.html ~/public_html/osm_population_inconsistencies.html
+	touch $@
 
 db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
 	psql -f tables/population_check_osm.sql
@@ -1607,9 +1615,16 @@ deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
-db/table/osm2pgsql: data/planet-latest-updated.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
+db/table/osm2pgsql_new: data/planet-latest-updated.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	# pin osm2pgsql to CPU0 and disable HT for it
 	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/planet-latest-updated.osm.pbf
+	touch $@
+
+db/table/osm2pgsql: db/table/osm2pgsql_new | db/table ## Replace previous previous osm2pgsql import with the new one
+	psql -1 -c "drop table if exists planet_osm_polygon; alter table planet_osm_new_polygon rename to planet_osm_polygon; drop table if exists planet_osm_line; alter table planet_osm_new_line rename to planet_osm_line; drop table if exists planet_osm_point; alter table planet_osm_new_point rename to planet_osm_point;"
+	psql -c "alter index if exists planet_osm_new_polygon_way_idx rename to planet_osm_polygon_way_idx;"
+	psql -c "alter index if exists planet_osm_new_line_way_idx rename to planet_osm_line_way_idx;"
+	psql -c "alter index if exists planet_osm_new_point_way_idx rename to planet_osm_point_way_idx;"
 	touch $@
 
 kothic/src/komap.py: ## Clone Kothic from GIT

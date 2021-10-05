@@ -9,9 +9,6 @@
 -- code you were using on the -E|-proj option.
 local srid = 3857
 
--- Set this to true if you were using option -K|--keep-coastlines.
-local keep_coastlines = false
-
 -- Set this to the table name prefix (what used to be option -p|--prefix).
 local prefix = 'planet_osm_new'
 
@@ -21,16 +18,16 @@ local multi_geometry = true
 
 -- Set this to true if you want an hstore column (what used to be option
 -- -k|--hstore). Can not be true if "hstore_all" is true.
-local hstore = false
+local hstore = true
 
 -- Set this to true if you want all tags in an hstore column (what used to
 -- be option -j|--hstore-all). Can not be true if "hstore" is true.
-local hstore_all = true
+local hstore_all = false
 
 -- Only keep objects that have a value in one of the non-hstore columns
 -- (normal action with --hstore is to keep all objects). Equivalent to
 -- what used to be set through option --hstore-match-only.
-local hstore_match_only = false
+local hstore_match_only = true
 
 -- Set this to add an additional hstore (key/value) column containing all tags
 -- that start with the specified string, eg "name:". Will produce an extra
@@ -282,6 +279,7 @@ local non_point_columns = {
     'layer',
     'leisure',
     'lock',
+    'maritime',
     'man_made',
     'military',
     'motorcar',
@@ -372,6 +370,8 @@ tables.polygon = osm2pgsql.define_table{
     columns = gen_columns(non_point_columns, hstore or hstore_all, true, 'geometry'),
     cluster = 'no'
 }
+
+local w2b = {}
 
 function make_check_in_list_func(list)
     local h = {}
@@ -487,6 +487,34 @@ function osm2pgsql.process_node(object)
 end
 
 function osm2pgsql.process_way(object)
+    if w2b[object.id] then
+        local way_admin_level
+        local boundary_admin_level
+        for _, boundary in pairs(w2b[object.id]) do
+            way_admin_level = tonumber(object.tags.admin_level) or 12
+            boundary_admin_level = tonumber(boundary.admin_level) or 12
+            if boundary_admin_level < way_admin_level then
+                object.tags.admin_level = boundary.admin_level
+            end
+            if boundary.maritime then
+                object.tags.maritime = boundary.maritime
+            end
+        end
+
+        if object.tags.boundary_type == 'maritime' then
+            object.tags.maritime = 'yes'
+        end
+
+        output = {}
+        output.boundary = 'administrative'
+        output.admin_level = object.tags.admin_level
+        output.maritime = object.tags.maritime
+        output.way = { create = 'line', split_at = max_length }
+        tables.line:add_row(output)
+
+        return
+    end
+
     if clean_tags(object.tags) then
         return
     end
@@ -494,9 +522,7 @@ function osm2pgsql.process_way(object)
     local add_area = false
     if object.tags.natural == 'coastline' then
         add_area = true
-        if not keep_coastlines then
-            object.tags.natural = nil
-        end
+        object.tags.natural = nil
     end
 
     local output
@@ -549,6 +575,12 @@ function osm2pgsql.process_way(object)
     end
 end
 
+function osm2pgsql.select_relation_members(relation)
+    if (relation.tags.type == 'boundary') or (relation.tags.boundary == 'administrative') then
+        return { ways = osm2pgsql.way_member_ids(relation) }
+    end
+end
+
 function osm2pgsql.process_relation(object)
     if clean_tags(object.tags) then
         return
@@ -582,6 +614,22 @@ function osm2pgsql.process_relation(object)
     end
 
     local make_boundary = false
+    if type == 'boundary' or object.tags.boundary == 'administrative' then
+        for _, member in ipairs(object.members) do
+            if member.type == 'w' then
+                if not w2b[member.ref] then
+                    w2b[member.ref] = {}
+                end
+                w2b[member.ref][object.id] = {
+                    admin_level = object.tags.admin_level,
+                    maritime = object.tags.maritime
+                }
+            end
+        end
+
+        return
+    end
+
     local make_polygon = false
     if type == 'boundary' then
         make_boundary = true

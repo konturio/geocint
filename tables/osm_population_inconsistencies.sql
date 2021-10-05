@@ -62,12 +62,20 @@ having sum(b.population) filter(where b.admin_level = c.child_level) > s.populat
 drop table if exists osm_population_inconsistencies;
 create table osm_population_inconsistencies as
 with unnested as (
-    select unnest(array_prepend(osm_id, children)) osm_id
-    from (select * from osm_admin_hierarchy order by pop_diff_percent desc) a
+    select row_number() over() id, *                                     -- enumerate rows for proper sorting further
+    from (
+        select unnest(array_prepend(osm_id, children)) osm_id
+        from (select * from osm_admin_hierarchy order by pop_diff_percent desc) a
+    ) b
 )
 select
+       id,
        h1.osm_id::text                                                   as "OSM ID",
-       case when h2.name is null then '    - ' || b.name else b.name end as "Name",
+       repeat(' ', b.admin_level) ||                                     -- greater admin_level -> more spaces tabulation before name
+           case
+               when h2.name is null then '-' || b.name                   -- if the boundary itself has population inconsistency error then it's name starts without dash
+               else b.name                                               -- otherwise with dash
+           end                                                           as "Name",
        b.admin_level                                                     as "Admin level",
        coalesce(b.population::text, '-')                                 as "Population",
        coalesce(h2.c_sum_pop::text, '-')                                 as "SUM subregions population",

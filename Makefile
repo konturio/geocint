@@ -591,7 +591,7 @@ db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries | db/tabl
 
 reports/osm_population_inconsistencies.html: db/table/osm_population_inconsistencies | reports ## Generate report for OpenStreetMap users about population inconsistencies (see also db/table/osm_population_inconsistencies target).
 	# Besides generating HTML table we also inject charset tag and clickable links into it using sed utility.
-	{ echo '<meta charset="utf-8">' ; psql -HXP footer=off -c 'select * from osm_population_inconsistencies;' | sed -z 's/\(<td align=\"left\">\)\([0-9]\{4,\}\)\(<\/td>\)\(\n\s\{4\}<td align=\"left\">\)\([^<>]\+\)\(<\/td>\n\s\{4\}<td align=\"right\">\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3\4<a href=\"http\:\/\/localhost\:8111\/load_object\?new_layer=true\&objects=r\2\&relation_members=true\">\5<\/a>\6/g'; } > $@
+	{ echo '<meta charset="utf-8">' ; psql -HXP footer=off -c 'select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id;' | sed -z 's/\(<td align=\"left\">\)\([0-9]\{4,\}\)\(<\/td>\)\(\n\s\{4\}<td align=\"left\">\)\([^<>]\+\)\(<\/td>\n\s\{4\}<td align=\"right\">\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3\4<a href=\"http\:\/\/localhost\:8111\/load_object\?new_layer=true\&objects=r\2\&relation_members=true\">\5<\/a>\6/g'; } > $@
 
 deploy/geocint/osm_population_inconsistencies.html: reports/osm_population_inconsistencies.html | deploy/geocint ## Copy osm population inconsistencies report to public_html folder to make it available online.
 	cp reports/osm_population_inconsistencies.html ~/public_html/osm_population_inconsistencies.html

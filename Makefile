@@ -1094,11 +1094,11 @@ db/table/abu_dhabi_bivariate_pop_food_shops: db/table/abu_dhabi_eatery db/table/
 	psql -f tables/abu_dhabi_bivariate_pop_food_shops.sql
 	touch $@
 
-data/in/geoalert_results_v3.geojson: | data/in ## Download buildings dataset from Geoalert for Abu Dhabi.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/geoalert_results_v3.geojson $@ --profile geocint_pipeline_sender
+data/in/abu_dhabi_geoalert_v3.geojson: | data/in ## Download buildings dataset from Geoalert for Abu Dhabi.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v3.geojson $@ --profile geocint_pipeline_sender
 
-db/table/abu_dhabi_buildings: data/in/geoalert_results_v3.geojson | db/table ## Buildings dataset from Geoalert for Abu Dhabi imported into database.
-	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
+db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v3.geojson | db/table ## Buildings dataset from Geoalert for Abu Dhabi imported into database.
+	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v3.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom -lco SPATIAL_INDEX=GIST
 	touch $@
 
 data/out/abu_dhabi: | data/out ## Directory for Abu Dhabi datasets output.
@@ -1125,7 +1125,7 @@ db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population db
 	touch $@
 
 data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson: db/table/abu_dhabi_pds_bicycle_10min | data/out/abu_dhabi ## Export to GeoJson Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
-	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select id, population, pds, ST_Transform(geom, 4326) "geom" from abu_dhabi_pds_bicycle_10min' -nln abu_dhabi_pds_bicycle_10min
+	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select * from abu_dhabi_pds_bicycle_10min' -nln abu_dhabi_pds_bicycle_10min
 
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson ## Make sure all Abu Dhabi datasets have been exported.
 	touch $@
@@ -1148,7 +1148,7 @@ data/out/docker/osrm_backend_bicycle: data/out/docker/osrm_context.tar | data/ou
 	touch $@
 
 data/out/docker/osrm_backend_car: data/out/docker/osrm_context.tar | data/out/docker ## Build docker image with OSRM router by car profile.
-	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-car --no-cache - < data/out/docker/osrm_context.tar
+	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car-shortest --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-car --no-cache - < data/out/docker/osrm_context.tar
 	touch $@
 
 data/out/docker/osrm_backend_car_emergency: data/out/docker/osrm_context.tar | data/out/docker ## Build docker image with OSRM router by car-emergency profile.

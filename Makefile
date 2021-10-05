@@ -1106,7 +1106,7 @@ data/in/abu_dhabi_geoalert_v3.geojson: | data/in ## Download buildings dataset f
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v3.geojson $@ --profile geocint_pipeline_sender
 
 db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v3.geojson | db/table ## Buildings dataset from Geoalert for Abu Dhabi imported into database.
-	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v3.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom -lco SPATIAL_INDEX=GIST
+	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v3.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
 	touch $@
 
 data/out/abu_dhabi: | data/out ## Directory for Abu Dhabi datasets output.

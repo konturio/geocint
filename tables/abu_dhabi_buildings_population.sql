@@ -22,6 +22,7 @@ create table abu_dhabi_buildings_population as (
              group by p.h3, p.population, p_4326
          )
     select b.id,
+           b.building_height          "height",
            round(
                    sum(ST_Area(ST_Intersection(p.geom, b.geom)::geography) * b.building_height / volume * population)
                )                      "population",

@@ -8,6 +8,7 @@
 @import("../include/Icons.mapcss");
 @import("../include/Subways.mapcss");
 
+* { font-family: "Noto Sans Regular"; }
 
 canvas
 {

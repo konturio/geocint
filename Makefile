@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.html deploy/geocint/osm_gadm_comparison.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings deploy/geocint/docker_osrm_backend db/table/abu_dhabi_isochrones_bicycle_10m ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.html deploy/geocint/osm_gadm_comparison.html deploy/geocint/population_check_osm.html db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings deploy/geocint/docker_osrm_backend db/table/abu_dhabi_isochrones_bicycle_10m ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -601,9 +601,13 @@ db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check ho
 	psql -f tables/population_check_osm.sql
 	touch $@
 
-reports/population_check_osm.csv: db/table/population_check_osm | reports ## Export population_check_osm table to .csv and send Top 5 most inconsistent results to Kontur Slack (#gis channel).
-	psql -q -X -c 'copy (select * from population_check_osm order by diff_pop desc) to stdout with csv header;' > $@
-	cat $@ | tail -n +2 | head -5 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $$1 "|" ($$3 != "" ? $$3 : $$2) "> - ", $$7}' | { echo "Top 5 boundaries with population different from OSM"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
+reports/population_check_osm.html: db/table/population_check_osm | reports ## Export population_check_osm table to .html and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
+	{ echo '<meta charset="utf-8">'; psql -HXP footer=off -c 'select '\''<a href="https://www.openstreetmap.org/relation/'\'' || osm_id || '\''">'\'' || osm_id || '\''</a>'\'' "OSM ID", '\''<a href="http://localhost:8111/load_object?new_layer=true&objects=r'\'' || osm_id || '\''&relation_members=true">'\'' || coalesce(name_en, name) || '\''</a>'\'' "Name", coalesce(pop_date, '\''-'\'') "OSM population date", osm_pop "OSM population", kontur_pop "Kontur population", diff_pop "Population difference", round(diff_log::numeric, 2) "Logarithmic difference of population" from population_check_osm where diff_log > 1;' | python3 -c "import sys, html; print(html.unescape(sys.stdin.read()))"; } > $@
+	psql -q -X -t -f scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
+
+deploy/geocint/population_check_osm.html: reports/population_check_osm.html | deploy/geocint  ## Copy osm population check report to public_html folder to make it available online.
+	cp reports/population_check_osm.html ~/public_html/population_check_osm.html
+	touch $@
 
 data/iso_codes.csv: | data ## Download ISO codes for countries from wikidata.
 	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@

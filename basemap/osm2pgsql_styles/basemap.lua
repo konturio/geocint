@@ -324,8 +324,6 @@ function gen_columns(text_columns, with_hstore, area, geometry_type)
         add_column(c, 'text')
     end
 
-    add_column('z_order', 'int')
-
     if area ~= nil then
         if area then
             add_column('way_area', 'area')

@@ -1615,6 +1615,22 @@ deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
+data/in/daylight_coastlines.tgz: | data/in ## daylightmap.org/coastlines.html
+	wget https://daylight-map-distribution.s3.us-west-1.amazonaws.com/release/v1.6/coastlines-v1.6.tgz -O $@
+
+data/mid/daylight_coastlines: | data/mid ## Directory for unpacked Daylight Coastlines shapefiles
+	mkdir -p $@
+
+data/mid/daylight_coastlines/land_polygons.shp: data/in/daylight_coastlines.tgz | data/mid/daylight_coastlines ## Unpack Daylight Coastlines
+	tar zxvf data/in/daylight_coastlines.tgz -C data/mid/daylight_coastlines
+	touch $@
+
+db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | db/table ## Import land vector polygons from Daylight Coastlines in database 
+	psql -c "drop table if exists land_polygons_vector;"
+	shp2pgsql -I -s 4326 data/mid/daylight_coastlines/land_polygons.shp land_polygons_vector | psql -q
+	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"
+	touch $@
+
 db/table/osm2pgsql_new: data/planet-latest-updated.osm.pbf basemap/osm2pgsql_styles/basemap.lua | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	# pin osm2pgsql to CPU0 and disable HT for it
 	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/planet-latest-updated.osm.pbf
@@ -1642,7 +1658,7 @@ db/function/basemap: kothic/src/komap.py | db/function ## Generate SQL functions
 		| psql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap db/table/osm2pgsql db/table/water_polygons_vector | data/tiles ## Generating vector tiles.
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap db/table/osm2pgsql db/table/water_polygons_vector db/table/land_polygons_vector | data/tiles ## Generating vector tiles.
 	psql -c "update basemap_mvts set dirty = true;"
 	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 9 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@

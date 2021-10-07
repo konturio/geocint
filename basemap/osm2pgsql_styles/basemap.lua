@@ -604,6 +604,10 @@ function osm2pgsql.process_node(object)
 end
 
 function osm2pgsql.process_way(object)
+    if osm2pgsql.stage == 1 and object.tags.boundary == 'administrative' then
+        return
+    end
+
     if w2b[object.id] then
         local way_admin_level
         local boundary_admin_level

@@ -10,9 +10,12 @@ line|z5-[boundary=administrative][admin_level=6][!maritime]    { width: .5; }
 line|z6-[boundary=administrative][admin_level=7][!maritime]    { width: .5; }
 line|z8-[boundary=administrative][admin_level=8][!maritime]    { width: .5; }
 
-node|z1-[place=ocean]          {text: name:en; font-size: 17; text-transform: uppercase; font-family: "Noto Sans Italic" }
-node|z3-[place=sea], area|z3-[place=sea]            {text: name:en; font-size: 16; text-transform: uppercase; font-family: "Noto Sans Italic" }
-node|z4-[natural=bay], node|z5-[natural=strait]       {text: name:en; font-size:15; text-transform: uppercase; font-family: "Noto Sans Italic" }
+node|z1-[place=ocean]     { text: name:en; font-size: 15; text-transform: uppercase; font-family: "Open Sans Light Italic" }
+node|z4-[place=sea], area|z4-[place=sea]      {text: name:en; font-size: 14; text-transform: uppercase; font-family: "Open Sans Light Italic" }
+node|z5-[natural=bay], node|z5-[natural=strait]    {text: name:en; font-size:13; text-transform: uppercase; font-family: "Open Sans Light Italic" }
+node|z6-[water=lake], node|z7-[water=reservoir] { text: name:en; font-size:12; text-transform: uppercase; font-family: "Open Sans Light Italic" }
+node|z7-[waterway=river] {text: name:en; font-size:11; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line}
+node|z8-[waterway=canal] {text: name:en; font-size:11; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line }
 
 node|z1-[place=country]        {text-padding: 3; text: name:en;  font-size: 17; text-transform:uppercase; font-family: "Noto Sans Bold"; z-index: 7 }
 node|z3-[place=city]           {text: name;     font-size: 15; z-index: 5; }

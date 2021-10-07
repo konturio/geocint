@@ -15,7 +15,6 @@ client = WebClient(token=slack_token)
 if len(sys.argv) < 2:
     print(
         'usage: cat message.txt | SLACK_KEY=integration_key python slack_message.py [channel] [sender_name] [icon_emoji]')
-    exit(1)
 
 channel = sys.argv[1]
 username = sys.argv[2]

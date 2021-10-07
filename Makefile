@@ -1,6 +1,7 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
 dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.html deploy/geocint/osm_gadm_comparison.html deploy/geocint/population_check_osm.html db/table/iso_codes reports/population_check_world db/table/un_population data/out/abu_dhabi_export db/table/abu_dhabi_buildings deploy/geocint/docker_osrm_backend db/table/abu_dhabi_isochrones_bicycle_10m ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.html deploy/geocint/osm_gadm_comparison.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export deploy/geocint/docker_osrm_backend ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1111,11 +1112,11 @@ db/table/abu_dhabi_bivariate_pop_food_shops: db/table/abu_dhabi_eatery db/table/
 	psql -f tables/abu_dhabi_bivariate_pop_food_shops.sql
 	touch $@
 
-data/in/geoalert_results_v3.geojson: | data/in ## Download buildings dataset from Geoalert for Abu Dhabi.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/geoalert_results_v3.geojson $@ --profile geocint_pipeline_sender
+data/in/abu_dhabi_geoalert_v3.geojson: | data/in ## Download buildings dataset from Geoalert for Abu Dhabi.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v3.geojson $@ --profile geocint_pipeline_sender
 
-db/table/abu_dhabi_buildings: data/in/geoalert_results_v3.geojson | db/table ## Buildings dataset from Geoalert for Abu Dhabi imported into database.
-	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v2.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
+db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v3.geojson | db/table ## Buildings dataset from Geoalert for Abu Dhabi imported into database.
+	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v3.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
 	touch $@
 
 data/out/abu_dhabi: | data/out ## Directory for Abu Dhabi datasets output.
@@ -1142,7 +1143,7 @@ db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population db
 	touch $@
 
 data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson: db/table/abu_dhabi_pds_bicycle_10min | data/out/abu_dhabi ## Export to GeoJson Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
-	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select id, population, pds, ST_Transform(geom, 4326) "geom" from abu_dhabi_pds_bicycle_10min' -nln abu_dhabi_pds_bicycle_10min
+	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select * from abu_dhabi_pds_bicycle_10min' -nln abu_dhabi_pds_bicycle_10min
 
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson ## Make sure all Abu Dhabi datasets have been exported.
 	touch $@
@@ -1165,7 +1166,7 @@ data/out/docker/osrm_backend_bicycle: data/out/docker/osrm_context.tar | data/ou
 	touch $@
 
 data/out/docker/osrm_backend_car: data/out/docker/osrm_context.tar | data/out/docker ## Build docker image with OSRM router by car profile.
-	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-car --no-cache - < data/out/docker/osrm_context.tar
+	docker build --build-arg PORT=5002 --build-arg OSRM_PROFILE=car-shortest --build-arg OSM_FILE=data/out/aoi-latest.osm.pbf --file scripts/dockerfile-osrm-backend --tag osrm-backend-car --no-cache - < data/out/docker/osrm_context.tar
 	touch $@
 
 data/out/docker/osrm_backend_car_emergency: data/out/docker/osrm_context.tar | data/out/docker ## Build docker image with OSRM router by car-emergency profile.
@@ -1624,7 +1625,23 @@ deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
-db/table/osm2pgsql_new: data/planet-latest-updated.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
+data/in/daylight_coastlines.tgz: | data/in ## daylightmap.org/coastlines.html
+	wget https://daylight-map-distribution.s3.us-west-1.amazonaws.com/release/v1.6/coastlines-v1.6.tgz -O $@
+
+data/mid/daylight_coastlines: | data/mid ## Directory for unpacked Daylight Coastlines shapefiles
+	mkdir -p $@
+
+data/mid/daylight_coastlines/land_polygons.shp: data/in/daylight_coastlines.tgz | data/mid/daylight_coastlines ## Unpack Daylight Coastlines
+	tar zxvf data/in/daylight_coastlines.tgz -C data/mid/daylight_coastlines
+	touch $@
+
+db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | db/table ## Import land vector polygons from Daylight Coastlines in database
+	psql -c "drop table if exists land_polygons_vector;"
+	shp2pgsql -I -s 4326 data/mid/daylight_coastlines/land_polygons.shp land_polygons_vector | psql -q
+	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"
+	touch $@
+
+db/table/osm2pgsql_new: data/planet-latest-updated.osm.pbf basemap/osm2pgsql_styles/basemap.lua | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	# pin osm2pgsql to CPU0 and disable HT for it
 	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/planet-latest-updated.osm.pbf
 	touch $@
@@ -1651,7 +1668,7 @@ db/function/basemap: kothic/src/komap.py | db/function ## Generate SQL functions
 		| psql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap db/table/osm2pgsql db/table/water_polygons_vector | data/tiles ## Generating vector tiles.
+data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap db/table/osm2pgsql db/table/water_polygons_vector db/table/land_polygons_vector | data/tiles ## Generating vector tiles.
 	psql -c "update basemap_mvts set dirty = true;"
 	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 9 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@

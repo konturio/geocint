@@ -604,10 +604,13 @@ function osm2pgsql.process_node(object)
 end
 
 function osm2pgsql.process_way(object)
+    -- administrative boundaries are processed on stage 2
+    -- if boundary is not included in any relation it will not be inserted in database
     if osm2pgsql.stage == 1 and object.tags.boundary == 'administrative' then
         return
     end
 
+    -- stage 2 processing of administrative boundaries
     if w2b[object.id] then
         local way_admin_level
         local boundary_admin_level

@@ -1,14 +1,14 @@
 * {color:black; text-halo-color: white; text-halo-radius: 2; text-opacity: 0.8; font-family: "Noto Sans Regular"; text-padding: 10 }
-area|z0-[natural=coastline]                         { width: 2; opacity: 0.4; fill-color: white; z-index:1000; color:black}
+area|z0-[natural=coastline]                         { width: 1; opacity: 0.4; color:black}
 
 line[boundary=administrative]                       { opacity: 0.4 }
-line|z1-[boundary=administrative][admin_level=2]    { width: .5; }
-line|z3-[boundary=administrative][admin_level=3]    { width: .4; }
-line|z3-[boundary=administrative][admin_level=4]    { width: .5; }
-line|z4-[boundary=administrative][admin_level=5]    { width: .5; }
-line|z5-[boundary=administrative][admin_level=6]    { width: .5; }
-line|z6-[boundary=administrative][admin_level=7]    { width: .5; }
-line|z8-[boundary=administrative][admin_level=8]    { width: .5; }
+line|z1-[boundary=administrative][admin_level=2][!maritime]    { width: .5; }
+line|z3-[boundary=administrative][admin_level=3][!maritime]    { width: .4; }
+line|z3-[boundary=administrative][admin_level=4][!maritime]    { width: .5; }
+line|z4-[boundary=administrative][admin_level=5][!maritime]    { width: .5; }
+line|z5-[boundary=administrative][admin_level=6][!maritime]    { width: .5; }
+line|z6-[boundary=administrative][admin_level=7][!maritime]    { width: .5; }
+line|z8-[boundary=administrative][admin_level=8][!maritime]    { width: .5; }
 
 node|z1-[place=ocean]          {text: name:en; font-size: 17; text-transform: uppercase; font-family: "Noto Sans Italic" }
 node|z3-[place=sea], area|z3-[place=sea]            {text: name:en; font-size: 16; text-transform: uppercase; font-family: "Noto Sans Italic" }

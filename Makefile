@@ -640,7 +640,7 @@ db/table/un_population: data/in/un_population.csv | db/table ## UN (United Natio
 #	psql -c 'copy (select * from population_check_un order by diff_pop) to stdout with csv header;' > $@
 #	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_boundaries | reports ## Compare total population from United Nations population division dataset and final Kontur population dataset and send absolute difference to Kontur Slack (#geocint channel).
+reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_boundaries | reports ## Compare total population from OSM and final Kontur population dataset and send bug reports to Kontur Slack (#geocint channel).
 	psql -q -X -t -c "select sum(population) from kontur_boundaries where admin_level = '2';" > $@__OSM_POP
 	psql -q -X -t -c "select sum(population) from kontur_population_h3 where resolution = 0;" > $@__KONTUR_POP
 	if [ $$(cat $@__KONTUR_POP) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py geocint "Nightly build" x && exit 1; fi

@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.html deploy/geocint/osm_gadm_comparison.html deploy/geocint/population_check_osm.html db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export db/table/abu_dhabi_buildings deploy/geocint/docker_osrm_backend db/table/abu_dhabi_isochrones_bicycle_10m ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.html deploy/geocint/osm_gadm_comparison.html deploy/geocint/population_check_osm.html db/table/iso_codes reports/population_check_world db/table/un_population data/out/abu_dhabi_export db/table/abu_dhabi_buildings deploy/geocint/docker_osrm_backend db/table/abu_dhabi_isochrones_bicycle_10m ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -640,9 +640,14 @@ db/table/un_population: data/un_population.csv | db/table ## UN (United Nations)
 #	psql -c 'copy (select * from population_check_un order by diff_pop) to stdout with csv header;' > $@
 #	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-reports/population_check_world: db/table/kontur_population_h3 db/table/un_population | reports ## Compare total population from United Nations population division dataset and final Kontur population dataset and send аbsolute difference to Kontur Slack (#gis channel).
-	psql -q -X -t -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = date_part('year', current_date) and name = 'World')) from kontur_population_h3 where resolution = 8;" > $@
-	head -1 $@ | xargs echo "Planet population difference" | python3 scripts/slack_message.py geocint "Nightly build" cat
+reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_boundaries | reports ## Compare total population from United Nations population division dataset and final Kontur population dataset and send absolute difference to Kontur Slack (#geocint channel).
+	psql -q -X -t -c "select sum(population) from kontur_boundaries where admin_level = '2';" > $@__OSM_POP
+	psql -q -X -t -c "select sum(population) from kontur_population_h3 where resolution = 0;" > $@__KONTUR_POP
+	if [ $$(cat $@__KONTUR_POP) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py geocint "Nightly build" x && exit 1; fi
+	if [ $$(cat $@__KONTUR_POP) -lt $$(cat $@) ]; then echo "Kontur population is worse than the previous one" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	if [ $$(cat $@__KONTUR_POP) -lt $$(cat $@__OSM_POP) ]; then echo "Kontur population is worse than OSM" | python3 scripts/slack_message.py geocint "Nightly build" warning; fi
+	rm $@__OSM_POP
+	mv $@__KONTUR_POP $@
 
 data/in/wb/gdp/wb_gdp.zip: | data/in/wb/gdp ## Download GDP (Gross domestic product) dataset from World Bank.
 	wget http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=xml -O $@

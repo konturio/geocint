@@ -609,23 +609,23 @@ deploy/geocint/population_check_osm.html: reports/population_check_osm.html | de
 	cp reports/population_check_osm.html ~/public_html/population_check_osm.html
 	touch $@
 
-data/iso_codes.csv: | data ## Download ISO codes for countries from wikidata.
+data/in/iso_codes.csv: | data/in ## Download ISO codes for countries from wikidata.
 	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
 
-db/table/iso_codes: data/iso_codes.csv | db/table ## Download ISO codes for countries from wikidata.
+db/table/iso_codes: data/in/iso_codes.csv | db/table ## Download ISO codes for countries from wikidata.
 	psql -c 'drop table if exists iso_codes;'
 	psql -c 'create table iso_codes(iso_num integer, iso2 char(2), iso3 char(3), name text);'
-	cat data/iso_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy iso_codes from stdin with csv header;"
+	cat data/in/iso_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy iso_codes from stdin with csv header;"
 	touch $@
 
-data/un_population.csv: | data ## Download United Nations population division dataset.
+data/in/un_population.csv: | data/in ## Download United Nations population division dataset.
 	wget 'https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv' -O $@
 
-db/table/un_population: data/un_population.csv | db/table ## UN (United Nations) population division dataset imported into database.
+db/table/un_population: data/in/un_population.csv | db/table ## UN (United Nations) population division dataset imported into database.
 	psql -c 'drop table if exists un_population_text;'
 	psql -c 'create table un_population_text(iso text, name text, variant_id text, variant text, time text, mid_period text, pop_male text, pop_female text, pop_total text, pop_density text);'
 	# Import raw UN population dataset into database
-	cat data/un_population.csv | psql -c "copy un_population_text from stdin with csv header delimiter ',';"
+	cat data/in/un_population.csv | psql -c "copy un_population_text from stdin with csv header delimiter ',';"
 	psql -c 'drop table if exists un_population;'
 	# Transform raw UN population dataset into database table.
 	psql -c 'create table un_population as select iso::integer, name, variant_id::integer, variant, time::integer "year", parse_float(mid_period) "mid_period", parse_float(pop_male) * 1000 "pop_male", parse_float(pop_female) * 1000 "pop_female", parse_float(pop_total) * 1000 "pop_total", parse_float(pop_density) * 1000 "pop_density" from un_population_text;'

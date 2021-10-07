@@ -1,5 +1,5 @@
 * {color:black; text-halo-color: white; text-halo-radius: 2; text-opacity: 0.8; font-family: "Noto Sans Regular"; text-padding: 10 }
-area|z0-[natural=coastline]                         { width: 2; opacity: 0.4; color:black}
+area|z0-[natural=coastline]                         { width: .5; opacity: 0.4; color:black}
 
 line[boundary=administrative]                       { opacity: 0.4 }
 line|z1-[boundary=administrative][admin_level=2][!maritime]    { width: .5; }

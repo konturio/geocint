@@ -12,7 +12,7 @@ line|z8-[boundary=administrative][admin_level=8][!maritime]    { width: .5; }
 
 node|z1-[place=ocean]     { text: name:en; font-size: 15; text-transform: uppercase; font-family: "Open Sans Light Italic" }
 node|z4-[place=sea], area|z4-[place=sea]      {text: name:en; font-size: 14; text-transform: uppercase; font-family: "Open Sans Light Italic" }
-node|z5-[natural=bay], node|z5-[natural=strait]    {text: name:en; font-size:13; text-transform: uppercase; font-family: "Open Sans Light Italic";  z-index: 1 }
+node|z5-[natural=bay], node|z5-[natural=strait]    {text: name:en; text-padding: 100; font-size:13; text-transform: uppercase; font-family: "Open Sans Light Italic";  z-index: 1 }
 node|z6-[water=lake], node|z7-[water=reservoir] { text: name:en; font-size:12; text-transform: uppercase; font-family: "Open Sans Light Italic" }
 node|z7-[waterway=river] {text: name:en; font-size:11; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line}
 node|z8-[waterway=canal] {text: name:en; font-size:11; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line }

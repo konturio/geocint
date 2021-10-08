@@ -159,6 +159,7 @@ local generic_keys = {
 
 -- The following keys will be deleted
 local delete_keys = {
+    -- "mapper" keys
     'attribution',
     'comment',
     'created_by',
@@ -173,6 +174,124 @@ local delete_keys = {
     'way',
     'way_area',
     'z_order',
+
+    -- "import" keys
+
+    -- Corine Land Cover (CLC) (Europe)
+    'CLC:*',
+
+    -- Geobase (CA)
+    'geobase:*',
+    -- CanVec (CA)
+    'canvec:*',
+
+    -- osak (DK)
+    'osak:*',
+    -- kms (DK)
+    'kms:*',
+
+    -- ngbe (ES)
+    -- See also note:es and source:file above
+    'ngbe:*',
+
+    -- Friuli Venezia Giulia (IT)
+    'it:fvg:*',
+
+    -- KSJ2 (JA)
+    -- See also note:ja and source_ref above
+    'KSJ2:*',
+    -- Yahoo/ALPS (JA)
+    'yh:*',
+
+    -- LINZ (NZ)
+    'LINZ2OSM:*',
+    'linz2osm:*',
+    'LINZ:*',
+    'ref:linz:*',
+
+    -- WroclawGIS (PL)
+    'WroclawGIS:*',
+    -- Naptan (UK)
+    'naptan:*',
+
+    -- TIGER (US)
+    'tiger:*',
+    -- GNIS (US)
+    'gnis:*',
+    -- National Hydrography Dataset (US)
+    'NHD:*',
+    'nhd:*',
+    -- mvdgis (Montevideo, UY)
+    'mvdgis:*',
+
+    -- EUROSHA (Various countries)
+    'project:eurosha_2012',
+
+    -- UrbIS (Brussels, BE)
+    'ref:UrbIS',
+
+    -- NHN (CA)
+    'accuracy:meters',
+    'sub_sea:type',
+    'waterway:type',
+    -- StatsCan (CA)
+    'statscan:rbuid',
+
+    -- RUIAN (CZ)
+    'ref:ruian:addr',
+    'ref:ruian',
+    'building:ruian:type',
+    -- DIBAVOD (CZ)
+    'dibavod:id',
+    -- UIR-ADR (CZ)
+    'uir_adr:ADRESA_KOD',
+
+    -- GST (DK)
+    'gst:feat_id',
+
+    -- Maa-amet (EE)
+    'maaamet:ETAK',
+    -- FANTOIR (FR)
+    'ref:FR:FANTOIR',
+
+    -- 3dshapes (NL)
+    '3dshapes:ggmodelk',
+    -- AND (NL)
+    'AND_nosr_r',
+
+    -- OPPDATERIN (NO)
+    'OPPDATERIN',
+    -- Various imports (PL)
+    'addr:city:simc',
+    'addr:street:sym_ul',
+    'building:usage:pl',
+    'building:use:pl',
+    -- TERYT (PL)
+    'teryt:simc',
+
+    -- RABA (SK)
+    'raba:id',
+    -- DCGIS (Washington DC, US)
+    'dcgis:gis_id',
+    -- Building Identification Number (New York, US)
+    'nycdoitt:bin',
+    -- Chicago Building Inport (US)
+    'chicago:building_id',
+    -- Louisville, Kentucky/Building Outlines Import (US)
+    'lojic:bgnum',
+    -- MassGIS (Massachusetts, US)
+    'massgis:way_id',
+    -- Los Angeles County building ID (US)
+    'lacounty:*',
+    -- Address import from Bundesamt für Eich- und Vermessungswesen (AT)
+    'at_bev:addr_date',
+
+    -- misc
+    'import',
+    'import_uuid',
+    'OBJTYPE',
+    'SK53_bulk:load',
+    'mml:class'
 }
 
 local point_columns = {
@@ -485,6 +604,13 @@ function osm2pgsql.process_node(object)
 end
 
 function osm2pgsql.process_way(object)
+    -- administrative boundaries are processed on stage 2
+    -- if boundary is not included in any relation it will not be inserted in database
+    if osm2pgsql.stage == 1 and object.tags.boundary == 'administrative' then
+        return
+    end
+
+    -- stage 2 processing of administrative boundaries
     if w2b[object.id] then
         local way_admin_level
         local boundary_admin_level

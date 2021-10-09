@@ -3,7 +3,7 @@ drop table if exists osm_admin_boundaries_in;
 create table osm_admin_boundaries_in as
 select
        osm_id,
-       name,
+       coalesce(tags ->> 'name:en', tags ->> 'int_name', name) as "name",   -- We want english names first in the reports
        admin_level::smallint,
        (tags ->> 'population')::bigint population,
        geom

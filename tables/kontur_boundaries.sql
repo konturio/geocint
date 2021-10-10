@@ -32,7 +32,7 @@ select
         b.osm_type,
         b.boundary,
         b.admin_level,
-        b.name,
+        coalesce(b.name, b.tags ->> 'int_name', b.tags ->> 'name:en') as "name", -- boundary name with graceful fallback
         b.tags,
         p.population,
         b.geom

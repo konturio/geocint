@@ -1,13 +1,13 @@
--- Compare GADM and OpenstreetMap boundaries
+-- Compare GADM and OpenStreetMap boundaries
 -- No table creation, because it will be written directly to html report
 with gadm_in as (
-        -- Join GADM with itself to get parents for every boudary
+        -- Join GADM with itself to get parents for every boundary
         -- Join kontur_boundaries to get corresponding osm features ids
         select
                 g.id,
                 k.osm_id,
                 k.admin_level::int,
-                k.name osm_name,
+                coalesce(k.tags ->> 'name:en', k.tags ->> 'int_name', k.name) as osm_name,   -- We want english names first in the reports
                 g.name gadm_name,
                 case
                         when g.gadm_level = 0 then g.gid_0

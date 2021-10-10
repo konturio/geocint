@@ -1647,11 +1647,39 @@ db/table/osm2pgsql_new: data/planet-latest-updated.osm.pbf basemap/osm2pgsql_sty
 	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/planet-latest-updated.osm.pbf
 	touch $@
 
-db/table/osm2pgsql: db/table/osm2pgsql_new | db/table ## Replace previous previous osm2pgsql import with the new one
+db/index/planet_osm_polygon_new_way_area_idx: ## way_area > pixel_size_at_zoom ** 2
+	psql -c "create index planet_osm_polygon_new_way_area_idx on planet_osm_polygon_new using btree(way_area);"
+
+db/index/planet_osm_polygon_new_natural_idx: ## [natural=water]
+	psql -c "create index planet_osm_polygon_new_natural_idx on planet_osm_polygon_new using btree(\"natural\");"
+
+db/index/planet_osm_polygon_new_admin_level_idx: ## line|z1-[boundary=administrative][admin_level=2][!maritime]
+	psql -c "create index planet_osm_polygon_new_admin_level_idx on planet_osm_polygon_new using btree(\"admin_level\");"
+
+db/index/planet_osm_line_new_admin_level_idx: ## line|z1-[boundary=administrative][admin_level=2][!maritime]
+	psql -c "create index planet_osm_line_new_admin_level_idx on planet_osm_line_new using btree(\"admin_level\");"
+
+db/index/planet_osm_line_new_highway_idx: ## line|z6-[highway=trunk], line|z7-[highway=motorway]
+	psql -c "create index planet_osm_line_new_highway_idx on planet_osm_line_new using btree(\"highway\");"
+
+db/index/planet_osm_point_new_place_idx: ## node|z1-[place=ocean], node|z1-7[place=country], node|z3-6[place=state], ...
+	psql -c "create index planet_osm_point_new_place_idx on planet_osm_line_new using btree(\"place\");"
+
+db/index/planet_osm_point_new_capital_idx: ## node|z3-[capital=yes]
+	psql -c "create index planet_osm_point_new_capital_idx on planet_osm_line_new using btree(\"capital\");"
+
+db/table/osm2pgsql: db/table/osm2pgsql_new db/index/planet_osm_polygon_new_way_area_idx db/index/planet_osm_polygon_new_natural_idx db/index/planet_osm_polygon_new_admin_level_idx db/index/planet_osm_line_new_admin_level_idx db/index/planet_osm_line_new_highway_idx db/index/planet_osm_point_new_place_idx db/index/planet_osm_point_new_capital_idx | db/table ## Replace previous previous osm2pgsql import with the new one
 	psql -1 -c "drop table if exists planet_osm_polygon; alter table planet_osm_new_polygon rename to planet_osm_polygon; drop table if exists planet_osm_line; alter table planet_osm_new_line rename to planet_osm_line; drop table if exists planet_osm_point; alter table planet_osm_new_point rename to planet_osm_point;"
 	psql -c "alter index if exists planet_osm_new_polygon_way_idx rename to planet_osm_polygon_way_idx;"
 	psql -c "alter index if exists planet_osm_new_line_way_idx rename to planet_osm_line_way_idx;"
 	psql -c "alter index if exists planet_osm_new_point_way_idx rename to planet_osm_point_way_idx;"
+	psql -c "alter index if exists planet_osm_polygon_new_way_area_idx rename to planet_osm_polygon_way_area_idx;"
+	psql -c "alter index if exists planet_osm_polygon_new_natural_idx rename to planet_osm_polygon_natural_idx;"
+	psql -c "alter index if exists planet_osm_polygon_new_admin_level_idx rename to planet_osm_polygon_admin_level_idx;"
+	psql -c "alter index if exists planet_osm_line_new_admin_level_idx rename to planet_osm_line_admin_level_idx;"
+	psql -c "alter index if exists planet_osm_line_new_highway_idx rename to planet_osm_line_highway_idx;"
+	psql -c "alter index if exists planet_osm_point_new_place_idx rename to planet_osm_point_place_idx;"
+	psql -c "alter index if exists planet_osm_point_new_capital_idx rename to planet_osm_point_capital_idx;"
 	touch $@
 
 kothic/src/komap.py: ## Clone Kothic from GIT

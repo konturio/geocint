@@ -1,10 +1,10 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.html deploy/geocint/osm_gadm_comparison.html reports/population_check_osm.csv db/table/iso_codes reports/population_check_world data/out/abu_dhabi_export deploy/geocint/docker_osrm_backend ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.html deploy/geocint/osm_gadm_comparison.html deploy/geocint/population_check_osm.html db/table/iso_codes db/table/un_population data/out/abu_dhabi_export deploy/geocint/docker_osrm_backend ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-prod: basemap_prod deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: basemap_prod deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries reports/population_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Pipeline finished. Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -601,27 +601,31 @@ db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check ho
 	psql -f tables/population_check_osm.sql
 	touch $@
 
-reports/population_check_osm.csv: db/table/population_check_osm | reports ## Export population_check_osm table to .csv and send Top 5 most inconsistent results to Kontur Slack (#gis channel).
-	psql -q -X -c 'copy (select * from population_check_osm order by diff_pop desc) to stdout with csv header;' > $@
-	cat $@ | tail -n +2 | head -5 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $$1 "|" ($$3 != "" ? $$3 : $$2) "> - ", $$7}' | { echo "Top 5 boundaries with population different from OSM"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
+reports/population_check_osm.html: db/table/population_check_osm | reports ## Export population_check_osm table to .html and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
+	{ echo '<meta charset="utf-8"><div style="display: none;"><iframe name="josm"></iframe></div>'; psql -HXP footer=off -c 'select '\''<a href="https://www.openstreetmap.org/relation/'\'' || osm_id || '\''" target="_blank">'\'' || osm_id || '\''</a>'\'' "OSM ID", '\''<a href="http://localhost:8111/load_object?new_layer=true&objects=r'\'' || osm_id || '\''&relation_members=true" target="josm">'\'' || coalesce(name_en, name) || '\''</a>'\'' "Name", coalesce(pop_date, '\''-'\'') "OSM population date", osm_pop "OSM population", kontur_pop "Kontur population", diff_pop "Population difference", round(diff_log::numeric, 2) "Logarithmic difference of population" from population_check_osm where diff_log > 1;' | python3 -c "import sys, html; print(html.unescape(sys.stdin.read()))"; } > $@
+	psql -q -X -t -f scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-data/iso_codes.csv: | data ## Download ISO codes for countries from wikidata.
-	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
-
-db/table/iso_codes: data/iso_codes.csv | db/table ## Download ISO codes for countries from wikidata.
-	psql -c 'drop table if exists iso_codes;'
-	psql -c 'create table iso_codes(iso_num integer, iso2 char(2), iso3 char(3), name text);'
-	cat data/iso_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy iso_codes from stdin with csv header;"
+deploy/geocint/population_check_osm.html: reports/population_check_osm.html | deploy/geocint  ## Copy osm population check report to public_html folder to make it available online.
+	cp reports/population_check_osm.html ~/public_html/population_check_osm.html
 	touch $@
 
-data/un_population.csv: | data ## Download United Nations population division dataset.
+data/in/iso_codes.csv: | data/in ## Download ISO codes for countries from wikidata.
+	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
+
+db/table/iso_codes: data/in/iso_codes.csv | db/table ## Download ISO codes for countries from wikidata.
+	psql -c 'drop table if exists iso_codes;'
+	psql -c 'create table iso_codes(iso_num integer, iso2 char(2), iso3 char(3), name text);'
+	cat data/in/iso_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy iso_codes from stdin with csv header;"
+	touch $@
+
+data/in/un_population.csv: | data/in ## Download United Nations population division dataset.
 	wget 'https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv' -O $@
 
-db/table/un_population: data/un_population.csv | db/table ## UN (United Nations) population division dataset imported into database.
+db/table/un_population: data/in/un_population.csv | db/table ## UN (United Nations) population division dataset imported into database.
 	psql -c 'drop table if exists un_population_text;'
 	psql -c 'create table un_population_text(iso text, name text, variant_id text, variant text, time text, mid_period text, pop_male text, pop_female text, pop_total text, pop_density text);'
 	# Import raw UN population dataset into database
-	cat data/un_population.csv | psql -c "copy un_population_text from stdin with csv header delimiter ',';"
+	cat data/in/un_population.csv | psql -c "copy un_population_text from stdin with csv header delimiter ',';"
 	psql -c 'drop table if exists un_population;'
 	# Transform raw UN population dataset into database table.
 	psql -c 'create table un_population as select iso::integer, name, variant_id::integer, variant, time::integer "year", parse_float(mid_period) "mid_period", parse_float(pop_male) * 1000 "pop_male", parse_float(pop_female) * 1000 "pop_female", parse_float(pop_total) * 1000 "pop_total", parse_float(pop_density) * 1000 "pop_density" from un_population_text;'
@@ -636,9 +640,16 @@ db/table/un_population: data/un_population.csv | db/table ## UN (United Nations)
 #	psql -c 'copy (select * from population_check_un order by diff_pop) to stdout with csv header;' > $@
 #	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-reports/population_check_world: db/table/kontur_population_h3 db/table/un_population | reports ## Compare total population from United Nations population division dataset and final Kontur population dataset and send аbsolute difference to Kontur Slack (#gis channel).
-	psql -q -X -t -c "select abs(sum(population) - (select pop_total from un_population where variant_id = 2 and year = date_part('year', current_date) and name = 'World')) from kontur_population_h3 where resolution = 8;" > $@
-	head -1 $@ | xargs echo "Planet population difference" | python3 scripts/slack_message.py geocint "Nightly build" cat
+reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_boundaries | reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
+	psql -q -X -t -c 'select sum(population) from kontur_population_v2_h3 where resolution = 0' > $@__KONTUR_POP_V2
+	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V3
+	if [ $$(cat $@__KONTUR_POP_V3) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py geocint "Nightly build" x && exit 1; fi
+	if [ $$(cat $@__KONTUR_POP_V3) -lt $$(cat $@__KONTUR_POP_V2) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	rm $@__KONTUR_POP_V2 $@__KONTUR_POP_V3
+	touch $@
+
+reports/population_check: reports/population_check_osm.html reports/population_check_world | reports ## Common target of population checks.
+	touch $@
 
 data/in/wb/gdp/wb_gdp.zip: | data/in/wb/gdp ## Download GDP (Gross domestic product) dataset from World Bank.
 	wget http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=xml -O $@
@@ -1625,7 +1636,7 @@ data/mid/daylight_coastlines/land_polygons.shp: data/in/daylight_coastlines.tgz 
 	tar zxvf data/in/daylight_coastlines.tgz -C data/mid/daylight_coastlines
 	touch $@
 
-db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | db/table ## Import land vector polygons from Daylight Coastlines in database 
+db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | db/table ## Import land vector polygons from Daylight Coastlines in database
 	psql -c "drop table if exists land_polygons_vector;"
 	shp2pgsql -I -s 4326 data/mid/daylight_coastlines/land_polygons.shp land_polygons_vector | psql -q
 	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"

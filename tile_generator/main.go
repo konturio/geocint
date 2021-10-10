@@ -68,6 +68,15 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 		return nil
 	}
 
+	if zxy.z <= 4 {
+		wg.Add(4)
+		
+		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
+		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
+		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
+	}
+
 	sem <- struct{}{}
 
 	dir := path.Join(*outputPath, fmt.Sprintf("%d/%d", zxy.z, zxy.x))
@@ -98,12 +107,16 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 
 	// Write the body to file
 	bytes, err := io.Copy(out, bytes.NewReader(mvtTile))
+	if err != nil {
+		log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
+	}
 	out.Close()
+
 	<-sem
 
 	log.Printf("z: %d x: %d y: %d bytes: %d", zxy.z, zxy.x, zxy.y, bytes)
 
-	if bytes != 0 || zxy.z < 10 {
+	if zxy.z > 4 && (bytes != 0 || zxy.z < 10) {
 		wg.Add(4)
 		
 		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)

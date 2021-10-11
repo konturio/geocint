@@ -5,17 +5,17 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"io"
 	"io/ioutil"
 	"log"
 	"math"
 	"os"
-	"sync"
-	"time"
 	"path"
 	"strconv"
-	"github.com/jackc/pgx/v4"
-	"github.com/jackc/pgx/v4/pgxpool"
+	"sync"
+	"time"
 )
 
 // example usage: tile-generator --parallel-limit 10 --min-zoom 7 --max-zoom 7 --sql 'select basemap(:z, :x, :y)' --db-config 'host=localhost dbname=gis'
@@ -46,11 +46,11 @@ func dbConnect(tileSql string) (*pgxpool.Pool, error) {
 		config.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
 			_, err := c.Exec(ctx, "set jit = off")
 			if err != nil {
-					return err
+				return err
 			}
 			_, err = c.Exec(ctx, "set max_parallel_workers_per_gather = 0")
 			if err != nil {
-					return err
+				return err
 			}
 			_, err = c.Prepare(ctx, "query_tile", tileSql)
 			return err
@@ -83,7 +83,7 @@ func BuildTile(db *pgxpool.Pool, zxy TileZxy, wg *sync.WaitGroup, sem chan struc
 
 	if zxy.z <= 4 {
 		wg.Add(4)
-		
+
 		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
 		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
 		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
@@ -127,7 +127,7 @@ func BuildTile(db *pgxpool.Pool, zxy TileZxy, wg *sync.WaitGroup, sem chan struc
 
 	if zxy.z > 4 && (bytes != 0 || zxy.z < 10) {
 		wg.Add(4)
-		
+
 		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
 		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
 		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)

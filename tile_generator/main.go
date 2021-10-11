@@ -44,9 +44,15 @@ func dbConnect(tileSql string) (*pgxpool.Pool, error) {
 		config.MaxConns = int32(*maxParallel)
 
 		config.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
-			c.Exec(ctx, "set jit = off")
-			c.Exec(ctx, "set max_parallel_workers_per_gather = 0")
-			_, err := c.Prepare(ctx, "query_tile", tileSql)
+			_, err := c.Exec(ctx, "set jit = off")
+			if err != nil {
+					return err
+			}
+			_, err = c.Exec(ctx, "set max_parallel_workers_per_gather = 0")
+			if err != nil {
+					return err
+			}
+			_, err = c.Prepare(ctx, "query_tile", tileSql)
 			return err
 		}
 

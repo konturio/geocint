@@ -1,1 +1,0 @@
-select basemap(:z, :x, :y);

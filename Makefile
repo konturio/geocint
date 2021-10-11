@@ -1688,17 +1688,16 @@ kothic/src/komap.py: ## Clone Kothic from GIT
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
 	cd tile_generator; go get; go build -o tile_generator
 
-db/function/basemap: kothic/src/komap.py | db/function ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
+scripts/basemap.sql: kothic/src/komap.py | db/function ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
 	python2 kothic/src/komap.py \
 		--renderer=mvt-sql \
 		--stylesheet basemap/styles/ninja.mapcss \
 		--osm2pgsql-style basemap/osm2pgsql_styles/default.style \
 		--locale en,ru,be,pl,uk \
-		| psql
+		> scripts/basemap.sql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator db/function/basemap db/table/osm2pgsql db/table/water_polygons_vector db/table/land_polygons_vector | data/tiles ## Generating vector tiles.
-	psql -c "update basemap_mvts set dirty = true;"
+data/tiles/basemap_all: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql db/table/water_polygons_vector db/table/land_polygons_vector | data/tiles ## Generating vector tiles.
 	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 9 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 

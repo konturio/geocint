@@ -13,8 +13,8 @@ import (
 	"sync"
 	"time"
 	"path"
-	"strings"
 	"strconv"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -28,7 +28,7 @@ var outputPath = flag.String("output-path", ".", "output path")
 
 var globalDb *pgxpool.Pool = nil
 
-func dbConnect() (*pgxpool.Pool, error) {
+func dbConnect(tileSql string) (*pgxpool.Pool, error) {
 	if globalDb == nil {
 		var err error
 		var config *pgxpool.Config
@@ -42,6 +42,11 @@ func dbConnect() (*pgxpool.Pool, error) {
 		config.MaxConnLifetime = dbPoolMaxLifeTime
 
 		config.MaxConns = int32(*maxParallel)
+
+		config.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
+			_, err := c.Prepare(ctx, "query_tile", tileSql)
+			return err
+		}
 
 		globalDb, err = pgxpool.ConnectConfig(context.Background(), config)
 		if err != nil {
@@ -61,7 +66,7 @@ type TileZxy struct {
 	z, x, y int
 }
 
-func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
+func BuildTile(db *pgxpool.Pool, zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
 	defer wg.Done()
 
 	if zxy.z > *maxZoom {
@@ -71,10 +76,10 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 	if zxy.z <= 4 {
 		wg.Add(4)
 		
-		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
-		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
-		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
-		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
 	}
 
 	sem <- struct{}{}
@@ -83,11 +88,7 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 	filePath := path.Join(*outputPath, fmt.Sprintf("%d/%d/%d.mvt", zxy.z, zxy.x, zxy.y))
 
 	// Get the data
-	sql := sqlTemplate
-	sql = strings.ReplaceAll(sql, ":z", strconv.Itoa(zxy.z))
-	sql = strings.ReplaceAll(sql, ":x", strconv.Itoa(zxy.x))
-	sql = strings.ReplaceAll(sql, ":y", strconv.Itoa(zxy.y))
-	row := db.QueryRow(context.Background(), sql)
+	row := db.QueryRow(context.Background(), "query_tile", strconv.Itoa(zxy.z), strconv.Itoa(zxy.x), strconv.Itoa(zxy.y))
 	var mvtTile []byte
 	err := row.Scan(&mvtTile)
 	if err != nil {
@@ -119,10 +120,10 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 	if zxy.z > 4 && (bytes != 0 || zxy.z < 10) {
 		wg.Add(4)
 		
-		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
-		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
-		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
-		go BuildTile(db, sqlTemplate, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
+		go BuildTile(db, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
 	}
 
 	return err
@@ -131,7 +132,7 @@ func BuildTile(db *pgxpool.Pool, sqlTemplate string, zxy TileZxy, wg *sync.WaitG
 func main() {
 	flag.Parse()
 
-	sqlTemplate, err := ioutil.ReadFile(*sqlQueryFilepath)
+	tileSql, err := ioutil.ReadFile(*sqlQueryFilepath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -140,7 +141,7 @@ func main() {
 
 	sem := make(chan struct{}, *maxParallel)
 
-	db, err := dbConnect()
+	db, err := dbConnect(string(tileSql))
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -150,7 +151,7 @@ func main() {
 	for x := 0; x < int(math.Pow(float64(2), float64(z))); x++ {
 		for y := 0; y < int(math.Pow(float64(2), float64(z))); y++ {
 			wg.Add(1)
-			go BuildTile(db, string(sqlTemplate), TileZxy{z, x, y}, &wg, sem)
+			go BuildTile(db, TileZxy{z, x, y}, &wg, sem)
 		}
 	}
 

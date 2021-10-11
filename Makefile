@@ -1698,7 +1698,6 @@ scripts/basemap.sql: kothic/src/komap.py | db/function ## Generate SQL functions
 	touch $@
 
 data/tiles/basemap_all: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql db/table/water_polygons_vector db/table/land_polygons_vector | data/tiles ## Generating vector tiles.
-	psql -c "update basemap_mvts set dirty = true;"
 	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 9 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 

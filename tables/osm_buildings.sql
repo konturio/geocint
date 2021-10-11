@@ -2,6 +2,7 @@ drop table if exists osm_buildings;
 create table osm_buildings as (
     select osm_type,
            osm_id,
+           geog::geometry as geom,
            tags ->> 'building' as building,
            tags ->> 'addr:street' as street,
            tags ->> 'addr:housenumber' as hno,
@@ -25,11 +26,10 @@ create table osm_buildings as (
                             then 'industrial'
                     end) as use,
            tags ->> 'name' as name,
-           tags,
-           geog::geometry as geom
+           tags
     from osm o
     where tags ? 'building'
-      and not (tags ->> 'building') = 'no'
+      and not tags @> '{"building":"no"}'
     order by _ST_SortableHash(geog::geometry)
 );
 

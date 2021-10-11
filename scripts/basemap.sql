@@ -1,1 +1,1 @@
-select basemap(:z, :x, :y);
+select basemap_:z(:x, :y);

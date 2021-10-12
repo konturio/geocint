@@ -187,7 +187,7 @@ area|z10-[place=islet]
 {fill-position: background;	fill-opacity: 1;}
 
 area|z0-[natural=coastline]
-{fill-color: @water;}
+{fill-color: @background;}
 
 area|z0-[natural=land],
 area|z10-[place=islet]

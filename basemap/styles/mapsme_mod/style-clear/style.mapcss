@@ -7,11 +7,12 @@
 @import("../include/Roads_label.mapcss");
 @import("../include/Icons.mapcss");
 
+* { font-family: "Noto Sans Regular"; }
 
 canvas
 {
-  background-color: @background;
-  fill-color: @water;
+  background-color: @water;
+  fill-color: @background;
   default-lines: false;
   default-points: false;
 }

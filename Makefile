@@ -1666,7 +1666,7 @@ db/index/planet_osm_new_point_place_idx: db/table/osm2pgsql_new | db/index ## em
 	psql -c "create index planet_osm_new_point_place_idx on planet_osm_new_line using btree(\"place\");"
 
 db/index/planet_osm_new_point_capital_idx: db/table/osm2pgsql_new | db/index ## empty
-	psql -c "create index planet_osm_new_point_capital_idx on planet_osm_new_line using btree(\"capital\");"
+	psql -c "create index planet_osm_new_point_capital_idx on planet_osm_new_point using btree(\"capital\");"
 
 db/table/osm2pgsql: db/index/planet_osm_new_polygon_way_area_idx db/index/planet_osm_new_polygon_natural_idx db/index/planet_osm_new_polygon_admin_level_idx db/index/planet_osm_new_line_admin_level_idx db/index/planet_osm_new_line_highway_idx db/index/planet_osm_new_point_place_idx db/index/planet_osm_new_point_capital_idx | db/table ## Replace previous previous osm2pgsql import with the new one
 	psql -1 -c "drop table if exists planet_osm_polygon; alter table planet_osm_new_polygon rename to planet_osm_polygon; drop table if exists planet_osm_line; alter table planet_osm_new_line rename to planet_osm_line; drop table if exists planet_osm_point; alter table planet_osm_new_point rename to planet_osm_point;"

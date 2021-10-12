@@ -15,7 +15,7 @@ style["layers"].append({
     "id": "osm-tiles",
     "type": "raster",
     "source": "osm-raster-tiles",
-    "minzoom": 9
+    "minzoom": int(sys.argv[1])
 })
 
 print(json.dumps(style))

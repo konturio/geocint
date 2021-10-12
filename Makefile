@@ -1753,7 +1753,7 @@ data/basemap/metadata/zigzag/style_ninja.json: kothic/src/komap.py | data/basema
 		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
 		--locale en \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
+	cat $@ | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
 
 data/basemap/metadata/zigzag/style_day.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Day style JSON for Zigzag server.
 	python2 kothic/src/komap.py \
@@ -1794,7 +1794,7 @@ data/basemap/metadata/sonic/style_ninja.json: kothic/src/komap.py | data/basemap
 		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
 		--locale en \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
+	cat $@ | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
 
 data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Day style JSON for Sonic server.
 	python2 kothic/src/komap.py \
@@ -1835,7 +1835,7 @@ data/basemap/metadata/lima/style_ninja.json: kothic/src/komap.py | data/basemap/
 		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
 		--locale en \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
+	cat $@ | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
 
 data/basemap/metadata/lima/style_day.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Day style JSON for Lima server.
 	python2 kothic/src/komap.py \
@@ -1876,7 +1876,7 @@ data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss koth
 		--sprite-url https://geocint.kontur.io/basemap/sprite \
 		--locale en \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_display_osm_from_z9.py | sponge $@
+	cat $@ | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
 
 data/basemap/metadata/geocint/style_day.json: kothic/src/komap.py | data/basemap/metadata/geocint ## Generating of Day style JSON for Geocint server.
 	python2 kothic/src/komap.py \

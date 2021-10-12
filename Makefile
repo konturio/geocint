@@ -1647,25 +1647,25 @@ db/table/osm2pgsql_new: data/planet-latest-updated.osm.pbf basemap/osm2pgsql_sty
 	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/planet-latest-updated.osm.pbf
 	touch $@
 
-db/index/planet_osm_new_polygon_way_area_idx: db/table/osm2pgsql_new | db/index ## way_area > pixel_size_at_zoom ** 2
+db/index/planet_osm_new_polygon_way_area_idx: db/table/osm2pgsql_new | db/index ## empty
 	psql -c "create index planet_osm_new_polygon_way_area_idx on planet_osm_new_polygon using btree(way_area);"
 
-db/index/planet_osm_new_polygon_natural_idx: db/table/osm2pgsql_new | db/index ## [natural=water]
+db/index/planet_osm_new_polygon_natural_idx: db/table/osm2pgsql_new | db/index ## empty
 	psql -c "create index planet_osm_new_polygon_natural_idx on planet_osm_new_polygon using btree(\"natural\");"
 
-db/index/planet_osm_new_polygon_admin_level_idx: db/table/osm2pgsql_new | db/index ## line|z1-[boundary=administrative][admin_level=2][!maritime]
+db/index/planet_osm_new_polygon_admin_level_idx: db/table/osm2pgsql_new | db/index ## empty
 	psql -c "create index planet_osm_new_polygon_admin_level_idx on planet_osm_new_polygon using btree(\"admin_level\");"
 
-db/index/planet_osm_new_line_admin_level_idx: db/table/osm2pgsql_new | db/index ## line|z1-[boundary=administrative][admin_level=2][!maritime]
+db/index/planet_osm_new_line_admin_level_idx: db/table/osm2pgsql_new | db/index ## empty
 	psql -c "create index planet_osm_new_line_admin_level_idx on planet_osm_new_line using btree(\"admin_level\");"
 
-db/index/planet_osm_new_line_highway_idx: db/table/osm2pgsql_new | db/index ## line|z6-[highway=trunk], line|z7-[highway=motorway]
+db/index/planet_osm_new_line_highway_idx: db/table/osm2pgsql_new | db/index ## empty
 	psql -c "create index planet_osm_new_line_highway_idx on planet_osm_new_line using btree(\"highway\");"
 
-db/index/planet_osm_new_point_place_idx: db/table/osm2pgsql_new | db/index ## node|z1-[place=ocean], node|z1-7[place=country], node|z3-6[place=state], ...
+db/index/planet_osm_new_point_place_idx: db/table/osm2pgsql_new | db/index ## empty
 	psql -c "create index planet_osm_new_point_place_idx on planet_osm_new_line using btree(\"place\");"
 
-db/index/planet_osm_new_point_capital_idx: db/table/osm2pgsql_new | db/index ## node|z3-[capital=yes]
+db/index/planet_osm_new_point_capital_idx: db/table/osm2pgsql_new | db/index ## empty
 	psql -c "create index planet_osm_new_point_capital_idx on planet_osm_new_line using btree(\"capital\");"
 
 db/table/osm2pgsql: db/index/planet_osm_new_polygon_way_area_idx db/index/planet_osm_new_polygon_natural_idx db/index/planet_osm_new_polygon_admin_level_idx db/index/planet_osm_new_line_admin_level_idx db/index/planet_osm_new_line_highway_idx db/index/planet_osm_new_point_place_idx db/index/planet_osm_new_point_capital_idx | db/table ## Replace previous previous osm2pgsql import with the new one

@@ -235,3 +235,17 @@ set
 where
       numerator in ('min_ts', 'max_ts', 'avgmax_ts')
   and denominator = 'one';
+
+update bivariate_axis
+set
+    label = 'Number of days per year'
+where
+      numerator = 'days_maxtemp_over_32c_1c'
+  and denominator = 'one';
+
+update bivariate_axis
+set
+    label = 'Number of nights per year'
+where
+      numerator = 'days_mintemp_above_25c_1c'
+  and denominator = 'one';

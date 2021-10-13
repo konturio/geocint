@@ -1309,7 +1309,7 @@ db/table/pf_days_maxtemp_in: data/in/probable_futures/data_sync | db/table ## Co
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20104.gremo.geojson -nln pf_days_maxtemp_in -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/pf_night_maxtemp_in: data/in/probable_futures/data_sync | db/table ## Count nights above 20C (68F).
+db/table/pf_night_maxtemp_in: data/in/probable_futures/data_sync | db/table ## Count nights above 25C (68F).
 	psql -c 'drop table if exists pf_nights_maxtemp_in;'
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20204.gremo.geojson -nln pf_nights_maxtemp_in -lco GEOMETRY_NAME=geom
 	touch $@
@@ -1388,7 +1388,7 @@ db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3 | 
 	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
 
-db/table/bivariate_overlays: db/table/osm_meta | db/table ## Several default idicator presets for Bivariate manager.
+db/table/bivariate_overlays: db/table/osm_meta db/table/tile_logs | db/table ## Several default indicator presets for Bivariate manager.
 	psql -f tables/bivariate_overlays.sql
 	touch $@
 

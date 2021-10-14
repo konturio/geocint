@@ -1705,7 +1705,7 @@ scripts/basemap.sql: kothic/src/komap.py | db/function ## Generate SQL functions
 	touch $@
 
 data/tiles/basemap_all: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql db/table/water_polygons_vector db/table/land_polygons_vector | data/tiles ## Generating vector tiles.
-	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 9 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
+	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 12 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 
 data/basemap: | data ## Directory for MAPCSS styles, icon sprites and font glyphs used with vector tiles.
@@ -1877,13 +1877,13 @@ data/basemap/metadata/geocint/style_ninja.json: basemap/styles/ninja.mapcss koth
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/ninja.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 12 \
 		--tiles-url https://geocint.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://geocint.kontur.io/basemap/sprite \
 		--locale en \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
+	cat $@ | python basemap/scripts/patch_style_fall_into_osm.py 13 | sponge $@
 
 data/basemap/metadata/geocint/style_day.json: kothic/src/komap.py | data/basemap/metadata/geocint ## Generating of Day style JSON for Geocint server.
 	python2 kothic/src/komap.py \

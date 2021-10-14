@@ -1648,31 +1648,31 @@ db/table/osm2pgsql_new: data/planet-latest-updated.osm.pbf basemap/osm2pgsql_sty
 	touch $@
 
 db/index/planet_osm_new_polygon_way_area_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_polygon_way_area_idx on planet_osm_new_polygon using btree(way_area);"
+	psql -c "create index planet_osm_new_polygon_way_area_idx on planet_osm_new_polygon using btree(way_area) tablespace evo4tb;"
 	touch $@
 
 db/index/planet_osm_new_polygon_natural_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_polygon_natural_idx on planet_osm_new_polygon using btree(\"natural\");"
+	psql -c "create index planet_osm_new_polygon_natural_idx on planet_osm_new_polygon using btree(\"natural\") tablespace evo4tb;"
 	touch $@
 
 db/index/planet_osm_new_polygon_admin_level_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_polygon_admin_level_idx on planet_osm_new_polygon using btree(\"admin_level\");"
+	psql -c "create index planet_osm_new_polygon_admin_level_idx on planet_osm_new_polygon using btree(\"admin_level\") tablespace evo4tb;"
 	touch $@
 
 db/index/planet_osm_new_line_admin_level_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_line_admin_level_idx on planet_osm_new_line using btree(\"admin_level\");"
+	psql -c "create index planet_osm_new_line_admin_level_idx on planet_osm_new_line using btree(\"admin_level\") tablespace evo4tb;"
 	touch $@
 
 db/index/planet_osm_new_line_highway_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_line_highway_idx on planet_osm_new_line using btree(\"highway\");"
+	psql -c "create index planet_osm_new_line_highway_idx on planet_osm_new_line using btree(\"highway\") tablespace evo4tb;"
 	touch $@
 
 db/index/planet_osm_new_point_place_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_point_place_idx on planet_osm_new_line using btree(\"place\");"
+	psql -c "create index planet_osm_new_point_place_idx on planet_osm_new_point using btree(\"place\") tablespace evo4tb;"
 	touch $@
 
 db/index/planet_osm_new_point_capital_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_point_capital_idx on planet_osm_new_point using btree(\"capital\");"
+	psql -c "create index planet_osm_new_point_capital_idx on planet_osm_new_point using btree(\"capital\") tablespace evo4tb;"
 	touch $@
 
 db/table/osm2pgsql: db/index/planet_osm_new_polygon_way_area_idx db/index/planet_osm_new_polygon_natural_idx db/index/planet_osm_new_polygon_admin_level_idx db/index/planet_osm_new_line_admin_level_idx db/index/planet_osm_new_line_highway_idx db/index/planet_osm_new_point_place_idx db/index/planet_osm_new_point_capital_idx | db/table ## Replace previous previous osm2pgsql import with the new one

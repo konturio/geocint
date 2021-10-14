@@ -471,21 +471,27 @@ tables.point = osm2pgsql.define_table{
     name = prefix .. '_point',
     ids = { type = 'node', id_column = 'osm_id' },
     columns = gen_columns(point_columns, hstore or hstore_all, nil, 'point'),
-    cluster = 'no'
+    cluster = 'no',
+    data_tablespace = 'evo4tb',
+    index_tablespace = 'evo4tb'
 }
 
 tables.line = osm2pgsql.define_table{
     name = prefix .. '_line',
     ids = { type = 'way', id_column = 'osm_id' },
     columns = gen_columns(non_point_columns, hstore or hstore_all, false, 'linestring'),
-    cluster = 'no'
+    cluster = 'no',
+    data_tablespace = 'evo4tb',
+    index_tablespace = 'evo4tb'
 }
 
 tables.polygon = osm2pgsql.define_table{
     name = prefix .. '_polygon',
     ids = { type = 'area', id_column = 'osm_id' },
     columns = gen_columns(non_point_columns, hstore or hstore_all, true, 'geometry'),
-    cluster = 'no'
+    cluster = 'no',
+    data_tablespace = 'evo4tb',
+    index_tablespace = 'evo4tb'
 }
 
 local w2b = {}

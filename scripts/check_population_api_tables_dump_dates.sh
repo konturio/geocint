@@ -9,7 +9,7 @@ echo "AWS stat_h3 dump mtime is ${DATE_AWS_STATH3}"
 DATE_LOCAL_STATH3=`stat data/out/population/stat_h3.sqld.gz | grep "Modify" | cut -d " " -f2,3 | cut -d "." -f1`
 echo "local stat_h3 dump mtime is ${DATE_LOCAL_STATH3}"
 
-if [[ "DATE_AWS_BV" < "DATE_LOCAL_BV" ]] || [[ "DATE_AWS_STATH3" < "DATE_LOCAL_STATH3" ]]; then
+if [[ "$DATE_AWS_BV" < "$DATE_LOCAL_BV" ]] || [[ "$DATE_AWS_STATH3" < "$DATE_LOCAL_STATH3" ]]; then
   exit 1
 else
   exit 0

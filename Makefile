@@ -1,6 +1,6 @@
 all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
 
-dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.html deploy/geocint/osm_gadm_comparison.html deploy/geocint/population_check_osm.html db/table/iso_codes db/table/un_population data/out/abu_dhabi_export deploy/geocint/docker_osrm_backend ## [FINAL] Builds all targets for development. Run on every branch.
+dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/population/population_api_tables.sqld.gz data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.csv deploy/geocint/osm_gadm_comparison.csv deploy/geocint/population_check_osm.csv db/table/iso_codes db/table/un_population data/out/abu_dhabi_export deploy/geocint/docker_osrm_backend ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -577,36 +577,38 @@ db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundari
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
-reports/osm_gadm_comparison.html: db/table/kontur_boundaries db/table/gadm_boundaries | reports ## Validate OSM boundaries that OSM has no less polygons than GADM and generate html report for OpenStreetMap users.
-	# Besides generating HTML table we also inject charset tag and clickable links into it using sed utility.
-	{ echo '<meta charset="utf-8">'; psql -HXP footer=off -f tables/osm_gadm_comparison.sql | sed -z 's/\(<td align=\"left\">\)\([0-9]\{4,\}\)\(<\/td>\)\(\n\s\{4\}<td align=\"left\">[0-9]\+<\/td>\n\s\{4\}<td align=\"left\">\)\([^<>]\+\)\(<\/td>\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3\4<a href=\"http\:\/\/localhost\:8111\/load_object\?new_layer=true\&objects=r\2\&relation_members=true\">\5<\/a>\6/g'; } > $@
-
-deploy/geocint/osm_gadm_comparison.html: reports/osm_gadm_comparison.html | deploy/geocint ## Copy OSM-GADM comparison report to public_html folder to make it available online.
-	cp reports/osm_gadm_comparison.html ~/public_html/osm_gadm_comparison.html
+db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundaries | db/table ## Validate OSM boundaries that OSM has no less polygons than GADM.
+	psql -f tables/osm_gadm_comparison.sql
 	touch $@
 
 db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
 	psql -f tables/osm_population_inconsistencies.sql
 	touch $@
 
-reports/osm_population_inconsistencies.html: db/table/osm_population_inconsistencies | reports ## Generate report for OpenStreetMap users about population inconsistencies (see also db/table/osm_population_inconsistencies target).
-	# Besides generating HTML table we also inject charset tag and clickable links into it using sed utility.
-	{ echo '<meta charset="utf-8">' ; psql -HXP footer=off -c 'select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id;' | sed -z 's/\(<td align=\"left\">\)\([0-9]\{4,\}\)\(<\/td>\)\(\n\s\{4\}<td align=\"left\">\)\([^<>]\+\)\(<\/td>\n\s\{4\}<td align=\"right\">\)/\1<a href=\"https\:\/\/www.openstreetmap.org\/relation\/\2\">\2<\/a>\3\4<a href=\"http\:\/\/localhost\:8111\/load_object\?new_layer=true\&objects=r\2\&relation_members=true\">\5<\/a>\6/g'; } > $@
-
-deploy/geocint/osm_population_inconsistencies.html: reports/osm_population_inconsistencies.html | deploy/geocint ## Copy osm population inconsistencies report to public_html folder to make it available online.
-	cp reports/osm_population_inconsistencies.html ~/public_html/osm_population_inconsistencies.html
-	touch $@
-
 db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
 	psql -f tables/population_check_osm.sql
 	touch $@
 
-reports/population_check_osm.html: db/table/population_check_osm | reports ## Export population_check_osm table to .html and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
-	{ echo '<meta charset="utf-8"><div style="display: none;"><iframe name="josm"></iframe></div>'; psql -HXP footer=off -c 'select '\''<a href="https://www.openstreetmap.org/relation/'\'' || osm_id || '\''" target="_blank">'\'' || osm_id || '\''</a>'\'' "OSM ID", '\''<a href="http://localhost:8111/load_object?new_layer=true&objects=r'\'' || osm_id || '\''&relation_members=true" target="josm">'\'' || coalesce(name_en, name) || '\''</a>'\'' "Name", coalesce(pop_date, '\''-'\'') "OSM population date", osm_pop "OSM population", kontur_pop "Kontur population", diff_pop "Population difference", round(diff_log::numeric, 2) "Logarithmic difference of population" from population_check_osm where diff_log > 1;' | python3 -c "import sys, html; print(html.unescape(sys.stdin.read()))"; } > $@
-	psql -q -X -t -f scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
+reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
+	psql -qXc 'copy (select * from osm_gadm_comparison order by "Admin level"::int, "GADM name") to stdout with (format csv, header true, delimiter ";");' > $@
 
-deploy/geocint/population_check_osm.html: reports/population_check_osm.html | deploy/geocint  ## Copy osm population check report to public_html folder to make it available online.
-	cp reports/population_check_osm.html ~/public_html/population_check_osm.html
+reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
+	psql -qXc 'copy (select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id;) to stdout with (format csv, header true, delimiter ";");' > $@
+
+reports/population_check_osm.csv: db/table/population_check_osm | reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
+	psql -qXc 'copy (select * from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
+
+deploy/geocint/osm_gadm_comparison.csv: reports/osm_gadm_comparison.csv | deploy/geocint ## Copy OSM-GADM comparison report to public_html folder to make it available online.
+	cp reports/osm_gadm_comparison.csv ~/public_html/osm_gadm_comparison.csv
+	touch $@
+
+deploy/geocint/osm_population_inconsistencies.csv: reports/osm_population_inconsistencies.csv | deploy/geocint ## Copy osm population inconsistencies report to public_html folder to make it available online.
+	cp reports/osm_population_inconsistencies.csv ~/public_html/osm_population_inconsistencies.csv
+	touch $@
+
+deploy/geocint/population_check_osm.csv: reports/population_check_osm.csv | deploy/geocint  ## Copy osm population check report to public_html folder to make it available online.
+	cp reports/population_check_osm.csv ~/public_html/population_check_osm.csv
 	touch $@
 
 data/in/iso_codes.csv: | data/in ## Download ISO codes for countries from wikidata.

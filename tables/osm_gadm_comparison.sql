@@ -1,5 +1,6 @@
 -- Compare GADM and OpenStreetMap boundaries
--- No table creation, because it will be written directly to html report
+drop table if exists osm_gadm_comparison;
+create table osm_gadm_comparison as
 with gadm_in as (
         -- Join GADM with itself to get parents for every boundary
         -- Join kontur_boundaries to get corresponding osm features ids
@@ -29,9 +30,9 @@ with gadm_in as (
 -- Count subregions for every boundary on levels 0-2 of GADM dataset
 -- Count corresponding OpenStreetMap features
 select
-        coalesce(g1.osm_id::text, '-')                              as "OSM ID",
-        coalesce(g1.admin_level::text, '-')                         as "Admin level",
-        coalesce(g1.osm_name, '-')                                  as "OSM name",
+        g1.osm_id                                                   as "OSM ID",
+        g1.admin_level                                              as "Admin level",
+        g1.osm_name                                                 as "OSM name",
         g1.gadm_name                                                as "GADM name",
         (count(g2.id) filter(where g2.osm_id is not null))::text
             || ' / ' || count(g2.id)::text                          as "OSM / GADM count"

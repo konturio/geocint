@@ -70,15 +70,15 @@ with unnested as (
 )
 select
        id,
-       h1.osm_id::text                                                   as "OSM ID",
+       h1.osm_id                                                         as "OSM ID",
        repeat(' ', b.admin_level) ||                                     -- greater admin_level -> more spaces tabulation before name
            case
                when h2.name is null then '-' || b.name                   -- if the boundary itself has population inconsistency error then it's name starts without dash
                else b.name                                               -- otherwise with dash
            end                                                           as "Name",
        b.admin_level                                                     as "Admin level",
-       coalesce(b.population::text, '-')                                 as "Population",
-       coalesce(h2.c_sum_pop::text, '-')                                 as "SUM subregions population",
+       b.population                                                      as "Population",
+       h2.c_sum_pop                                                      as "SUM subregions population",
        coalesce('+' || h2.pop_diff::text, '-')                           as "Population difference value",
        coalesce('+' || round(h2.pop_diff_percent, 1)::text, '-')         as "Population difference %"
 from unnested h1

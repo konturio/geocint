@@ -47,6 +47,7 @@ from
             days_mintemp_above_25c_2c,
             days_maxwetbulb_over_32c_1c,
             days_maxwetbulb_over_32c_2c,
+            mandays_maxtemp_over_32c_1c,
             ST_AsMVTGeom(geom, ST_TileEnvelope($1, $2, $3), 8192, 64, true) as geom
         from stat_h3
         where zoom = $1

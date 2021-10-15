@@ -258,12 +258,13 @@ create table stat_h3 as (
            (coalesce(pf.days_mintemp_above_25c_2c, 0))::float as days_mintemp_above_25c_2c,
            (coalesce(pf.days_maxwetbulb_over_32c_1c, 0))::float as days_maxwetbulb_over_32c_1c,
            (coalesce(pf.days_maxwetbulb_over_32c_2c, 0))::float as days_maxwetbulb_over_32c_2c,
+           (coalesce(pf.mandays_maxtemp_over_32c_1c, 0))::float as mandays_maxtemp_over_32c_1c,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2020_slopes_h3 b on (a.h3 = b.h3)
          left join gebco_2020_elevation_h3 g on (a.h3 = g.h3)
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
-         left join pf_maxtemp_idw_h3 pf on (a.h3 = pf.h3)
+         left join pf_maxtemp_h3 pf on (a.h3 = pf.h3)
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3),
          ST_HexagonFromH3(a.h3) hex
 );
@@ -283,7 +284,7 @@ create index stat_h3_brin_pt2 on stat_h3 using brin (
                                                      avg_ndvi, covid19_confirmed,
                                                      population_v2, industrial_area, volcanos_count, pop_under_5_total,
                                                      pop_over_65_total, poverty_families_total, pop_disability_total,
-                                                     pop_not_well_eng_speak, pop_without_car,
+                                                     pop_not_well_eng_speak, pop_without_car, mandays_maxtemp_over_32c_1c,
                                                      days_maxtemp_over_32c_1c, days_maxtemp_over_32c_2c,
                                                      days_mintemp_above_25c_1c, days_mintemp_above_25c_2c,
                                                      days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c, avg_slope

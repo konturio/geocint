@@ -7,6 +7,9 @@ create table hrsl_population_boundary as (
                geom                        "geom"
         from kontur_boundaries
         where admin_level = '2'
+          -- remove countries with hrsl population worse than ghs
+          and tags ->> 'ISO3166-1:alpha3' not in
+              ('BGR', 'COL', 'DOM', 'ERI', 'GRC', 'IRL', 'MDG', 'NPL', 'ZWE')
     ),
          subdivided_country as (
              select iso, name, area, ST_Subdivide(geom) "geom"

@@ -1701,13 +1701,14 @@ scripts/basemap.sql: kothic/src/komap.py | db/function ## Generate SQL functions
 	python2 kothic/src/komap.py \
 		--renderer=mvt-sql \
 		--stylesheet basemap/styles/ninja.mapcss \
+		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
 		--osm2pgsql-style basemap/osm2pgsql_styles/default.style \
 		--locale en,ru,be,pl,uk \
 		> scripts/basemap.sql
 	touch $@
 
 data/tiles/basemap_all: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql db/table/water_polygons_vector db/table/land_polygons_vector | data/tiles ## Generating vector tiles.
-	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 9 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
+	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 11 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
 	touch $@
 
 data/basemap: | data ## Directory for MAPCSS styles, icon sprites and font glyphs used with vector tiles.
@@ -1771,7 +1772,7 @@ data/basemap/metadata/zigzag/style_day.json: kothic/src/komap.py | data/basemap/
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 11 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
@@ -1784,7 +1785,7 @@ data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py | data/basema
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 11 \
 		--tiles-url https://zigzag.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
@@ -1894,7 +1895,7 @@ data/basemap/metadata/geocint/style_day.json: kothic/src/komap.py | data/basemap
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 11 \
 		--tiles-url https://geocint.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
@@ -1907,7 +1908,7 @@ data/basemap/metadata/geocint/style_night.json: kothic/src/komap.py | data/basem
 		--maxzoom 24 \
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
-		--tiles-max-zoom 9 \
+		--tiles-max-zoom 11 \
 		--tiles-url https://geocint.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
 		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \

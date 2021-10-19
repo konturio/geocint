@@ -340,10 +340,10 @@ area|z10-[leisure=beach_resort],
 area|z0-[natural=lake],
 area|z0-[natural=pond],
 area|z0-[natural=water],
-area|z0-[natural=salt_pond],
-area|z0-[landuse=salt_pond],
-area|z0-[waterway=dock],
-area|z0-[waterway=riverbank],
+area|z7-[natural=salt_pond],
+area|z7-[landuse=salt_pond],
+area|z7-[waterway=dock],
+area|z7-[waterway=riverbank],
 area|z11-[natural=wetland],
 area|z11-[leisure=marina],
 area|z12-[landuse=basin],
@@ -366,10 +366,10 @@ line|z16-[waterway=lock],
 area|z0-[natural=lake],
 area|z0-[natural=pond],
 area|z0-[natural=water],
-area|z0-[natural=salt_pond],
-area|z0-[landuse=salt_pond],
-area|z0-[waterway=dock],
-area|z0-[waterway=riverbank],
+area|z7-[natural=salt_pond],
+area|z7-[landuse=salt_pond],
+area|z7-[waterway=dock],
+area|z7-[waterway=riverbank],
 area|z12-[landuse=basin],
 area|z12-[landuse=reservoir],
 area|z13-[leisure=swimming_pool],
@@ -431,11 +431,6 @@ node|z16-[waterway=lock_gate],
 line|z17-[waterway=ditch],
 line|z17-[waterway=drain],
 {width: 1.8;opacity: 1;color: @river;dashes: 0.9,0.9;}
-
-/* Do not draw tunnel waterways */
-
-line[waterway][tunnel]
-{width: 0;}
 
 /* 7.LANDUSE */
 

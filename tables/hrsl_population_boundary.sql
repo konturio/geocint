@@ -1,6 +1,6 @@
 -- create a copy of gadm_boundaries table with geometry in EPSG:4326 to use the index in when creating hrsl_population_boundary table.
-drop table if exists ykyslomed.gadm_boundaries_4326_in;
-create table ykyslomed.gadm_boundaries_4326_in as (
+drop table if exists gadm_boundaries_4326_in;
+create table gadm_boundaries_4326_in as (
     select gid_0                         "iso",
            name_0                        "name",
            ST_Area(geom_4326::geography) "area",
@@ -11,17 +11,17 @@ create table ykyslomed.gadm_boundaries_4326_in as (
     where gid_0 not in ('BGR', 'COL', 'DOM', 'ERI', 'GRC', 'IRL', 'MDG', 'NPL', 'ZWE')
 );
 
-create index on ykyslomed.gadm_boundaries_4326_in using gist (geom);
+create index on gadm_boundaries_4326_in using gist (geom);
 
-drop table if exists ykyslomed.hrsl_population_boundary;
-create table ykyslomed.hrsl_population_boundary as (
+drop table if exists hrsl_population_boundary;
+create table hrsl_population_boundary as (
     with subdivided_country as (
         select iso, name, area, ST_Subdivide(geom) "geom"
-        from ykyslomed.gadm_boundaries_4326_in
+        from gadm_boundaries_4326_in
     ),
          subdivided_boundary as (
              select ST_Subdivide(ST_Boundary(geom)) "geom"
-             from ykyslomed.gadm_boundaries_4326_in
+             from gadm_boundaries_4326_in
          ),
          -- select all rasters lying on the border of countries.
          boundary_rasters as (
@@ -52,7 +52,7 @@ create table ykyslomed.hrsl_population_boundary as (
                     sum(ST_Area(p.geom::geography)) / r.area "coverage"
              from rasters_in_countries r,
                   ST_PixelAsPolygons(r.rast) p,
-                  ykyslomed.gadm_boundaries_4326_in c
+                  gadm_boundaries_4326_in c
              where r.iso in (select iso from covered_by_rasters where coverage <= 0.01)
                and r.iso = c.iso
                and ST_Intersects(c.geom, ST_Centroid(p.geom))
@@ -71,6 +71,6 @@ create table ykyslomed.hrsl_population_boundary as (
     )
 );
 
-create index on ykyslomed.hrsl_population_boundary using gist (geom);
+create index on hrsl_population_boundary using gist (geom);
 
-drop table ykyslomed.gadm_boundaries_4326_in;
+drop table gadm_boundaries_4326_in;

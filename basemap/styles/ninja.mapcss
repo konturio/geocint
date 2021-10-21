@@ -8,10 +8,10 @@ line|z3-5[boundary=administrative][admin_level=2][!maritime]    { width: 0.8; }
 line|z6-[boundary=administrative][admin_level=2][!maritime]    { width: 1.5; }
 line|z3-[boundary=administrative][admin_level=3][!maritime]    { width: .4; }
 line|z3-[boundary=administrative][admin_level=4][!maritime]    { width: .5; }
-line|z4-[boundary=administrative][admin_level=5][!maritime]    { width: .5; }
-line|z5-[boundary=administrative][admin_level=6][!maritime]    { width: .5; }
-line|z6-[boundary=administrative][admin_level=7][!maritime]    { width: .5; }
-line|z8-[boundary=administrative][admin_level=8][!maritime]    { width: .5; }
+line|z6-[boundary=administrative][admin_level=5][!maritime]    { width: .5; }
+line|z7-[boundary=administrative][admin_level=6][!maritime]    { width: .5; }
+line|z8-[boundary=administrative][admin_level=7][!maritime]    { width: .5; }
+line|z9-[boundary=administrative][admin_level=8][!maritime]    { width: .5; }
 
 node|z1-[place=ocean]     { text: name:en; font-size: 15; text-transform: uppercase; font-family: "Open Sans Light Italic"; z-index: 9 }
 node|z4-[place=sea], area|z4-[place=sea]      {text: name:en; font-size: 14; text-transform: uppercase; font-family: "Open Sans Light Italic" }

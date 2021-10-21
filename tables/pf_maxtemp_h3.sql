@@ -13,10 +13,6 @@ create table pf_maxtemp_all as (select di.days_maxtemp_over_32c_1c::float,
 
 create index on pf_maxtemp_all using gist (geom);
 
-drop table if exists pf_days_maxtemp_in;
-drop table if exists pf_nights_maxtemp_in;
-drop table if exists pf_days_wet_bulb_in;
-
 drop table if exists pf_maxtemp_h3_r4;
 create table pf_maxtemp_h3_r4 as (select distinct h3_geo_to_h3(geom, 4) as h3
                                   from pf_maxtemp_all);
@@ -183,6 +179,6 @@ create table pf_maxtemp_h3 as
             days_maxwetbulb_over_32c_1c,
             days_maxwetbulb_over_32c_2c
      from pf_maxtemp_idw_h3 pf
-              left join kontur_population_h3 kp on ph.h3 = kp.h3);
+              left join kontur_population_h3 kp on pf.h3 = kp.h3);
 
 drop table if exists pf_maxtemp_idw_h3;

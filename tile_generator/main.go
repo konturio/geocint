@@ -144,9 +144,11 @@ func BuildTile(db *pgxpool.Pool, mbtiles *sql.DB, zxy TileZxy, wg *sync.WaitGrou
 	sem <- struct{}{}
 
 	// Get the data
+	tileQueryStartTime := time.Now()
 	row := db.QueryRow(context.Background(), "query_tile", strconv.Itoa(zxy.z), strconv.Itoa(zxy.x), strconv.Itoa(zxy.y))
 	var tile []byte
 	err := row.Scan(&tile)
+	tileQueryElapsedTime := time.Since(tileQueryStartTime)
 	if err != nil {
 		log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
 	}
@@ -165,7 +167,7 @@ func BuildTile(db *pgxpool.Pool, mbtiles *sql.DB, zxy TileZxy, wg *sync.WaitGrou
 
 	<-sem
 
-	log.Printf("z: %d x: %d y: %d bytes: %d", zxy.z, zxy.x, zxy.y, len(tile))
+	log.Printf("z: %d, x: %d, y: %d, bytes: %d, elapsed: %s", zxy.z, zxy.x, zxy.y, len(tile), tileQueryElapsedTime)
 
 	if zxy.z > 4 && (len(tile) != 0 || zxy.z < 10) {
 		wg.Add(4)

@@ -1137,11 +1137,11 @@ data/out/abu_dhabi/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops | dat
 data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops | data/out/abu_dhabi ## H3 bivariate layer with population vs food shops for Abu Dhabi exported to csv.
 	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
 
-db/table/abu_dhabi_buildings_population: db/table/abu_dhabi_admin_boundaries db/table/abu_dhabi_buildings db/table/kontur_population_h3 | db/table ## Distribute Kontur population by buildings in Abu Dhabi.
-	psql -f tables/abu_dhabi_buildings_population.sql
+db/table/abu_dhabi_buildings_pds: db/table/abu_dhabi_admin_boundaries db/table/abu_dhabi_buildings db/table/kontur_population_h3 | db/table ## Distribute Kontur population by buildings in Abu Dhabi.
+	psql -f tables/abu_dhabi_buildings_pds.sql
 	touch $@
 
-db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population db/table/abu_dhabi_isochrones_bicycle_10m | db/table ## Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
+db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_pds db/table/abu_dhabi_isochrones_bicycle_10m | db/table ## Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
 	psql -f tables/abu_dhabi_pds_bicycle_10min.sql
 	touch $@
 

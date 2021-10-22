@@ -547,7 +547,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Cou
 	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r8 -v item_count=building_count
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
 	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -1120,6 +1120,10 @@ data/in/abu_dhabi_geoalert_v3.geojson: | data/in ## Download buildings dataset f
 
 db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v3.geojson | db/table ## Buildings dataset from Geoalert for Abu Dhabi imported into database.
 	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v3.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
+	touch $@
+
+db/table/abu_dhabi_buildings_h3: db/table/abu_dhabi_buildings | db/table ## Amount of buildings dataset from Geoalert for Abu Dhabi at H3 hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=abu_dhabi_buildings -v table_h3=abu_dhabi_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/out/abu_dhabi: | data/out ## Directory for Abu Dhabi datasets output.

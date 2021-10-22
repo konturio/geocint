@@ -29,7 +29,6 @@
 area[natural=coastline]
 {z-index: -10;}
 
-area[natural=land],
 area[place=islet]
 {z-index: 0;}
 
@@ -128,10 +127,8 @@ line[waterway=drain],
 area[natural=lake],
 area[natural=pond],
 area[natural=water],
-area[natural=salt_pond],
 area[waterway=dock],
 area[waterway=riverbank],
-area[landuse=salt_pond],
 area[landuse=basin],
 area[landuse=reservoir],
 area[leisure=swimming_pool],
@@ -182,14 +179,12 @@ line[historic=citywalls],
 /* 2.LAND */
 
 area|z0-[natural=coastline],
-area|z0-[natural=land],
 area|z10-[place=islet]
 {fill-position: background;	fill-opacity: 1;}
 
 area|z0-[natural=coastline]
 {fill-color: @background;}
 
-area|z0-[natural=land],
 area|z10-[place=islet]
 {fill-color: @background;}
 
@@ -337,11 +332,9 @@ area|z10-[leisure=beach_resort],
 
 /* 6.WATER */
 
-area|z0-[natural=lake],
-area|z0-[natural=pond],
+area|z7-[natural=lake],
+area|z7-[natural=pond],
 area|z0-[natural=water],
-area|z7-[natural=salt_pond],
-area|z7-[landuse=salt_pond],
 area|z7-[waterway=dock],
 area|z7-[waterway=riverbank],
 area|z11-[natural=wetland],
@@ -363,11 +356,9 @@ line|z16-[waterway=lock],
 
 /* 6.1 Area water(lake,pond etc.) */
 
-area|z0-[natural=lake],
-area|z0-[natural=pond],
+area|z7-[natural=lake],
+area|z7-[natural=pond],
 area|z0-[natural=water],
-area|z7-[natural=salt_pond],
-area|z7-[landuse=salt_pond],
 area|z7-[waterway=dock],
 area|z7-[waterway=riverbank],
 area|z12-[landuse=basin],

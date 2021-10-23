@@ -1,16 +1,17 @@
 * {color:black; text-halo-color: white; text-halo-radius: 2; text-opacity: 0.8; font-family: "Noto Sans Regular"; text-padding: 10 }
-area|z0-[natural=coastline]                         { width: 1; opacity: 0.4; color:black}
+area|z0-2[natural=coastline]                         { width: 0.5; opacity: 0.2; color:black}
+area|z3-[natural=coastline]                         { width: 0.5; opacity: 0.3; color:black}
 
 line[boundary=administrative]                       { opacity: 0.4 }
-line|z1-2[boundary=administrative][admin_level=2][!maritime]    { width: .6; }
-line|z3-5[boundary=administrative][admin_level=2][!maritime]    { width: 1.0; }
+line|z1-2[boundary=administrative][admin_level=2][!maritime]    { width: .4; }
+line|z3-5[boundary=administrative][admin_level=2][!maritime]    { width: 0.8; }
 line|z6-[boundary=administrative][admin_level=2][!maritime]    { width: 1.5; }
 line|z3-[boundary=administrative][admin_level=3][!maritime]    { width: .4; }
 line|z3-[boundary=administrative][admin_level=4][!maritime]    { width: .5; }
-line|z4-[boundary=administrative][admin_level=5][!maritime]    { width: .5; }
-line|z5-[boundary=administrative][admin_level=6][!maritime]    { width: .5; }
-line|z6-[boundary=administrative][admin_level=7][!maritime]    { width: .5; }
-line|z8-[boundary=administrative][admin_level=8][!maritime]    { width: .5; }
+line|z6-[boundary=administrative][admin_level=5][!maritime]    { width: .5; }
+line|z7-[boundary=administrative][admin_level=6][!maritime]    { width: .5; }
+line|z8-[boundary=administrative][admin_level=7][!maritime]    { width: .5; }
+line|z9-[boundary=administrative][admin_level=8][!maritime]    { width: .5; }
 
 node|z1-[place=ocean]     { text: name:en; font-size: 15; text-transform: uppercase; font-family: "Open Sans Light Italic"; z-index: 9 }
 node|z4-[place=sea], area|z4-[place=sea]      {text: name:en; font-size: 14; text-transform: uppercase; font-family: "Open Sans Light Italic" }
@@ -36,5 +37,6 @@ line|z8-[highway=primary] { width: 1.3; opacity: 1.0; color: white; casing-color
 line|z8-[highway=secondary] { width: 0.4; opacity: 0.3; color: black }
 line|z10-[highway=primary] { width: 1.2; opacity: 1.0; color: white; casing-color: grey; casing-width:1; linecap:round; casing-linecap: round; casing-opacity: 0.4 }
 
-line|z8-[waterway=river] {width: 0.1; opacity: 0.1; color: black}
-area|z4-[natural=water] {width: 0.5; opacity: 0.2; color: black; fill-color: white; fill-position:background}
+line|z7-[waterway=river] {width: 0.1; opacity: 0.1; color: black}
+area|z3-5[natural=water] {width: 0.2; opacity: 0.2; color: black; fill-color: white; fill-position:background}
+area|z6-[natural=water] {width: 0.5; opacity: 0.3; color: black; fill-color: white; fill-position:background}

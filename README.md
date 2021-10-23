@@ -40,7 +40,7 @@ tested by other team members, and will automatically produce new artifacts once 
 ### Directory and files structure:
 
 - autostart_geocint.sh - script, that runs the pipeline: prod/dev division, cleaning targets and posting info messages
-- Makefile - maps dependencies between generation stages
+- [Makefile](Makefile) - maps dependencies between generation stages
 - basemap/ - scripts and styles for basemap production
 - functions/ - service SQL functions, used in more than a single other file
 - procedures/ - service SQL procedures, used in more than a single other file

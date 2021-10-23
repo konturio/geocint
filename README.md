@@ -39,20 +39,22 @@ tested by other team members, and will automatically produce new artifacts once 
 
 ### Directory and files structure:
 
-- autostart_geocint.sh - script, that runs the pipeline: prod/dev division, cleaning targets and posting info messages
+- [autostart_geocint.sh](autostart_geocint.sh) - script, that runs the pipeline: prod/dev division, cleaning targets and
+  posting info messages
 - [Makefile](Makefile) - maps dependencies between generation stages
-- basemap/ - scripts and styles for basemap production
-- functions/ - service SQL functions, used in more than a single other file
-- procedures/ - service SQL procedures, used in more than a single other file
-- scripts/ - scripts that perform transformation on top of table without creating new one
-- supplemental/ - additional files (OSRM profiles)
-- tables/ - SQL that generates a table named after the script
-- tile_generator/ - a service that produces vector tiles
-- data/ - file-based input and output data
-    - data/in - all input data, downloaded elsewhere
-    - data/in/raster - all downloaded geotiffs
-    - data/mid - all intermediate data (retiles, unpacks, reprojections and etc) which can removed after each launch
-    - data/out - all generated final data (tiles, dumps, unloading for the clients and etc)
+- [basemap/](basemap) - scripts and styles for basemap production
+- [functions/](functions) - service SQL functions, used in more than a single other file
+- [procedures/](procedures) - service SQL procedures, used in more than a single other file
+- [scripts/](scripts) - scripts that perform transformation on top of table without creating new one
+- [supplemental/](supplemental) - additional files (OSRM profiles)
+- [tables/](tables) - SQL that generates a table named after the script
+- [tile_generator/](tile_generator) - a service that produces vector tiles
+- [data/](data) - file-based input and output data
+    - [data/in](data/in) - all input data, downloaded elsewhere
+    - [data/in/raster](data/in/raster) - all downloaded geotiffs
+    - [data/mid](data/mid) - all intermediate data (retiles, unpacks, reprojections and etc) which can removed after
+      each launch
+    - [data/out](data/out) - all generated final data (tiles, dumps, unloading for the clients and etc)
 
 ### Slack messages
 
@@ -63,9 +65,11 @@ and store it in the `SLACK_KEY` variable in file `$HOME/.profile`.
 export SLACK_KEY=<your_key>
 ```
 
-### scripts/create_geocint_user.sh
+### User schemas
 
-`create_geocint_user.sh [username]`
+User schemas can be used to separation pipeline and dev data. Use [scripts/create_geocint_user.sh](scripts/create_geocint_user.sh) to initialize the custom schema.
+
+`scripts/create_geocint_user.sh [username]`
 
 Script for adding user role and schema to geocint database. If no username is provided, it will be prompted. User roles
 are added to the geocint_users group role. You need to add the following line to pg_hba.conf.

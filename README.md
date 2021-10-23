@@ -51,6 +51,12 @@ reviewed and tested by other team members, and will automatically produce new ar
    - data/mid - all intermediate data (retiles, unpacks, reprojections and etc) which can removed after each launch
    - data/out - all generated final data (tiles, dumps, unloading for the clients and etc)
 
+### Slack messages
+The geocint pipeline should send messages to the Slack channel. You need to get the slack api key and store it in the SLACK_KEY variable in $HOME/.profile.
+```shell
+export SLACK_KEY=<your_key>
+```
+
 ### scripts/create_geocint_user.sh
 
 `create_geocint_user.sh [username]`

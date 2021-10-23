@@ -67,7 +67,7 @@ export SLACK_KEY=<your_key>
 
 ### User schemas
 
-User schemas can be used to separation pipeline and dev data. Use [scripts/create_geocint_user.sh](scripts/create_geocint_user.sh) to initialize the custom schema.
+User schemas can be used to separation pipeline and dev data. Run [scripts/create_geocint_user.sh](scripts/create_geocint_user.sh) to initialize the user schema.
 
 `scripts/create_geocint_user.sh [username]`
 

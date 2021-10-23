@@ -593,7 +593,7 @@ reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | reports ## Expor
 	psql -qXc 'copy (select * from osm_gadm_comparison order by "Admin level"::int, "GADM name") to stdout with (format csv, header true, delimiter ";");' > $@
 
 reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
-	psql -qXc 'copy (select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id;) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc 'copy (select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ";");' > $@
 
 reports/population_check_osm.csv: db/table/population_check_osm | reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
 	psql -qXc 'copy (select * from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@

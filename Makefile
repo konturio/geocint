@@ -1,10 +1,10 @@
-all: prod dev basemap_all ## [FINAL] Meta-target on top of all other targets.
+all: prod dev basemap_all data/out/abu_dhabi_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: basemap_dev deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.csv deploy/geocint/osm_gadm_comparison.csv deploy/geocint/population_check_osm.csv db/table/iso_codes db/table/un_population data/out/abu_dhabi_export deploy/geocint/docker_osrm_backend ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries deploy/geocint/osm_population_inconsistencies.csv deploy/geocint/osm_gadm_comparison.csv deploy/geocint/population_check_osm.csv db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-prod: basemap_prod deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries reports/population_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries reports/population_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Pipeline finished. Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -547,7 +547,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Cou
 	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r8 -v item_count=building_count
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
 	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -593,7 +593,7 @@ reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | reports ## Expor
 	psql -qXc 'copy (select * from osm_gadm_comparison order by "Admin level"::int, "GADM name") to stdout with (format csv, header true, delimiter ";");' > $@
 
 reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
-	psql -qXc 'copy (select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id;) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc 'copy (select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ";");' > $@
 
 reports/population_check_osm.csv: db/table/population_check_osm | reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
 	psql -qXc 'copy (select * from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@
@@ -1120,6 +1120,10 @@ data/in/abu_dhabi_geoalert_v3.geojson: | data/in ## Download buildings dataset f
 
 db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v3.geojson | db/table ## Buildings dataset from Geoalert for Abu Dhabi imported into database.
 	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" data/in/abu_dhabi_geoalert_v3.geojson -nln abu_dhabi_buildings -lco GEOMETRY_NAME=geom
+	touch $@
+
+db/table/abu_dhabi_buildings_h3: db/table/abu_dhabi_buildings | db/table ## Amount of buildings dataset from Geoalert for Abu Dhabi at H3 hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=abu_dhabi_buildings -v table_h3=abu_dhabi_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/out/abu_dhabi: | data/out ## Directory for Abu Dhabi datasets output.

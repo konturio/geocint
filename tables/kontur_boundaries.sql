@@ -79,6 +79,7 @@ select distinct on ( b.osm_id)
         b.boundary,
         b.admin_level,
         b.name,
+        coalesce(b.tags->>'name:en', b.tags->>'int_name') as name_en,
         g.hasc,
         g.gadm_level,
         g.iou as osm_gadm_iou,

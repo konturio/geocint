@@ -17,3 +17,8 @@ create table population_check_osm as (
       and area > 737327.6 -- average hexagon area at 8 resolution
     order by "diff_log" desc
 );
+
+-- Update timestamp in reports table (for further export to reports API JSON):
+update osm_reports_list
+set last_updated = (select meta->'data'->'timestamp'->>'last' as updated from osm_meta)
+where id = 'population_tag_check';

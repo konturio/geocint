@@ -1,6 +1,6 @@
 all: prod dev basemap_all data/out/abu_dhabi_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary db/table/kontur_boundaries data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/geocint/osm_population_inconsistencies.csv deploy/geocint/osm_gadm_comparison.csv deploy/geocint/population_check_osm.csv db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/geocint/osm_population_inconsistencies.csv deploy/geocint/osm_gadm_comparison.csv deploy/geocint/population_check_osm.csv deploy/geocint/osm_reports_list.json db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -586,15 +586,19 @@ data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: db/table/kontur_boundaries
 	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
 	cd data/out/kontur_boundaries/; pigz kontur_boundaries.gpkg
 
-db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundaries | db/table ## Validate OSM boundaries that OSM has no less polygons than GADM.
+db/table/osm_reports_list: db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
+	psql -f tables/osm_reports_list.sql
+	touch $@
+
+db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundaries db/table/osm_reports_list | db/table ## Validate OSM boundaries that OSM has no less polygons than GADM.
 	psql -f tables/osm_gadm_comparison.sql
 	touch $@
 
-db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
+db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries db/table/osm_reports_list | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
 	psql -f tables/osm_population_inconsistencies.sql
 	touch $@
 
-db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
+db/table/population_check_osm: db/table/kontur_boundaries db/table/osm_reports_list | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
 	psql -f tables/population_check_osm.sql
 	touch $@
 
@@ -608,6 +612,10 @@ reports/population_check_osm.csv: db/table/population_check_osm | reports ## Exp
 	psql -qXc 'copy (select * from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
+reports/osm_reports_list.json: db/table/osm_reports_list db/table/osm_gadm_comparison db/table/osm_population_inconsistencies db/table/population_check_osm | reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja
+	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' > $@
+	touch $@
+
 deploy/geocint/osm_gadm_comparison.csv: reports/osm_gadm_comparison.csv | deploy/geocint ## Copy OSM-GADM comparison report to public_html folder to make it available online.
 	cp reports/osm_gadm_comparison.csv ~/public_html/osm_gadm_comparison.csv
 	touch $@
@@ -618,6 +626,10 @@ deploy/geocint/osm_population_inconsistencies.csv: reports/osm_population_incons
 
 deploy/geocint/population_check_osm.csv: reports/population_check_osm.csv | deploy/geocint  ## Copy osm population check report to public_html folder to make it available online.
 	cp reports/population_check_osm.csv ~/public_html/population_check_osm.csv
+	touch $@
+
+deploy/geocint/osm_reports_list.json: reports/osm_reports_list.json | deploy/geocint ## Copy reports JSON file to public_html folder to make it available online.
+	cp reports/osm_reports_list.json > ~/public_html/osm_reports_list.json
 	touch $@
 
 data/in/iso_codes.csv: | data/in ## Download ISO codes for countries from wikidata.

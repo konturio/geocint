@@ -44,3 +44,9 @@ where g1.gadm_level < 3
 group by g1.osm_id, g1.admin_level, g1.osm_name, g1.gadm_name
 having count(g2.id) filter(where g2.osm_id is not null) < count(g2.id)
 order by g1.admin_level, g1.gadm_name;
+
+
+-- Update timestamp in reports table (for further export to reports API JSON):
+update osm_reports_list
+set last_updated = (select meta->'data'->'timestamp'->>'last' as updated from osm_meta)
+where id = 'osm_gadm_comparison';

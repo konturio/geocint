@@ -50,11 +50,11 @@ tested by other team members, and will automatically produce new artifacts once 
 - [tables/](tables) - SQL that generates a table named after the script
 - [tile_generator/](tile_generator) - a service that produces vector tiles
 - [data/](data) - file-based input and output data
-    - [data/in](data/in) - all input data, downloaded elsewhere
-    - [data/in/raster](data/in/raster) - all downloaded geotiffs
-    - [data/mid](data/mid) - all intermediate data (retiles, unpacks, reprojections and etc) which can removed after
+    - data/in - all input data, downloaded elsewhere
+    - data/in/raster - all downloaded geotiffs
+    - data/mid - all intermediate data (retiles, unpacks, reprojections and etc) which can removed after
       each launch
-    - [data/out](data/out) - all generated final data (tiles, dumps, unloading for the clients and etc)
+    - data/out - all generated final data (tiles, dumps, unloading for the clients and etc)
 
 ### Slack messages
 

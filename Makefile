@@ -583,7 +583,7 @@ db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundari
 data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: db/table/kontur_boundaries | data/out/kontur_boundaries  ## Kontur Boundaries (most recent) geopackage archive.
 	rm -f $@
 	rm -f data/out/kontur_boundaries/kontur_boundaries.gpkg
-	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level::int admin_level, name, name_en, population, geom from kontur_boundaries where admin_level ~ '\A\d{1,2}\Z' order by admin_level, name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
+	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
 	cd data/out/kontur_boundaries/; pigz kontur_boundaries.gpkg
 
 db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundaries | db/table ## Validate OSM boundaries that OSM has no less polygons than GADM.

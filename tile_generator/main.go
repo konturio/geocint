@@ -125,60 +125,43 @@ func dbConnect(tileSql string) (*pgxpool.Pool, error) {
 	return globalDb, nil
 }
 
-func BuildTile(db *pgxpool.Pool, mbtiles *sql.DB, zxy TileZxy, wg *sync.WaitGroup, sem chan struct{}) error {
-	defer wg.Done()
+type ResultTile struct {
+	z int
+	x int
+	y int
+	tile []byte
+}
 
-	if zxy.z > *maxZoom {
-		return nil
-	}
-
-	if zxy.z <= 4 {
-		wg.Add(4)
-
-		go BuildTile(db, mbtiles, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
-		go BuildTile(db, mbtiles, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
-		go BuildTile(db, mbtiles, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
-		go BuildTile(db, mbtiles, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
-	}
-
-	sem <- struct{}{}
-
-	// Get the data
-	tileQueryStartTime := time.Now()
+func queryTile(db *pgxpool.Pool, zxy TileZxy) (ResultTile, error) {
 	row := db.QueryRow(context.Background(), "query_tile", strconv.Itoa(zxy.z), strconv.Itoa(zxy.x), strconv.Itoa(zxy.y))
 	var tile []byte
 	err := row.Scan(&tile)
-	tileQueryElapsedTime := time.Since(tileQueryStartTime)
-	if err != nil {
-		log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
+
+	return ResultTile{zxy.z, zxy.x, zxy.y, tile}, err
+}
+
+func worker(db *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg *sync.WaitGroup) {
+	for zxy := range jobs {
+		result, err := queryTile(db, zxy)
+		if err != nil {
+			log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
+		}
+
+		results <- result
+
+		if zxy.z < *maxZoom && (len(result.tile) != 0 || zxy.z < 10) {
+			zxy := zxy
+			wg.Add(4)
+			go func() {
+				jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}
+				jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}
+				jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}
+				jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}
+			}()
+		}
+
+		wg.Done()
 	}
-
-	if mbtiles != nil {
-		err = mbtilesWriteTile(mbtiles, zxy, tile)
-	}
-
-	if len(*outputPath) > 0 {
-		err = fsWriteTile(*outputPath, zxy, tile)
-	}
-
-	if err != nil {
-		log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
-	}
-
-	<-sem
-
-	log.Printf("z: %d, x: %d, y: %d, bytes: %d, elapsed: %s", zxy.z, zxy.x, zxy.y, len(tile), tileQueryElapsedTime)
-
-	if zxy.z > 4 && (len(tile) != 0 || zxy.z < 10) {
-		wg.Add(4)
-
-		go BuildTile(db, mbtiles, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}, wg, sem)
-		go BuildTile(db, mbtiles, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}, wg, sem)
-		go BuildTile(db, mbtiles, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}, wg, sem)
-		go BuildTile(db, mbtiles, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}, wg, sem)
-	}
-
-	return err
 }
 
 func main() {
@@ -200,24 +183,55 @@ func main() {
 		log.Fatal(err)
 	}
 
-	wg := sync.WaitGroup{}
-
-	sem := make(chan struct{}, *maxParallel)
-
 	db, err := dbConnect(string(tileSql))
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
+	jobs := make(chan TileZxy, *maxParallel)
+	results := make(chan ResultTile)
+	readDone := make(chan bool)
+	wg := &sync.WaitGroup{}
+
+	for i := 0; i < *maxParallel; i++ {
+		go worker(db, jobs, results, wg)
+	}
+
 	z := *minZoom
 	for x := 0; x < int(math.Pow(float64(2), float64(z))); x++ {
 		for y := 0; y < int(math.Pow(float64(2), float64(z))); y++ {
 			wg.Add(1)
-			go BuildTile(db, mbtiles, TileZxy{z, x, y}, &wg, sem)
+			zxy := TileZxy{z, x, y}
+			go func() {
+				jobs <- zxy
+			}()
 		}
 	}
 
-	wg.Wait()
-	close(sem)
+	go func() {
+		wg.Wait()
+		readDone <- true
+	}()
+
+loop:
+	for {
+		select {
+		case res := <-results:
+			log.Printf("z: %d, x: %d, y: %d, bytes: %d", res.z, res.x, res.y, len(res.tile))
+			if len(*outputPath) > 0 {
+				err = fsWriteTile(*outputPath, TileZxy{res.z, res.x, res.y}, res.tile)
+			}
+			if mbtiles != nil {
+				err = mbtilesWriteTile(mbtiles, TileZxy{res.z, res.x, res.y}, res.tile)
+			}
+
+			if err != nil {
+				log.Fatalf("z: %d x: %d y: %d error: %s", res.z, res.x, res.y, err.Error())
+			}
+		case <-readDone:
+			close(jobs)
+			break loop
+		}
+	}
 }

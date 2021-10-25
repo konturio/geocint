@@ -70,7 +70,8 @@ begin
                ST_GeomFromEWKT('SRID=4326;POINT(' || replace(dst_coords[destination_id + 1], ',', ' ') ||
                                ')')                                                                       "dst_point"
         from urls,
-             cast(http_get(url) as jsonb) j,
+             http_get(url) h,
+             cast(h.content as jsonb) j,
              generate_series(0, jsonb_array_length(j -> 'durations') - 1) source_id,
              generate_series(0, jsonb_array_length(j -> 'durations' -> source_id) - 1) destination_id;
 end;

@@ -629,7 +629,7 @@ deploy/geocint/population_check_osm.csv: reports/population_check_osm.csv | depl
 	touch $@
 
 deploy/geocint/osm_reports_list.json: reports/osm_reports_list.json | deploy/geocint ## Copy reports JSON file to public_html folder to make it available online.
-	cp reports/osm_reports_list.json > ~/public_html/osm_reports_list.json
+	cp reports/osm_reports_list.json ~/public_html/osm_reports_list.json
 	touch $@
 
 data/in/iso_codes.csv: | data/in ## Download ISO codes for countries from wikidata.

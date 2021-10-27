@@ -58,6 +58,11 @@ func mbtilesWriteTile(db *sql.DB, zxy TileZxy, tile []byte) error {
 	return err
 }
 
+func mbtilesCreateIndexes(db *sql.DB) error {
+	_, err := db.Exec("create unique index tile_index on tiles (zoom_level, tile_column, tile_row)")
+	return err
+}
+
 func fsWriteTile(outputPath string, zxy TileZxy, tile []byte) error {
 	dir := path.Join(outputPath, fmt.Sprintf("%d/%d", zxy.z, zxy.x))
 	filePath := path.Join(outputPath, fmt.Sprintf("%d/%d/%d.mvt", zxy.z, zxy.x, zxy.y))
@@ -239,6 +244,13 @@ loop:
 		case <-readDone:
 			close(jobs)
 			break loop
+		}
+	}
+
+	if mbtiles != nil {
+		err := mbtilesCreateIndexes(mbtiles)
+		if err != nil {
+			log.Fatalln("mbtiles index creation failed")
 		}
 	}
 }

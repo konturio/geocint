@@ -84,7 +84,7 @@ values ('osm_gadm_comparison',
 
 
 -- Populate timestamp column with previous values to keep them in case reports won't update (then old timestamp will be the valid one!)
-update table osm_reports_list n
+update osm_reports_list n
     set last_updated = o.last_updated
     from osm_reports_list_old o
     where n.id = o.id;

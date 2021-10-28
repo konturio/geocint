@@ -31,23 +31,6 @@ line[aeroway=runway],
 line[aeroway=taxiway]
 {z-index: 50;}
 
-line[piste:type=downhill][piste:difficulty=advanced],
-line[piste:type=downhill][piste:difficulty=easy],
-line[piste:type=downhill][piste:difficulty=expert],
-line[piste:type=downhill][piste:difficulty=freeride],
-line[piste:type=downhill][piste:difficulty=intermediate],
-line[piste:type=downhill][piste:difficulty=novice],
-{z-index: 100;}
-
-line[route=ferry],
-line[route=ferry_motorcar]
-{z-index: 115;}
-
-line[piste:type=downhill],
-line[piste:type=nordic],
-line[piste:type=sled],
-{z-index: 199;}
-
 line[highway=construction],
 line[highway=proposed],
 line[railway=construction],
@@ -157,13 +140,6 @@ line[aerialway=rope_tow],
 line[power=line]
 {z-index: 2000;}
 
-line[piste:lift],
-line[piste:lift=j-bar],
-line[piste:lift=magic_carpet],
-line[piste:lift=platter],
-line[piste:lift=rope_tow],
-line[piste:lift=t-bar],
-{z-index: 6888;}
 
 /* 2.SHIELD 10-22 ZOOM */
 
@@ -475,12 +451,7 @@ line[railway=funicular]
 */
 /* 10.PISTE 15-22 ZOOM */
 /*
-line[piste:lift],
-line[piste:lift=j-bar],
-line[piste:lift=magic_carpet],
-line[piste:lift=platter],
-line[piste:lift=rope_tow],
-line[piste:lift=t-bar],
+
 line[power=line],
 line[aerialway=cable_car],
 line[aerialway=chair_lift],
@@ -503,18 +474,8 @@ line|z14[route=ski],
 line|z14[leisure=skiing]
 */
 
-/* 11. FERRY */
+/* 11. FERRY - DELETED*/
 
-line|z10-[route=ferry],
-line|z10-[route=ferry_motorcar]
-{text: name;text-color: @water_label;text-position: line;z-index: 120;}
-
-line|z10-16[route=ferry],
-line|z10-16[route=ferry_motorcar]
-{font-size: 9;}
-line|z17-[route=ferry],
-line|z17-[route=ferry_motorcar]
-{font-size: 10;}
 
 /* 12. ONEWAY ARROWS  */
 

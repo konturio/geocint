@@ -27,7 +27,7 @@
   8.1 Pedestrian & ford 13-22 ZOOM
 	8.2 Pedestrian & ford tunnel 16-22 ZOOM
 	8.3 Pedestrian & other brige 13-22 ZOOM
-	8.4 Cycleway 13-22 ZOOM
+	8.4 Cycleway 13-22 ZOOM - DELETED
 	8.5 Construction & Proposed 13-22 ZOOM
 	8.6 Track & Path 14-22 ZOOM
 	8.7 Footway 14-22 ZOOM
@@ -43,10 +43,10 @@
   9.5 Tram line 13-22 ZOOM
   9.6 Funicular 12-22 ZOOM
 10.PISTE 12-22 ZOOM
- 10.1 Lift 12-22 ZOOM
+ 10.1 Piste:Lift 12-22 ZOOM- DELETED
  10.2 Aerialway 12-22 ZOOM
- 10.3 Piste & Route 14-22 ZOOM
-11.FERRY
+ 10.3 Piste & Route 14-22 ZOOM - DELETED
+11.FERRY - DELETED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
@@ -89,23 +89,6 @@ line[railway=yard][bridge?]::bridgewhite
 line[aeroway=runway],
 line[aeroway=taxiway]
 {z-index: 50;}
-
-line[piste:type=downhill][piste:difficulty=advanced],
-line[piste:type=downhill][piste:difficulty=easy],
-line[piste:type=downhill][piste:difficulty=expert],
-line[piste:type=downhill][piste:difficulty=freeride],
-line[piste:type=downhill][piste:difficulty=intermediate],
-line[piste:type=downhill][piste:difficulty=novice],
-{z-index: 100;}
-
-line[route=ferry],
-line[route=ferry_motorcar]
-{z-index: 115;}
-
-line[piste:type=downhill],
-line[piste:type=nordic],
-line[piste:type=sled],
-{z-index: 199;}
 
 line[highway=motorway][bridge?]::bridgeblack,
 line[highway=trunk][bridge?]::bridgeblack,
@@ -221,7 +204,6 @@ line[railway=narrow_gauge],
 line[railway=tram]
 {z-index: 950;}
 
-line[highway=cycleway],
 line[highway=steps],
 node[highway=motorway_junction]
 {z-index: 1000;}
@@ -252,14 +234,6 @@ line[aerialway=rope_tow],
 
 line[power=line]
 {z-index: 2000;}
-
-line[piste:lift],
-line[piste:lift=j-bar],
-line[piste:lift=magic_carpet],
-line[piste:lift=platter],
-line[piste:lift=rope_tow],
-line[piste:lift=t-bar]
-{z-index: 6888;}
 
 line[highway]
 {casing-width: 0;}
@@ -749,8 +723,6 @@ line|z19-[highway=service]
 line|z13-[highway=pedestrian],
 line|z13-[highway=ford]
 {color: @pedestrian;opacity: 1;}
-line|z13-[highway=cycleway]
-{color: @cycleway;opacity: 1;}
 line|z13-[highway=construction],
 line|z13-[highway=proposed]
 {color: @construction;opacity: 1;}
@@ -834,22 +806,7 @@ line|z16-[highway=pedestrian][bridge?]::bridgeblack,
 line|z16-[highway=footway][bridge?]::bridgeblack,
 {casing-width: eval(prop("width")+0.6);}
 
-/* 8.4 Cycleway 13-22 ZOOM */
-
-line|z13[highway=cycleway]
-{width: 1;}
-line|z14[highway=cycleway]
-{width: 1.2;}
-line|z15[highway=cycleway]
-{width: 1.4;}
-line|z16[highway=cycleway]
-{width: 1.6;}
-line|z17[highway=cycleway]
-{width: 1.8;}
-line|z18[highway=cycleway]
-{width: 2;}
-line|z19-[highway=cycleway]
-{width: 2.2;}
+/* 8.4 Cycleway 13-22 ZOOM - DELETED*/
 
 /* 8.5 Construction & Proposed 13-22 ZOOM */
 
@@ -1142,60 +1099,9 @@ line|z13-14[railway=funicular],
 line|z15-[railway=funicular],
 {width: 3;}
 
-/* 10.PISTE 12-22 ZOOM */
+/* 10.PISTE 12-22 ZOOM - */
 
-line|z12-[piste:lift],
-line|z12-[piste:lift=j-bar],
-line|z12-[piste:lift=magic_carpet],
-line|z12-[piste:lift=platter],
-line|z12-[piste:lift=rope_tow],
-line|z12-[piste:lift=t-bar],
-line|z12-[aerialway=cable_car],
-line|z12-[aerialway=chair_lift],
-line|z12-[aerialway=gondola],
-line|z12-[aerialway=mixed_lift],
-line|z12-[aerialway=drag_lift],
-line|z12-[aerialway=j-bar],
-line|z12-[aerialway=t-bar],
-line|z12-[aerialway=magic_carpet],
-line|z12-[aerialway=platter],
-line|z12-[aerialway=rope_tow],
-line|z12-[aerialway=cable_car]::dash,
-line|z12-[aerialway=chair_lift]::dash,
-line|z12-[aerialway=gondola]::dash,
-line|z12-[aerialway=mixed_lift]::dash,
-line|z12-[aerialway=drag_lift] ::dash,
-line|z12-[aerialway=j-bar]::dash,
-line|z12-[aerialway=t-bar]::dash,
-line|z12-[aerialway=magic_carpet]::dash,
-line|z12-[aerialway=platter]::dash,
-line|z12-[aerialway=rope_tow]::dash,
-line|z18-[power=line],
-{color: @aerialway;opacity: 1;}
-
-/* 10.1 Lift 12-22 ZOOM */
-
-line|z12-14[piste:lift=j-bar],
-line|z12-14[piste:lift=magic_carpet],
-line|z12-14[piste:lift=platter],
-line|z12-14[piste:lift=rope_tow],
-line|z12-14[piste:lift=t-bar],
-line|z19-[power=line]
-{width: 1;}
-line|z15-[piste:lift],
-line|z15-[piste:lift=j-bar],
-line|z15-[piste:lift=magic_carpet],
-line|z15-[piste:lift=platter],
-line|z15-[piste:lift=rope_tow],
-line|z15-[piste:lift=t-bar]
-{width: 1.6;}
-line|z17-[piste:lift],
-line|z17-[piste:lift=j-bar],
-line|z17-[piste:lift=magic_carpet],
-line|z17-[piste:lift=platter],
-line|z17-[piste:lift=rope_tow],
-line|z17-[piste:lift=t-bar]
-{width: 2;}
+/* 10.1 Piste:Lift 12-22 ZOOM - DELETED */
 
 /* 10.2 Aerialway 12-22 ZOOM */
 
@@ -1244,67 +1150,7 @@ line|z14-[aerialway=platter]::dash,
 line|z14-[aerialway=rope_tow]::dash,
 {width: 2.5;opacity: 0.6;dashes: 0.9,18;}
 
-/* 10.3 Piste & Route 14-22 ZOOM */
+/* 10.3 Piste & Route 14-22 ZOOM - DELETED*/
 
-line|z14-[piste:type=downhill],
-line|z14-[piste:type=nordic],
-line|z14-[piste:type=sled]
-{color: @piste;opacity: 1;}
+/* 11. FERRY - DELETED*/
 
-line|z14-[piste:type=downhill][piste:difficulty=novice]
-{color: @piste_novice;}
-line|z14-[piste:type=downhill][piste:difficulty=easy]
-{color: @piste_easy;}
-line|z14-[piste:type=downhill][piste:difficulty=intermediate]
-{color: @piste_intermadiate;}
-line|z14-[piste:type=downhill][piste:difficulty=advanced]
-{color: @piste_advanced;}
-line|z14-[piste:type=downhill][piste:difficulty=expert],
-line|z14-[piste:type=downhill][piste:difficulty=freeride]
-{color: @piste_expert;}
-
-line|z14[piste:type=downhill],
-line|z14[piste:type=nordic],
-line|z14[piste:type=sled],
-{width: 0.8;z-index: 10;}
-line|z14[route=ski],
-line|z14[leisure=skiing]
-{width: 0.8;}
-line|z14-[piste:type=downhill][piste:difficulty=novice],
-line|z14-[piste:type=downhill][piste:difficulty=easy],
-line|z14-[piste:type=downhill][piste:difficulty=intermediate],
-line|z14-[piste:type=downhill][piste:difficulty=advanced],
-line|z14-[piste:type=downhill][piste:difficulty=expert],
-line|z14-[piste:type=downhill][piste:difficulty=freeride],
-{width: 1;}
-line|z15-[piste:type=downhill][piste:difficulty=novice],
-line|z15-[piste:type=downhill][piste:difficulty=easy],
-line|z15-[piste:type=downhill][piste:difficulty=intermediate],
-line|z15-[piste:type=downhill][piste:difficulty=advanced],
-line|z15-[piste:type=downhill][piste:difficulty=expert],
-line|z15-[piste:type=downhill][piste:difficulty=freeride],
-{width: 1.6;}
-line|z15-[piste:type=downhill],
-line|z15-[piste:type=sled],
-line|z15-[piste:type=nordic],
-line|z15-[route=ski],
-line|z15-[leisure=skiing]
-{width: 1.1;}
-line|z17-[piste:type=downhill][piste:difficulty=novice],
-line|z17-[piste:type=downhill][piste:difficulty=easy],
-line|z17-[piste:type=downhill][piste:difficulty=intermediate],
-line|z17-[piste:type=downhill][piste:difficulty=advanced],
-line|z17-[piste:type=downhill][piste:difficulty=expert],
-line|z17-[piste:type=downhill][piste:difficulty=freeride],
-{width: 1.8;}
-line|z17-[piste:type=downhill],
-line|z17-[piste:type=sled],
-line|z17-[piste:type=nordic],
-line|z17-[route=ski],
-line|z17-[leisure=skiing]
-{width: 1.5;}
-
-/* 11. FERRY */
-line|z10-[route=ferry],
-line|z10-[route=ferry_motorcar]
-{color: @ferry;width: 1;opacity: 1;dashes: 5.4,2.7;}

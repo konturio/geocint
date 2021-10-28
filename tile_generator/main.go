@@ -16,7 +16,7 @@ import (
 	"os"
 	"path"
 	"strconv"
-	"sync"
+	"github.com/gen0cide/waiter"
 	"time"
 )
 
@@ -126,25 +126,28 @@ func dbConnect(tileSql string) (*pgxpool.Pool, error) {
 }
 
 type ResultTile struct {
-	z int
-	x int
-	y int
-	tile []byte
+	z             int
+	x             int
+	y             int
+	tile          []byte
+	executionTime time.Duration
 }
 
 func queryTile(db *pgxpool.Pool, zxy TileZxy) (ResultTile, error) {
+	tileQueryStartTime := time.Now()
 	row := db.QueryRow(context.Background(), "query_tile", strconv.Itoa(zxy.z), strconv.Itoa(zxy.x), strconv.Itoa(zxy.y))
 	var tile []byte
 	err := row.Scan(&tile)
+	tileQueryElapsedTime := time.Since(tileQueryStartTime)
 
-	return ResultTile{zxy.z, zxy.x, zxy.y, tile}, err
+	return ResultTile{zxy.z, zxy.x, zxy.y, tile, tileQueryElapsedTime}, err
 }
 
-func worker(db *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg *sync.WaitGroup) {
+func worker(db *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg *waiter.Waiter) {
 	for zxy := range jobs {
 		result, err := queryTile(db, zxy)
 		if err != nil {
-			log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
+			log.Fatalln("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
 		}
 
 		results <- result
@@ -192,7 +195,7 @@ func main() {
 	jobs := make(chan TileZxy, *maxParallel)
 	results := make(chan ResultTile)
 	readDone := make(chan bool)
-	wg := &sync.WaitGroup{}
+	wg := waiter.New("tiles", os.Stdout)
 
 	for i := 0; i < *maxParallel; i++ {
 		go worker(db, jobs, results, wg)
@@ -218,7 +221,11 @@ loop:
 	for {
 		select {
 		case res := <-results:
-			log.Printf("z: %d, x: %d, y: %d, bytes: %d", res.z, res.x, res.y, len(res.tile))
+			if ((res.z >= 0) && (res.z <= 6) && (res.executionTime >= time.Second*60)) ||
+				((res.z >= 7) && (res.z <= 10) && (res.executionTime >= time.Second*30)) ||
+				((res.z >= 11) && (res.executionTime >= time.Second*5)) {
+				log.Println("slow tile z: %d, x: %d, y: %d, bytes: %d, execution time: %s", res.z, res.x, res.y, len(res.tile), res.executionTime)
+			}
 			if len(*outputPath) > 0 {
 				err = fsWriteTile(*outputPath, TileZxy{res.z, res.x, res.y}, res.tile)
 			}
@@ -227,7 +234,7 @@ loop:
 			}
 
 			if err != nil {
-				log.Fatalf("z: %d x: %d y: %d error: %s", res.z, res.x, res.y, err.Error())
+				log.Fatalln("z: %d x: %d y: %d error: %s", res.z, res.x, res.y, err.Error())
 			}
 		case <-readDone:
 			close(jobs)

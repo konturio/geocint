@@ -5,7 +5,6 @@
 @import("../include/Basemap_label.mapcss");
 @import("../include/Roads.mapcss");
 @import("../include/Roads_label.mapcss");
-@import("../include/Icons.mapcss");
 
 * { font-family: "Noto Sans Regular"; }
 

@@ -3,11 +3,10 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/md5"
 	"database/sql"
 	"flag"
 	"fmt"
-	// "github.com/gen0cide/waiter"
-	"crypto/md5"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/mattn/go-sqlite3"
@@ -153,30 +152,6 @@ func queryTile(db *pgxpool.Conn, zxy TileZxy) (ResultTile, error) {
 
 func worker(pool *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg *sync.WaitGroup) {
 	for zxy := range jobs {
-		// result, err := queryTile(db, zxy)
-		// if err != nil {
-		// 	log.Fatalln("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
-		// }
-
-		// results <- result
-
-		// if zxy.z < *maxZoom && (len(result.tile) != 0 || zxy.z < 10) {
-		// 	zxy := zxy
-		// 	wg.Add(4)
-		// 	go func() {
-		// 		jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}
-		// 		jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}
-		// 		jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}
-		// 		jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}
-		// 	}()
-		// }
-
-		// wg.Done()
-		// if zxy.z > *maxZoom {
-		// 	wg.Done()
-		// 	continue
-		// }
-
 		c, err := pool.Acquire(context.Background())
 		if err != nil {
 			log.Fatal(err)
@@ -282,11 +257,7 @@ loop:
 	for {
 		select {
 		case res := <-results:
-			// if ((res.z >= 0) && (res.z <= 6) && (res.executionTime >= time.Second*60)) ||
-			// 	((res.z >= 7) && (res.z <= 10) && (res.executionTime >= time.Second*30)) ||
-			// 	((res.z >= 11) && (res.executionTime >= time.Second*5)) {
 			log.Printf("z: %d, x: %d, y: %d, bytes: %d, execution time: %s", res.z, res.x, res.y, len(res.tile), res.executionTime)
-			// }
 			if len(*outputPath) > 0 {
 				err = fsWriteTile(*outputPath, res.z, res.x, res.y, res.tile)
 			}

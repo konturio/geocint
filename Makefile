@@ -609,7 +609,7 @@ reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistenc
 	psql -qXc 'copy (select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ";");' > $@
 
 reports/population_check_osm.csv: db/table/population_check_osm | reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
-	psql -qXc 'copy (select * from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc 'copy (select osm_id as "OSM id", coalesce(name_en, name) as "Name", pop_date as "OSM population date", osm_pop as "OSM population", kontur_pop as "Kontur population", diff_pop as "Population difference", round(diff_log::numeric, 2) as "Logarithmic population difference" from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 reports/osm_reports_list.json: db/table/osm_reports_list db/table/osm_gadm_comparison db/table/osm_population_inconsistencies db/table/population_check_osm | reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja

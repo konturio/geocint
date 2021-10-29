@@ -30,12 +30,12 @@ with gadm_in as (
 -- Count subregions for every boundary on levels 0-2 of GADM dataset
 -- Count corresponding OpenStreetMap features
 select
-        g1.osm_id                                                   as "OSM ID",
-        g1.admin_level                                              as "Admin level",
-        g1.osm_name                                                 as "OSM name",
-        g1.gadm_name                                                as "GADM name",
-        (count(g2.id) filter(where g2.osm_id is not null))::text
-            || ' / ' || count(g2.id)::text                          as "OSM / GADM count"
+        g1.osm_id                                           as "OSM ID",
+        g1.admin_level                                      as "Admin level",
+        g1.osm_name                                         as "OSM name",
+        g1.gadm_name                                        as "GADM name",
+        count(g2.id) filter(where g2.osm_id is not null)    as "OSM count",
+        count(g2.id)                                        as "GADM count"
 from gadm_in g1
 left join gadm_in g2
         on g1.gid = g2.parent_gid

@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	// "github.com/gen0cide/waiter"
+	"crypto/md5"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	_ "github.com/mattn/go-sqlite3"
@@ -31,7 +32,8 @@ var outputMbtiles = flag.String("output-mbtiles", "", "output mbtiles path")
 var outputPath = flag.String("output-path", "", "output path")
 
 type TileZxy struct {
-	z, x, y int
+	z, x, y    int
+	parentHash [16]byte
 }
 
 func mbtilesOpen(path string) (*sql.DB, error) {
@@ -48,14 +50,14 @@ func mbtilesOpen(path string) (*sql.DB, error) {
 	return db, err
 }
 
-func mbtilesWriteTile(db *sql.DB, zxy TileZxy, tile []byte) error {
+func mbtilesWriteTile(db *sql.DB, z int, x int, y int, tile []byte) error {
 	stmt, err := db.Prepare("insert into tiles (zoom_level, tile_column, tile_row, tile_data) values (?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(zxy.z, zxy.x, (1<<zxy.z)-1-zxy.y, tile)
+	_, err = stmt.Exec(z, x, (1<<z)-1-y, tile)
 	return err
 }
 
@@ -64,9 +66,9 @@ func mbtilesCreateIndexes(db *sql.DB) error {
 	return err
 }
 
-func fsWriteTile(outputPath string, zxy TileZxy, tile []byte) error {
-	dir := path.Join(outputPath, fmt.Sprintf("%d/%d", zxy.z, zxy.x))
-	filePath := path.Join(outputPath, fmt.Sprintf("%d/%d/%d.mvt", zxy.z, zxy.x, zxy.y))
+func fsWriteTile(outputPath string, z int, x int, y int, tile []byte) error {
+	dir := path.Join(outputPath, fmt.Sprintf("%d/%d", z, x))
+	filePath := path.Join(outputPath, fmt.Sprintf("%d/%d/%d.mvt", z, x, y))
 
 	err := os.MkdirAll(dir, 0777)
 	if err != nil {
@@ -99,7 +101,7 @@ func dbConnect(tileSql string) (*pgxpool.Pool, error) {
 		}
 
 		// Read and parse connection lifetime
-		dbPoolMaxLifeTime, _ := time.ParseDuration("12h")
+		dbPoolMaxLifeTime, _ := time.ParseDuration("24h")
 		config.MaxConnLifetime = dbPoolMaxLifeTime
 
 		config.MaxConns = int32(*maxParallel)
@@ -180,8 +182,9 @@ func worker(pool *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg
 			log.Fatal(err)
 		}
 
-		if zxy.z <= 4 {
+		if zxy.z <= 6 {
 			result, err := queryTile(c, zxy)
+			resultHash := md5.Sum(result.tile)
 			if err != nil {
 				log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
 			}
@@ -191,10 +194,10 @@ func worker(pool *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg
 			wg.Add(4)
 			if zxy.z < *maxZoom {
 				go func() {
-					jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2}
-					jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2}
-					jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1}
-					jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1}
+					jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2, resultHash}
+					jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2, resultHash}
+					jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1, resultHash}
+					jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1, resultHash}
 				}()
 			}
 		} else {
@@ -205,16 +208,17 @@ func worker(pool *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg
 				stack = stack[:len(stack)-1]
 
 				result, err := queryTile(c, zxy)
+				resultHash := md5.Sum(result.tile)
 				if err != nil {
 					log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
 				}
 				results <- result
 
-				if zxy.z < *maxZoom && (len(result.tile) != 0 || zxy.z < 10) {
-					stack = append(stack, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2})
-					stack = append(stack, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2})
-					stack = append(stack, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1})
-					stack = append(stack, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1})
+				if zxy.z < *maxZoom && (bytes.Compare(zxy.parentHash[:], resultHash[:]) != 0 || zxy.z < 10) {
+					stack = append(stack, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2, resultHash})
+					stack = append(stack, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2, resultHash})
+					stack = append(stack, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1, resultHash})
+					stack = append(stack, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1, resultHash})
 				}
 			}
 		}
@@ -262,7 +266,7 @@ func main() {
 	for x := 0; x < int(math.Pow(float64(2), float64(z))); x++ {
 		for y := 0; y < int(math.Pow(float64(2), float64(z))); y++ {
 			wg.Add(1)
-			zxy := TileZxy{z, x, y}
+			zxy := TileZxy{z, x, y, [16]byte{0}}
 			go func() {
 				jobs <- zxy
 			}()
@@ -284,10 +288,10 @@ loop:
 			log.Printf("z: %d, x: %d, y: %d, bytes: %d, execution time: %s", res.z, res.x, res.y, len(res.tile), res.executionTime)
 			// }
 			if len(*outputPath) > 0 {
-				err = fsWriteTile(*outputPath, TileZxy{res.z, res.x, res.y}, res.tile)
+				err = fsWriteTile(*outputPath, res.z, res.x, res.y, res.tile)
 			}
 			if mbtiles != nil {
-				err = mbtilesWriteTile(mbtiles, TileZxy{res.z, res.x, res.y}, res.tile)
+				err = mbtilesWriteTile(mbtiles, res.z, res.x, res.y, res.tile)
 			}
 
 			if err != nil {

@@ -34,14 +34,6 @@
 node[entrance]
 {z-index: 10;}
 
-area[building],
-node[building],
-area[addr:housenumber][addr:street],
-node[addr:housenumber][addr:street],
-{z-index: 300;}
-
-area[landuse=cemetery],
-node[landuse=cemetery],
 area[amenity=grave_yard],
 node[amenity=grave_yard],
 {z-index: 800;}
@@ -52,19 +44,7 @@ line[isoline],
 node[place=continent]
 {z-index: 999;}
 
-node[place=country],
-area[man_made=pier],
-area[man_made=breakwater],
-line[man_made=pier],
-line[man_made=breakwater],
-node[man_made=pier],
-node[man_made=breakwater],
-area[waterway=dam],
-line[waterway=dam],
-line[waterway=weir],
-node[waterway=weir],
-area[landuse=military],
-node[landuse=military]
+node[place=country]
 {z-index: 1000;}
 
 node[place=state]
@@ -104,7 +84,7 @@ line[waterway=riverbank],
 line[waterway=stream],
 line[waterway=canal],
 line[natural=strait],
-line[waterway],
+line[waterway]
 {z-index: 10000;}
 
 /* 2.CONTINENTS */
@@ -563,7 +543,7 @@ node|z15-[landuse=industrial],
 node|z15-[landuse=construction],
 node|z15-[landuse=landfill],
 node|z15-[landuse=railway],
-node|z15-[landuse=quarry],
+node|z15-[landuse=quarry]
 {
   text: name;
   font-size: 10;
@@ -571,33 +551,14 @@ node|z15-[landuse=quarry],
   text-position: center;
 }
 
-/* 	7.4 Cemetry */
-
-area|z15-[landuse=cemetery],
-node|z15-[landuse=cemetery],
-area|z17-[amenity=grave_yard],
-node|z17-[amenity=grave_yard],
-{
-  text: name;
-  text-offset: 1;
-  font-size: 10;
-  text-color: @poi_label;
-}
-
-area|z15-16[landuse=cemetery]
-{icon-image: cemetery-m.svg;}
-area|z17-[landuse=cemetery],
-node|z17-[landuse=cemetery],
-area|z17-[amenity=grave_yard],
-node|z17-[amenity=grave_yard],
-{icon-image: cemetery-m.svg;}
+/* 	7.4 Cemetry - DELETED*/
 
 /* 	7.5 Pedestrian areas */
 
 area|z15-[highway=pedestrian][area?],
 area|z15-[area:highway=pedestrian],
 area|z15-[highway=footway][area?][!sac_scale],
-area|z15-[area:highway=footway],
+area|z15-[area:highway=footway]
 {
   text: name;
   font-size: 11;
@@ -605,95 +566,15 @@ area|z15-[area:highway=footway],
   text-position: center;
 }
 
-/* 	7.6 Military */
+/* 	7.6 Military - DELETED*/
 
-area|z16[landuse=military],
-node|z16[landuse=military]
-{icon-image: military-m.svg;icon-min-distance: 10;}
-
-area|z17-[landuse=military],
-node|z17-[landuse=military]
-{
-  icon-image: military-m.svg;
-  text-offset: 1;
-  text: "name:en";
-  font-size: 10;
-  text-color: @poi_label;
-}
-
-/* 	7.7 Commercial */
-
-area|z17-[landuse=commercial]
-{
-  text: name;
-  font-size: 10;
-  text-color: @poi_label;
-  text-position: center;
-}
+/* 	7.7 Commercial - DELETED*/
 
 /* 8.BUILDINGS */
 
-area|z16-[building],
-node|z16-[building],
-area|z16-[addr:housenumber][addr:street],
-node|z16-[addr:housenumber][addr:street]
-{
-  text: name;
-  text-color: @building_label;
-  text-position: center;
-}
-node|z18-[entrance]
-{text-color: @building_label;}
+/* 8.1 Pier = DELETED*/
 
-/* 8.1 Pier */
-area|z15-[waterway=dam],
-line|z15-[waterway=dam],
-line|z15-[waterway=weir],
-node|z15-[waterway=weir]
-{
-  text: name;
-  font-size: 10;
-  text-color:@poi_label;
-  fill-opacity: 1;
-}
-
-area|z17-[man_made=pier],
-area|z17-[man_made=breakwater],
-line|z17-[man_made=pier],
-line|z17-[man_made=breakwater],
-node|z17-[man_made=pier],
-node|z17-[man_made=breakwater]
-{
-  text: name;
-  font-size: 10;
-  text-color:@poi_label;
-  fill-opacity: 1;
-  -x-me-area-priority:16000;
-}
-
-/*	8.2 Building */
-area|z16[building],
-node|z16[building],
-area|z16[addr:housenumber][addr:street],
-node|z16[addr:housenumber][addr:street],
-{text:"addr:housename";font-size: 9;text-color: @housename;}
-
-area|z17[building],
-node|z17[building],
-area|z17[addr:housenumber][addr:street],
-node|z17[addr:housenumber][addr:street]
-{font-size: 9.6;}
-
-area|z18-[building],
-node|z18-[building],
-area|z18-[addr:housenumber][addr:street],
-node|z18-[addr:housenumber][addr:street]
-{font-size: 11;}
-
-node|z18-[entrance]
-{icon-image: entrance-s.svg;font-size: 10;text: ref;text-offset-x: 1;}
-node|z19-[entrance]::flats
-{text: "addr:flats";font-size: 12;text-offset-y: 10;}
+/*	8.2 Building - DELETED*/
 
 /* 8.3 Airports */
 area|z14-[aeroway=terminal]

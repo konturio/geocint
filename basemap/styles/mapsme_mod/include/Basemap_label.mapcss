@@ -34,9 +34,11 @@
 node[entrance]
 {z-index: 10;}
 
-area[amenity=grave_yard],
-node[amenity=grave_yard],
-{z-index: 800;}
+area[building],
+node[building],
+area[addr:housenumber][addr:street],
+node[addr:housenumber][addr:street],
+{z-index: 300;}
 
 line[isoline],
 {z-index: 801;}
@@ -531,19 +533,12 @@ line[waterway]
 
 /* 7. LANDUSE*/
 
-/*7.2 Hostital 7.3 University & Sport */
+/*7.2 Hospital 7.3 University & Sport */
 
 /* 	7.1 Industrial */
 
-area|z15-[landuse=industrial],
-area|z15-[landuse=construction],
 area|z15-[landuse=railway],
-area|z15-[landuse=quarry],
-node|z15-[landuse=industrial],
-node|z15-[landuse=construction],
-node|z15-[landuse=landfill],
-node|z15-[landuse=railway],
-node|z15-[landuse=quarry]
+node|z15-[landuse=railway]
 {
   text: name;
   font-size: 10;
@@ -552,6 +547,8 @@ node|z15-[landuse=quarry]
 }
 
 /* 	7.4 Cemetry - DELETED*/
+
+
 
 /* 	7.5 Pedestrian areas */
 
@@ -568,13 +565,44 @@ area|z15-[area:highway=footway]
 
 /* 	7.6 Military - DELETED*/
 
-/* 	7.7 Commercial - DELETED*/
+/* 	7.7 Commercial - DELETED */
+
 
 /* 8.BUILDINGS */
 
-/* 8.1 Pier = DELETED*/
+area|z16-[building],
+node|z16-[building],
+area|z16-[addr:housenumber][addr:street],
+node|z16-[addr:housenumber][addr:street]
+{
+  text: name;
+  text-color: @building_label;
+  text-position: center;
+}
+node|z18-[entrance]
+{text-color: @building_label;}
 
-/*	8.2 Building - DELETED*/
+/* 8.1 Pier - DELETED*/
+
+
+/*	8.2 Building */
+area|z16[building],
+node|z16[building],
+area|z16[addr:housenumber][addr:street],
+node|z16[addr:housenumber][addr:street],
+{text:"addr:housename";font-size: 9;text-color: @housename;}
+
+area|z17[building],
+node|z17[building],
+area|z17[addr:housenumber][addr:street],
+node|z17[addr:housenumber][addr:street]
+{font-size: 9.6;}
+
+area|z18-[building],
+node|z18-[building],
+area|z18-[addr:housenumber][addr:street],
+node|z18-[addr:housenumber][addr:street]
+{font-size: 11;}
 
 /* 8.3 Airports */
 area|z14-[aeroway=terminal]

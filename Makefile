@@ -586,7 +586,7 @@ data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: db/table/kontur_boundaries
 	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
 	cd data/out/kontur_boundaries/; pigz kontur_boundaries.gpkg
 
-db/table/osm_reports_list: db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
+db/table/osm_reports_list: | db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
 	psql -f tables/osm_reports_list.sql
 	touch $@
 

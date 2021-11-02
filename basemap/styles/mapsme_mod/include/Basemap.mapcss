@@ -82,14 +82,6 @@ area[landuse=village_green],
 area[landuse=field],
 {z-index: 41;}
 
-line[isoline=step_1000],
-line[isoline=step_500],
-line[isoline=step_100],
-line[isoline=step_50],
-line[isoline=step_10],
-line[isoline=zero],
-{z-index: 42;}
-
 area[natural=wetland],
 area[leisure=marina],
 line[waterway=stream][intermittent=yes]
@@ -172,8 +164,7 @@ line[barrier=wall],
 line[barrier=city_wall],
 line[barrier=retaining_wall],
 line[barrier=fence],
-line[barrier=hedge],
-line[historic=citywalls],
+line[barrier=hedge]
 {z-index: 950;}
 
 /* 2.LAND */
@@ -611,28 +602,24 @@ line|z16-[barrier=wall],
 line|z16-[barrier=city_wall],
 line|z16-[barrier=retaining_wall],
 line|z16-[barrier=hedge],
-line|z16-[barrier=fence],
-line|z16-[historic=citywalls],
+line|z16-[barrier=fence]
 {color: @fence;opacity: 1;}
 
 line|z16[barrier=wall],
 line|z16[barrier=city_wall],
 line|z16[barrier=retaining_wall],
 line|z16[barrier=fence],
-line|z16[barrier=hedge],
-line|z16[historic=citywalls],
+line|z16[barrier=hedge]
 {width: 0.7;dashes: 0.12,0.12;opacity: 0.5;}
 line|z17-[barrier=wall],
 line|z17-[barrier=city_wall],
 line|z17-[barrier=retaining_wall],
 line|z17-[barrier=fence],
-line|z17-[barrier=hedge],
-line|z17-[historic=citywalls],
+line|z17-[barrier=hedge]
 {width: 1.0;dashes: 0.25,0.25;opacity:0.7;}
 line|z18-[barrier=wall],
 line|z18-[barrier=city_wall],
 line|z18-[barrier=retaining_wall],
 line|z18-[barrier=fence],
-line|z18-[barrier=hedge],
-line|z18-[historic=citywalls],
+line|z18-[barrier=hedge]
 {width: 1.4;dashes: 0.3,0.3;}

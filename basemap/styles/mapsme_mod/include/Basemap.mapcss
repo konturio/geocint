@@ -12,7 +12,7 @@
 	6.2 Line water(river,canal etc.)
 7.LANDUSE
 	7.1 Industrial
-	7.2 Hostital
+	7.2 Hospital
 	7.3 University & Sport
 	7.4 Cemetry
 	7.5 Pedestrian areas
@@ -465,7 +465,7 @@ area|z15-[landuse=railway],
 area|z15-[landuse=quarry]
 {fill-color: @industrial;}
 
-/* 7.2 Hostital */
+/* 7.2 Hospital */
 
 area|z14-[amenity=hospital],
 area|z14-[amenity=doctors]

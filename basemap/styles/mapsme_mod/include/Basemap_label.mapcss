@@ -535,16 +535,7 @@ line[waterway]
 
 /*7.2 Hospital 7.3 University & Sport */
 
-/* 	7.1 Industrial */
-
-area|z15-[landuse=railway],
-node|z15-[landuse=railway]
-{
-  text: name;
-  font-size: 10;
-  text-color: @city_label;
-  text-position: center;
-}
+/* 	7.1 Industrial - DELETED*/
 
 /* 	7.4 Cemetry - DELETED*/
 

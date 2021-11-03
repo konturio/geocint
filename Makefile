@@ -1346,7 +1346,11 @@ db/table/pf_days_wet_bulb_in: data/in/probable_futures/data_sync | db/table ## C
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/probable_futures/20304.gremo.geojson -nln pf_days_wet_bulb_in -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/pf_maxtemp_h3: db/table/pf_night_maxtemp_in db/table/pf_days_maxtemp_in db/table/pf_days_wet_bulb_in db/table/kontur_population_h3 | db/table ## Collect PF tables into one, IDW interpolation on level 5, overviews for other h3 levels, count man-days above 32C
+db/table/pf_maxtemp_idw_h3: db/table/pf_night_maxtemp_in db/table/pf_days_maxtemp_in db/table/pf_days_wet_bulb_in | db/table ## Collect PF tables into one, IDW interpolation on level 8
+	psql -f tables/pf_maxtemp_idw_h3.sql
+	touch $@
+
+db/table/pf_maxtemp_h3: db/table/pf_maxtemp_idw_h3 db/table/kontur_population_h3 | db/table ## add man-days above 32C to PF data
 	psql -f tables/pf_maxtemp_h3.sql
 	touch $@
 

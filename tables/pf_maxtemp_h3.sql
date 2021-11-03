@@ -1,3 +1,4 @@
+-- collect all date into one table
 drop table if exists pf_maxtemp_all;
 create table pf_maxtemp_all as (select di.days_maxtemp_over_32c_1c::float,
                                        di.days_maxtemp_over_32c_2c::float,
@@ -13,15 +14,18 @@ create table pf_maxtemp_all as (select di.days_maxtemp_over_32c_1c::float,
 
 create index on pf_maxtemp_all using gist (geom);
 
+
+-- generate H3 level 4 grid covering at least one point in 22*22 km original grid
 drop table if exists pf_maxtemp_h3_r4;
 create table pf_maxtemp_h3_r4 as (select distinct h3_geo_to_h3(geom, 4) as h3
                                   from pf_maxtemp_all);
 
-drop table if exists pf_maxtemp_h3_r5;
-create table pf_maxtemp_h3_r5 as (select distinct h3_to_children(h3)           as h3,
-                                                  h3_to_children(h3)::geometry as geom
+-- generate H3 level 8 grid with data from original source
+drop table if exists pf_maxtemp_h3_r8;
+create table pf_maxtemp_h3_r8 as (select distinct h3_to_children(h3, 8)           as h3,
+                                                  h3_to_children(h3, 8)::geometry as geom
                                   from pf_maxtemp_h3_r4);
-create index on pf_maxtemp_h3_r5 using gist (geom);
+create index on pf_maxtemp_h3_r8 using gist (geom);
 
 
 drop table if exists pf_maxtemp_idw_h3;
@@ -50,10 +54,10 @@ with nearest_points as (
     from pf_maxtemp_all
              CROSS JOIN LATERAL (
         SELECT h3,
-               pf_maxtemp_h3_r5.geom                                   as h3_geom,
-               ST_Distance(pf_maxtemp_h3_r5.geom::geography, pf_maxtemp_all.geom::geography) AS dist
-        FROM pf_maxtemp_h3_r5
-        ORDER BY pf_maxtemp_all.geom <-> pf_maxtemp_h3_r5.geom
+               pf_maxtemp_h3_r8.geom                                   as h3_geom,
+               ST_Distance(pf_maxtemp_h3_r8.geom::geography, pf_maxtemp_all.geom::geography) AS dist
+        FROM pf_maxtemp_h3_r8
+        ORDER BY pf_maxtemp_all.geom <-> pf_maxtemp_h3_r8.geom
         LIMIT 4
         ) grid)
 insert
@@ -62,7 +66,7 @@ into pf_maxtemp_idw_h3 (h3, resolution,
                         days_mintemp_above_25c_1c, days_mintemp_above_25c_2c,
                         days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c)
 select h3,
-       5::integer,
+       8::integer,
        (SUM(z1 / dist) / SUM(1 / dist)) as d32_1,
        (SUM(z2 / dist) / SUM(1 / dist)) as d32_2,
        (SUM(z3 / dist) / SUM(1 / dist)) as n25_1,
@@ -72,89 +76,9 @@ select h3,
 from nearest_points
 group by h3;
 
-drop table if exists pf_maxtemp_h3_r5;
+drop table if exists pf_maxtemp_h3_r8;
 
-insert into pf_maxtemp_idw_h3 (h3, resolution,
-                               days_maxtemp_over_32c_1c, days_maxtemp_over_32c_2c,
-                               days_mintemp_above_25c_1c, days_mintemp_above_25c_2c,
-                               days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c)
-select h3_to_children(h3, 8) as h3,
-       8::integer            as resolution,
-       days_maxtemp_over_32c_1c,
-       days_maxtemp_over_32c_2c,
-       days_mintemp_above_25c_1c,
-       days_mintemp_above_25c_2c,
-       days_maxwetbulb_over_32c_1c,
-       days_maxwetbulb_over_32c_2c
-from pf_maxtemp_idw_h3;
-
-
--- generate overviews [8-6]
-do
-$$
-    declare
-        res integer;
-    begin
-        res = 8;
-        while res > 6
-            loop
-                insert into pf_maxtemp_idw_h3 (h3,
-                                               resolution,
-                                               days_maxtemp_over_32c_1c,
-                                               days_maxtemp_over_32c_2c,
-                                               days_mintemp_above_25c_1c,
-                                               days_mintemp_above_25c_2c,
-                                               days_maxwetbulb_over_32c_1c,
-                                               days_maxwetbulb_over_32c_2c)
-                select h3_to_parent(h3) as h3,
-                       (res - 1)        as resolution,
-                       max(days_maxtemp_over_32c_1c),
-                       max(days_maxtemp_over_32c_2c),
-                       max(days_mintemp_above_25c_1c),
-                       max(days_mintemp_above_25c_2c),
-                       max(days_maxwetbulb_over_32c_1c),
-                       max(days_maxwetbulb_over_32c_2c)
-                from pf_maxtemp_idw_h3
-                where resolution = res
-                group by 1;
-                res = res - 1;
-            end loop;
-    end;
-$$;
-
-
--- generate overviews [4-1]
-do
-$$
-    declare
-        res integer;
-    begin
-        res = 5;
-        while res > 0
-            loop
-                insert into pf_maxtemp_idw_h3 (h3,
-                                               resolution,
-                                               days_maxtemp_over_32c_1c,
-                                               days_maxtemp_over_32c_2c,
-                                               days_mintemp_above_25c_1c,
-                                               days_mintemp_above_25c_2c,
-                                               days_maxwetbulb_over_32c_1c,
-                                               days_maxwetbulb_over_32c_2c)
-                select h3_to_parent(h3) as h3,
-                       (res - 1)        as resolution,
-                       (avg(days_maxtemp_over_32c_1c)),
-                       (avg(days_maxtemp_over_32c_2c)),
-                       (avg(days_mintemp_above_25c_1c)),
-                       (avg(days_mintemp_above_25c_2c)),
-                       (avg(days_maxwetbulb_over_32c_1c)),
-                       (avg(days_maxwetbulb_over_32c_2c))
-                from pf_maxtemp_idw_h3
-                where resolution = res
-                group by 1;
-                res = res - 1;
-            end loop;
-    end;
-$$;
+call generate_overviews('pf_maxtemp_idw_h3', '{days_maxtemp_over_32c_1c, days_maxtemp_over_32c_2c, days_mintemp_above_25c_1c, days_mintemp_above_25c_2c, days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c}'::text[], '{avg, avg, avg, avg, avg, avg}'::text[], 8);
 
 -- The output table contains a lot of interpolated values that are all-zero.
 -- Trim them out, we don't need to output cells for them.

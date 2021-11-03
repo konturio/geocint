@@ -1960,7 +1960,7 @@ data/basemap/metadata/geocint/style_night.json: kothic/src/komap.py | data/basem
 		--locale en \
 		> $@
 
-deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja_full.json data/basemap/metadata/geocint/style_ninja.json data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json ## Deploy JSON styles for vector tiles on geocint.
+deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja_full.json data/basemap/metadata/geocint/style_ninja.json data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json | deploy/geocint ## Deploy JSON styles for vector tiles on geocint.
 	cp data/basemap/metadata/geocint/style_ninja.json /var/www/html/basemap/style_ninja.json
 	cp data/basemap/metadata/geocint/style_ninja_full.json /var/www/html/basemap/style_ninja_full.json
 	cp data/basemap/metadata/geocint/style_day.json /var/www/html/basemap/style_mwm.json

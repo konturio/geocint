@@ -1463,7 +1463,7 @@ deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint ## C
 	mv /var/www/tiles/stats /var/www/tiles/stats_old; mv /var/www/tiles/stats_new /var/www/tiles/stats
 	touch $@
 
-deploy/zigzag/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/zigzag ## Deploy vector tiles from stat_h3 table to Zigzag server.
+deploy/zigzag/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/zigzag ## Deploy vector tiles from stat_h3 table to TEST DVLP server.
 	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
 	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1482,7 +1482,7 @@ deploy/zigzag/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/zigzag ## Dep
 	'
 	touch $@
 
-deploy/sonic/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/sonic ## Deploy vector tiles from stat_h3 table to Sonic server.
+deploy/sonic/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/sonic ## Deploy vector tiles from stat_h3 table to TEST QA server.
 	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible sonic_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
 	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1501,7 +1501,7 @@ deploy/sonic/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/sonic ## Deplo
 	'
 	touch $@
 
-deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima ## Deploy vector tiles from stat_h3 table to Lima server.
+deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima ## Deploy vector tiles from stat_h3 table to PROD server.
 	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1532,7 +1532,7 @@ deploy/geocint/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/geocint ## C
 	mv /var/www/tiles/users /var/www/tiles/users_old; mv /var/www/tiles/users_new /var/www/tiles/users
 	touch $@
 
-deploy/zigzag/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/zigzag ## Deploy vector tiles from osm_users_hex table to Zigzag server.
+deploy/zigzag/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/zigzag ## Deploy vector tiles from osm_users_hex table to TEST DVLP server.
 	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_live_dashboard -m copy -a 'src=data/tiles/users_tiles.tar.bz2 dest=$$HOME/tmp/users_tiles.tar.bz2'
 	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1551,7 +1551,7 @@ deploy/zigzag/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/zigzag ## Dep
 	'
 	touch $@
 
-deploy/sonic/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/sonic ## Deploy vector tiles from osm_users_hex table to Sonic server.
+deploy/sonic/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/sonic ## Deploy vector tiles from osm_users_hex table to TEST QA server.
 	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible sonic_live_dashboard -m copy -a 'src=data/tiles/users_tiles.tar.bz2 dest=$$HOME/tmp/users_tiles.tar.bz2'
 	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1570,7 +1570,7 @@ deploy/sonic/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/sonic ## Deplo
 	'
 	touch $@
 
-deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima ## Deploy vector tiles from osm_users_hex table to Lima server.
+deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima ## Deploy vector tiles from osm_users_hex table to PROD server.
 	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_live_dashboard -m copy -a 'src=data/tiles/users_tiles.tar.bz2 dest=$$HOME/tmp/users_tiles.tar.bz2'
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1611,7 +1611,7 @@ deploy/s3/test/bivariate_tables_dump: data/out/population/bivariate_tables.sqld.
 	aws s3 cp data/out/population/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
-deploy/zigzag/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/zigzag ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on Zigzag server.
+deploy/zigzag/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/zigzag ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on TEST DVLP server.
 	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
 	ansible zigzag_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
@@ -1621,7 +1621,7 @@ deploy/zigzag/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/
 	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
-deploy/sonic/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/sonic ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on Sonic server.
+deploy/sonic/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/sonic ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on TEST QA server.
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
 	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
@@ -1751,13 +1751,13 @@ data/basemap/sprite: | data/basemap ## Directory for icon sprites used in JSON s
 data/basemap/metadata: | data/basemap ## Directory for JSON styles used with vector tiles.
 	mkdir -p $@
 
-data/basemap/metadata/zigzag: | data/basemap/metadata ## JSON styles used with vector tiles for Zigzag server (because they are path specific).
+data/basemap/metadata/zigzag: | data/basemap/metadata ## JSON styles used with vector tiles for TEST DVLP server (because they are path specific).
 	mkdir -p $@
 
-data/basemap/metadata/sonic: | data/basemap/metadata ## JSON styles used with vector tiles for Sonic server (because they are path specific).
+data/basemap/metadata/sonic: | data/basemap/metadata ## JSON styles used with vector tiles for TEST QA server (because they are path specific).
 	mkdir -p $@
 
-data/basemap/metadata/lima: | data/basemap/metadata ## JSON styles used with vector tiles for Lima server (because they are path specific).
+data/basemap/metadata/lima: | data/basemap/metadata ## JSON styles used with vector tiles for PROD server (because they are path specific).
 	mkdir -p $@
 
 data/basemap/metadata/geocint: | data/basemap/metadata ## JSON styles used with vector tiles for Geocint server (because they are path specific).
@@ -1778,7 +1778,7 @@ data/basemap/sprite_all: | data/basemap/sprite ## Build sprites currently fetche
 	wget -O data/basemap/sprite/sprite.json https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite.json?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
 	touch $@
 
-data/basemap/metadata/zigzag/style_day.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Day style JSON for Zigzag server.
+data/basemap/metadata/zigzag/style_day.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Day style JSON for TEST DVLP server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1791,7 +1791,7 @@ data/basemap/metadata/zigzag/style_day.json: kothic/src/komap.py | data/basemap/
 		--locale en \
 		> $@
 
-data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for Zigzag server.
+data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1804,7 +1804,7 @@ data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py | data/basema
 		--locale en \
 		> $@
 
-data/basemap/metadata/zigzag/style_night_ru.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for Zigzag server. (language=ru)
+data/basemap/metadata/zigzag/style_night_ru.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server. (language=ru)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1834,7 +1834,7 @@ data/basemap/metadata/zigzag/style_ninja_full.json: basemap/styles/ninja.mapcss 
 data/basemap/metadata/zigzag/style_ninja.json: kothic/src/komap.py data/basemap/metadata/zigzag/style_ninja_full.json | data/basemap/metadata/zigzag ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/zigzag/style_ninja_full.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
 
-data/basemap/metadata/sonic/style_ninja_full.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for Sonic server.
+data/basemap/metadata/sonic/style_ninja_full.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1851,7 +1851,7 @@ data/basemap/metadata/sonic/style_ninja_full.json: kothic/src/komap.py | data/ba
 data/basemap/metadata/sonic/style_ninja.json: kothic/src/komap.py data/basemap/metadata/sonic/style_ninja_full.json | data/basemap/metadata/sonic ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/sonic/style_ninja_full.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
 
-data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Day style JSON for Sonic server.
+data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Day style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1864,7 +1864,7 @@ data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/m
 		--locale en \
 		> $@
 
-data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Night style JSON for Sonic server.
+data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1877,7 +1877,7 @@ data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py | data/basemap
 		--locale en \
 		> $@
 
-data/basemap/metadata/lima/style_ninja_full.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for Lima server.
+data/basemap/metadata/lima/style_ninja_full.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for PROD server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1894,7 +1894,7 @@ data/basemap/metadata/lima/style_ninja_full.json: kothic/src/komap.py | data/bas
 data/basemap/metadata/lima/style_ninja.json: data/basemap/metadata/lima/style_ninja_full.json kothic/src/komap.py | data/basemap/metadata/lima ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/lima/style_ninja_full.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
 
-data/basemap/metadata/lima/style_day.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Day style JSON for Lima server.
+data/basemap/metadata/lima/style_day.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Day style JSON for PROD server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1907,7 +1907,7 @@ data/basemap/metadata/lima/style_day.json: kothic/src/komap.py | data/basemap/me
 		--locale en \
 		> $@
 
-data/basemap/metadata/lima/style_night.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for Lima server.
+data/basemap/metadata/lima/style_night.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1970,18 +1970,18 @@ deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja_full.js
 	cp data/basemap/metadata/geocint/style_night.json /var/www/html/basemap/style_mwm_night.json
 	touch $@
 
-data/basemap/zigzag.tar.bz2: data/basemap/metadata/zigzag/style_night_ru.json data/basemap/metadata/zigzag/style_ninja_full.json data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to Zigzag server.
+data/basemap/zigzag.tar.bz2: data/basemap/metadata/zigzag/style_night_ru.json data/basemap/metadata/zigzag/style_ninja_full.json data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST DVLP server.
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/zigzag .
 
-data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_ninja_full.json data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to Sonic server.
+data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_ninja_full.json data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST QA server.
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/sonic .
 
-data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja_full.json data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to Lima server.
+data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja_full.json data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to PROD server.
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/lima .
 
-deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to zigzag
+deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to TEST DVLP
 	rsync -ptPz -e 'ssh -p 27257' basemap.mbtiles tileserver-gl@zigzag.kontur.io:data/basemap.mbtiles.buffer
-	ansible zigzag_tileserver -m shell -a 'warn:false' -a ' \
+	ansible zigzag_tileserver_gl -m shell -a 'warn:false' -a ' \
 		set -e; \
 		set -o pipefail; \
 		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
@@ -1989,9 +1989,9 @@ deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy ba
 	'
 	touch $@
 
-deploy/sonic/basemap.mbtiles: data/basemap.mbtiles | deploy/sonic ## deploy basemap.mbtiles to sonic
+deploy/sonic/basemap.mbtiles: data/basemap.mbtiles | deploy/sonic ## deploy basemap.mbtiles to TEST QA
 	rsync -ptPz -e 'ssh -p 27257' basemap.mbtiles tileserver-gl@sonic.kontur.io:data/basemap.mbtiles.buffer
-	ansible sonic_tileserver -m shell -a 'warn:false' -a ' \
+	ansible sonic_tileserver_gl -m shell -a 'warn:false' -a ' \
 		set -e; \
 		set -o pipefail; \
 		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
@@ -1999,9 +1999,9 @@ deploy/sonic/basemap.mbtiles: data/basemap.mbtiles | deploy/sonic ## deploy base
 	'
 	touch $@
 
-deploy/lima/basemap.mbtiles: data/basemap.mbtiles | deploy/lima ## deploy basemap.mbtiles to lima
+deploy/lima/basemap.mbtiles: data/basemap.mbtiles | deploy/lima ## deploy basemap.mbtiles to PROD
 	rsync -ptPz -e 'ssh -p 27257' basemap.mbtiles tileserver-gl@lima.kontur.io:data/basemap.mbtiles.buffer
-	ansible lima_tileserver -m shell -a 'warn:false' -a ' \
+	ansible lima_tileserver_gl -m shell -a 'warn:false' -a ' \
 		set -e; \
 		set -o pipefail; \
 		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
@@ -2009,7 +2009,7 @@ deploy/lima/basemap.mbtiles: data/basemap.mbtiles | deploy/lima ## deploy basema
 	'
 	touch $@
 
-deploy/zigzag/basemap: deploy/zigzag/basemap.mbtiles data/basemap/zigzag.tar.bz2 | deploy/zigzag ## Transfer and deploy tar archive with tiles, glyphs and styles on Zigzag server.
+deploy/zigzag/basemap: deploy/zigzag/basemap.mbtiles data/basemap/zigzag.tar.bz2 | deploy/zigzag ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST DVLP server.
 	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_live_dashboard -m copy -a 'src=data/basemap/zigzag.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
 	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -2028,7 +2028,7 @@ deploy/zigzag/basemap: deploy/zigzag/basemap.mbtiles data/basemap/zigzag.tar.bz2
 	'
 	touch $@
 
-deploy/sonic/basemap: deploy/sonic/basemap.mbtiles data/basemap/sonic.tar.bz2 | deploy/sonic ## Transfer and deploy tar archive with tiles, glyphs and styles on Sonic server.
+deploy/sonic/basemap: deploy/sonic/basemap.mbtiles data/basemap/sonic.tar.bz2 | deploy/sonic ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST QA server.
 	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible sonic_live_dashboard -m copy -a 'src=data/basemap/sonic.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
 	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -2047,7 +2047,7 @@ deploy/sonic/basemap: deploy/sonic/basemap.mbtiles data/basemap/sonic.tar.bz2 | 
 	'
 	touch $@
 
-deploy/lima/basemap: deploy/lima/basemap.mbtiles data/basemap/lima.tar.bz2 | deploy/lima ## Transfer and deploy tar archive with tiles, glyphs and styles on Lima server.
+deploy/lima/basemap: deploy/lima/basemap.mbtiles data/basemap/lima.tar.bz2 | deploy/lima ## Transfer and deploy tar archive with tiles, glyphs and styles on PROD server.
 	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_live_dashboard -m copy -a 'src=data/basemap/lima.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \

@@ -137,33 +137,11 @@ area|z14-[natural=cape]
 /* 3.COUNTRIES & STATES */
 
 node|z3-[place=country]
-{text: name;text-color: @country_label;-x-me-text-priority:16000;}
+{text: name; font-size: 12; text-color: @country_label;-x-me-text-priority:16000; text-transform: uppercase}
 
 node|z5[place=state][addr:country=US],
 node|z6-10[place=state]
-{text: name;text-color: @state_label;}
-
-node|z3[place=country]
-{font-size: 10;}
-node|z4[place=country]
-{font-size: 12;}
-node|z5[place=country]
-{font-size: 13;}
-node|z6[place=country]
-{font-size: 15;}
-node|z7[place=country]
-{font-size: 17;}
-node|z8[place=country]
-{font-size: 19;}
-node|z9-[place=country]
-{font-size: 21;}
-
-node|z5[place=state][addr:country=US]
-{font-size: 11;}
-node|z6-7[place=state]
-{font-size: 11;}
-node|z8-10[place=state]
-{font-size: 12;}
+{text: name; font-size: 10; text-color: @state_label; text-transform: uppercase}
 
 /* 4.PLACES */
 
@@ -175,59 +153,46 @@ node|z6[place=city][!capital?][population>=50000],
 node|z7-8[place=city][!capital?][population>=40000],
 node|z9-11[place=city][!capital?],
 node|z12-[place=city][!capital?][population<40000],
-node|z4-[place=city][capital?][population>=0],
-{text: name;text-color: @label_dark;text-halo-radius: 1;text-halo-opacity: 1;text-halo-color: @label_halo_light;}
+{text: name;text-color: @city_label;text-halo-radius: 1;text-halo-opacity: 1;text-halo-color: @label_halo_light;}
+
+node|z4-[place=city][capital?][population>=0]
+{text: name;text-color: @capital_label;text-halo-radius: 1;text-halo-opacity: 1;text-halo-color: @label_halo_light;}
 
 node|z4[place=city][!capital?][population>=1000000],
 {font-size: 9;text-halo-opacity: 0.7;}
 
 node|z4[place=city][capital?][population>=0],
-{icon-image: star-s.svg;text-offset: 1;font-size: 10;}
+{font-size: 11;}
 
 node|z5[place=city][!capital?][population>=150000],
 {font-size: 10;text-halo-opacity: 0.6;}
 node|z5[place=city][capital?][population>=0]
-{icon-image: star-m.svg;text-offset: 1;font-size: 10.4;}
+{font-size: 11.4;}
 
 node|z6[place=city][!capital?][population>=50000]
 {font-size: 10.4;text-halo-opacity: 0.6;}
 node|z6[place=city][capital?][population>=0]
-{icon-image: star-l.svg;text-offset: 1;font-size: 11.6;}
-
-node|z7[place=city][!capital?][population>=40000]
-{font-size: 10;text-halo-opacity: 0.8;}
-node|z7[place=city][capital?][population>=0]
-{icon-image: star-l.svg;text-offset: 1;font-size: 11;}
-
-node|z8[place=city][!capital?][population>=40000]
-{font-size: 10.5;}
-node|z8[place=city][capital?][population>=0]
-{icon-image: star-l.svg;text-offset: 1;font-size: 11.5;}
-
-node|z9[place=city][capital?][population>=0]
-{icon-image: star-l.svg;text-offset: 1;font-size: 13;  text-halo-radius: 0.5;}
-node|z9[place=city][!capital?][population>=0],
-{font-size: 11;text-halo-radius: 0.5;}
-
-node|z10[place=city][capital?][population>=0]
-{icon-image: star-l.svg;text-offset: 1;font-size: 13;}
-node|z10[place=city][!capital?][population>=0],
-{font-size: 11;text-halo-radius: 0.9;}
-
-node|z11[place=city][capital?][population>=0]
-{icon-image: star-l.svg;text-offset: 1;font-size: 12;}
-node|z11[place=city][!capital?][population>=0],
 {font-size: 12;}
 
-node|z12[place=city][capital?][population>=0]
-{icon-image: star-l.svg;text-offset: 1;font-size: 13;}
-node|z12[place=city][!capital?][population>=0],
-{font-size: 13;text-color: @label_medium;}
+node|z7-8[place=city][!capital?][population>=40000]
+{font-size: 10.5;text-halo-opacity: 0.8;}
+node|z7-8[place=city][capital?][population>=0]
+{font-size: 12.2;}
+
+node|z9-10[place=city][capital?][population>=0]
+{font-size: 12.5;  text-halo-radius: 0.5;}
+node|z9-10[place=city][!capital?][population>=0],
+{font-size: 11;text-halo-radius: 0.5;}
+
+node|z11-12[place=city][capital?][population>=0]
+{font-size: 13;}
+node|z11-12[place=city][!capital?][population>=0],
+{font-size: 11.5;}
 
 node|z13-[place=city][capital?][population>=0]
-{icon-image: star-l.svg;text-offset: 1;font-size: 14;text-color: @label_medium;}
+{font-size: 14;}
 node|z13-[place=city][!capital?][population>=0],
-{font-size: 14;text-color: @label_medium;}
+{font-size: 13;}
 
 /* 4.2 Town */
 
@@ -236,21 +201,16 @@ node|z9[place=town][population>=20000]
 {
   text: name;
   text-color: @city_label;
+  font-size:10;
 }
 node|z10-[place=town][population<20000],
 {
   text: name;
-  text-color: @label_medium;
+  text-color: @city_label;
   text-halo-radius: 1;
   text-halo-opacity: 0.8;
   text-halo-color: @label_halo_light;
 }
-
-node|z8[place=town][population>=40000]
-{font-size: 10;}
-
-node|z9[place=town][population>=20000]
-{font-size: 10;}
 
 node|z10[place=town][population<20000]
 {font-size: 10;text-color: @city_label;text-halo-opacity: 0.7;}
@@ -262,7 +222,7 @@ node|z12[place=town][population>=0]
 {font-size: 12;text-halo-opacity: 1;}
 
 node|z13-[place=town][population>=0]
-{font-size: 14;}
+{font-size: 13;}
 
 /* 4.3 Village */
 
@@ -273,27 +233,17 @@ node|z11-[place=village]
   text-halo-radius: 1;
   text-halo-opacity: 0.7;
   text-halo-color: @label_halo_light;
+  font-size: 11;
 }
 node|z13-[place=hamlet]
 {
   text: name;
-  text-color: @label_light;
+  text-color: @city_label;
   text-halo-radius: 1;
   text-halo-opacity: 0.6;
   text-halo-color: @label_halo_light;
+  font-size: 10;
 }
-
-node|z11[place=village]
-{font-size: 10;}
-
-node|z12[place=village]
-{font-size: 11;}
-
-node|z13-[place=village]
-{font-size: 12;text-color: @label_medium;text-halo-opacity: 0.8;}
-
-node|z13-[place=hamlet]
-{font-size: 11;}
 
 /* 4.4 Districts & Small localities */
 

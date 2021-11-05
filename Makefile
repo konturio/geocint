@@ -11,7 +11,7 @@ prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api
 basemap_all: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build.
 	touch $@
 
-basemap_dev: deploy/geocint/basemap deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment.
+basemap_dev: deploy/geocint/basemap_mapcss deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment.
 	touch $@
 
 basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
@@ -19,7 +19,7 @@ basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
-	rm -rf deploy/ kothic data/basemap data/tiles/basemap data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
+	rm -rf deploy/ kothic data/basemap data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
 	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
@@ -1736,9 +1736,8 @@ scripts/basemap.sql: kothic/src/komap.py | db/function ## Generate SQL functions
 		> scripts/basemap.sql
 	touch $@
 
-data/tiles/basemap_all: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql db/table/water_polygons_vector db/table/land_polygons_vector | data/tiles ## Generating vector tiles.
-	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 11 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/basemap
-	touch $@
+data/basemap.mbtiles: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql db/table/land_polygons_vector | data ## Generating vector tiles.
+	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 14 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-mbtiles $@
 
 data/basemap: | data ## Directory for MAPCSS styles, icon sprites and font glyphs used with vector tiles.
 	mkdir -p $@
@@ -1843,7 +1842,7 @@ data/basemap/metadata/sonic/style_ninja_full.json: kothic/src/komap.py | data/ba
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/ninja.mapcss \
 		--tiles-max-zoom 9 \
-		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
 		--locale en \
@@ -1860,7 +1859,7 @@ data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/m
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-clear/style.mapcss \
 		--tiles-max-zoom 9 \
-		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
@@ -1873,7 +1872,7 @@ data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py | data/basemap
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 9 \
-		--tiles-url https://sonic.kontur.io/tiles/basemap/{z}/{x}/{y}.mvt \
+		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
@@ -1886,7 +1885,7 @@ data/basemap/metadata/lima/style_ninja_full.json: kothic/src/komap.py | data/bas
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/ninja.mapcss \
 		--tiles-max-zoom 9 \
-		--tiles-url https://disaster.ninja/tiles/basemap/{z}/{x}/{y}.mvt \
+		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
 		--locale en \
@@ -1971,24 +1970,46 @@ deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja_full.js
 	cp data/basemap/metadata/geocint/style_night.json /var/www/html/basemap/style_mwm_night.json
 	touch $@
 
-deploy/geocint/basemap: deploy/geocint/basemap_mapcss data/tiles/basemap_all data/basemap/glyphs_all | deploy/geocint ## Deploy glyphs and tiles for vector tiles on geocint.
-	rm -rf /var/www/tiles/basemap_new; mkdir -p /var/www/tiles/basemap_new
-	cp -a data/tiles/basemap/. /var/www/tiles/basemap_new/
-	rm -rf /var/www/tiles/basemap_old
-	mv /var/www/tiles/basemap /var/www/tiles/basemap_old; mv /var/www/tiles/basemap_new /var/www/tiles/basemap
-	cp -r data/basemap/glyphs/. /var/www/html/basemap/glyphs
+data/basemap/zigzag.tar.bz2: data/basemap/metadata/zigzag/style_night_ru.json data/basemap/metadata/zigzag/style_ninja_full.json data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to Zigzag server.
+	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/zigzag .
+
+data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_ninja_full.json data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to Sonic server.
+	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/sonic .
+
+data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja_full.json data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to Lima server.
+	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/lima .
+
+deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to zigzag
+	rsync -ptPz -e 'ssh -p 27257' basemap.mbtiles tileserver-gl@zigzag.kontur.io:data/basemap.mbtiles.buffer
+	ansible zigzag_tileserver -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
+		systemctl --user restart podman.tileserver-gl.service; \
+	'
 	touch $@
 
-data/basemap/zigzag.tar.bz2: data/basemap/metadata/zigzag/style_night_ru.json data/basemap/metadata/zigzag/style_ninja_full.json data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to Zigzag server.
-	tar cvf $@ --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C sprite . -C ../metadata/zigzag .
+deploy/sonic/basemap.mbtiles: data/basemap.mbtiles | deploy/sonic ## deploy basemap.mbtiles to sonic
+	rsync -ptPz -e 'ssh -p 27257' basemap.mbtiles tileserver-gl@sonic.kontur.io:data/basemap.mbtiles.buffer
+	ansible sonic_tileserver -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
+		systemctl --user restart podman.tileserver-gl.service; \
+	'
+	touch $@
 
-data/basemap/sonic.tar.bz2: data/tiles/basemap_all data/basemap/metadata/sonic/style_ninja_full.json data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to Sonic server.
-	tar cvf $@ --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C sprite . -C ../metadata/sonic .
+deploy/lima/basemap.mbtiles: data/basemap.mbtiles | deploy/lima ## deploy basemap.mbtiles to lima
+	rsync -ptPz -e 'ssh -p 27257' basemap.mbtiles tileserver-gl@lima.kontur.io:data/basemap.mbtiles.buffer
+	ansible lima_tileserver -m shell -a 'warn:false' -a ' \
+		set -e; \
+		set -o pipefail; \
+		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
+		systemctl --user restart podman.tileserver-gl.service; \
+	'
+	touch $@
 
-data/basemap/lima.tar.bz2: data/tiles/basemap_all data/basemap/metadata/lima/style_ninja_full.json data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to Lima server.
-	tar cvf $@ --use-compress-prog=pbzip2 -C data/tiles/basemap . -C ../../basemap glyphs -C sprite . -C ../metadata/lima .
-
-deploy/zigzag/basemap: data/basemap/zigzag.tar.bz2 | deploy/zigzag ## Transfer and deploy tar archive with tiles, glyphs and styles on Zigzag server.
+deploy/zigzag/basemap: deploy/zigzag/basemap.mbtiles data/basemap/zigzag.tar.bz2 | deploy/zigzag ## Transfer and deploy tar archive with tiles, glyphs and styles on Zigzag server.
 	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_live_dashboard -m copy -a 'src=data/basemap/zigzag.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
 	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -2007,7 +2028,7 @@ deploy/zigzag/basemap: data/basemap/zigzag.tar.bz2 | deploy/zigzag ## Transfer a
 	'
 	touch $@
 
-deploy/sonic/basemap: data/basemap/sonic.tar.bz2 | deploy/sonic ## Transfer and deploy tar archive with tiles, glyphs and styles on Sonic server.
+deploy/sonic/basemap: deploy/sonic/basemap.mbtiles data/basemap/sonic.tar.bz2 | deploy/sonic ## Transfer and deploy tar archive with tiles, glyphs and styles on Sonic server.
 	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible sonic_live_dashboard -m copy -a 'src=data/basemap/sonic.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
 	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -2026,7 +2047,7 @@ deploy/sonic/basemap: data/basemap/sonic.tar.bz2 | deploy/sonic ## Transfer and 
 	'
 	touch $@
 
-deploy/lima/basemap: data/basemap/lima.tar.bz2 | deploy/lima ## Transfer and deploy tar archive with tiles, glyphs and styles on Lima server.
+deploy/lima/basemap: deploy/lima/basemap.mbtiles data/basemap/lima.tar.bz2 | deploy/lima ## Transfer and deploy tar archive with tiles, glyphs and styles on Lima server.
 	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_live_dashboard -m copy -a 'src=data/basemap/lima.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \

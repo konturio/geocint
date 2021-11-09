@@ -1,10 +1,10 @@
 all: prod dev basemap_all data/out/abu_dhabi_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/geocint/osm_population_inconsistencies.csv deploy/geocint/osm_gadm_comparison.csv deploy/geocint/population_check_osm.csv deploy/geocint/osm_reports_list.json db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/geocint/osm_population_inconsistencies.csv deploy/geocint/osm_gadm_comparison.csv deploy/geocint/population_check_osm.csv deploy/geocint/osm_reports_list.json db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/zigzag/reports deploy/sonic/reports ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries reports/population_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/lima/reports data/out/reports/population_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Pipeline finished. Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -30,9 +30,6 @@ data: ## Temporary file based datasets. Located on bcache. Some files could be r
 	mkdir -p $@
 
 db: ## Directory for storing database objects creation footprints.
-	mkdir -p $@
-
-reports: ## Directory for storing reports.
 	mkdir -p $@
 
 db/function: | db ## Directory for storing database functions footprints.
@@ -80,6 +77,9 @@ data/out/population: | data/out ## Directory for storing data_stat_h3 and bivari
 data/out/kontur_boundaries: | data/out ## Directory for Kontur Boundaries final dataset.
 	mkdir -p $@
 
+data/out/reports: | data/out ## Directory for OpenStreetMap quality reports.
+	mkdir -p $@
+
 data/in/gadm: | data/in ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
 	mkdir -p $@
 
@@ -122,12 +122,21 @@ deploy/s3/test: | deploy/s3 ## Target-created directory for deployments on S3 te
 deploy/s3/prod: | deploy/s3 ## Target-created directory for deployments on S3 prod division.
 	mkdir -p $@
 
+deploy/s3/test/reports: | deploy/s3/test ## Target-created directory for OpenStreetMap quality reports test deployments on S3.
+	mkdir -p $@
+
+deploy/s3/prod/reports: | deploy/s3/prod ## Target-created directory for OpenStreetMap quality reports production deployments on S3.
+	mkdir -p $@
+
 deploy/geocint/isochrone_tables: db/table/osm_road_segments db/table/osm_road_segments_new db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx db/index/osm_road_segments_new_seg_geom_idx ## Make sure OpenStreetMap road graph for City Split Tool is ready.
 	touch $@
 
 deploy/geocint/belarus-latest.osm.pbf: data/belarus-latest.osm.pbf | deploy/geocint ## Copy belarus-latest.osm.pbf to public_html folder to make it available online.
 	cp data/belarus-latest.osm.pbf ~/public_html/belarus-latest.osm.pbf
 	touch $@
+
+deploy/geocint/reports: | deploy/geocint ## Directory for storing deploy ready OpenStreetMap quality report files.
+	mkdir -p $@
 
 deploy/lima/osrm-backend-by-car: deploy/geocint/belarus-latest.osm.pbf | deploy/lima ## Send message through Amazon Simple Queue Service to trigger rebuild Belarus road graph in OSRM in Docker on remote server.
 	aws sqs send-message --output json --region eu-central-1 --queue-url https://sqs.eu-central-1.amazonaws.com/001426858141/PuppetmasterInbound.fifo --message-body '{"jsonrpc":"2.0","method":"rebuildDockerImage","params":{"imageName":"kontur-osrm-backend-by-car","osmPbfUrl":"https://geocint.kontur.io/gis/belarus-latest.osm.pbf"},"id":"'`uuid`'"}' --message-group-id rebuildDockerImage--kontur-osrm-backend-by-car
@@ -602,34 +611,77 @@ db/table/population_check_osm: db/table/kontur_boundaries db/table/osm_reports_l
 	psql -f tables/population_check_osm.sql
 	touch $@
 
-reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
+data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
 	psql -qXc 'copy (select * from osm_gadm_comparison order by "Admin level"::int, "GADM name") to stdout with (format csv, header true, delimiter ";");' > $@
 
-reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
+data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | data/out/reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
 	psql -qXc 'copy (select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ";");' > $@
 
-reports/population_check_osm.csv: db/table/population_check_osm | reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
+data/out/reports/population_check_osm.csv: db/table/population_check_osm | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
 	psql -qXc 'copy (select osm_id as "OSM id", coalesce(name_en, name) as "Name", pop_date as "OSM population date", osm_pop as "OSM population", kontur_pop as "Kontur population", diff_pop as "Population difference", round(diff_log::numeric, 2) as "Logarithmic population difference" from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-reports/osm_reports_list.json: db/table/osm_reports_list db/table/osm_gadm_comparison db/table/osm_population_inconsistencies db/table/population_check_osm | reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja
+data/out/reports/osm_reports_list.json: db/table/osm_reports_list db/table/osm_gadm_comparison db/table/osm_population_inconsistencies db/table/population_check_osm | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja
 	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' > $@
 	touch $@
 
-deploy/geocint/osm_gadm_comparison.csv: reports/osm_gadm_comparison.csv | deploy/geocint ## Copy OSM-GADM comparison report to public_html folder to make it available online.
-	cp reports/osm_gadm_comparison.csv ~/public_html/osm_gadm_comparison.csv
+deploy/geocint/reports/osm_gadm_comparison.csv: data/out/reports/osm_gadm_comparison.csv | deploy/geocint/reports ## Copy OSM-GADM comparison report to public_html folder to make it available online.
+	mkdir -p ~/public_html/reports && cp data/out/reports/osm_gadm_comparison.csv ~/public_html/reports/osm_gadm_comparison.csv
 	touch $@
 
-deploy/geocint/osm_population_inconsistencies.csv: reports/osm_population_inconsistencies.csv | deploy/geocint ## Copy osm population inconsistencies report to public_html folder to make it available online.
-	cp reports/osm_population_inconsistencies.csv ~/public_html/osm_population_inconsistencies.csv
+deploy/geocint/reports/osm_population_inconsistencies.csv: data/out/reports/osm_population_inconsistencies.csv | deploy/geocint/reports ## Copy osm population inconsistencies report to public_html folder to make it available online.
+	mkdir -p ~/public_html/reports && cp data/out/reports/osm_population_inconsistencies.csv ~/public_html/reports/osm_population_inconsistencies.csv
 	touch $@
 
-deploy/geocint/population_check_osm.csv: reports/population_check_osm.csv | deploy/geocint  ## Copy osm population check report to public_html folder to make it available online.
-	cp reports/population_check_osm.csv ~/public_html/population_check_osm.csv
+deploy/geocint/reports/population_check_osm.csv: data/out/reports/population_check_osm.csv | deploy/geocint/reports  ## Copy osm population check report to public_html folder to make it available online.
+	mkdir -p ~/public_html/reports && cp data/out/reports/population_check_osm.csv ~/public_html/reports/population_check_osm.csv
 	touch $@
 
-deploy/geocint/osm_reports_list.json: reports/osm_reports_list.json | deploy/geocint ## Copy reports JSON file to public_html folder to make it available online.
-	cp reports/osm_reports_list.json ~/public_html/osm_reports_list.json
+deploy/geocint/reports/osm_reports_list.json: data/out/reports/osm_reports_list.json | deploy/geocint/reports ## Copy reports JSON file to public_html folder to make it available online.
+	mkdir -p ~/public_html/reports && cp data/out/reports/osm_reports_list.json ~/public_html/reports/osm_reports_list.json
+	touch $@
+
+deploy/geocint/test/reports/reports.tar.gz: deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/test/reports  ## OSM quality reports (most recent) testing archive.
+	rm -f ~/public_html/test/reports.tar.gz
+	cd ~/public_html/reports; tar -cf test_reports.tar.gz -I pigz osm_reports_list.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv
+	touch $@
+
+deploy/geocint/prod/reports/reports.tar.gz: deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/prod/reports  ## OSM quality reports (most recent) production archive.
+	rm -f ~/public_html/prod/reports.tar.gz
+	cd ~/public_html/reports; tar -cf prod_reports.tar.gz -I pigz osm_reports_list.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv
+	touch $@
+
+deploy/s3/test/reports/reports.tar.gz: deploy/geocint/test/reports/reports.tar.gz | deploy/s3/test/reports ## Putting reports archive to AWS test reports folder in private bucket. Before it we backup the previous reports archive.
+	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/reports/reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/test/reports/reports.tar.gz.bak --profile geocint_pipeline_sender || true
+	aws s3 cp ~/public_html/reports/test_reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/test/reports/reports.tar.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/s3/prod/reports/reports.tar.gz: deploy/geocint/prod/reports/reports.tar.gz | deploy/s3/prod/reports ## Putting reports archive to AWS production reports folder in private bucket. Before it we backup the previous reports archive.
+	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz.bak --profile geocint_pipeline_sender || true
+	aws s3 cp ~/public_html/reports/prod_reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/zigzag/reports: deploy/s3/test/reports/reports.tar.gz | deploy/zigzag ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Zigzag server.
+	ansible zigzag_disaster_ninja -m file -a 'path=$HOME/reports state=directory mode=0770'
+	ansible zigzag_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/reports/reports.tar.gz dest=$HOME/reports/reports.tar.gz mode=get'
+	ansible zigzag_disaster_ninja -m unarchive -a 'src=$HOME/reports/reports.tar.gz dest=$HOME/reports remote_src=yes'
+	ansible zigzag_disaster_ninja -m file -a 'path=$HOME/reports/reports.tar.gz state=absent'
+	touch $@
+
+deploy/sonic/reports: deploy/s3/test/reports/reports.tar.gz | deploy/sonic ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Sonic server.
+	ansible sonic_disaster_ninja -m file -a 'path=$HOME/reports state=directory mode=0770'
+	ansible sonic_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/reports/reports.tar.gz dest=$HOME/reports/reports.tar.gz mode=get'
+	ansible sonic_disaster_ninja -m unarchive -a 'src=$HOME/reports/reports.tar.gz dest=$HOME/reports remote_src=yes'
+	ansible sonic_disaster_ninja -m file -a 'path=$HOME/reports/reports.tar.gz state=absent'
+	touch $@
+
+deploy/lima/reports: deploy/s3/prod/reports/reports.tar.gz | deploy/lima ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Lima server.
+	ansible lima_disaster_ninja -m file -a 'path=$HOME/reports state=directory mode=0770'
+	ansible lima_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/reports/reports.tar.gz dest=$HOME/reports/reports.tar.gz mode=get'
+	ansible lima_disaster_ninja -m unarchive -a 'src=$HOME/reports/reports.tar.gz dest=$HOME/reports remote_src=yes'
+	ansible lima_disaster_ninja -m file -a 'path=$HOME/reports/reports.tar.gz state=absent'
 	touch $@
 
 data/in/iso_codes.csv: | data/in ## Download ISO codes for countries from wikidata.
@@ -659,11 +711,11 @@ db/table/un_population: data/in/un_population.csv | db/table ## UN (United Natio
 #	psql -f tables/population_check_un.sql
 #	touch $@
 
-#reports/population_check_un.csv: db/table/population_check_un | reports
+#data/out/reports/population_check_un.csv: db/table/population_check_un | data/out/reports
 #	psql -c 'copy (select * from population_check_un order by diff_pop) to stdout with csv header;' > $@
 #	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_boundaries | reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
+data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
 	psql -q -X -t -c 'select sum(population) from kontur_population_v2_h3 where resolution = 0' > $@__KONTUR_POP_V2
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V3
 	if [ $$(cat $@__KONTUR_POP_V3) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py geocint "Nightly build" x && exit 1; fi
@@ -671,7 +723,7 @@ reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_bo
 	rm $@__KONTUR_POP_V2 $@__KONTUR_POP_V3
 	touch $@
 
-reports/population_check: reports/population_check_osm.html reports/population_check_world | reports ## Common target of population checks.
+data/out/reports/population_check: data/out/reports/population_check_osm.html data/out/reports/population_check_world | data/out/reports ## Common target of population checks.
 	touch $@
 
 data/in/wb/gdp/wb_gdp.zip: | data/in/wb/gdp ## Download GDP (Gross domestic product) dataset from World Bank.

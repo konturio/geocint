@@ -159,7 +159,8 @@
 
 /* 6.3 Place labels */
 
-@city_label: #999999;
+@city_label: #BABABA;
+@capital_label: #D8D8D8;
 @country_label: #444444;
 @state_label: #444444;
 @district_label: #555555;

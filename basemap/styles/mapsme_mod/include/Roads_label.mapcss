@@ -105,7 +105,6 @@ line[railway=narrow_gauge],
 line[railway=tram]
 {z-index: 950;}
 
-line[highway=cycleway],
 line[highway=steps],
 node[highway=motorway_junction]
 {z-index: 1000;}
@@ -389,7 +388,6 @@ line|z18-[highway=road],
 
 /* 8.OTHERS ROADS 15-22 ZOOM */
 
-line|z15-[highway=cycleway],
 line|z15-[highway=construction],
 line|z15-[highway=proposed],
 line|z15-[highway=track],
@@ -408,11 +406,9 @@ line|z15[highway=proposed],
 line|z15[highway=bridleway],
 line|z15[highway=path],
 line|z15[highway=footway],
-line|z15[highway=cycleway],
 line|z15[highway=track]
 {font-size: 8;}
 line|z16-17[highway=ford],
-line|z16-17[highway=cycleway],
 line|z16-17[highway=construction],
 line|z16-17[highway=proposed],
 line|z16-17[highway=track],
@@ -424,7 +420,6 @@ line|z16-17[highway=bridleway],
 line|z16-17[highway=footway],
 {font-size: 9;}
 line|z18-[highway=ford],
-line|z18-[highway=cycleway],
 line|z18-[highway=construction],
 line|z18-[highway=proposed],
 line|z18-[highway=track],

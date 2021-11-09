@@ -100,7 +100,6 @@
 @unclassified: #F8F8F8;
 @pedestrian: #F8F8F8;
 @footway: #F8F8F8;
-@cycleway: #FF87AD;
 @construction: #BBBBAA;
 @track: #635730;
 @bridleway: #3D361E;
@@ -159,6 +158,7 @@
 /* 6.3 Place labels */
 
 @city_label: #666666;
+@capital_label: #555555;
 @country_label: #8C8C8C;
 @state_label: #8C8C8C;
 @district_label: #7F7F7F;

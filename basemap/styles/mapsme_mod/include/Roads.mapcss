@@ -235,9 +235,6 @@ line[aerialway=rope_tow],
 line[power=line]
 {z-index: 2000;}
 
-line[highway]
-{casing-width: 0;}
-
 /* 3.TRUNK & MOTORWAY 7-22 ZOOM */
 
 line|z7-[highway=trunk],

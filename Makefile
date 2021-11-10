@@ -1,6 +1,6 @@
 all: prod dev basemap_all data/out/abu_dhabi_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/geocint/osm_population_inconsistencies.csv deploy/geocint/osm_gadm_comparison.csv deploy/geocint/population_check_osm.csv deploy/geocint/osm_reports_list.json db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/zigzag/reports deploy/sonic/reports ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/zigzag/reports deploy/sonic/reports ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -136,6 +136,12 @@ deploy/geocint/belarus-latest.osm.pbf: data/belarus-latest.osm.pbf | deploy/geoc
 	touch $@
 
 deploy/geocint/reports: | deploy/geocint ## Directory for storing deploy ready OpenStreetMap quality report files.
+	mkdir -p $@
+
+deploy/geocint/reports/test: | deploy/geocint ## Directory for storing deploy ready OpenStreetMap quality report files (testing).
+	mkdir -p $@
+
+deploy/geocint/reports/prod: | deploy/geocint ## Directory for storing deploy ready OpenStreetMap quality report files (production).
 	mkdir -p $@
 
 deploy/lima/osrm-backend-by-car: deploy/geocint/belarus-latest.osm.pbf | deploy/lima ## Send message through Amazon Simple Queue Service to trigger rebuild Belarus road graph in OSRM in Docker on remote server.
@@ -641,23 +647,23 @@ deploy/geocint/reports/osm_reports_list.json: data/out/reports/osm_reports_list.
 	mkdir -p ~/public_html/reports && cp data/out/reports/osm_reports_list.json ~/public_html/reports/osm_reports_list.json
 	touch $@
 
-deploy/geocint/test/reports/reports.tar.gz: deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/test/reports  ## OSM quality reports (most recent) testing archive.
+deploy/geocint/reports/test/reports.tar.gz: deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/reports/test  ## OSM quality reports (most recent) testing archive.
 	rm -f ~/public_html/test/reports.tar.gz
 	cd ~/public_html/reports; tar -cf test_reports.tar.gz -I pigz osm_reports_list.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv
 	touch $@
 
-deploy/geocint/prod/reports/reports.tar.gz: deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/prod/reports  ## OSM quality reports (most recent) production archive.
+deploy/geocint/reports/prod/reports.tar.gz: deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/reports/prod  ## OSM quality reports (most recent) production archive.
 	rm -f ~/public_html/prod/reports.tar.gz
 	cd ~/public_html/reports; tar -cf prod_reports.tar.gz -I pigz osm_reports_list.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv
 	touch $@
 
-deploy/s3/test/reports/reports.tar.gz: deploy/geocint/test/reports/reports.tar.gz | deploy/s3/test/reports ## Putting reports archive to AWS test reports folder in private bucket. Before it we backup the previous reports archive.
+deploy/s3/test/reports/reports.tar.gz: deploy/geocint/reports/test/reports.tar.gz | deploy/s3/test/reports ## Putting reports archive to AWS test reports folder in private bucket. Before it we backup the previous reports archive.
 	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/reports/reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/test/reports/reports.tar.gz.bak --profile geocint_pipeline_sender || true
 	aws s3 cp ~/public_html/reports/test_reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/test/reports/reports.tar.gz --profile geocint_pipeline_sender
 	touch $@
 
-deploy/s3/prod/reports/reports.tar.gz: deploy/geocint/prod/reports/reports.tar.gz | deploy/s3/prod/reports ## Putting reports archive to AWS production reports folder in private bucket. Before it we backup the previous reports archive.
+deploy/s3/prod/reports/reports.tar.gz: deploy/geocint/reports/prod/reports.tar.gz | deploy/s3/prod/reports ## Putting reports archive to AWS production reports folder in private bucket. Before it we backup the previous reports archive.
 	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz.bak --profile geocint_pipeline_sender || true
 	aws s3 cp ~/public_html/reports/prod_reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz --profile geocint_pipeline_sender

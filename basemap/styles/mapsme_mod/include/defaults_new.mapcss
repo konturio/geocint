@@ -48,16 +48,10 @@ area::* {
 
 
 *[amenity],
-*[office],
-*[historic],
-*[tourism],
 *[leisure],
 *[man_made],
 *[natural],
-*[power],
 *[landuse],
-*[craft],
-*[internet_access],
 {
   text-position: center;
 }

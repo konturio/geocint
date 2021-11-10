@@ -31,8 +31,8 @@
 
 /* 1. Z-INDEX BASE MAP LABEL */
 
-area[addr:housenumber][addr:street],
-node[addr:housenumber][addr:street],
+area[building],
+node[addr:housenumber][addr:street][!amenity][!shop],
 {z-index: 300;}
 
 node[place=continent]
@@ -461,13 +461,14 @@ area|z15-[area:highway=footway]
 
 /* 8.BUILDINGS */
 
-area|z17-[addr:housenumber][addr:street],
-node|z17-[addr:housenumber][addr:street]
+area|z17-[building],
+node|z17-[addr:housenumber][addr:street][!amenity][!shop]
 {
   text: name;
   text-color: @building_label;
   text-position: center;
   font-size: 11;
+  text-padding: 50;
 }
 
 /* 8.1 Pier - DELETED*/

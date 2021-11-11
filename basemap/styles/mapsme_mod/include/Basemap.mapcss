@@ -100,6 +100,13 @@ line[waterway=weir],
 node[waterway=lock_gate],
 {z-index: 110;}
 
+area[man_made=pier],
+area[man_made=breakwater],
+line[man_made=pier],
+line[man_made=breakwater],
+line[man_made=cutline]
+{z-index: 120;}
+
 line[boundary=administrative]
 {z-index: 130;}
 
@@ -442,6 +449,15 @@ area|z15-19[aeroway=aerodrome]
 
 /* 8.BUILDINGS */
 
+/* 8.1 Pier */
+area|z12-[man_made=pier],
+area|z12-[man_made=breakwater],
+{fill-position: background; fill-opacity: 1; fill-color: @background;casing-color: @background;}
+
+line|z14-[man_made=pier],
+line|z14-[man_made=breakwater],
+line|z14-[man_made=cutline]
+{width: 2;color: @background;opacity: 1;}
 /* 8.1 Pier - DELETED*/
 
 /* 8.2 Building */

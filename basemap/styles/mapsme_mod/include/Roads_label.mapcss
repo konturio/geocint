@@ -109,9 +109,6 @@ line[highway=steps],
 node[highway=motorway_junction]
 {z-index: 1000;}
 
-line|z15-[hwtag=oneway]::arrows
-{z-index: 1000;}
-
 line[aerialway=cable_car]::dash,
 line[aerialway=chair_lift]::dash,
 line[aerialway=gondola]::dash,
@@ -470,20 +467,6 @@ line|z14[leisure=skiing]
 */
 
 /* 11. FERRY - DELETED*/
-
-
-/* 12. ONEWAY ARROWS  */
-
-/* line|z15-[highway=primary][hwtag=oneway]::arrows <-- не работает по типам магистралей */
-
-line|z15[hwtag=oneway]::arrows
-{pattern-offset: 80;pattern-image: arrow-xs.svg;pattern-spacing: 160;}
-line|z16[hwtag=oneway]::arrows
-{pattern-offset: 120;pattern-image: arrow-s.svg;pattern-spacing: 160;}
-line|z17[hwtag=oneway]::arrows
-{pattern-offset: 160;pattern-image: arrow-s.svg;pattern-spacing: 200;}
-line|z18-[hwtag=oneway]::arrows
-{pattern-offset: 200;pattern-image: arrow-m.svg;pattern-spacing: 200;}
 
 /* 13.JUNCTION  */
 

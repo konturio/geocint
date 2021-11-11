@@ -39,6 +39,13 @@ area[aeroway=airport],
 area[aeroway=aerodrome]
 {z-index: 1;}
 
+area[landuse=industrial],
+area[landuse=construction],
+area[landuse=churchyard],
+area[landuse=landfill],
+area[landuse=railway],
+area[landuse=quarry]
+{z-index: 3;}
 area[landuse=forest],
 area[natural=wood]
 {z-index: 30;}
@@ -112,6 +119,7 @@ line[boundary=administrative]
 
 area[leisure=nature_reserve],
 area[boundary=national_park],
+area[landuse=military]
 {z-index: 140;}
 
 area[building],
@@ -257,7 +265,7 @@ area|z14-[boundary=national_park],
 {fill-position: background; fill-opacity: 1; fill-color: @green6;}
 
 area|z14-[landuse=military]
-{fill-position: background; fill-opacity: 1; fill-color: @military;}
+{fill-position: background; fill-color: @military;}
 
 area|z14[landuse=forest],
 area|z14[natural=wood],
@@ -386,7 +394,21 @@ area|z10-[aeroway=airport],
 area|z10-[aeroway=aerodrome],
 area|z14-[amenity=grave_yard],
 area|z14-[landuse=cemetery],
-{fill-position: background;	fill-opacity: 1;}
+area|z15-[landuse=industrial],
+area|z15-[landuse=construction],
+area|z15-[landuse=landfill],
+area|z15-[landuse=railway],
+area|z15-[landuse=quarry]
+{fill-position: background;}
+
+/* 7.1 Industrial */
+
+area|z15-[landuse=industrial],
+area|z15-[landuse=construction],
+area|z15-[landuse=landfill],
+area|z15-[landuse=railway],
+area|z15-[landuse=quarry]
+{fill-color: @industrial;}
 
 /* 7.1 Industrial - DELETED*/
 

@@ -61,10 +61,10 @@
 @pedestrian_area_light: #262222;
 @university: #261F13;
 @hospital: #261916;
-@industrial: #191419;
+@industrial: #141014;
 @sport: #21211B;
 @parking: #1F1B1B;
-@military: #B71C1C;
+@military: #100000;
 
 /*4.2 Aerodrome*/
 

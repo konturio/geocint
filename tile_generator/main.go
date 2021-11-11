@@ -41,7 +41,34 @@ func mbtilesOpen(path string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	_, err = db.Exec("create table tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob)")
+	_, err = db.Exec("create table map (zoom_level integer, tile_column integer, tile_row integer, tile_id text)")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("create table images (tile_data blob, tile_id text)")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("create unique index map_index on map (zoom_level, tile_column, tile_row)")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec("create unique index images_id on images (tile_id)")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = db.Exec(`create view tiles as
+    	select
+        	map.zoom_level as zoom_level,
+        	map.tile_column as tile_column,
+        	map.tile_row as tile_row,
+        	images.tile_data as tile_data
+    	from map
+    	join images on images.tile_id = map.tile_id`)
 	if err != nil {
 		return nil, err
 	}
@@ -49,19 +76,29 @@ func mbtilesOpen(path string) (*sql.DB, error) {
 	return db, err
 }
 
-func mbtilesWriteTile(db *sql.DB, z int, x int, y int, tile []byte) error {
-	stmt, err := db.Prepare("insert into tiles (zoom_level, tile_column, tile_row, tile_data) values (?, ?, ?, ?)")
+func mbtilesWriteTile(db *sql.DB, z int, x int, y int, tile []byte, hash string) error {
+	insertMapStmt, err := db.Prepare("insert into map (zoom_level, tile_column, tile_row, tile_id) values (?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
-	defer stmt.Close()
+	defer insertMapStmt.Close()
 
-	_, err = stmt.Exec(z, x, (1<<z)-1-y, tile)
-	return err
-}
+	insertImageStmt, err := db.Prepare("insert or ignore into images (tile_data, tile_id) values (?, ?)")
+	if err != nil {
+		return err
+	}
+	defer insertMapStmt.Close()
 
-func mbtilesCreateIndexes(db *sql.DB) error {
-	_, err := db.Exec("create unique index tile_index on tiles (zoom_level, tile_column, tile_row)")
+	_, err = insertMapStmt.Exec(z, x, (1<<z)-1-y, hash)
+	if err != nil {
+		return err
+	}
+
+	_, err = insertImageStmt.Exec(hash, tile)
+	if err != nil {
+		return err
+	}
+
 	return err
 }
 
@@ -137,6 +174,7 @@ type ResultTile struct {
 	x             int
 	y             int
 	tile          []byte
+	hash          [16]byte
 	executionTime time.Duration
 }
 
@@ -147,7 +185,7 @@ func queryTile(db *pgxpool.Conn, zxy TileZxy) (ResultTile, error) {
 	err := row.Scan(&tile)
 	tileQueryElapsedTime := time.Since(tileQueryStartTime)
 
-	return ResultTile{zxy.z, zxy.x, zxy.y, tile, tileQueryElapsedTime}, err
+	return ResultTile{zxy.z, zxy.x, zxy.y, tile, md5.Sum(tile), tileQueryElapsedTime}, err
 }
 
 func worker(pool *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg *sync.WaitGroup) {
@@ -159,7 +197,6 @@ func worker(pool *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg
 
 		if zxy.z <= 6 {
 			result, err := queryTile(c, zxy)
-			resultHash := md5.Sum(result.tile)
 			if err != nil {
 				log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
 			}
@@ -169,10 +206,10 @@ func worker(pool *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg
 			wg.Add(4)
 			if zxy.z < *maxZoom {
 				go func() {
-					jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2, resultHash}
-					jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2, resultHash}
-					jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1, resultHash}
-					jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1, resultHash}
+					jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2, result.hash}
+					jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2, result.hash}
+					jobs <- TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1, result.hash}
+					jobs <- TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1, result.hash}
 				}()
 			}
 		} else {
@@ -183,17 +220,16 @@ func worker(pool *pgxpool.Pool, jobs chan TileZxy, results chan<- ResultTile, wg
 				stack = stack[:len(stack)-1]
 
 				result, err := queryTile(c, zxy)
-				resultHash := md5.Sum(result.tile)
 				if err != nil {
 					log.Fatalf("z: %d x: %d y: %d error: %s", zxy.z, zxy.x, zxy.y, err.Error())
 				}
 				results <- result
 
-				if zxy.z < *maxZoom && (bytes.Compare(zxy.parentHash[:], resultHash[:]) != 0 || zxy.z < 10) {
-					stack = append(stack, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2, resultHash})
-					stack = append(stack, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2, resultHash})
-					stack = append(stack, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1, resultHash})
-					stack = append(stack, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1, resultHash})
+				if zxy.z < *maxZoom && (bytes.Compare(zxy.parentHash[:], result.hash[:]) != 0 || zxy.z < 10) {
+					stack = append(stack, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y * 2, result.hash})
+					stack = append(stack, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y * 2, result.hash})
+					stack = append(stack, TileZxy{zxy.z + 1, zxy.x * 2, zxy.y*2 + 1, result.hash})
+					stack = append(stack, TileZxy{zxy.z + 1, zxy.x*2 + 1, zxy.y*2 + 1, result.hash})
 				}
 			}
 		}
@@ -262,7 +298,7 @@ loop:
 				err = fsWriteTile(*outputPath, res.z, res.x, res.y, res.tile)
 			}
 			if mbtiles != nil {
-				err = mbtilesWriteTile(mbtiles, res.z, res.x, res.y, res.tile)
+				err = mbtilesWriteTile(mbtiles, res.z, res.x, res.y, res.tile, fmt.Sprintf("%x", res.hash))
 			}
 
 			if err != nil {
@@ -271,13 +307,6 @@ loop:
 		case <-readDone:
 			close(jobs)
 			break loop
-		}
-	}
-
-	if mbtiles != nil {
-		err := mbtilesCreateIndexes(mbtiles)
-		if err != nil {
-			log.Fatal(err)
 		}
 	}
 }

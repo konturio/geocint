@@ -31,17 +31,9 @@
 
 /* 1. Z-INDEX BASE MAP LABEL */
 
-node[entrance]
-{z-index: 10;}
-
 area[building],
-node[building],
-area[addr:housenumber][addr:street],
-node[addr:housenumber][addr:street],
+node[addr:housenumber][addr:street][!amenity][!shop],
 {z-index: 300;}
-
-line[isoline],
-{z-index: 801;}
 
 node[place=continent]
 {z-index: 999;}
@@ -136,7 +128,7 @@ area|z14-[natural=cape]
 
 /* 3.COUNTRIES & STATES */
 
-node|z3-[place=country]
+node|z3-6[place=country]
 {text: name; font-size: 12; text-color: @country_label;-x-me-text-priority:16000; text-transform: uppercase}
 
 node|z5[place=state][addr:country=US],
@@ -152,10 +144,10 @@ node|z5[place=city][!capital?][population>=150000],
 node|z6[place=city][!capital?][population>=50000],
 node|z7-8[place=city][!capital?][population>=40000],
 node|z9-11[place=city][!capital?],
-node|z12-[place=city][!capital?][population<40000],
+node|z12-13[place=city][!capital?][population<40000],
 {text: name;text-color: @city_label;text-halo-radius: 1;text-halo-opacity: 1;text-halo-color: @label_halo_light;}
 
-node|z4-[place=city][capital?][population>=0]
+node|z4-13[place=city][capital?][population>=0]
 {text: name;text-color: @capital_label;text-halo-radius: 1;text-halo-opacity: 1;text-halo-color: @label_halo_light;}
 
 node|z4[place=city][!capital?][population>=1000000],
@@ -184,15 +176,10 @@ node|z9-10[place=city][capital?][population>=0]
 node|z9-10[place=city][!capital?][population>=0],
 {font-size: 11;text-halo-radius: 0.5;}
 
-node|z11-12[place=city][capital?][population>=0]
+node|z11-13[place=city][capital?][population>=0]
 {font-size: 13;}
-node|z11-12[place=city][!capital?][population>=0],
+node|z11-13[place=city][!capital?][population>=0],
 {font-size: 11.5;}
-
-node|z13-[place=city][capital?][population>=0]
-{font-size: 14;}
-node|z13-[place=city][!capital?][population>=0],
-{font-size: 13;}
 
 /* 4.2 Town */
 
@@ -203,7 +190,7 @@ node|z9[place=town][population>=20000]
   text-color: @city_label;
   font-size:10;
 }
-node|z10-[place=town][population<20000],
+node|z10-13[place=town][population<20000],
 {
   text: name;
   text-color: @city_label;
@@ -221,12 +208,12 @@ node|z11[place=town][population>=0]
 node|z12[place=town][population>=0]
 {font-size: 12;text-halo-opacity: 1;}
 
-node|z13-[place=town][population>=0]
+node|z13[place=town][population>=0]
 {font-size: 13;}
 
 /* 4.3 Village */
 
-node|z11-[place=village]
+node|z11-15[place=village]
 {
   text: name;
   text-color: @city_label;
@@ -235,7 +222,7 @@ node|z11-[place=village]
   text-halo-color: @label_halo_light;
   font-size: 11;
 }
-node|z13-[place=hamlet]
+node|z13-15[place=hamlet]
 {
   text: name;
   text-color: @city_label;
@@ -247,8 +234,8 @@ node|z13-[place=hamlet]
 
 /* 4.4 Districts & Small localities */
 
-node|z8-9[place=region],
-node|z10-14[place=suburb],
+node|z8-10[place=region],
+node|z11-14[place=suburb],
 node|z13-[place=locality],
 node|z13-[place=neighbourhood],
 node|z14-[place=farm],
@@ -259,8 +246,6 @@ node|z17-[landuse=residential],
   text-color: @district_label;
 }
 
-node|z10[place=suburb]
-{font-size: 8;}
 node|z11[place=suburb]
 {font-size: 9;}
 node|z12[place=suburb]
@@ -289,45 +274,16 @@ area|z16-[leisure=garden][name]
   text-halo-color: @halo_park_label;
   text-halo-radius: 0.5;
   text-halo-opacity: 0.8;
-  icon-min-distance: 10;
 }
 
-area|z14-[landuse=forest][name]
-{icon-image: nparkf-s.svg;text-offset: 1;font-size: 10;}
-area|z14-[leisure=park][name],
-{icon-image: park-s.svg;text-offset: 1;font-size: 10;}
-area|z14-[leisure=park][!name],
-area|z14-[landuse=forest][!name]
-{}/*check*/
+area|z14-15[landuse=forest][name],
+area|z14-15[leisure=park][name],
+{font-size: 11;}
 
-area|z15-[landuse=forest][name]
-{icon-image: nparkf-m.svg;text-offset: 1;font-size: 11;}
-area|z15-[leisure=park][name],
-{icon-image: park-m.svg;text-offset: 1;font-size: 11;}
-area|z15[leisure=park][!name],
-area|z15[landuse=forest][!name]
-{}/*check*/
-
-area|z16[landuse=forest][name]
-{icon-image: nparkf-m.svg;text-offset: 1;font-size: 11;}
-area|z16[leisure=park][name],
-{icon-image: park-m.svg;text-offset: 1;font-size: 11;}
-area|z16[leisure=garden][name]
-{icon-image: garden-m.svg;text-offset: 1;font-size: 11;}
-
-area|z17[landuse=forest][name]
-{icon-image: nparkf-m.svg;text-offset: 1;font-size: 12;}
-area|z17[leisure=park][name],
-{icon-image: park-m.svg;text-offset: 1;font-size: 12;}
-area|z17[leisure=garden][name]
-{icon-image: garden-m.svg;text-offset: 1;font-size: 12;}
-
-area|z18-[landuse=forest]
-{icon-image: nparkf-m.svg;text-offset: 1;font-size: 13;}
-area|z18-[leisure=park]
-{icon-image: park-m.svg;text-offset: 1;font-size: 13;}
-area|z18-[leisure=garden]
-{icon-image: garden-m.svg;text-offset: 1;font-size: 13;}
+area|z16-[landuse=forest][name],
+area|z16-[leisure=park][name],
+area|z16-[leisure=garden][name]
+{font-size: 12;}
 
 area|z15-[landuse=farmland],
 area|z15-[landuse=allotments],
@@ -442,10 +398,6 @@ area|z10-[natural=lake],
 area|z10-[landuse=reservoir],
 area|z10-[natural=water],
 {font-size: 9;}
-area|z10-[natural=lake],
-area|z10-[landuse=reservoir],
-area|z10-[natural=water],
-{font-size: 0;} /*check*/
 
 /* 6.2 Line water(river,canal etc.) Do not draw tunnel waterways */
 
@@ -489,8 +441,6 @@ line[waterway]
 
 /* 	7.4 Cemetry - DELETED*/
 
-
-
 /* 	7.5 Pedestrian areas */
 
 area|z15-[highway=pedestrian][area?],
@@ -511,39 +461,19 @@ area|z15-[area:highway=footway]
 
 /* 8.BUILDINGS */
 
-area|z16-[building],
-node|z16-[building],
-area|z16-[addr:housenumber][addr:street],
-node|z16-[addr:housenumber][addr:street]
+area|z17-[building],
+node|z17-[addr:housenumber][addr:street][!amenity][!shop]
 {
   text: name;
   text-color: @building_label;
   text-position: center;
+  font-size: 11;
+  text-padding: 50;
 }
-node|z18-[entrance]
-{text-color: @building_label;}
 
 /* 8.1 Pier - DELETED*/
 
-
-/*	8.2 Building */
-area|z16[building],
-node|z16[building],
-area|z16[addr:housenumber][addr:street],
-node|z16[addr:housenumber][addr:street],
-{text:"addr:housename";font-size: 9;text-color: @housename;}
-
-area|z17[building],
-node|z17[building],
-area|z17[addr:housenumber][addr:street],
-node|z17[addr:housenumber][addr:street]
-{font-size: 9.6;}
-
-area|z18-[building],
-node|z18-[building],
-area|z18-[addr:housenumber][addr:street],
-node|z18-[addr:housenumber][addr:street]
-{font-size: 11;}
+/*	8.2 Building -DELETED*/
 
 /* 8.3 Airports */
 area|z14-[aeroway=terminal]

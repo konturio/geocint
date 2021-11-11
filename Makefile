@@ -624,7 +624,7 @@ data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inc
 	psql -qXc 'copy (select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ";");' > $@
 
 data/out/reports/population_check_osm.csv: db/table/population_check_osm | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
-	psql -qXc 'copy (select osm_id as "OSM id", coalesce(name_en, name) as "Name", pop_date as "OSM population date", osm_pop as "OSM population", kontur_pop as "Kontur population", diff_pop as "Population difference", round(diff_log::numeric, 2) as "Logarithmic population difference" from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc 'copy (select osm_id as "OSM ID", coalesce(name_en, name) as "Name", pop_date as "OSM population date", osm_pop as "OSM population", kontur_pop as "Kontur population", diff_pop as "Population difference", round(diff_log::numeric, 2) as "Logarithmic population difference" from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/out/reports/osm_reports_list.json: db/table/osm_reports_list db/table/osm_gadm_comparison db/table/osm_population_inconsistencies db/table/population_check_osm | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja
@@ -670,24 +670,24 @@ deploy/s3/prod/reports/reports.tar.gz: deploy/geocint/reports/prod/reports.tar.g
 	touch $@
 
 deploy/zigzag/reports: deploy/s3/test/reports/reports.tar.gz | deploy/zigzag ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Zigzag server.
-	ansible zigzag_disaster_ninja -m file -a 'path=$HOME/reports state=directory mode=0770'
-	ansible zigzag_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/reports/reports.tar.gz dest=$HOME/reports/reports.tar.gz mode=get'
-	ansible zigzag_disaster_ninja -m unarchive -a 'src=$HOME/reports/reports.tar.gz dest=$HOME/reports remote_src=yes'
-	ansible zigzag_disaster_ninja -m file -a 'path=$HOME/reports/reports.tar.gz state=absent'
+	ansible zigzag_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'
+	ansible zigzag_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
+	ansible zigzag_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
+	ansible zigzag_disaster_ninja -m file -a 'path=$$HOME/reports/reports.tar.gz state=absent'
 	touch $@
 
 deploy/sonic/reports: deploy/s3/test/reports/reports.tar.gz | deploy/sonic ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Sonic server.
-	ansible sonic_disaster_ninja -m file -a 'path=$HOME/reports state=directory mode=0770'
-	ansible sonic_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/reports/reports.tar.gz dest=$HOME/reports/reports.tar.gz mode=get'
-	ansible sonic_disaster_ninja -m unarchive -a 'src=$HOME/reports/reports.tar.gz dest=$HOME/reports remote_src=yes'
-	ansible sonic_disaster_ninja -m file -a 'path=$HOME/reports/reports.tar.gz state=absent'
+	ansible sonic_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'
+	ansible sonic_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
+	ansible sonic_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
+	ansible sonic_disaster_ninja -m file -a 'path=$$HOME/reports/reports.tar.gz state=absent'
 	touch $@
 
 deploy/lima/reports: deploy/s3/prod/reports/reports.tar.gz | deploy/lima ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Lima server.
-	ansible lima_disaster_ninja -m file -a 'path=$HOME/reports state=directory mode=0770'
-	ansible lima_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/reports/reports.tar.gz dest=$HOME/reports/reports.tar.gz mode=get'
-	ansible lima_disaster_ninja -m unarchive -a 'src=$HOME/reports/reports.tar.gz dest=$HOME/reports remote_src=yes'
-	ansible lima_disaster_ninja -m file -a 'path=$HOME/reports/reports.tar.gz state=absent'
+	ansible lima_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'
+	ansible lima_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
+	ansible lima_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
+	ansible lima_disaster_ninja -m file -a 'path=$$HOME/reports/reports.tar.gz state=absent'
 	touch $@
 
 data/in/iso_codes.csv: | data/in ## Download ISO codes for countries from wikidata.

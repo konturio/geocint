@@ -42,9 +42,9 @@
   9.4 Monorail 14-22 ZOOM
   9.5 Tram line 13-22 ZOOM
   9.6 Funicular 12-22 ZOOM
-10.PISTE 12-22 ZOOM
+10.PISTE 12-22 ZOOM - DELETED
  10.1 Piste:Lift 12-22 ZOOM- DELETED
- 10.2 Aerialway 12-22 ZOOM
+ 10.2 Aerialway 12-22 ZOOM - DELETED
  10.3 Piste & Route 14-22 ZOOM - DELETED
 11.FERRY - DELETED
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -208,33 +208,6 @@ line[highway=steps],
 node[highway=motorway_junction]
 {z-index: 1000;}
 
-line[aerialway=cable_car]::dash,
-line[aerialway=chair_lift]::dash,
-line[aerialway=gondola]::dash,
-line[aerialway=mixed_lift]::dash,
-line[aerialway=drag_lift] ::dash,
-line[aerialway=j-bar]::dash,
-line[aerialway=t-bar]::dash,
-line[aerialway=magic_carpet]::dash,
-line[aerialway=platter]::dash,
-line[aerialway=rope_tow]::dash,
-{z-index: 1049;}
-
-line[aerialway=cable_car],
-line[aerialway=chair_lift],
-line[aerialway=gondola],
-line[aerialway=mixed_lift],
-line[aerialway=drag_lift],
-line[aerialway=j-bar],
-line[aerialway=t-bar],
-line[aerialway=magic_carpet],
-line[aerialway=platter],
-line[aerialway=rope_tow],
-{z-index: 1050;}
-
-line[power=line]
-{z-index: 2000;}
-
 /* 3.TRUNK & MOTORWAY 7-22 ZOOM */
 
 line|z7-[highway=trunk],
@@ -262,64 +235,52 @@ line|z14-[highway=trunk_link][bridge?]::bridgeblack,
 
 line|z7[highway=trunk],
 line|z7[highway=motorway]
-{width: 0.9;}
+{width: 1;}
 line|z8[highway=trunk],
 line|z8[highway=motorway]
-{width: 1.1;}
+{width: 1.4;}
 line|z9[highway=trunk],
 line|z9[highway=motorway]
-{width: 1.2;}
+{width: 1.6;}
 line|z10[highway=trunk],
 line|z10[highway=motorway]
-{color: @trunk_orange_medium; width: 1.5;}
+{color: @trunk_orange_medium; width: 1.9;}
 line|z11[highway=trunk],
 line|z11[highway=motorway]
-{width: 1.7;}
+{width: 2.1;}
 line|z12[highway=trunk],
 line|z12[highway=motorway]
-{color: @trunk_orange_medium; width: 1.9;}
+{color: @trunk_orange_medium; width: 2.3;}
 line|z13[highway=trunk],
 line|z13[highway=motorway],
-{width: 2.8;}
+{width: 3.2;}
 line|z13[highway=motorway_link],
 line|z13[highway=trunk_link]
-{width: 1.4;}
+{width: 1.8;}
 line|z14[highway=trunk],
 line|z14[highway=motorway],
-{width: 3.8;}
+{width: 4.2;}
 line|z14[highway=motorway_link],
 line|z14[highway=trunk_link]
-{width: 1.8;}
+{width: 2.1;}
 line|z15[highway=trunk],
 line|z15[highway=motorway],
-{width: 4.8;}
+{width: 5.2;}
 line|z15[highway=motorway_link],
 line|z15[highway=trunk_link]
-{width: 2.4;}
+{width: 2.9;}
 line|z16[highway=trunk],
 line|z16[highway=motorway],
-{width: 6;}
+{width: 6.2;}
 line|z16[highway=motorway_link],
 line|z16[highway=trunk_link]
-{width: 3;}
-line|z17[highway=trunk],
-line|z17[highway=motorway],
-{width: 9;}
-line|z17[highway=motorway_link],
-line|z17[highway=trunk_link]
-{width: 4.5;}
-line|z18[highway=trunk],
-line|z18[highway=motorway],
-{width: 12;}
-line|z18[highway=motorway_link],
-line|z18[highway=trunk_link]
-{width: 6;}
-line|z19-[highway=trunk],
-line|z19-[highway=motorway],
-{width: 15;}
-line|z19-[highway=motorway_link],
-line|z19-[highway=trunk_link]
-{width: 7.5;}
+{width: 3.1;}
+line|z17-[highway=trunk],
+line|z17-[highway=motorway],
+{width: 9.2;}
+line|z17-[highway=motorway_link],
+line|z17-[highway=trunk_link]
+{width: 4.6;}
 
 /* 3.2 Trunk & Motorway tunnel 12-22 ZOOM */
 
@@ -376,7 +337,7 @@ line|z18-[highway=trunk_link][bridge?]::bridgeblack
 
 /* 4.PRIMARY 8-22 ZOOM */
 
-line|z8-10[highway=primary],
+line|z9-10[highway=primary],
 {color: @primary_orange;opacity: 1;}
 line|z11-14[highway=primary],
 line|z11-14[highway=primary_link]
@@ -396,36 +357,28 @@ line|z14-[highway=primary_link][bridge?]::bridgeblack,
 
 /* 4.1 Primary 8-22 ZOOM */
 
-line|z8[highway=primary]
-{width: 0.9;}
 line|z9[highway=primary]
-{width: 0.8;}
-line|z10[highway=primary]
 {width: 1.2;}
-line|z11[highway=primary]
+line|z10[highway=primary]
 {width: 1.5;}
-line|z12[highway=primary]
+line|z11[highway=primary]
 {width: 1.7;}
+line|z12[highway=primary]
+{width: 2;}
 line|z13[highway=primary]
-{width: 2.4;}
+{width: 3;}
 line|z14[highway=primary],
 line|z14[highway=primary_link]
-{width: 3.2;}
+{width: 3.8;}
 line|z15[highway=primary],
 line|z15[highway=primary_link]
-{width: 4.2;}
+{width: 4.6;}
 line|z16[highway=primary],
 line|z16[highway=primary_link]
-{width: 4.8;}
-line|z17[highway=primary],
-line|z17[highway=primary_link]
-{width: 7;}
-line|z18[highway=primary],
-line|z18[highway=primary_link]
-{width: 10;}
-line|z19-[highway=primary],
-line|z19-[highway=primary_link]
-{width: 13;}
+{width: 5.2;}
+line|z17-[highway=primary],
+line|z17-[highway=primary_link]
+{width: 7.2;}
 
 /* 4.2 Primary tunnel 14-22 ZOOM */
 
@@ -460,7 +413,7 @@ line|z18-[highway=primary_link][bridge?]::bridgeblack,
 
 /* 5.SECONDARY 10-22 ZOOM */
 
-line|z10-[highway=secondary],
+line|z11-[highway=secondary],
 line|z14-[highway=secondary_link]
 {color: @secondary;opacity: 1;}
 line|z16-[highway=secondary][tunnel?],
@@ -475,8 +428,6 @@ line|z14-[highway=secondary_link][bridge?]::bridgeblack,
 
 /* 5.1 Secondary 10-22 ZOOM */
 
-line|z10[highway=secondary]
-{width: 1;}
 line|z11[highway=secondary]
 {width: 1.3;}
 line|z12[highway=secondary]
@@ -535,8 +486,8 @@ line|z18-[highway=secondary_link][bridge?]::bridgeblack
 
 /* 6.RESIDENTAL & TERTIARY 11-22 ZOOM */
 
-line|z11-[highway=residential],
-line|z11-[highway=tertiary],
+line|z12-[highway=residential],
+line|z12-[highway=tertiary],
 line|z15-[highway=residential_link],
 line|z15-[highway=tertiary_link],
 {color: @residential; opacity: 1;}
@@ -556,9 +507,6 @@ line|z14-[highway=tertiary_link][bridge?]::bridgeblack
 
 /* 6.1 Residential & Tertiary 11-22 ZOOM */
 
-line|z11[highway=residential],
-line|z11[highway=tertiary]
-{width: 0.8;}
 line|z12-13[highway=residential],
 line|z12-13[highway=tertiary]
 {width: 1.2;}
@@ -629,9 +577,9 @@ line|z18-[highway=residential][bridge?]::bridgeblack,
 
 /* 7.ROAD, STREETS, UNCLASSIFIED & SERVICE 12-22 ZOOM */
 
-line|z12-[highway=unclassified],
-line|z12-[highway=road],
-line|z12-[highway=living_street],
+line|z13-[highway=unclassified],
+line|z13-[highway=road],
+line|z13-[highway=living_street],
 line|z12-[aeroway=runway],
 line|z14-[aeroway=taxiway],
 line|z15-[highway=service],
@@ -645,10 +593,7 @@ line|z14-[highway=unclassified][bridge?]::bridgeblack,
 {casing-linecap: butt;casing-color:@bridge_casing;}
 
 /* 7.1 Road, Street, Unclassified 12-22 ZOOM */
-line|z12[highway=unclassified],
-line|z12[highway=road],
-line|z12[highway=living_street]
-{color: @residential;width: 1.2;}
+
 line|z13[highway=unclassified],
 line|z13[highway=road],
 line|z13[highway=living_street]
@@ -1100,52 +1045,7 @@ line|z15-[railway=funicular],
 
 /* 10.1 Piste:Lift 12-22 ZOOM - DELETED */
 
-/* 10.2 Aerialway 12-22 ZOOM */
-
-line|z12-15[aerialway=cable_car],
-line|z12-15[aerialway=chair_lift],
-line|z12-15[aerialway=gondola],
-line|z12-15[aerialway=mixed_lift],
-line|z12-15[aerialway=drag_lift],
-line|z12-15[aerialway=j-bar],
-line|z12-15[aerialway=t-bar],
-line|z12-15[aerialway=magic_carpet],
-line|z12-15[aerialway=platter],
-line|z12-15[aerialway=rope_tow],
-{width: 0.5;}
-line|z16-[aerialway=cable_car],
-line|z16-[aerialway=chair_lift],
-line|z16-[aerialway=gondola],
-line|z16-[aerialway=mixed_lift],
-line|z16-[aerialway=drag_lift],
-line|z16-[aerialway=j-bar],
-line|z16-[aerialway=t-bar],
-line|z16-[aerialway=magic_carpet],
-line|z16-[aerialway=platter],
-line|z16-[aerialway=rope_tow],
-{width: 1;}
-line|z12-13[aerialway=cable_car]::dash,
-line|z12-13[aerialway=chair_lift]::dash,
-line|z12-13[aerialway=gondola]::dash,
-line|z12-13[aerialway=mixed_lift]::dash,
-line|z12-13[aerialway=drag_lift] ::dash,
-line|z12-13[aerialway=j-bar]::dash,
-line|z12-13[aerialway=t-bar]::dash,
-line|z12-13[aerialway=magic_carpet]::dash,
-line|z12-13[aerialway=platter]::dash,
-line|z12-13[aerialway=rope_tow]::dash,
-{width: 2;opacity: 0.6;dashes: 0.9,18;}
-line|z14-[aerialway=cable_car]::dash,
-line|z14-[aerialway=chair_lift]::dash,
-line|z14-[aerialway=gondola]::dash,
-line|z14-[aerialway=mixed_lift]::dash,
-line|z14-[aerialway=drag_lift] ::dash,
-line|z14-[aerialway=j-bar]::dash,
-line|z14-[aerialway=t-bar]::dash,
-line|z14-[aerialway=magic_carpet]::dash,
-line|z14-[aerialway=platter]::dash,
-line|z14-[aerialway=rope_tow]::dash,
-{width: 2.5;opacity: 0.6;dashes: 0.9,18;}
+/* 10.2 Aerialway 12-22 ZOOM- DELETED*/
 
 /* 10.3 Piste & Route 14-22 ZOOM - DELETED*/
 

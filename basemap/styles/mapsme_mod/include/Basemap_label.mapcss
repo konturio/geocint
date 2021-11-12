@@ -434,7 +434,6 @@ node|z17-[addr:housenumber][addr:street][!amenity][!shop]
   text-color: @building_label;
   text-position: center;
   font-size: 11;
-  text-padding: 50;
 }
 
 /* 8.1 Pier - DELETED*/

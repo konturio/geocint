@@ -38,9 +38,9 @@
 /* 3.1 Main natural */
 
 @glacier: #141414;
-@water: #182444;
-@river: #182444;
-@wetland: #030A1E;
+@water: #001629;
+@river: #001629;
+@wetland: #000F1E;
 @beach: #28281A;
 
 /*3.2 Vegeration*/

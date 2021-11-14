@@ -729,7 +729,7 @@ data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/
 	rm $@__KONTUR_POP_V2 $@__KONTUR_POP_V3
 	touch $@
 
-data/out/reports/population_check: data/out/reports/population_check_osm.html data/out/reports/population_check_world | data/out/reports ## Common target of population checks.
+data/out/reports/population_check: data/out/reports/population_check_osm.csv data/out/reports/population_check_world | data/out/reports ## Common target of population checks.
 	touch $@
 
 data/in/wb/gdp/wb_gdp.zip: | data/in/wb/gdp ## Download GDP (Gross domestic product) dataset from World Bank.

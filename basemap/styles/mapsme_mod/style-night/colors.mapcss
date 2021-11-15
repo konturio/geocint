@@ -38,9 +38,9 @@
 /* 3.1 Main natural */
 
 @glacier: #141414;
-@water: #182444;
-@river: #182444;
-@wetland: #030A1E;
+@water: #001629;
+@river: #001629;
+@wetland: #000F1E;
 @beach: #28281A;
 
 /*3.2 Vegeration*/
@@ -88,19 +88,19 @@
 /* 5.ROADS */
 /* 5.1 All roads */
 
-@trunk: #372400;
-@trunk_orange: #381F14;
-@trunk_orange_medium: #381F14;
-@trunk_orange_light: #381F11;
-@primary_orange:  #422518;
-@primary_orange_medium: #422518;
-@primary_orange_light: #422518;
+@trunk: #2B2827;
+@trunk_orange: #2B2827;
+@trunk_orange_medium: #2B2827;
+@trunk_orange_light: #2B2827;
+@primary_orange:  #2B2827;
+@primary_orange_medium: #2B2827;
+@primary_orange_light: #2B2827;
 @secondary: #2B2827;
 @residential: #2B2827;
 @unclassified: #2B2827;
-@pedestrian: #4D4744;
+@pedestrian: #2B2827;
 @footway: #2B2827;
-@construction: #332F2D;
+@construction: #2B2827;
 @track: #2B2827;
 @bridleway: #2B2827;
 
@@ -111,9 +111,9 @@
 
 /* 5.3 Tunnels */
 
-@trunk_tunnel_orange: #381F14;
+@trunk_tunnel_orange: #2B2827;
 @trunk_tunnel_casing: #000000;
-@primary_tunnel_orange: #4C2A1B;
+@primary_tunnel_orange: #2B2827;
 @primary_tunnel_casing: #000000;
 @secondary_tunnel: #2B2827;
 @secondary_tunnel_casing:  #000000;

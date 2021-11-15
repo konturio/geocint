@@ -210,8 +210,8 @@ node[highway=motorway_junction]
 
 /* 3.TRUNK & MOTORWAY 7-22 ZOOM */
 
-line|z7-[highway=trunk],
-line|z7-[highway=motorway],
+line|z6-[highway=trunk],
+line|z6-[highway=motorway],
 line|z13-[highway=motorway_link],
 line|z13-[highway=trunk_link]
 {color: @trunk_orange_light;opacity: 1;}
@@ -233,8 +233,8 @@ line|z14-[highway=trunk_link][bridge?]::bridgeblack,
 
 /* 3.1 Trunk & Motorway 7-22 ZOOM */
 
-line|z7[highway=trunk],
-line|z7[highway=motorway]
+line|z6[highway=trunk],
+line|z6[highway=motorway]
 {width: 1;}
 line|z8[highway=trunk],
 line|z8[highway=motorway]

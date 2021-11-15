@@ -112,7 +112,7 @@ line[man_made=breakwater],
 line[man_made=cutline]
 {z-index: 120;}
 
-line[boundary=administrative]
+line[boundary=administrative][!maritime]
 {z-index: 130;}
 
 area[leisure=nature_reserve],
@@ -150,47 +150,47 @@ area|z10-[place=islet]
 
 /* 3.BOUNDARIES */
 
-line|z2-[boundary=administrative]
+line|z2-[boundary=administrative][!maritime]
 {color: @border_country;opacity: 1;}
 
-line|z4[boundary=administrative][admin_level=3],
-line|z5-[boundary=administrative][admin_level=4]
+line|z4[boundary=administrative][!maritime][admin_level=3],
+line|z5-[boundary=administrative][!maritime][admin_level=4]
 {color: @border_region;opacity: 1;}
 
 /* 3.1 Country */
 
-line|z2[boundary=administrative][admin_level=2]
+line|z2[boundary=administrative][!maritime][admin_level=2]
 {width: 0.5;opacity: 0.7;}
-line|z3[boundary=administrative][admin_level=2]
+line|z3[boundary=administrative][!maritime][admin_level=2]
 {width: 0.5;opacity: 0.8;}
-line|z4[boundary=administrative][admin_level=2]
+line|z4[boundary=administrative][!maritime][admin_level=2]
 {width: 0.6;}
-line|z5[boundary=administrative][admin_level=2]
+line|z5[boundary=administrative][!maritime][admin_level=2]
 {width: 0.8;}
-line|z6[boundary=administrative][admin_level=2]
+line|z6[boundary=administrative][!maritime][admin_level=2]
 {width: 0.85;}
-line|z7[boundary=administrative][admin_level=2]
+line|z7[boundary=administrative][!maritime][admin_level=2]
 {width: 1;}
-line|z8[boundary=administrative][admin_level=2]
+line|z8[boundary=administrative][!maritime][admin_level=2]
 {width: 1.1;}
-line|z9-[boundary=administrative][admin_level=2]
+line|z9-[boundary=administrative][!maritime][admin_level=2]
 {width: 1.4;}
 
 /* 3.2 Region */
 
-line|z4[boundary=administrative][admin_level=3]
+line|z4[boundary=administrative][!maritime][admin_level=3]
 {width: 0.8;dashes: 0.9,0.36;}
-line|z5[boundary=administrative][admin_level=4]
+line|z5[boundary=administrative][!maritime][admin_level=4]
 {width: 0.7;opacity: 0.8;dashes: 1.35,0.9;}
-line|z6[boundary=administrative][admin_level=4]
+line|z6[boundary=administrative][!maritime][admin_level=4]
 {width: 0.8;dashes: 0.9,0.45;}
-line|z7[boundary=administrative][admin_level=4]
+line|z7[boundary=administrative][!maritime][admin_level=4]
 {width: 0.9;dashes: 1.8,0.9;}
-line|z8[boundary=administrative][admin_level=4]
+line|z8[boundary=administrative][!maritime][admin_level=4]
 {width: 0.9;dashes: 1.44,1.44;}
-line|z9[boundary=administrative][admin_level=4]
+line|z9[boundary=administrative][!maritime][admin_level=4]
 {width: 1;dashes: 1.8,0.9;}
-line|z10-[boundary=administrative][admin_level=4]
+line|z10-[boundary=administrative][!maritime][admin_level=4]
 {width: 1.2;dashes: 1.8,0.9;}
 
 /* 4.VEGETATION */

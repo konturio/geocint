@@ -258,9 +258,9 @@ area|z12-13[landuse=village_green],
 area|z12-13[landuse=field],
 {fill-color: @green0;}
 
-area|z14-[leisure=nature_reserve],
-area|z14-[boundary=national_park],
-{fill-position: background; fill-opacity: 1; fill-color: @green6;}
+area|z12-[leisure=nature_reserve],
+area|z12-[boundary=national_park],
+{fill-position: background; casing-width: 1; casing-color: @green6; casing-dashes: 3,3;}
 
 area|z14-[landuse=military]
 {fill-position: background; fill-color: @military;}
@@ -468,36 +468,19 @@ line|z14-[man_made=cutline]
 
 /* 8.2 Building */
 
-area|z14[building],
-area|z14[landuse=garages],
-area|z14[building=train_station],
-{fill-color: @building; fill-opacity: 0.5;casing-width: 0;}
-
-area|z15[building],
-area|z15[landuse=garages],
-area|z15[building=train_station],
-{fill-color: @building; fill-opacity: 0.6;casing-width: 0;}
-
+area|z14-15[building],
 area|z14-15[aeroway=terminal],
-area|z16[building],
-area|z16[building:part],
-area|z16[landuse=garages],
-area|z16[building=train_station],
-{fill-color: @building;fill-opacity: 0.8;casing-width: 1;casing-color: @building_border;}
+area|z14-15[building=train_station],
+{fill-color: @building; fill-opacity: 0.6;}
 
-area|z16[aeroway=terminal],
-area|z17[building],
-area|z17[building:part],
-area|z17[landuse=garages],
-area|z17[building=train_station],
-{fill-color: @building_dark;opacity: 0.9;casing-width: 1;casing-color: @building_dark_border;}
+area|z16-[building],
+area|z16-[aeroway=terminal],
+area|z16-[building=train_station],
+area|z16-[building:part],
+{fill-color: @building; fill-opacity: 0.8;}
 
-area|z17-[aeroway=terminal],
-area|z18-[building],
-area|z18-[building:part],
-area|z18-[landuse=garages],
-area|z18-[building=train_station],
-{fill-color: @building_dark;opacity: 1;casing-width: 1;casing-color: @building_dark_border;}
+area|z15-[landuse=garages],
+{fill-color: @building_dark; fill-opacity: 0.5;}
 
 /* 8.3 Barrier */
 

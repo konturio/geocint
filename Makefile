@@ -1818,9 +1818,6 @@ data/basemap/metadata/sonic: | data/basemap/metadata ## JSON styles used with ve
 data/basemap/metadata/lima: | data/basemap/metadata ## JSON styles used with vector tiles for PROD server (because they are path specific).
 	mkdir -p $@
 
-data/basemap/metadata/geocint: | data/basemap/metadata ## JSON styles used with vector tiles for Geocint server (because they are path specific).
-	mkdir -p $@
-
 data/basemap/glyphs_all: | data/basemap/glyphs ## Target that generates glyphs (SDF) from TTFs using OpenMapTiles font builder.
 	rm -rf basemap/omt_fonts
 	git clone https://github.com/openmaptiles/fonts.git basemap/omt_fonts
@@ -1846,7 +1843,6 @@ data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py | data/basema
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--locale en \
 		> $@
 
 data/basemap/metadata/zigzag/style_night_ru.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server. (language=ru)
@@ -1862,7 +1858,33 @@ data/basemap/metadata/zigzag/style_night_ru.json: kothic/src/komap.py | data/bas
 		--locale ru \
 		> $@
 
-data/basemap/metadata/zigzag/style_day.json: basemap/styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/geocint ## Generating of Ninja style JSON for Geocint server.
+data/basemap/metadata/zigzag/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server. (language=en)
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
+		--tiles-max-zoom 14 \
+		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
+		> $@
+
+data/basemap/metadata/zigzag/style_day.json: basemap/styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Geocint server.
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/ninja.mapcss \
+		--tiles-max-zoom 14 \
+		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
+		> $@
+
+data/basemap/metadata/zigzag/style_day_en.json: basemap/styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Geocint server. (language=en)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1876,10 +1898,23 @@ data/basemap/metadata/zigzag/style_day.json: basemap/styles/ninja.mapcss kothic/
 		--locale en \
 		> $@
 
-data/basemap/metadata/zigzag/style_ninja.json: kothic/src/komap.py data/basemap/metadata/zigzag/style_day.json | data/basemap/metadata/zigzag ## Patch style to fall into osm.org tile starting from z10
-	cat data/basemap/metadata/zigzag/style_day.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
+data/basemap/metadata/zigzag/style_ninja.json: kothic/src/komap.py data/basemap/metadata/zigzag/style_day_en.json | data/basemap/metadata/zigzag ## Patch style to fall into osm.org tile starting from z10
+	cat data/basemap/metadata/zigzag/style_day_en.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
 
 data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server.
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/ninja.mapcss \
+		--tiles-max-zoom 14 \
+		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
+		> $@
+
+data/basemap/metadata/sonic/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server. (language=en)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1893,10 +1928,22 @@ data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/m
 		--locale en \
 		> $@
 
-data/basemap/metadata/sonic/style_ninja.json: kothic/src/komap.py data/basemap/metadata/sonic/style_day.json | data/basemap/metadata/sonic ## Patch style to fall into osm.org tile starting from z10
-	cat data/basemap/metadata/sonic/style_day.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
+data/basemap/metadata/sonic/style_ninja.json: kothic/src/komap.py data/basemap/metadata/sonic/style_day_en.json | data/basemap/metadata/sonic ## Patch style to fall into osm.org tile starting from z10
+	cat data/basemap/metadata/sonic/style_day_en.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
 
 data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server.
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
+		--tiles-max-zoom 14 \
+		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		> $@
+
+data/basemap/metadata/sonic/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server. (language=en)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1920,11 +1967,24 @@ data/basemap/metadata/lima/style_day.json: kothic/src/komap.py | data/basemap/me
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
+		> $@
+
+data/basemap/metadata/lima/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for PROD server. (language=en)
+	python2 kothic/src/komap.py \
+		--attribution-text "© OpenStreetMap" \
+		--minzoom 0 \
+		--maxzoom 24 \
+		--renderer=mapbox-style-language \
+		--stylesheet basemap/styles/ninja.mapcss \
+		--tiles-max-zoom 14 \
+		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
 		--locale en \
 		> $@
 
-data/basemap/metadata/lima/style_ninja.json: data/basemap/metadata/lima/style_day.json kothic/src/komap.py | data/basemap/metadata/lima ## Patch style to fall into osm.org tile starting from z10
-	cat data/basemap/metadata/lima/style_day.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
+data/basemap/metadata/lima/style_ninja.json: data/basemap/metadata/lima/style_day_en.json kothic/src/komap.py | data/basemap/metadata/lima ## Patch style to fall into osm.org tile starting from z10
+	cat data/basemap/metadata/lima/style_day_en.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
 
 data/basemap/metadata/lima/style_night.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server.
 	python2 kothic/src/komap.py \
@@ -1939,24 +1999,7 @@ data/basemap/metadata/lima/style_night.json: kothic/src/komap.py | data/basemap/
 		--locale en \
 		> $@
 
-data/basemap/metadata/geocint/style_day.json: basemap/styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/geocint ## Generating of Ninja style JSON for Geocint server.
-	python2 kothic/src/komap.py \
-		--attribution-text "© OpenStreetMap" \
-		--minzoom 0 \
-		--maxzoom 24 \
-		--renderer=mapbox-style-language \
-		--stylesheet basemap/styles/ninja.mapcss \
-		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://geocint.kontur.io/basemap/sprite \
-		--locale en \
-		> $@
-
-data/basemap/metadata/geocint/style_ninja.json: data/basemap/metadata/geocint/style_day.json kothic/src/komap.py | data/basemap/metadata/geocint ## Patch style to fall into osm.org tile starting from z10
-	cat data/basemap/metadata/geocint/style_day.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
-
-data/basemap/metadata/geocint/style_night.json: kothic/src/komap.py | data/basemap/metadata/geocint ## Generating of Night style JSON for Geocint server.
+data/basemap/metadata/lima/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server. (language=en)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1964,24 +2007,23 @@ data/basemap/metadata/geocint/style_night.json: kothic/src/komap.py | data/basem
 		--renderer=mapbox-style-language \
 		--stylesheet basemap/styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://geocint.kontur.io/basemap/glyphs/{fontstack}/{range}.pbf \
-		--locale en \
+		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-deploy/geocint/basemap_mapcss: data/basemap/metadata/geocint/style_ninja.json data/basemap/metadata/geocint/style_day.json data/basemap/metadata/geocint/style_night.json | deploy/geocint ## Deploy JSON styles for vector tiles on geocint.
-	cp data/basemap/metadata/geocint/style_ninja.json /var/www/html/basemap/style_ninja.json
-	cp data/basemap/metadata/geocint/style_day.json /var/www/html/basemap/style_mwm.json
-	cp data/basemap/metadata/geocint/style_night.json /var/www/html/basemap/style_mwm_night.json
+deploy/geocint/basemap_mapcss: data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | deploy/geocint ## Deploy JSON styles for vector tiles on geocint.
+	cp data/basemap/metadata/zigzag/style_ninja.json /var/www/html/basemap/style_ninja.json
+	cp data/basemap/metadata/zigzag/style_day.json /var/www/html/basemap/style_mwm.json
+	cp data/basemap/metadata/zigzag/style_night.json /var/www/html/basemap/style_mwm_night.json
 	touch $@
 
-data/basemap/zigzag.tar.bz2: data/basemap/metadata/zigzag/style_night_ru.json data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST DVLP server.
+data/basemap/zigzag.tar.bz2: data/basemap/metadata/zigzag/style_night_ru.json data/basemap/metadata/zigzag/style_night_en.json data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_day_en.json data/basemap/metadata/zigzag/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST DVLP server.
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/zigzag .
 
-data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST QA server.
+data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_day_en.json data/basemap/metadata/sonic/style_night.json data/basemap/metadata/sonic/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST QA server.
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/sonic .
 
-data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to PROD server.
+data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_day_en.json data/basemap/metadata/lima/style_night.json data/basemap/metadata/lima/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to PROD server.
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/lima .
 
 deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to TEST DVLP

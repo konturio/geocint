@@ -127,7 +127,7 @@ area|z14-[natural=cape]
 /* 3.COUNTRIES & STATES */
 
 node|z3-6[place=country]
-{text: name; font-size: 12; text-color: @country_label;-x-me-text-priority:16000; text-transform: uppercase}
+{text: "name:en"; font-size: 12; text-color: @country_label;-x-me-text-priority:16000; text-transform: uppercase}
 
 node|z6-10[place=state]
 {text: name; font-size: 10; text-color: @state_label; text-transform: uppercase}

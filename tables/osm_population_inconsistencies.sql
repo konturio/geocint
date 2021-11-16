@@ -62,28 +62,32 @@ having sum(b.population) filter(where b.admin_level = c.child_level) > s.populat
 drop table if exists osm_population_inconsistencies;
 create table osm_population_inconsistencies as
 with unnested as (
-    select row_number() over() id, *                                     -- enumerate rows for proper sorting further
+    select
+           unnest(array_prepend(osm_id, children)) osm_id,
+           osm_id group_id,
+           admin_level,
+           name,
+           population,
+           c_sum_pop,
+           pop_diff,
+           pop_diff_percent
     from (
-        select unnest(array_prepend(osm_id, children)) osm_id
-        from (select * from osm_admin_hierarchy order by pop_diff_percent desc) a
-    ) b
+        select *
+        from osm_admin_hierarchy
+        order by admin_level, pop_diff_percent desc
+    ) a
 )
 select
-       id,
-       h1.osm_id                                                         as "OSM ID",
-       repeat(' ', b.admin_level) ||                                     -- greater admin_level -> more spaces tabulation before name
-           case
-               when h2.name is null then '-' || b.name                   -- if the boundary itself has population inconsistency error then it's name starts without dash
-               else b.name                                               -- otherwise with dash
-           end                                                           as "Name",
-       b.admin_level                                                     as "Admin level",
-       b.population                                                      as "Population",
-       h2.c_sum_pop                                                      as "SUM subregions population",
-       coalesce('+' || h2.pop_diff::text, '-')                           as "Population difference value",
-       coalesce('+' || round(h2.pop_diff_percent, 1)::text, '-')         as "Population difference %"
-from unnested h1
-left join osm_admin_hierarchy h2 using(osm_id)
-left join osm_admin_boundaries_in b using(osm_id);
+           row_number() over()                                                              as id, -- Generic id for proper sorting while further export to CSV
+           u.osm_id                                                                         as "OSM ID",
+           case when u.group_id = u.osm_id  then o.name else ' - ' || o.name end            as "Name",
+           o.admin_level                                                                    as "Admin level",
+           o.population                                                                     as "Population",
+           case when u.group_id = u.osm_id  then u.c_sum_pop else null end                  as "SUM subregions population",
+           case when u.group_id = u.osm_id  then u.pop_diff else null end                   as "Population difference value",
+           case when u.group_id = u.osm_id  then round(u.pop_diff_percent, 4) else null end as "Population difference %"
+from unnested u
+left join osm_admin_boundaries_in o using(osm_id);
 
 
 -- Drop unnecessary tables

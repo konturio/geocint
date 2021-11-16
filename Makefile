@@ -1996,7 +1996,6 @@ data/basemap/metadata/lima/style_night.json: kothic/src/komap.py | data/basemap/
 		--tiles-max-zoom 14 \
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--locale en \
 		> $@
 
 data/basemap/metadata/lima/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server. (language=en)
@@ -2009,6 +2008,7 @@ data/basemap/metadata/lima/style_night_en.json: kothic/src/komap.py | data/basem
 		--tiles-max-zoom 14 \
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--locale en \
 		> $@
 
 deploy/geocint/basemap_mapcss: data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | deploy/geocint ## Deploy JSON styles for vector tiles on geocint.

@@ -494,7 +494,7 @@ tables.polygon = osm2pgsql.define_table{
     index_tablespace = 'evo4tb'
 }
 
-local w2b = {}
+phase2_admin_ways = {}
 
 function make_check_in_list_func(list)
     local h = {}
@@ -609,6 +609,10 @@ function osm2pgsql.process_node(object)
     tables.point:add_row(output)
 end
 
+function admin_level(v)
+    return v and string.find(v, "^-?%d+$") and tonumber(v) < 100 and tonumber(v) > 0 and v or nil
+end
+
 function osm2pgsql.process_way(object)
     -- administrative boundaries are processed on stage 2
     -- if boundary is not included in any relation it will not be inserted in database
@@ -617,18 +621,9 @@ function osm2pgsql.process_way(object)
     end
 
     -- stage 2 processing of administrative boundaries
-    if w2b[object.id] then
-        local way_admin_level
-        local boundary_admin_level
-        for _, boundary in pairs(w2b[object.id]) do
-            way_admin_level = tonumber(object.tags.admin_level) or 12
-            boundary_admin_level = tonumber(boundary.admin_level) or 12
-            if boundary_admin_level < way_admin_level then
-                object.tags.admin_level = boundary.admin_level
-            end
-            if boundary.maritime then
-                object.tags.maritime = boundary.maritime
-            end
+    if osm2pgsql.stage == 2 and phase2_admin_ways[object.id] then
+        if phase2_admin_ways[object.id].maritime then
+            object.tags.maritime = phase2_admin_ways[object.id].maritime
         end
 
         if object.tags.boundary_type == 'maritime' then
@@ -637,7 +632,7 @@ function osm2pgsql.process_way(object)
 
         output = {}
         output.boundary = 'administrative'
-        output.admin_level = object.tags.admin_level
+        output.admin_level = phase2_admin_ways[object.id].level
         output.maritime = object.tags.maritime
         output.way = { create = 'line', split_at = max_length }
         tables.line:add_row(output)
@@ -706,8 +701,22 @@ function osm2pgsql.process_way(object)
 end
 
 function osm2pgsql.select_relation_members(relation)
-    if (relation.tags.type == 'boundary') or (relation.tags.boundary == 'administrative') then
-        return { ways = osm2pgsql.way_member_ids(relation) }
+    if relation.tags.type == 'boundary' and relation.tags.boundary == 'administrative' then
+        local admin = tonumber(admin_level(relation.tags.admin_level))
+        if admin ~= nil then
+            for _, ref in ipairs(osm2pgsql.way_member_ids(relation)) do
+                if phase2_admin_ways[ref] == nil then
+                    phase2_admin_ways[ref] = {level = admin}
+                elseif admin < phase2_admin_ways[ref].level then
+                    phase2_admin_ways[ref].level = admin
+                end
+
+                if relation.tags.maritime then
+                    phase2_admin_ways[ref].maritime = relation.tags.maritime
+                end
+            end
+            return { ways = osm2pgsql.way_member_ids(relation) }
+        end
     end
 end
 
@@ -744,19 +753,7 @@ function osm2pgsql.process_relation(object)
     end
 
     local make_boundary = false
-    if type == 'boundary' or object.tags.boundary == 'administrative' then
-        for _, member in ipairs(object.members) do
-            if member.type == 'w' then
-                if not w2b[member.ref] then
-                    w2b[member.ref] = {}
-                end
-                w2b[member.ref][object.id] = {
-                    admin_level = object.tags.admin_level,
-                    maritime = object.tags.maritime
-                }
-            end
-        end
-
+    if type == 'boundary' and object.tags.boundary == 'administrative' then
         return
     end
 

@@ -222,7 +222,7 @@ db/table/covid19_us_confirmed_in: data/mid/covid19/normalized_us_confirmed_csv d
 	cat data/mid/covid19/time_series_us_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_us_confirmed_csv_in (uid, iso2, iso3, code3, fips, admin2, province, country, lat, lon, combined_key, date, value) from stdin with csv header;"
 	psql -c 'drop table if exists covid19_utah_confirmed_csv_in;'
 	psql -c 'create table covid19_utah_confirmed_csv_in (date timestamptz, confirmed_case_count int, cumulative_cases int, seven_day_average float);'
-	cat data/mid/covid19/covid19_utah.csv | psql -c "copy covid19_utah_confirmed_csv_in (date , confirmed_case_count, cumulative_cases, seven_day_average) from stdin with csv header delimiter ',';"
+	cat data/mid/covid19/covid19_utah.csv | grep -v "Case" | psql -c "copy covid19_utah_confirmed_csv_in (date, confirmed_case_count, cumulative_cases, seven_day_average) from stdin delimiter ',';"
 	psql -f tables/covid19_us_confirmed_in.sql
 	touch $@
 

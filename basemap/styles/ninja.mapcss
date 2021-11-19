@@ -7,9 +7,11 @@ line|z1-2[boundary=administrative][admin_level=2][!maritime]    { width: .4; }
 line|z3-5[boundary=administrative][admin_level=2][!maritime]    { width: 0.8; }
 line|z6-[boundary=administrative][admin_level=2][!maritime]    { width: 1.5; }
 line|z3-[boundary=administrative][admin_level=3][!maritime]    { width: .4; }
-line|z3-[boundary=administrative][admin_level=4][!maritime]    { width: .5; dashes: 12, 7, 2, 7}
-line|z6-[boundary=administrative][admin_level=5][!maritime]    { width: .5; dashes: 11, 7, 2, 7}
-line|z8-[boundary=administrative][admin_level=6][!maritime]    { width: .5; dashes: 11, 7, 2, 7}
+line|z3-8[boundary=administrative][admin_level=4][!maritime]    { width: .5; dashes: 4,4, 2,4}
+line|z9-[boundary=administrative][admin_level=4][!maritime]    { width: .5; dashes: 12, 7, 2, 7}
+line|z6-8[boundary=administrative][admin_level=5][!maritime]    { width: .5; dashes: 5,5, 2,5}
+line|z9-[boundary=administrative][admin_level=5][!maritime]    { width: .5; dashes: 11, 7, 2, 7}
+line|z9-[boundary=administrative][admin_level=6][!maritime]    { width: .5; dashes: 11, 7, 2, 7}
 line|z10-[boundary=administrative][admin_level=7][!maritime]    { width: .5; dashes: 10, 7, 2, 7}
 line|z10-[boundary=administrative][admin_level=8][!maritime]    { width: .5; dashes: 10, 7, 2, 7}
 

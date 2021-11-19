@@ -59,7 +59,7 @@ line|z13-[highway=unclassified],
 line|z13-[highway=road],
 line|z13-[highway=living_street],
 line|z15-[highway=service]
-{ width: 1.0, opacity: 0.4; color: grey}
+{ width: 1.0; opacity: 0.4; color: grey}
 
 line|z14-[highway=pedestrian],
 line|z14-[highway=ford],
@@ -77,22 +77,22 @@ line|z15-[highway=steps],
 line|z12-13[railway=rail],
 line|z12-13[railway=light_rail],
 line|z12-13[railway=yard],
-{ width: 0.4, opacity: 0.4; color: grey}
+{ width: 0.4; opacity: 0.4; color: grey}
 line|z14-[railway=rail],
 line|z14-[railway=light_rail],
 line|z14-[railway=yard],
-{ width: 0.8, opacity: 0.4; color: grey}
+{ width: 0.8; opacity: 0.4; color: grey}
 line|z15-[railway=rail]::dash,
 line|z15-[railway=light_rail]::dash,
 line|z15-[railway=yard]::dash,
-{ width: 1.2, opacity: 0.4; color: grey; dashes: 4.5, 4.5}
+{ width: 1.2; opacity: 0.4; color: grey; dashes: 4.5, 4.5}
 line|z16-[railway=preserved],
 line|z16-[railway=abandoned]
-{ width: 1.6, color: grey; dashes: 6.3, 6.3}
+{ width: 1.6; color: grey; dashes: 6.3, 6.3}
 line|z16-[railway=construction],
 line|z16-[railway=disused]
-{ width: 1.0, color: grey; dashes: 1.8, 5.4}
+{ width: 1.0; color: grey; dashes: 1.8, 5.4}
 
 line|z15-[railway=tram]
-{ width: 0.7, color: grey; opacity: 0.8}
+{ width: 0.7; color: grey; opacity: 0.8}
 

@@ -1,20 +1,20 @@
 * {color:black; text-halo-color: white; text-halo-radius: 2; text-opacity: 0.8; font-family: "Noto Sans Regular"; text-padding: 10 }
 area|z0-[natural=coastline] {fill-position: background; fill-opacity: 1; fill-color: white;}
-area|z0-2[natural=coastline]                         { width: 0.5; opacity: 0.2; color:black}
-area|z3-[natural=coastline]                         { width: 0.5; opacity: 0.3; color:black}
+area|z0-2[natural=coastline]                         { width: 0.5; opacity: 0.4; color:black}
+area|z3-[natural=coastline]                         { width: 0.5; opacity: 0.5; color:black}
 
-line[boundary=administrative]                       { opacity: 0.4 }
+line[boundary=administrative]                       { opacity: 0.5 }
 line|z1-2[boundary=administrative][admin_level=2][!maritime]    { width: .4; }
 line|z3-5[boundary=administrative][admin_level=2][!maritime]    { width: 0.8; }
 line|z6-[boundary=administrative][admin_level=2][!maritime]    { width: 1.5; }
-line|z3-[boundary=administrative][admin_level=3][!maritime]    { width: .4; }
-line|z3-8[boundary=administrative][admin_level=4][!maritime]    { width: .5; dashes: 4,4, 2,4}
-line|z9-[boundary=administrative][admin_level=4][!maritime]    { width: .5; dashes: 12, 7, 2, 7}
-line|z6-8[boundary=administrative][admin_level=5][!maritime]    { width: .5; dashes: 5,5, 2,5}
-line|z9-[boundary=administrative][admin_level=5][!maritime]    { width: .5; dashes: 11, 7, 2, 7}
-line|z9-[boundary=administrative][admin_level=6][!maritime]    { width: .5; dashes: 11, 7, 2, 7}
-line|z10-[boundary=administrative][admin_level=7][!maritime]    { width: .5; dashes: 10, 7, 2, 7}
-line|z10-[boundary=administrative][admin_level=8][!maritime]    { width: .5; dashes: 10, 7, 2, 7}
+line|z3-[boundary=administrative][admin_level=3][!maritime]    { width: .8; }
+line|z3-8[boundary=administrative][admin_level=4][!maritime]    { width: .6; dashes: 4,4, 2,4}
+line|z9-[boundary=administrative][admin_level=4][!maritime]    { width: .6; dashes: 12, 6, 2, 6}
+line|z6-8[boundary=administrative][admin_level=5][!maritime]    { width: .6; dashes: 5,5, 2,5}
+line|z9-[boundary=administrative][admin_level=5][!maritime]    { width: .6; dashes: 11, 6, 2, 6}
+line|z9-[boundary=administrative][admin_level=6][!maritime]    { width: .6; dashes: 11, 6, 2, 6}
+line|z10-[boundary=administrative][admin_level=7][!maritime]    { width: .6; dashes: 10, 5, 2, 5}
+line|z10-[boundary=administrative][admin_level=8][!maritime]    { width: .6; dashes: 10, 5, 2, 5}
 
 node|z1-[place=ocean]     { text: name:en; font-size: 15; text-transform: uppercase; font-family: "Open Sans Light Italic"; z-index: 9 }
 node|z4-[place=sea], area|z4-[place=sea]      {text: name:en; font-size: 14; text-transform: uppercase; font-family: "Open Sans Light Italic" }
@@ -78,7 +78,7 @@ line|z14-[highway=bridleway],
 {width: 1.0; color: grey; opacity: 0.4; dashes: 2.7, 1.2}
 
 line|z14-[highway=steps],
-{width: 1.0; color: grey; opacity: 0.4; dashes: 1.5, 1.5}
+{width: 1.0; color: grey; opacity: 0.4; dashes: 4, 3}
 
 /* RAILWAYS */
 
@@ -106,13 +106,13 @@ line|z14-[railway=tram]
 
 /* BUILDINGS */
 
-area|z14-15[building],
-area|z14-15[aeroway=terminal],
-area|z14-15[building=train_station],
+area|z13-16[building],
+area|z13-16[aeroway=terminal],
+area|z13-16[building=train_station],
 {fill-color: grey; fill-opacity: 0.1;}
 
-area|z16-[building],
-area|z16-[aeroway=terminal],
-area|z16-[building=train_station],
-area|z16-[building:part],
+area|z17-[building],
+area|z17-[aeroway=terminal],
+area|z17-[building=train_station],
+area|z17-[building:part],
 {fill-color: grey; fill-opacity: 0.2;}

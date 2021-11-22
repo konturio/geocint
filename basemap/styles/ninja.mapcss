@@ -38,9 +38,9 @@ node|z8-[place=hamlet]     {text: name;   font-size: 10; z-index: 2 }
 /* ROADS */
 
 line|z6-8[highway=trunk],
-line|11-[highway=trunk_link],
+line|z11-[highway=trunk_link],
 line|z6-8[highway=motorway],
-line|11-[highway=motorway_link],
+line|z11-[highway=motorway_link],
 { width: 0.8; opacity: 0.4; color: grey }
 
 line|z9-13[highway=trunk],
@@ -103,4 +103,3 @@ line|z16-[railway=disused]
 
 line|z15-[railway=tram]
 { width: 0.7; color: grey; opacity: 0.8}
-

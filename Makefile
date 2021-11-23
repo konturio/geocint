@@ -2027,7 +2027,7 @@ data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja.json data/base
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/lima .
 
 deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to TEST DVLP
-	rsync -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@zigzag.kontur.io:data/basemap.mbtiles.buffer
+	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@zigzag.kontur.io:data/basemap.mbtiles.buffer
 	ansible zigzag_tileserver_gl -m shell -a 'warn:false' -a ' \
 		set -e; \
 		set -o pipefail; \
@@ -2037,7 +2037,7 @@ deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy ba
 	touch $@
 
 deploy/sonic/basemap.mbtiles: data/basemap.mbtiles | deploy/sonic ## deploy basemap.mbtiles to TEST QA
-	rsync -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@sonic.kontur.io:data/basemap.mbtiles.buffer
+	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@sonic.kontur.io:data/basemap.mbtiles.buffer
 	ansible sonic_tileserver_gl -m shell -a 'warn:false' -a ' \
 		set -e; \
 		set -o pipefail; \
@@ -2047,7 +2047,7 @@ deploy/sonic/basemap.mbtiles: data/basemap.mbtiles | deploy/sonic ## deploy base
 	touch $@
 
 deploy/lima/basemap.mbtiles: data/basemap.mbtiles | deploy/lima ## deploy basemap.mbtiles to PROD
-	rsync -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@lima.kontur.io:data/basemap.mbtiles.buffer
+	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@lima.kontur.io:data/basemap.mbtiles.buffer
 	ansible lima_tileserver_gl -m shell -a 'warn:false' -a ' \
 		set -e; \
 		set -o pipefail; \

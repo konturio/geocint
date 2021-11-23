@@ -1899,7 +1899,7 @@ data/basemap/metadata/zigzag/style_day_en.json: basemap/styles/ninja.mapcss koth
 		> $@
 
 data/basemap/metadata/zigzag/style_ninja.json: kothic/src/komap.py data/basemap/metadata/zigzag/style_day_en.json | data/basemap/metadata/zigzag ## Patch style to fall into osm.org tile starting from z10
-	cat data/basemap/metadata/zigzag/style_day_en.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
+	cat data/basemap/metadata/zigzag/style_day_en.json > $@
 
 data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
@@ -1929,7 +1929,7 @@ data/basemap/metadata/sonic/style_day_en.json: kothic/src/komap.py | data/basema
 		> $@
 
 data/basemap/metadata/sonic/style_ninja.json: kothic/src/komap.py data/basemap/metadata/sonic/style_day_en.json | data/basemap/metadata/sonic ## Patch style to fall into osm.org tile starting from z10
-	cat data/basemap/metadata/sonic/style_day_en.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
+	cat data/basemap/metadata/sonic/style_day_en.json > $@
 
 data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
@@ -1984,7 +1984,7 @@ data/basemap/metadata/lima/style_day_en.json: kothic/src/komap.py | data/basemap
 		> $@
 
 data/basemap/metadata/lima/style_ninja.json: data/basemap/metadata/lima/style_day_en.json kothic/src/komap.py | data/basemap/metadata/lima ## Patch style to fall into osm.org tile starting from z10
-	cat data/basemap/metadata/lima/style_day_en.json | python basemap/scripts/patch_style_fall_into_osm.py 10 | sponge $@
+	cat data/basemap/metadata/lima/style_day_en.json > $@
 
 data/basemap/metadata/lima/style_night.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server.
 	python2 kothic/src/komap.py \

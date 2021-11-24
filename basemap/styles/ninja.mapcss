@@ -48,8 +48,9 @@ node|z12-16[place=neighbourhood],
 {
   text: name;
   font-size: 11;
-text-transform: uppercase;
+  text-transform: uppercase;
 }
+
 /* ROADS */
 
 line|z7-8[highway=trunk],
@@ -155,6 +156,6 @@ node|z17-[addr:housenumber][addr:street][!amenity][!shop]
 {
   text: addr:housenumber;
   text-position: center;
-text-color: grey;
+  text-color: grey;
   font-size: 11;
 }

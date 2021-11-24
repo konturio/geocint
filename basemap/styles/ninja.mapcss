@@ -1,4 +1,7 @@
 * {color:black; text-halo-color: white; text-halo-radius: 2; text-opacity: 0.8; font-family: "Noto Sans Regular"; text-padding: 10 }
+
+/* BOUNDARIES AND COASTLINE */
+
 area|z0-[natural=coastline] {fill-position: background; fill-opacity: 1; fill-color: white;}
 area|z0-2[natural=coastline]                         { width: 0.5; opacity: 0.4; color:black}
 area|z3-[natural=coastline]                         { width: 0.5; opacity: 0.5; color:black}
@@ -16,25 +19,37 @@ line|z9-[boundary=administrative][admin_level=6][!maritime]    { width: .6; dash
 line|z10-[boundary=administrative][admin_level=7][!maritime]    { width: .6; dashes: 10, 5, 2, 5}
 line|z10-[boundary=administrative][admin_level=8][!maritime]    { width: .6; dashes: 10, 5, 2, 5}
 
+/* WATER */
+
 node|z1-[place=ocean]     { text: name:en; font-size: 15; text-transform: uppercase; font-family: "Open Sans Light Italic"; z-index: 9 }
 node|z4-[place=sea], area|z4-[place=sea]      {text: name:en; font-size: 14; text-transform: uppercase; font-family: "Open Sans Light Italic" }
 node|z5-[natural=bay], node|z5-[natural=strait]    {text: name:en; text-padding: 100; font-size:13; text-transform: uppercase; font-family: "Open Sans Light Italic";  z-index: 1 }
-node|z6-[water=lake], node|z7-[water=reservoir] { text: name:en; font-size:12; text-transform: uppercase; font-family: "Open Sans Light Italic" }
-node|z7-[waterway=river] {text: name:en; font-size:11; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line}
-node|z8-[waterway=canal] {text: name:en; font-size:11; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line }
+area|z9-[water=lake], area|z10-[water=reservoir] { text: name; font-size: 10; text-transform: uppercase; font-family: "Open Sans Light Italic" }
+line|z10-[waterway=river] {text: name; font-size:10; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line}
+line|z8-[waterway=canal] {text: name; font-size:9; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line }
 
 line|z10-[waterway=river] {width: 0.2; opacity: 0.2; color: black}
 area|z3-9[natural=water] {width: 0.05; opacity: 0.2; color: black; fill-color: white; fill-position:background}
 area|z10-[natural=water] {width: 0.3; opacity: 0.2; color: black; fill-color: white; fill-position:background}
 
-node|z1-7[place=country]    {text-padding: 3; text: name:en; font-size: 16; text-transform:uppercase; font-family: "Noto Sans Bold"; z-index: 8 }
-node|z4-[place=city]      {text: name;   font-size: 14; z-index: 5 }
-node|z3-[capital=yes]     {text: name;   font-size: 16; z-index: 7; font-family: "Open Sans Semibold" }
-node|z3-6[place=state], node|z3-6[place=province]      {text: name; text-transform: uppercase; font-size: 14; z-index: 6; text-padding: 10 }
-node|z6-[place=town]      {text: name;   font-size: 12; z-index: 4 }
-node|z7-[place=village]    {text: name;   font-size: 10; z-index: 3 }
-node|z8-[place=hamlet]     {text: name;   font-size: 10; z-index: 2 }
+/* COUNTRIES,CITIES AND REGIONS */
 
+node|z1-7[place=country]    {text-padding: 3; text: name:en; font-size: 16; text-transform:uppercase; font-family: "Noto Sans Bold"; z-index: 8 }
+node|z4-14[place=city]      {text: name;   font-size: 14; z-index: 5 }
+node|z3-14[capital=yes]     {text: name;   font-size: 16; z-index: 7; font-family: "Open Sans Semibold" }
+node|z3-6[place=state], node|z3-6[place=province]      {text: name; text-transform: uppercase; font-size: 14; z-index: 6; text-padding: 10 }
+node|z6-15[place=town]      {text: name;   font-size: 12; z-index: 4 }
+node|z7-16[place=village]    {text: name;   font-size: 10; z-index: 3 }
+node|z8-16[place=hamlet]     {text: name;   font-size: 10; z-index: 2 }
+
+node|z11-14[place=suburb],
+node|z12-16[place=locality],
+node|z12-16[place=neighbourhood],
+{
+  text: name;
+  font-size: 11;
+text-transform: uppercase;
+}
 /* ROADS */
 
 line|z7-8[highway=trunk],
@@ -74,11 +89,29 @@ line|z14-[highway=ford],
 line|z14-[highway=footway],
 {width: 1.0; color: grey; opacity: 0.4; dashes: 2, 1}
 
-line|z14-[highway=bridleway],
-{width: 1.0; color: grey; opacity: 0.4; dashes: 2.7, 1.2}
+line|z14-[highway=construction],
+line|z14-[highway=proposed],
+{width: 1.0; color: grey; opacity: 0.4; dashes: 3, 2}
 
 line|z14-[highway=steps],
 {width: 1.0; color: grey; opacity: 0.4; dashes: 4, 3}
+
+line[highway]
+{text-position: line;}
+
+line|z12-[highway=trunk],
+line|z12-[highway=motorway],
+{text: name; font-size: 11}
+
+line|z14-[highway=primary],
+{text: name; font-size: 11}
+
+line|z15-[highway=secondary],
+{text: name; font-size: 10}
+
+line|z15-[highway=residential],
+line|z15-[highway=tertiary],
+{text: name; font-size: 9}
 
 /* RAILWAYS */
 
@@ -116,3 +149,12 @@ area|z17-[aeroway=terminal],
 area|z17-[building=train_station],
 area|z17-[building:part],
 {fill-color: grey; fill-opacity: 0.2;}
+
+area|z17-[building],
+node|z17-[addr:housenumber][addr:street][!amenity][!shop]
+{
+  text: addr:housenumber;
+  text-position: center;
+text-color: grey;
+  font-size: 11;
+}

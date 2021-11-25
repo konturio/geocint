@@ -78,7 +78,7 @@ with unnested as (
     ) a
 )
 select
-           row_number() over(order by u.admin_level, u.pop_diff_percent desc, (u.group_id = u.osm_id) desc, o.name)  as id, -- Generic id for proper sorting while further export to CSV
+           row_number() over(order by u.admin_level, u.pop_diff desc, (u.group_id = u.osm_id) desc, o.name)  as id, -- Generic id for proper sorting while further export to CSV
            u.osm_id                                                                                                  as "OSM ID",
            case when u.group_id = u.osm_id  then o.name else ' - ' || o.name end                                     as "Name",
            o.admin_level                                                                                             as "Admin level",

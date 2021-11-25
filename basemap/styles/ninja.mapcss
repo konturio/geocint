@@ -1,8 +1,10 @@
 * {color:black; text-halo-color: white; text-halo-radius: 2; text-opacity: 0.8; font-family: "Noto Sans Regular"; text-padding: 10 }
 
+canvas { background-color: white }
+
 /* BOUNDARIES AND COASTLINE */
 
-area|z0-[natural=coastline] {fill-position: background; fill-opacity: 1; fill-color: white;}
+area|z0-[natural=coastline] {fill-position: background; fill-opacity: 1;}
 area|z0-2[natural=coastline]                         { width: 0.5; opacity: 0.4; color:black}
 area|z3-[natural=coastline]                         { width: 0.5; opacity: 0.5; color:black}
 
@@ -29,8 +31,8 @@ line|z10-[waterway=river] {text: name; font-size:10; text-transform: uppercase; 
 line|z8-[waterway=canal] {text: name; font-size:9; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line }
 
 line|z10-[waterway=river] {width: 0.2; opacity: 0.2; color: black}
-area|z3-9[natural=water] {width: 0.05; opacity: 0.2; color: black; fill-color: white; fill-position:background}
-area|z10-[natural=water] {width: 0.3; opacity: 0.2; color: black; fill-color: white; fill-position:background}
+area|z3-9[natural=water] {width: 0.05; opacity: 0.2; color: black;}
+area|z10-[natural=water] {width: 0.3; opacity: 0.2; color: black;}
 
 /* COUNTRIES,CITIES AND REGIONS */
 

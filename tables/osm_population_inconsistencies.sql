@@ -88,7 +88,7 @@ select
            case when u.group_id = u.osm_id  then round(u.pop_diff_percent, 4) else null end                          as "Population difference %"
 from unnested u
 left join osm_admin_boundaries_in o using(osm_id)
-order by u.admin_level, u.pop_diff_percent desc, (u.group_id = u.osm_id) desc, o.name;
+order by u.admin_level, u.pop_diff desc, (u.group_id = u.osm_id) desc, o.name;
 
 
 -- Drop unnecessary tables

@@ -78,16 +78,17 @@ with unnested as (
     ) a
 )
 select
-           row_number() over()                                                              as id, -- Generic id for proper sorting while further export to CSV
-           u.osm_id                                                                         as "OSM ID",
-           case when u.group_id = u.osm_id  then o.name else ' - ' || o.name end            as "Name",
-           o.admin_level                                                                    as "Admin level",
-           o.population                                                                     as "Population",
-           case when u.group_id = u.osm_id  then u.c_sum_pop else null end                  as "SUM subregions population",
-           case when u.group_id = u.osm_id  then u.pop_diff else null end                   as "Population difference value",
-           case when u.group_id = u.osm_id  then round(u.pop_diff_percent, 4) else null end as "Population difference %"
+           row_number() over(order by u.admin_level, u.pop_diff desc, (u.group_id = u.osm_id) desc, o.name)  as id, -- Generic id for proper sorting while further export to CSV
+           u.osm_id                                                                                                  as "OSM ID",
+           case when u.group_id = u.osm_id  then o.name else ' - ' || o.name end                                     as "Name",
+           o.admin_level                                                                                             as "Admin level",
+           o.population                                                                                              as "Population",
+           case when u.group_id = u.osm_id  then u.c_sum_pop else null end                                           as "SUM subregions population",
+           case when u.group_id = u.osm_id  then u.pop_diff else null end                                            as "Population difference value",
+           case when u.group_id = u.osm_id  then round(u.pop_diff_percent, 4) else null end                          as "Population difference %"
 from unnested u
-left join osm_admin_boundaries_in o using(osm_id);
+left join osm_admin_boundaries_in o using(osm_id)
+order by u.admin_level, u.pop_diff desc, (u.group_id = u.osm_id) desc, o.name;
 
 
 -- Drop unnecessary tables

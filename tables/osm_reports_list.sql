@@ -59,7 +59,7 @@ values ('osm_population_inconsistencies',
           {
             "Name": "http://localhost:8111/load_object?new_layer=false&objects=r{{OSM ID}}&relation_members=true"
           }]'::json,
-        true,
+        false,
         true
         );
 
@@ -78,7 +78,7 @@ values ('osm_gadm_comparison',
           {
             "OSM name": "http://localhost:8111/load_object?new_layer=false&objects=r{{OSM ID}}&relation_members=true"
           }]'::json,
-        false,
+        true,
         true
         );
 

@@ -2,6 +2,109 @@
 
 canvas { background-color: white }
 
+/* Z-INDEX */
+
+area[natural=coastline]
+{z-index: 10; fill-position: background}
+
+line[boundary=administrative]
+{z-index: 20}
+
+line[waterway=river],
+line[waterway=canal]
+{z-index: 30;}
+
+area[natural=water]
+{z-index: 40; fill-position: background}
+
+area[water=lake],
+area[water=reservoir]
+{z-index: 50}
+
+node[natural=bay],
+node[natural=strait]
+{z-index: 60}
+
+node[place=sea],
+area[place=sea]
+{z-index: 70}
+
+line[railway=rail],
+line[railway=light_rail],
+line[railway=yard],
+line[railway=preserved],
+line[railway=abandoned],
+line[railway=construction],
+line[railway=disused],
+line[railway=tram]
+{z-index: 80}
+
+line[highway=pedestrian],
+line[highway=ford],
+line[highway=footway],
+line[highway=construction],
+line[highway=proposed],
+line[highway=steps],
+{z-index: 90}
+
+line[highway=residential],
+line[highway=tertiary],
+line[highway=residential_link],
+line[highway=tertiary_link],
+line[highway=unclassified],
+line[highway=road],
+line[highway=living_street],
+line[highway=service]
+{z-index: 100}
+
+line[highway=secondary]
+{z-index: 110}
+
+line[highway=primary]
+{z-index: 120}
+
+line[highway=trunk],
+line[highway=trunk_link],
+line[highway=motorway],
+line[highway=motorway_link],
+{z-index: 130}
+
+area[building],
+area[aeroway=terminal],
+area[building=train_station],
+{z-index: 140}
+
+node[addr:housenumber][addr:street][!amenity][!shop]
+{z-index: 150}
+
+node[place=suburb],
+node[place=locality],
+node[place=neighbourhood],
+{z-index: 160}
+
+node[place=hamlet],
+node[place=village]
+{z-index: 170}
+
+node[place=town]
+{z-index: 180}
+
+node[place=city]
+{z-index: 190}
+
+node[place=state],
+node[place=province]
+{z-index: 200}
+
+node[capital=yes]
+{z-index: 210}
+
+node[place=country]
+{z-index: 220}
+
+node[place=ocean]
+{z-index: 230}
+
 /* BOUNDARIES AND COASTLINE */
 
 area|z0-[natural=coastline] {fill-position: background; fill-opacity: 1;}
@@ -23,9 +126,9 @@ line|z10-[boundary=administrative][admin_level=8][!maritime]    { width: .6; das
 
 /* WATER */
 
-node|z1-[place=ocean]     { text: name:en; font-size: 15; text-transform: uppercase; font-family: "Open Sans Light Italic"; z-index: 9 }
+node|z1-[place=ocean]     { text: name:en; font-size: 15; text-transform: uppercase; font-family: "Open Sans Light Italic"; }
 node|z4-[place=sea], area|z4-[place=sea]      {text: name:en; font-size: 14; text-transform: uppercase; font-family: "Open Sans Light Italic" }
-node|z5-[natural=bay], node|z5-[natural=strait]    {text: name:en; text-padding: 100; font-size:13; text-transform: uppercase; font-family: "Open Sans Light Italic";  z-index: 1 }
+node|z5-[natural=bay], node|z5-[natural=strait]    {text: name:en; text-padding: 100; font-size:13; text-transform: uppercase; font-family: "Open Sans Light Italic";}
 area|z9-[water=lake], area|z10-[water=reservoir] { text: name; font-size: 10; text-transform: uppercase; font-family: "Open Sans Light Italic" }
 line|z10-[waterway=river] {text: name; font-size:10; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line}
 line|z8-[waterway=canal] {text: name; font-size:9; text-transform: uppercase; font-family: "Open Sans Light Italic"; text-position: line }
@@ -36,13 +139,13 @@ area|z10-[natural=water] {width: 0.3; opacity: 0.2; color: black;}
 
 /* COUNTRIES,CITIES AND REGIONS */
 
-node|z1-7[place=country]    {text-padding: 3; text: name:en; font-size: 16; text-transform:uppercase; font-family: "Noto Sans Bold"; z-index: 8 }
-node|z4-14[place=city]      {text: name;   font-size: 14; z-index: 5 }
-node|z3-14[capital=yes]     {text: name;   font-size: 16; z-index: 7; font-family: "Open Sans Semibold" }
-node|z3-6[place=state], node|z3-6[place=province]      {text: name; text-transform: uppercase; font-size: 14; z-index: 6; text-padding: 10 }
-node|z6-15[place=town]      {text: name;   font-size: 12; z-index: 4 }
-node|z7-16[place=village]    {text: name;   font-size: 10; z-index: 3 }
-node|z8-16[place=hamlet]     {text: name;   font-size: 10; z-index: 2 }
+node|z1-7[place=country]    {text-padding: 3; text: name:en; font-size: 16; text-transform:uppercase; font-family: "Noto Sans Bold";}
+node|z4-14[place=city]      {text: name;   font-size: 14;}
+node|z3-14[capital=yes]     {text: name;   font-size: 16; font-family: "Open Sans Semibold" }
+node|z3-6[place=state], node|z3-6[place=province]      {text: name; text-transform: uppercase; font-size: 14; text-padding: 10 }
+node|z6-15[place=town]      {text: name;   font-size: 12; }
+node|z7-16[place=village]    {text: name;   font-size: 10; }
+node|z8-16[place=hamlet]     {text: name;   font-size: 10; }
 
 node|z11-14[place=suburb],
 node|z12-16[place=locality],

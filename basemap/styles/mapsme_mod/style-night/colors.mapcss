@@ -41,7 +41,6 @@
 @water: #001629;
 @river: #001629;
 @wetland: #000F1E;
-@beach: #28281A;
 
 /*3.2 Vegeration*/
 
@@ -57,13 +56,7 @@
 /* 4.LANDUSE */
 /*4.1 Main landuse*/
 
-@pedestrian_area: #262222;
-@pedestrian_area_light: #262222;
-@university: #261F13;
-@hospital: #261916;
 @industrial: #141014;
-@sport: #21211B;
-@parking: #1F1B1B;
 @military: #100000;
 
 /*4.2 Aerodrome*/
@@ -82,8 +75,6 @@
 
 @building: #222222;
 @building_dark: #333333;
-@building_border: #303030;
-@building_dark_border: #474747;
 
 /* 5.ROADS */
 /* 5.1 All roads */
@@ -122,14 +113,7 @@
 @unclassified_tunnel: #2B2827;
 @unclassified_tunnel_casing: #000000;
 
-/* 5.4 Piste */
-
-@piste: #623D7F;
-@piste_novice:#5feb2e;
-@piste_easy: #0b27fb;
-@piste_intermadiate: #fc0e1b;
-@piste_expert: #333333;
-@piste_advanced: #222222;
+/* 5.4 Piste - DELETED */
 
 /* 5.5 Transport */
 
@@ -137,9 +121,7 @@
 @railway: #333333;
 @railway_tunnel: #222222;
 @railway_dash: #111111;
-@aerialway: #4E4E3D;
 @tram: #5C5C51;
-@ferry: #2A4541;
 
 /* 6.LABELS COLORS */
 /* 6.1 Main labels */
@@ -163,7 +145,6 @@
 @country_label: #444444;
 @state_label: #444444;
 @district_label: #555555;
-@housename: #555555;
 @building_label: #555555;
 @poi_label: #555555;
 @subway_label: #555555;

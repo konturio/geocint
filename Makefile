@@ -1731,51 +1731,41 @@ db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | 
 	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"
 	touch $@
 
-db/table/osm2pgsql_new: data/planet-latest-updated.osm.pbf basemap/osm2pgsql_styles/basemap.lua | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
-	# pin osm2pgsql to CPU0 and disable HT for it
-	numactl --preferred=0 -N 0 osm2pgsql --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/planet-latest-updated.osm.pbf
+db/table/osm2pgsql: data/planet-latest.osm.pbf basemap/osm2pgsql_styles/basemap.lua | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
+	osm2pgsql --flat-nodes osm2pgsql_flat_nodes --slim -C 0 --style basemap/osm2pgsql_styles/basemap.lua --number-processes 6 --output=flex --create data/planet-latest.osm.pbf
+	osm2pgsql-replication init --server "https://planet.osm.org/replication/hour/"
 	touch $@
 
-db/index/planet_osm_new_polygon_way_area_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_polygon_way_area_idx on planet_osm_new_polygon using btree(way_area) tablespace evo4tb;"
+db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	psql -c "create index planet_osm_polygon_way_area_idx on planet_osm_polygon using btree(way_area);"
 	touch $@
 
-db/index/planet_osm_new_polygon_natural_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_polygon_natural_idx on planet_osm_new_polygon using btree(\"natural\") tablespace evo4tb;"
+db/index/planet_osm_polygon_natural_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	psql -c "create index planet_osm_polygon_natural_idx on planet_osm_polygon using btree(\"natural\");"
 	touch $@
 
-db/index/planet_osm_new_polygon_admin_level_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_polygon_admin_level_idx on planet_osm_new_polygon using btree(\"admin_level\") tablespace evo4tb;"
+db/index/planet_osm_polygon_admin_level_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	psql -c "create index planet_osm_polygon_admin_level_idx on planet_osm_polygon using btree(\"admin_level\");"
 	touch $@
 
-db/index/planet_osm_new_line_admin_level_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_line_admin_level_idx on planet_osm_new_line using btree(\"admin_level\") tablespace evo4tb;"
+db/index/planet_osm_line_admin_level_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	psql -c "create index planet_osm_line_admin_level_idx on planet_osm_line using btree(\"admin_level\");"
 	touch $@
 
-db/index/planet_osm_new_line_highway_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_line_highway_idx on planet_osm_new_line using btree(\"highway\") tablespace evo4tb;"
+db/index/planet_osm_line_highway_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	psql -c "create index planet_osm_line_highway_idx on planet_osm_line using btree(\"highway\");"
 	touch $@
 
-db/index/planet_osm_new_point_place_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_point_place_idx on planet_osm_new_point using btree(\"place\") tablespace evo4tb;"
+db/index/planet_osm_point_place_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	psql -c "create index planet_osm_point_place_idx on planet_osm_point using btree(\"place\");"
 	touch $@
 
-db/index/planet_osm_new_point_capital_idx: db/table/osm2pgsql_new | db/index ## index for basemap low zoom queries
-	psql -c "create index planet_osm_new_point_capital_idx on planet_osm_new_point using btree(\"capital\") tablespace evo4tb;"
+db/index/planet_osm_point_capital_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	psql -c "create index planet_osm_point_capital_idx on planet_osm_point using btree(\"capital\");"
 	touch $@
 
-db/table/osm2pgsql: db/index/planet_osm_new_polygon_way_area_idx db/index/planet_osm_new_polygon_natural_idx db/index/planet_osm_new_polygon_admin_level_idx db/index/planet_osm_new_line_admin_level_idx db/index/planet_osm_new_line_highway_idx db/index/planet_osm_new_point_place_idx db/index/planet_osm_new_point_capital_idx | db/table ## Replace previous previous osm2pgsql import with the new one
-	psql -1 -c "drop table if exists planet_osm_polygon; alter table planet_osm_new_polygon rename to planet_osm_polygon; drop table if exists planet_osm_line; alter table planet_osm_new_line rename to planet_osm_line; drop table if exists planet_osm_point; alter table planet_osm_new_point rename to planet_osm_point;"
-	psql -c "alter index if exists planet_osm_new_polygon_way_idx rename to planet_osm_polygon_way_idx;"
-	psql -c "alter index if exists planet_osm_new_line_way_idx rename to planet_osm_line_way_idx;"
-	psql -c "alter index if exists planet_osm_new_point_way_idx rename to planet_osm_point_way_idx;"
-	psql -c "alter index if exists planet_osm_new_polygon_way_area_idx rename to planet_osm_polygon_way_area_idx;"
-	psql -c "alter index if exists planet_osm_new_polygon_natural_idx rename to planet_osm_polygon_natural_idx;"
-	psql -c "alter index if exists planet_osm_new_polygon_admin_level_idx rename to planet_osm_polygon_admin_level_idx;"
-	psql -c "alter index if exists planet_osm_new_line_admin_level_idx rename to planet_osm_line_admin_level_idx;"
-	psql -c "alter index if exists planet_osm_new_line_highway_idx rename to planet_osm_line_highway_idx;"
-	psql -c "alter index if exists planet_osm_new_point_place_idx rename to planet_osm_point_place_idx;"
-	psql -c "alter index if exists planet_osm_new_point_capital_idx rename to planet_osm_point_capital_idx;"
+db/table/osm2pgsql_latest: db/index/planet_osm_polygon_way_area_idx db/index/planet_osm_polygon_natural_idx db/index/planet_osm_polygon_admin_level_idx db/index/planet_osm_line_admin_level_idx db/index/planet_osm_line_highway_idx db/index/planet_osm_point_place_idx db/index/planet_osm_point_capital_idx | db/table ## Apply replication diffs
+	osm2pgsql-replication update -- --flat-nodes osm2pgsql_flat_nodes --style basemap/osm2pgsql_styles/basemap.lua --output=flex
 	touch $@
 
 kothic/src/komap.py: ## Clone Kothic from GIT
@@ -1794,7 +1784,7 @@ scripts/basemap.sql: kothic/src/komap.py | db/function ## Generate SQL functions
 		> scripts/basemap.sql
 	touch $@
 
-data/basemap.mbtiles: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql db/table/land_polygons_vector | data ## Generating vector tiles.
+data/basemap.mbtiles: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql_latest db/table/land_polygons_vector | data ## Generating vector tiles.
 	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 14 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-mbtiles $@
 
 data/basemap: | data ## Directory for MAPCSS styles, icon sprites and font glyphs used with vector tiles.

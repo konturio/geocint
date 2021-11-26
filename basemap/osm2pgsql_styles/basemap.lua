@@ -10,7 +10,7 @@
 local srid = 3857
 
 -- Set this to the table name prefix (what used to be option -p|--prefix).
-local prefix = 'planet_osm_new'
+local prefix = 'planet_osm'
 
 -- Set this to true if multipolygons should be written as multipolygons into
 -- db (what used to be option -G|--multi-geometry).
@@ -472,8 +472,6 @@ tables.point = osm2pgsql.define_table{
     ids = { type = 'node', id_column = 'osm_id' },
     columns = gen_columns(point_columns, hstore or hstore_all, nil, 'point'),
     cluster = 'no',
-    data_tablespace = 'evo4tb',
-    index_tablespace = 'evo4tb'
 }
 
 tables.line = osm2pgsql.define_table{
@@ -481,8 +479,6 @@ tables.line = osm2pgsql.define_table{
     ids = { type = 'way', id_column = 'osm_id' },
     columns = gen_columns(non_point_columns, hstore or hstore_all, false, 'linestring'),
     cluster = 'no',
-    data_tablespace = 'evo4tb',
-    index_tablespace = 'evo4tb'
 }
 
 tables.polygon = osm2pgsql.define_table{
@@ -490,8 +486,6 @@ tables.polygon = osm2pgsql.define_table{
     ids = { type = 'area', id_column = 'osm_id' },
     columns = gen_columns(non_point_columns, hstore or hstore_all, true, 'geometry'),
     cluster = 'no',
-    data_tablespace = 'evo4tb',
-    index_tablespace = 'evo4tb'
 }
 
 phase2_admin_ways = {}

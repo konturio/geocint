@@ -45,11 +45,12 @@ line[highway=footway],
 line[highway=construction],
 line[highway=proposed],
 line[highway=steps],
+line[highway=path],
+line[highway=track],
 {z-index: 90}
 
 line[highway=residential],
 line[highway=tertiary],
-line[highway=residential_link],
 line[highway=tertiary_link],
 line[highway=unclassified],
 line[highway=road],
@@ -57,10 +58,12 @@ line[highway=living_street],
 line[highway=service]
 {z-index: 100}
 
-line[highway=secondary]
+line[highway=secondary],
+line[highway=secondary_link]
 {z-index: 110}
 
-line[highway=primary]
+line[highway=primary],
+line[highway=primary_link]
 {z-index: 120}
 
 line[highway=trunk],
@@ -171,18 +174,17 @@ line|z14-[highway=trunk],
 line|z14-[highway=motorway],
 { width: 1.8; opacity: 0.7; color: white; casing-color: grey; casing-width:1; linecap:round; casing-linecap: round; casing-opacity: 0.4 }
 
-line|z7-8[highway=primary] { width: 0.4; opacity: 0.4; color: grey }
+line|z7-8[highway=primary], line|z12-13[highway=primary_link] { width: 0.4; opacity: 0.4; color: grey }
 line|z9-11[highway=primary] { width: 1.2; opacity: 1.0; color: white; casing-color: grey; casing-width:1; linecap:round; casing-linecap: round; casing-opacity: 0.4 }
 line|z12[highway=primary] { width: 2.0; opacity: 1.0; color: white; casing-color: grey; casing-width:1; linecap:round; casing-linecap: round; casing-opacity: 0.4 }
 line|z13[highway=primary] { width: 2.8; opacity: 1.0; color: white; casing-color: grey; casing-width:1; linecap:round; casing-linecap: round; casing-opacity: 0.4 }
-line|z14-[highway=primary] { width: 1.7; opacity: 1.0; color: white; casing-color: grey; casing-width:1; linecap:round; casing-linecap: round; casing-opacity: 0.4 }
+line|z14-[highway=primary], line|z14-[highway=primary_link] { width: 1.7; opacity: 1.0; color: white; casing-color: grey; casing-width:1; linecap:round; casing-linecap: round; casing-opacity: 0.4 }
 
 line|z7-9[highway=secondary] { width: 0.3; opacity: 0.3; color: grey }
-line|z10-[highway=secondary] { width: 1.1; opacity: 0.4; color: grey }
+line|z10-[highway=secondary], line|z14-[highway=secondary_link] { width: 1.1; opacity: 0.4; color: grey }
 
 line|z12-[highway=residential],
 line|z12-[highway=tertiary],
-line|z15-[highway=residential_link],
 line|z15-[highway=tertiary_link],
 line|z12-[highway=unclassified],
 line|z12-[highway=road],
@@ -193,10 +195,12 @@ line|z14-[highway=service]
 line|z14-[highway=pedestrian],
 line|z14-[highway=ford],
 line|z14-[highway=footway],
+line|z14-[highway=path],
 {width: 1.0; color: grey; opacity: 0.4; dashes: 2, 1}
 
 line|z14-[highway=construction],
 line|z14-[highway=proposed],
+line|z14-[highway=track],
 {width: 1.0; color: grey; opacity: 0.4; dashes: 3, 2}
 
 line|z14-[highway=steps],

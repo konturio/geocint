@@ -88,7 +88,7 @@ select '[
          "elements": [
            {
              "type": "mrkdwn",
-             "text": "For more details see <https://geocint.kontur.io/gis/population_check_osm.html|:arrow_upper_right:>"
+             "text": "For more details see <https://disaster.ninja/active/reports/population_tag_check|:arrow_upper_right:>"
            }
          ]
        }'::jsonb

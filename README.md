@@ -56,6 +56,38 @@ tested by other team members, and will automatically produce new artifacts once 
       each launch
     - data/out - all generated final data (tiles, dumps, unloading for the clients and etc)
 
+### Geocint deployment checklist:
+
+#### Organizational points:
+- Task and action plan is analyzed and you understand what you need to do. Remember, no code at all is always better.
+- Make sure you have source data always available. Do not store it locally on geocint - add a target to download data
+  from S3 at least.
+- Store your commits on a remote repository: your laptop/pc could break anytime. Make regular commits under
+  **Draft** MR status
+- After your MR is ready, write about it to a suitable slack channel. Mention people who are able to review code and
+  approve it. Describe how did you test your code.
+- Try to run the pipeline at least once on your test branch.
+
+#### Technical details for **code review** checks:
+- Make sure your scripts (especially bash, ansible) are working as a part of Makefile, not only by themselves.
+- Idempotence: how will it run the first time? Second time? 100 times?
+    - copying of non-existing yet files
+    - deleting or renaming functions and procedures, especially when you change the number or order of parameters
+    - try to use drop/alter database_object IF EXIST
+- Does your target need to be launched every day? Don’t forget to put it into the Clean one. Or make it manually
+  (see Cache invalidation).
+- Check all dependencies twice.
+- Commands log level - will it generate lots of unnecessary info?
+- If you replace one target with another one, make sure to delete unused one everywhere (especially dev/prod targets)
+
+#### After-Merge duties. Share them and your progress with teammates.
+- Cache invalidation: manual clean of currently updated but existed targets
+- Delete local/S3 (how - link to instruction) files and DB objects that you don’t need anymore
+- Сheck periodically the make.svg after launch, maybe you can find out how to make a quick fix for not losing
+  a whole day before next launch.
+
+If something goes wrong - look for logs, write about the problem and it’s status to your teammates.
+
 ### Slack messages
 
 The geocint pipeline should send messages to the Slack channel. Create channel with name `geocint`, generate Slack token

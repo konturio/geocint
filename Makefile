@@ -1823,7 +1823,7 @@ data/basemap/sprite_all: | data/basemap/sprite ## Build sprites currently fetche
 	wget -O data/basemap/sprite/sprite.json https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite.json?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
 	touch $@
 
-data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server.
+data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1834,6 +1834,7 @@ data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py | data/basema
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
+	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
 
 data/basemap/metadata/zigzag/style_night_ru.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server. (language=ru)
 	python2 kothic/src/komap.py \
@@ -1861,7 +1862,7 @@ data/basemap/metadata/zigzag/style_night_en.json: kothic/src/komap.py | data/bas
 		--locale en \
 		> $@
 
-data/basemap/metadata/zigzag/style_day.json: basemap/styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Geocint server.
+data/basemap/metadata/zigzag/style_day.json: basemap/styles/ninja.mapcss basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Geocint server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1873,6 +1874,7 @@ data/basemap/metadata/zigzag/style_day.json: basemap/styles/ninja.mapcss kothic/
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
 		> $@
+	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
 
 data/basemap/metadata/zigzag/style_day_en.json: basemap/styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Geocint server. (language=en)
 	python2 kothic/src/komap.py \
@@ -1891,7 +1893,7 @@ data/basemap/metadata/zigzag/style_day_en.json: basemap/styles/ninja.mapcss koth
 data/basemap/metadata/zigzag/style_ninja.json: kothic/src/komap.py data/basemap/metadata/zigzag/style_day_en.json | data/basemap/metadata/zigzag ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/zigzag/style_day_en.json > $@
 
-data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server.
+data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1903,6 +1905,7 @@ data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py | data/basemap/m
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
 		> $@
+	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
 
 data/basemap/metadata/sonic/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server. (language=en)
 	python2 kothic/src/komap.py \
@@ -1921,7 +1924,7 @@ data/basemap/metadata/sonic/style_day_en.json: kothic/src/komap.py | data/basema
 data/basemap/metadata/sonic/style_ninja.json: kothic/src/komap.py data/basemap/metadata/sonic/style_day_en.json | data/basemap/metadata/sonic ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/sonic/style_day_en.json > $@
 
-data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server.
+data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1932,6 +1935,7 @@ data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py | data/basemap
 		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
+	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
 
 data/basemap/metadata/sonic/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server. (language=en)
 	python2 kothic/src/komap.py \
@@ -1946,7 +1950,7 @@ data/basemap/metadata/sonic/style_night_en.json: kothic/src/komap.py | data/base
 		--locale en \
 		> $@
 
-data/basemap/metadata/lima/style_day.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for PROD server.
+data/basemap/metadata/lima/style_day.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for PROD server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1958,6 +1962,7 @@ data/basemap/metadata/lima/style_day.json: kothic/src/komap.py | data/basemap/me
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
 		> $@
+	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
 
 data/basemap/metadata/lima/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for PROD server. (language=en)
 	python2 kothic/src/komap.py \
@@ -1976,7 +1981,7 @@ data/basemap/metadata/lima/style_day_en.json: kothic/src/komap.py | data/basemap
 data/basemap/metadata/lima/style_ninja.json: data/basemap/metadata/lima/style_day_en.json kothic/src/komap.py | data/basemap/metadata/lima ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/lima/style_day_en.json > $@
 
-data/basemap/metadata/lima/style_night.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server.
+data/basemap/metadata/lima/style_night.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1987,6 +1992,7 @@ data/basemap/metadata/lima/style_night.json: kothic/src/komap.py | data/basemap/
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
+	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
 
 data/basemap/metadata/lima/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server. (language=en)
 	python2 kothic/src/komap.py \

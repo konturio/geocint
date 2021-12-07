@@ -3,11 +3,12 @@ with groups as (
            src.id,
            src.building_height              height,
            dst.population,
-           ST_PointOnSurface(src.geom)      src_geom,
+           src_geom,
            dst.geom                         dst_geom,
            src.geom
     from abu_dhabi_buildings src,
-         ST_Buffer(src.geom::geography, 15 / 3.6 * 600) buffer,
+         ST_PointOnSurface(src.geom) src_geom,
+         ST_Buffer(src_geom::geography, 15 / 3.6 * 600) buffer,
          abu_dhabi_buildings_population dst
     where src.id = :id
       and ST_Intersects(buffer::geometry, dst.geom)

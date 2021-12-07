@@ -2,7 +2,7 @@ create or replace function calculate_osrm_eta(
     sources geometry[], -- source geometries
     destinations geometry[], -- destination geometries
     profile text, -- OSRM profile
-    max_table_size integer = 10000 -- max-table-size setting in OSRM
+    max_table_size integer = 1000 -- max-table-size setting in OSRM
 )
     returns table
             (

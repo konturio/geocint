@@ -468,15 +468,20 @@ line|z14-[man_made=cutline]
 
 /* 8.2 Building */
 
-area|z14-15[building],
-area|z14-15[aeroway=terminal],
-area|z14-15[building=train_station],
+area|z13-14[building],
+area|z13-14[aeroway=terminal],
+area|z13-14[building=train_station],
+{fill-color: @building; fill-opacity: 0.4;}
+
+area|z15-16[building],
+area|z15-16[aeroway=terminal],
+area|z15-16[building=train_station],
 {fill-color: @building; fill-opacity: 0.6;}
 
-area|z16-[building],
-area|z16-[aeroway=terminal],
-area|z16-[building=train_station],
-area|z16-[building:part],
+area|z17-[building],
+area|z17-[aeroway=terminal],
+area|z17-[building=train_station],
+area|z17-[building:part],
 {fill-color: @building; fill-opacity: 0.8;}
 
 area|z15-[landuse=garages],

@@ -278,9 +278,14 @@ line|z14-[railway=tram]
 
 /* BUILDINGS */
 
-area|z13-16[building],
-area|z13-16[aeroway=terminal],
-area|z13-16[building=train_station],
+area|z13-14[building],
+area|z13-14[aeroway=terminal],
+area|z13-14[building=train_station],
+{fill-color: grey; fill-opacity: 0.05;}
+
+area|z15-16[building],
+area|z15-16[aeroway=terminal],
+area|z15-16[building=train_station],
 {fill-color: grey; fill-opacity: 0.1;}
 
 area|z17-[building],

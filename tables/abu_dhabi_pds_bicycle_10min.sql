@@ -22,7 +22,7 @@ from (
                 geom,
                 array_agg(population) population,
                 -- request to OSRM table service
-                (http('http://localhost:5001/table/v1/bicycle/' ||
+                (http_get('http://localhost:5001/table/v1/bicycle/' ||
                     ST_X(src_geom) || ',' || ST_Y(src_geom) || ';' ||
                     string_agg(ST_X(dst_geom) || ',' || ST_Y(dst_geom), ';') ||
                     '?sources=0&destinations=' ||

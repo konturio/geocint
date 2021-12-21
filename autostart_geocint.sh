@@ -4,12 +4,12 @@ cleanup() {
   rm -f make.lock
 }
 
-echo "Geocint pipeline is starting nightly build!" | python3 scripts/slack_message.py geocint "Night build" cat
-
 # Terminate script after failed command execution
 set -e
 PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin"
 cd ~/geocint
+
+echo "Geocint pipeline is starting nightly build!" | python3 scripts/slack_message.py geocint "Night build" cat
 
 # make.lock is a file which exists while pipeline running
 # if make.lock exists, pipeline should not be started

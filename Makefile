@@ -329,7 +329,7 @@ db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 res
 	psql -f procedures/generate_overviews.sql
 	touch $@
 
-data/in/facebook_roads: | data
+data/in/facebook_roads: | data/in ## Input data for facebook roads.
 	mkdir -p $@
 
 data/in/facebook_roads/downloaded: | data/in/facebook_roads

@@ -329,6 +329,9 @@ db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 res
 	psql -f procedures/generate_overviews.sql
 	touch $@
 
+data/in/facebook_roads: | data/in ## Input data for facebook roads.
+    mkdir -p $@   
+
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx | db/table ## Roads from OpenStreetMap.
 	psql -f tables/osm_roads.sql
 	touch $@

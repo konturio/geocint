@@ -5,7 +5,7 @@ canvas { background-color: white }
 /* Z-INDEX */
 
 area[natural=coastline]
-{z-index: 10; fill-position: background; fill-color: white}
+{z-index: 10; fill-position: background}
 
 line[boundary=administrative]
 {z-index: 20}

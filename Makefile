@@ -329,8 +329,26 @@ db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 res
 	psql -f procedures/generate_overviews.sql
 	touch $@
 
-data/in/facebook_roads: | data/in ## Input data for facebook roads.
-    mkdir -p $@   
+data/in/facebook_roads: | data
+	mkdir -p $@
+
+data/in/facebook_roads/downloaded: | data/in/facebook_roads
+	wget -q --input-file=data/downloadlist.txt --directory-prefix=data/in/facebook_roads
+	touch $@
+
+data/mid/facebook_roads: | data
+	mkdir -p $@
+	
+data/mid/facebook_roads/extracted: | data/mid/facebook_roads
+	ls data/in/facebook_roads/*.tar.gz | xargs -n1 tar -C data/mid/facebook_roads -xf
+	touch $@
+	
+db/table/facebook_roads: data/mid/facebook_roads/extracted | db/table
+	psql -c "drop table if exists facebook_roads;"
+	psql -c "create table facebook_roads (fid serial not null, way_fbid text, highway_text text, wkt text, geom geometry);"
+	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads -lco GEOMETRY_NAME=geom -a_srs EPSG:4326'
+	psql -c "create index on facebook_roads using gist(geom);"
+	touch $@  
 
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx | db/table ## Roads from OpenStreetMap.
 	psql -f tables/osm_roads.sql

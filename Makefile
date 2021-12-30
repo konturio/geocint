@@ -1817,10 +1817,7 @@ data/basemap/glyphs_all: | data/basemap/glyphs ## Target that generates glyphs (
 	touch $@
 
 data/basemap/sprite_all: | data/basemap/sprite ## Build sprites currently fetched from Mapbox.
-	wget -O data/basemap/sprite/sprite@2x.png https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite@2x.png?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
-	wget -O data/basemap/sprite/sprite@2x.json https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite@2x.json?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
-	wget -O data/basemap/sprite/sprite.png https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite.png?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
-	wget -O data/basemap/sprite/sprite.json https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite.json?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
+	cp -r basemap/sprite/. data/basemap/sprite
 	touch $@
 
 data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server.

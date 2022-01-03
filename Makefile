@@ -488,7 +488,8 @@ db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas fro
 	touch $@
 
 data/in/raster/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/in/raster/gebco_2020_geotiff ## Download GEBCO (General Bathymetric Chart of the Oceans) bathymetry zipped raster dataset.
-	wget "https://www.bodc.ac.uk/data/open_download/gebco/gebco_2020/geotiff/" -O $@
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/gebco_2020_geotiff/gebco_2020_geotiff.zip $@ --profile geocint_pipeline_sender
+	touch $@
 
 data/mid/gebco_2020_geotiff/gebco_2020_geotiffs_unzip: data/in/raster/gebco_2020_geotiff/gebco_2020_geotiff.zip | data/mid ## Unzip GEBCO (General Bathymetric Chart of the Oceans) rasters.
 	mkdir -p data/mid/gebco_2020_geotiff
@@ -850,8 +851,15 @@ deploy/geocint/global_fires_h3_r8_13months.csv.gz: data/out/global_fires/global_
 	cp -vp data/out/global_fires/global_fires_h3_r8_13months.csv.gz ~/public_html/global_fires_h3_r8_13months.csv.gz
 	touch $@
 
-db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table ## Morocco rough urban territories vector layer from Geoalert.
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg
+data/in/morocco_buildings: | data/in ## morocco_buildings input data.
+	mkdir -p $@
+
+data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg: | data/in/morocco_buildings ## morocco_urban_pixel_mask downloaded.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_urban_pixel_mask.gpkg $@ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/morocco_urban_pixel_mask: data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg | db/table ## Morocco rough urban territories vector layer from Geoalert.
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg
 	touch $@
 
 db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Morocco urban pixel mask aggregated count on H3 hexagons grid.
@@ -957,7 +965,7 @@ data/in/new_zealand_buildings: | data/in ## New Zealand's buildings dataset from
 	mkdir -p $@
 
 data/in/new_zealand_buildings/download: | data/in/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
-	cd data/in/new_zealand_buildings; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg ./
+	cd data/in/new_zealand_buildings; aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg ./  --profile geocint_pipeline_sender
 	touch $@
 
 db/table/new_zealand_buildings: data/in/new_zealand_buildings/download | db/table ## Create table with New Zealand buildings.
@@ -1061,9 +1069,13 @@ db/table/morocco_buildings_manual: data/morocco_buildings/morocco_buildings_manu
 	psql -c "update morocco_buildings_manual set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
 	touch $@
 
-db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
+data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg: | data/in/morocco_buildings ## Geoalert building dataset for Morocco (Phase 3) downloaded.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/geoalert_morocco_stage_3.gpkg $@ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
 	psql -c "drop table if exists morocco_buildings;"
-	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
 	touch $@
 

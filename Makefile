@@ -332,15 +332,14 @@ db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 res
 data/in/facebook_roads: | data/in ## Input data for facebook roads.
 	mkdir -p $@]
 
-data/mid/facebook_roads: | data
-	mkdir -p $@
+data/mid/facebook_roads: | data ##make directory
 
-data/in/facebook_roads/downloaded: | data/in/facebook_roads
+data/in/facebook_roads/downloaded: | data/in/facebook_roads ##reference download list
 	rm -f data/in/facebook_roads/*.tar.gz
 	wget -q --input-file=data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads
 	touch $@
 
-data/mid/facebook_roads/extracted: | data/mid/facebook_roads
+data/mid/facebook_roads/extracted: | data/mid/facebook_roads ##put extracted data in folder
 	rm -f data/mid/facebook_roads/*.gpkg
 	ls data/in/facebook_roads/*.tar.gz | parallel 'tar -C data/mid/facebook_roads -xf {}'
 	touch $@

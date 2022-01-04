@@ -1190,7 +1190,7 @@ data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson
 data/out/morocco: data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data/out ## Flag all Morocco buildings output datasets are exported.
 	touch $@
 
-db/table/abu_dhabi_admin_boundaries: db/index/osm_tags_idx | db/table ## Abu Dhabi admin boundaries extracted from GADM (Database of Global Administrative Areas).
+db/table/abu_dhabi_admin_boundaries: db/index/osm_tags_idx db/table/gadm_countries_boundary | db/table ## Abu Dhabi admin boundaries extracted from GADM (Database of Global Administrative Areas).
 	psql -f tables/abu_dhabi_admin_boundaries.sql
 	touch $@
 

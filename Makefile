@@ -1804,7 +1804,7 @@ db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | 
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest.osm.pbf basemap/osm2pgsql_styles/basemap.lua | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
-	osm2pgsql --flat-nodes osm2pgsql_flat_nodes --slim -C 0 --style basemap/osm2pgsql_styles/basemap.lua --number-processes 6 --output=flex --create data/planet-latest.osm.pbf
+	osm2pgsql --flat-nodes data/osm2pgsql_flat_nodes --slim -C 0 --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/test.osm.pbf
 	osm2pgsql-replication init --server "https://planet.osm.org/replication/hour/"
 	touch $@
 

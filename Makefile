@@ -340,7 +340,7 @@ data/in/facebook_roads/downloaded: | data/in/facebook_roads ##reference download
 	wget -q --input-file=data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads
 	touch $@
 
-data/mid/facebook_roads/extracted: | data/mid/facebook_roads ##put extracted data in folder
+data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/facebook_roads ##put extracted data in folder
 	rm -f data/mid/facebook_roads/*.gpkg
 	ls data/in/facebook_roads/*.tar.gz | parallel 'tar -C data/mid/facebook_roads -xf {}'
 	touch $@

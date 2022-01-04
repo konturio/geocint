@@ -29,6 +29,9 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 data: ## Temporary file based datasets. Located on bcache. Some files could be returned to SSD.
 	mkdir -p $@
 
+scripts:
+	mkdir -p $@
+
 db: ## Directory for storing database objects creation footprints.
 	mkdir -p $@
 
@@ -1843,7 +1846,7 @@ kothic/src/komap.py: ## Clone Kothic from GIT
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
 	cd tile_generator; go get; go build -o tile_generator
 
-scripts/basemap.sql: kothic/src/komap.py | db/function ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
+scripts/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
 	python2 kothic/src/komap.py \
 		--renderer=mvt-sql \
 		--stylesheet basemap/styles/ninja.mapcss \

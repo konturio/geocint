@@ -588,7 +588,7 @@ db/table/gadm_boundaries: data/mid/gadm/gadm36_shp_files | db/table ## GADM (Dat
 
 db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries from GADM (Database of Global Administrative Areas) dataset.
 	psql -c "drop table if exists gadm_countries_boundary;"
-	psql -c "create table gadm_countries_boundary as select row_number() over() gid, gid gid_0, \"name\" name_0, geom from gadm_boundaries where gadm_level = 0;"
+	psql -c "create table gadm_countries_boundary as select row_number() over() gid, gid_0, \"name\" name_0, geom from gadm_boundaries where gadm_level = 0;"
 	psql -c "alter table gadm_countries_boundary alter column geom type geometry(multipolygon, 3857) using ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
 

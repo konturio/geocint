@@ -333,7 +333,8 @@ data/in/facebook_roads: | data/in ## Input data for facebook roads.
 	mkdir -p $@]
 
 data/mid/facebook_roads: | data ##make directory
-	
+	mkdir -p $@]
+
 data/in/facebook_roads/downloaded: | data/in/facebook_roads ##reference download list
 	rm -f data/in/facebook_roads/*.tar.gz
 	wget -q --input-file=data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads

@@ -1,10 +1,16 @@
 FROM debian:stable-slim
 
+# postgresql-client is required to use psql from Makefile
+RUN apt-get update && apt-get -y install wget gnupg2
+RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+RUN apt-get update && apt-get -y install postgresql-client-14
+
 # aria2 is required to download planet-latest.osm.pbf
-RUN apt-get update && apt-get install -y aria2
+RUN apt-get install -y aria2
 
 # install osm2pgsql dependencies
-RUN apt-get update && apt-get install -y wget git make cmake g++ libboost-dev libboost-system-dev \
+RUN apt-get install -y git make cmake g++ libboost-dev libboost-system-dev \
   libboost-filesystem-dev libexpat1-dev zlib1g-dev \
   libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc
 
@@ -17,20 +23,13 @@ RUN git clone git://github.com/openstreetmap/osm2pgsql.git \
     && make install
 
 # golang is required to build tile_generator
-RUN apt-get update && apt-get install -y golang
-
-# postgresql-client is required to use psql from Makefile
-RUN apt-get update && apt-get -y install gnupg2
-RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN apt-get update
-RUN apt-get -y install postgresql-client-14
+RUN apt-get install -y golang
 
 # python2 is required to run Kothic
-RUN apt-get update && apt-get -y install python2
+RUN apt-get -y install python2
 
 # gdal is required to use ogr2pgr
-RUN apt-get update && apt-get -y install gdal-bin
+RUN apt-get -y install gdal-bin
 
 COPY basemap /basemap
 COPY tile_generator /tile_generator

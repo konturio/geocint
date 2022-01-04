@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: basemap-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: basemap
+spec:
+  backoffLimit: 1
+  activeDeadlineSeconds: 604800 # week
+  template:
+    spec:
+      containers:
+      - name: basemap
+        image: basemap
+        imagePullPolicy: Never
+        command: ["make", "-j", "data/basemap.mbtiles"]
+        volumeMounts:
+          - name: basemap-storage
+            mountPath: /data
+        env:
+          - name: PGHOST
+            value: host.minikube.internal
+          - name: PGUSER
+            value: gis
+          - name: PGDATABASE
+            value: gis
+      volumes:
+      - name: basemap-storage
+        persistentVolumeClaim:
+          claimName: basemap-claim
+      restartPolicy: Never

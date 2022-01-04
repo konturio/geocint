@@ -396,7 +396,7 @@ db/table/worldpop_country_codes: data/in/raster/worldpop/download | db/table ## 
 	ls data/in/raster/worldpop/*.tif | parallel --eta psql -c "\"insert into worldpop_country_codes(code) select upper(substr('{/.}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{/.}', 1, 3)));\""
 	touch $@
 
-db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.
+db/table/worldpop_population_boundary: db/table/gadm_countries_boundary db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.
 	psql -f tables/worldpop_population_boundary.sql
 	touch $@
 
@@ -867,7 +867,7 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Moroc
 	touch $@
 
 db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
-	psql -f tables/count_items_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
+	psql -f tables/count_items_in_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset (input).
@@ -964,11 +964,11 @@ db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Coun
 data/in/new_zealand_buildings: | data/in ## New Zealand's buildings dataset from LINZ (Land Information New Zealand).
 	mkdir -p $@
 
-data/in/new_zealand_buildings/download: | data/in/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
-	cd data/in/new_zealand_buildings; aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg ./  --profile geocint_pipeline_sender
+data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg: | data/in/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg $@ --profile geocint_pipeline_sender
 	touch $@
 
-db/table/new_zealand_buildings: data/in/new_zealand_buildings/download | db/table ## Create table with New Zealand buildings.
+db/table/new_zealand_buildings: data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg | db/table ## Create table with New Zealand buildings.
 	psql -c "drop table if exists new_zealand_buildings;"
 	time ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
 	touch $@
@@ -1190,7 +1190,7 @@ data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson
 data/out/morocco: data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data/out ## Flag all Morocco buildings output datasets are exported.
 	touch $@
 
-db/table/abu_dhabi_admin_boundaries: | db/table ## Abu Dhabi admin boundaries extracted from GADM (Database of Global Administrative Areas).
+db/table/abu_dhabi_admin_boundaries: db/index/osm_tags_idx | db/table ## Abu Dhabi admin boundaries extracted from GADM (Database of Global Administrative Areas).
 	psql -f tables/abu_dhabi_admin_boundaries.sql
 	touch $@
 

@@ -824,7 +824,7 @@ data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates ##
 	touch $@
 
 data/in/global_fires/copy_old_data: | data/in/global_fires/download_new_updates ## Aggregate 20 years active fire products from FIRMS (Fire Information for Resource Management System).
-	cp data/firms/old_tables/*.csv data/in/global_fires/
+	cp data/in/firms/old_tables/*.csv data/in/global_fires/
 	touch $@
 
 db/table/global_fires: data/in/global_fires/download_new_updates data/in/global_fires/copy_old_data | db/table ## 20 years active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.

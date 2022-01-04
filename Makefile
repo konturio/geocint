@@ -1796,7 +1796,7 @@ data/mid/daylight_coastlines/land_polygons.shp: data/in/daylight_coastlines.tgz 
 
 db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | db/table ## Import land vector polygons from Daylight Coastlines in database
 	psql -c "drop table if exists land_polygons_vector;"
-	shp2pgsql -I -s 4326 data/mid/daylight_coastlines/land_polygons.shp land_polygons_vector | psql -q
+	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" -a_srs EPSG:4326 data/mid/daylight_coastlines/land_polygons.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -nln land_polygons_vector
 	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"
 	touch $@
 

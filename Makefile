@@ -1,6 +1,6 @@
 all: prod dev basemap_all data/out/abu_dhabi_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/zigzag/reports deploy/sonic/reports db/function/build_isochrone db/table/isochrone_destinations ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/zigzag/reports deploy/sonic/reports db/function/build_isochrone db/table/isochrone_destinations db/table/facebook_roads ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -328,6 +328,29 @@ db/function/h3_raster_sum_to_h3: | db/function ## Aggregate sum raster values on
 db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 resolution < 8 using different aggregations.
 	psql -f procedures/generate_overviews.sql
 	touch $@
+
+data/in/facebook_roads: | data/in ## make directory for downloaded data
+	mkdir -p $@
+
+data/mid/facebook_roads: | data/in ## make directory for extracted data
+	mkdir -p $@
+
+data/in/facebook_roads/downloaded: | data/in/facebook_roads ## reference download list
+	rm -f data/in/facebook_roads/*.tar.gz
+	wget -q --input-file=data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads
+	touch $@
+
+data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/facebook_roads ## put extracted data in folder
+	rm -f data/mid/facebook_roads/*.gpkg
+	ls data/in/facebook_roads/*.tar.gz | parallel 'tar -C data/mid/facebook_roads -xf {}'
+	touch $@
+
+db/table/facebook_roads: data/mid/facebook_roads/extracted | db/table ## loading files into the db
+	psql -c "drop table if exists facebook_roads;"
+	psql -c "create table facebook_roads (fid serial not null, way_fbid text, highway_tag text, wkt text, geom geometry);"
+	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads -lco GEOMETRY_NAME=geom -a_srs EPSG:4326'
+	psql -c "create index on facebook_roads using gist(geom);"
+	touch $@  
 
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx | db/table ## Roads from OpenStreetMap.
 	psql -f tables/osm_roads.sql

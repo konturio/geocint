@@ -329,23 +329,23 @@ db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 res
 	psql -f procedures/generate_overviews.sql
 	touch $@
 
-data/in/facebook_roads: | data ##make directory
+data/in/facebook_roads: | data ## make directory
 	mkdir -p $@
 
-data/mid/facebook_roads: | data ##make directory
+data/mid/facebook_roads: | data ## make directory
 	mkdir -p $@
 
-data/in/facebook_roads/downloaded: | data/in/facebook_roads ##reference download list
+data/in/facebook_roads/downloaded: | data/in/facebook_roads ## reference download list
 	rm -f data/in/facebook_roads/*.tar.gz
 	wget -q --input-file=data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads
 	touch $@
 
-data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/facebook_roads ##put extracted data in folder
+data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/facebook_roads ## put extracted data in folder
 	rm -f data/mid/facebook_roads/*.gpkg
 	ls data/in/facebook_roads/*.tar.gz | parallel 'tar -C data/mid/facebook_roads -xf {}'
 	touch $@
 
-db/table/facebook_roads: data/mid/facebook_roads/extracted | db/table ##loading files into the db
+db/table/facebook_roads: data/mid/facebook_roads/extracted | db/table ## loading files into the db
 	psql -c "drop table if exists facebook_roads;"
 	psql -c "create table facebook_roads (fid serial not null, way_fbid text, highway_tag text, wkt text, geom geometry);"
 	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads -lco GEOMETRY_NAME=geom -a_srs EPSG:4326'

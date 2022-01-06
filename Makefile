@@ -835,6 +835,14 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
+data/in/global_fires/firms_archive.tar.gz: | data/in/global_fires ## Download aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System) from AWS.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/firms_archive $@ --profile geocint_pipeline_sender
+	touch $@
+
+data/in/global_fires/extract_firms_archive: data/in/global_fires/firms_archive.tar.gz  ## Extract aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System) from AWS.
+	tar -xvf $< -C data/in/global_fires; rm -f $<
+	touch $@
+
 data/in/global_fires/new_updates: | data/in ## Last updates for active fire products from FIRMS (Fire Information for Resource Management System).
 	mkdir -p $@
 
@@ -846,11 +854,7 @@ data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates ##
 	cp data/in/global_fires/new_updates/*.csv data/in/global_fires/
 	touch $@
 
-data/in/global_fires/copy_old_data: | data/in/global_fires/download_new_updates ## Aggregate 20 years active fire products from FIRMS (Fire Information for Resource Management System).
-	cp data/in/firms/old_tables/*.csv data/in/global_fires/
-	touch $@
-
-db/table/global_fires: data/in/global_fires/download_new_updates data/in/global_fires/copy_old_data | db/table ## 20 years active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
+db/table/global_fires: data/in/global_fires/download_new_updates data/in/global_fires/extract_firms_archive | db/table ## 20 years active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
 	psql -c "create table if not exists global_fires (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);"
 	rm -f data/in/global_fires/*_proc.csv
 	ls data/in/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {}"

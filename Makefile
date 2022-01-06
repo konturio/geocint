@@ -342,8 +342,7 @@ data/mid/facebook_roads: | data/in ## make directory for extracted data
 	mkdir -p $@
 
 data/in/facebook_roads/downloaded: | data/in/facebook_roads ## reference download list
-	rm -f data/in/facebook_roads/*.tar.gz
-	wget -q -nc --input-file=data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads
+	wget -nc --input-file=data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads
 	touch $@
 
 data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/facebook_roads ## put extracted data in folder

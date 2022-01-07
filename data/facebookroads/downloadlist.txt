@@ -1,5 +1,4 @@
-﻿
-https://mapwith.ai/country_exports/AD_mapwithai_road_data.gpkg.tar.gz
+﻿https://mapwith.ai/country_exports/AD_mapwithai_road_data.gpkg.tar.gz
 https://mapwith.ai/country_exports/AE_mapwithai_road_data.gpkg.tar.gz
 https://mapwith.ai/country_exports/AF_mapwithai_road_data.gpkg.tar.gz
 https://mapwith.ai/country_exports/AG_mapwithai_road_data.gpkg.tar.gz

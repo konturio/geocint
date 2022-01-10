@@ -29,6 +29,9 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 data: ## Temporary file based datasets. Located on bcache. Some files could be returned to SSD.
 	mkdir -p $@
 
+scripts: ## scripts that perform transformation on top of table without creating new one
+	mkdir -p $@
+
 db: ## Directory for storing database objects creation footprints.
 	mkdir -p $@
 
@@ -1796,12 +1799,12 @@ data/mid/daylight_coastlines/land_polygons.shp: data/in/daylight_coastlines.tgz 
 
 db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | db/table ## Import land vector polygons from Daylight Coastlines in database
 	psql -c "drop table if exists land_polygons_vector;"
-	shp2pgsql -I -s 4326 data/mid/daylight_coastlines/land_polygons.shp land_polygons_vector | psql -q
+	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" -a_srs EPSG:4326 data/mid/daylight_coastlines/land_polygons.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -nln land_polygons_vector
 	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest.osm.pbf basemap/osm2pgsql_styles/basemap.lua | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
-	osm2pgsql --flat-nodes osm2pgsql_flat_nodes --slim -C 0 --style basemap/osm2pgsql_styles/basemap.lua --number-processes 6 --output=flex --create data/planet-latest.osm.pbf
+	osm2pgsql --flat-nodes data/osm2pgsql_flat_nodes --slim -C 0 --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/planet-latest.osm.pbf
 	osm2pgsql-replication init --server "https://planet.osm.org/replication/hour/"
 	touch $@
 
@@ -1843,7 +1846,7 @@ kothic/src/komap.py: ## Clone Kothic from GIT
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
 	cd tile_generator; go get; go build -o tile_generator
 
-scripts/basemap.sql: kothic/src/komap.py | db/function ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
+scripts/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
 	python2 kothic/src/komap.py \
 		--renderer=mvt-sql \
 		--stylesheet basemap/styles/ninja.mapcss \

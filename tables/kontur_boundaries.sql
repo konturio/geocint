@@ -45,34 +45,33 @@ create index on osm_admin_boundaries_in using gist(geom, ST_Area(geom));
 drop table if exists kontur_boundaries;
 create table kontur_boundaries as
 with gadm_in as (
-        select distinct on (g.geom)              -- (because of duplicates in GADM dataset)
-                b.osm_id,
+        select  b.osm_id,
                 g.id,
                 g.hasc,
                 g.gadm_level,
                 b.iou
-        from gadm_boundaries g
-                left join lateral (
-                        select
-                                b.osm_id,
-                                -- Calculate Intersection Over Union between OSM and GADM:
-                                ST_Area(ST_Intersection(b.geom, g.geom))::numeric /
-                                ST_Area(ST_Union(b.geom, g.geom)) as iou
-                        from (
-                                select b.osm_id, b.geom
-                                from osm_admin_boundaries_in b
-                                where ST_Area(b.geom) between 0.1 * ST_Area(g.geom) and 10 * ST_Area(g.geom)
-                                        and (g.geom && b.geom)
-                                order by abs(ST_Area(b.geom) - ST_Area(g.geom))
-                                offset 0
-                             ) b
-                        where ST_Intersects(g.geom, b.geom)
-                        order by 2 desc
-                        limit 1
-                        ) b on true
+        from gadm_deduplicated g
+        left join lateral (
+                select
+                        b.osm_id,
+                        -- Calculate Intersection Over Union between OSM and GADM:
+                        ST_Area(ST_Intersection(b.geom, g.geom))::numeric /
+                        ST_Area(ST_Union(b.geom, g.geom)) as iou
+                from (
+                        select b.osm_id, b.geom
+                        from osm_admin_boundaries_in b
+                        where ST_Area(b.geom) between 0.1 * ST_Area(g.geom) and 10 * ST_Area(g.geom)
+                                and (g.geom && b.geom)
+                        order by abs(ST_Area(b.geom) - ST_Area(g.geom))
+                        offset 0
+                ) b
+                where ST_Intersects(g.geom, b.geom)
+                order by 2 desc
+                limit 1
+        ) b on true
         order by g.geom, g.gadm_level
 )
-select distinct on ( b.osm_id)
+select distinct on (b.osm_id)
         b.osm_id,
         g.id as gadm_id,
         b.osm_type,

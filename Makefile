@@ -1505,7 +1505,7 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/isochrone_destinations: db/index/osm_tags_idx | db/table ## All fire stations and hospitals extracted from OpenStreetMap dataset.
+db/table/isochrone_destinations: db/table/osm db/index/osm_tags_idx | db/table ## All fire stations and hospitals extracted from OpenStreetMap dataset.
 	psql -f tables/isochrone_destinations.sql
 	touch $@
 

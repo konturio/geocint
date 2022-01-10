@@ -1,6 +1,6 @@
 all: prod dev basemap_all data/out/abu_dhabi_export db/table/fire_stations_h3 db/table/hospitals_h3 ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/zigzag/reports deploy/sonic/reports db/function/build_isochrone db/table/isochrone_destinations ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/zigzag/reports deploy/sonic/reports db/function/build_isochrone db/table/isochrone_destinations db/table/facebook_roads ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -60,6 +60,12 @@ data/out: | data ## Generated final data (tiles, dumps, etc).
 	mkdir -p $@
 
 data/out/morocco_buildings: | data/out ## Data generated within project Morocco Buildings for Swiss Re.
+	mkdir -p $@
+
+data/in/global_fires: | data/in ## Data downloaded within project Global Fires.
+	mkdir -p $@
+
+data/mid/global_fires: | data/mid ## Data processed within project Global Fires.
 	mkdir -p $@
 
 data/out/global_fires: | data/out ## Data generated within project Global Fires.
@@ -329,6 +335,28 @@ db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 res
 	psql -f procedures/generate_overviews.sql
 	touch $@
 
+data/in/facebook_roads: | data/in ## make directory for downloaded data
+	mkdir -p $@
+
+data/mid/facebook_roads: | data/in ## make directory for extracted data
+	mkdir -p $@
+
+data/in/facebook_roads/downloaded: | data/in/facebook_roads ## reference download list
+	wget -nc --input-file=data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads
+	touch $@
+
+data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/facebook_roads ## put extracted data in folder
+	rm -f data/mid/facebook_roads/*.gpkg
+	ls data/in/facebook_roads/*.tar.gz | parallel 'tar -C data/mid/facebook_roads -xf {}'
+	touch $@
+
+db/table/facebook_roads: data/mid/facebook_roads/extracted | db/table ## loading files into the db
+	psql -c "drop table if exists facebook_roads;"
+	psql -c "create table facebook_roads (fid serial not null, way_fbid text, highway_tag text, wkt text, geom geometry);"
+	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads -lco GEOMETRY_NAME=geom -a_srs EPSG:4326'
+	psql -c "create index on facebook_roads using gist(geom);"
+	touch $@  
+
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx | db/table ## Roads from OpenStreetMap.
 	psql -f tables/osm_roads.sql
 	touch $@
@@ -396,7 +424,7 @@ db/table/worldpop_country_codes: data/in/raster/worldpop/download | db/table ## 
 	ls data/in/raster/worldpop/*.tif | parallel --eta psql -c "\"insert into worldpop_country_codes(code) select upper(substr('{/.}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{/.}', 1, 3)));\""
 	touch $@
 
-db/table/worldpop_population_boundary: db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.
+db/table/worldpop_population_boundary: db/table/gadm_countries_boundary db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.
 	psql -f tables/worldpop_population_boundary.sql
 	touch $@
 
@@ -488,7 +516,8 @@ db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas fro
 	touch $@
 
 data/in/raster/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/in/raster/gebco_2020_geotiff ## Download GEBCO (General Bathymetric Chart of the Oceans) bathymetry zipped raster dataset.
-	wget "https://www.bodc.ac.uk/data/open_download/gebco/gebco_2020/geotiff/" -O $@
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/gebco_2020_geotiff/gebco_2020_geotiff.zip $@ --profile geocint_pipeline_sender
+	touch $@
 
 data/mid/gebco_2020_geotiff/gebco_2020_geotiffs_unzip: data/in/raster/gebco_2020_geotiff/gebco_2020_geotiff.zip | data/mid ## Unzip GEBCO (General Bathymetric Chart of the Oceans) rasters.
 	mkdir -p data/mid/gebco_2020_geotiff
@@ -587,7 +616,7 @@ db/table/gadm_boundaries: data/mid/gadm/gadm36_shp_files | db/table ## GADM (Dat
 
 db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries from GADM (Database of Global Administrative Areas) dataset.
 	psql -c "drop table if exists gadm_countries_boundary;"
-	psql -c "create table gadm_countries_boundary as select row_number() over() gid, gid gid_0, \"name\" name_0, geom from gadm_boundaries where gadm_level = 0;"
+	psql -c "create table gadm_countries_boundary as select row_number() over() gid, gid_0, \"name\" name_0, geom from gadm_boundaries where gadm_level = 0;"
 	psql -c "alter table gadm_countries_boundary alter column geom type geometry(multipolygon, 3857) using ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
 
@@ -811,31 +840,35 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
+data/in/global_fires/firms_archive.tar.gz: | data/in/global_fires ## Download aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System) from AWS.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/firms_archive.tar.gz $@ --profile geocint_pipeline_sender
+	touch $@
+
+data/mid/global_fires/extract_firms_archive: data/in/global_fires/firms_archive.tar.gz | data/mid/global_fires ## Extract aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System).
+	tar -xvf $< -C data/mid/global_fires
+	touch $@
+
 data/in/global_fires/new_updates: | data/in ## Last updates for active fire products from FIRMS (Fire Information for Resource Management System).
 	mkdir -p $@
 
-data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 48 hours.
+data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 48 hours.
 	rm -f data/in/global_fires/new_updates/*.csv
 	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
 	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
 	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
-	cp data/in/global_fires/new_updates/*.csv data/in/global_fires/
+	cp data/in/global_fires/new_updates/*.csv data/mid/global_fires/
 	touch $@
 
-data/in/global_fires/copy_old_data: | data/in/global_fires/download_new_updates ## Aggregate 20 years active fire products from FIRMS (Fire Information for Resource Management System).
-	cp data/firms/old_tables/*.csv data/in/global_fires/
-	touch $@
-
-db/table/global_fires: data/in/global_fires/download_new_updates data/in/global_fires/copy_old_data | db/table ## 20 years active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
+db/table/global_fires: data/in/global_fires/download_new_updates data/mid/global_fires/extract_firms_archive | db/table ## 20 years active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
 	psql -c "create table if not exists global_fires (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);"
-	rm -f data/in/global_fires/*_proc.csv
-	ls data/in/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {}"
-	ls data/in/global_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy global_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
+	rm -f data/mid/global_fires/*_proc.csv
+	ls data/mid/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {}"
+	ls data/mid/global_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy global_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
 	psql -c "vacuum analyze global_fires;"
 	psql -c "create index if not exists global_fires_hash_idx on global_fires (hash);"
 	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
 	psql -c "delete from global_fires where id in(select id from(select id, row_number() over(partition by hash order by id) as row_num from global_fires) t where t.row_num > 1);"
-	rm -f data/in/global_fires/*.csv
+	rm -f data/mid/global_fires/*.csv
 	touch $@
 
 db/table/global_fires_stat_h3: db/table/global_fires ## Aggregate active fire data from FIRMS (Fire Information for Resource Management System) on H3 hexagon grid.
@@ -850,8 +883,15 @@ deploy/geocint/global_fires_h3_r8_13months.csv.gz: data/out/global_fires/global_
 	cp -vp data/out/global_fires/global_fires_h3_r8_13months.csv.gz ~/public_html/global_fires_h3_r8_13months.csv.gz
 	touch $@
 
-db/table/morocco_urban_pixel_mask: data/morocco_urban_pixel_mask.gpkg | db/table ## Morocco rough urban territories vector layer from Geoalert.
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_urban_pixel_mask.gpkg
+data/in/morocco_buildings: | data/in ## morocco_buildings input data.
+	mkdir -p $@
+
+data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg: | data/in/morocco_buildings ## morocco_urban_pixel_mask downloaded.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_urban_pixel_mask.gpkg $@ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/morocco_urban_pixel_mask: data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg | db/table ## Morocco rough urban territories vector layer from Geoalert.
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg
 	touch $@
 
 db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Morocco urban pixel mask aggregated count on H3 hexagons grid.
@@ -859,7 +899,7 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Moroc
 	touch $@
 
 db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
-	psql -f tables/count_items_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
+	psql -f tables/count_items_in_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset (input).
@@ -956,11 +996,11 @@ db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Coun
 data/in/new_zealand_buildings: | data/in ## New Zealand's buildings dataset from LINZ (Land Information New Zealand).
 	mkdir -p $@
 
-data/in/new_zealand_buildings/download: | data/in/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
-	cd data/in/new_zealand_buildings; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg ./
+data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg: | data/in/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg $@ --profile geocint_pipeline_sender
 	touch $@
 
-db/table/new_zealand_buildings: data/in/new_zealand_buildings/download | db/table ## Create table with New Zealand buildings.
+db/table/new_zealand_buildings: data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg | db/table ## Create table with New Zealand buildings.
 	psql -c "drop table if exists new_zealand_buildings;"
 	time ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
 	touch $@
@@ -1061,9 +1101,13 @@ db/table/morocco_buildings_manual: data/morocco_buildings/morocco_buildings_manu
 	psql -c "update morocco_buildings_manual set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
 	touch $@
 
-db/table/morocco_buildings: data/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
+data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg: | data/in/morocco_buildings ## Geoalert building dataset for Morocco (Phase 3) downloaded.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/geoalert_morocco_stage_3.gpkg $@ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
 	psql -c "drop table if exists morocco_buildings;"
-	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
 	touch $@
 
@@ -1178,7 +1222,7 @@ data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson
 data/out/morocco: data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data/out ## Flag all Morocco buildings output datasets are exported.
 	touch $@
 
-db/table/abu_dhabi_admin_boundaries: | db/table ## Abu Dhabi admin boundaries extracted from GADM (Database of Global Administrative Areas).
+db/table/abu_dhabi_admin_boundaries: db/index/osm_tags_idx db/table/gadm_countries_boundary | db/table ## Abu Dhabi admin boundaries extracted from GADM (Database of Global Administrative Areas).
 	psql -f tables/abu_dhabi_admin_boundaries.sql
 	touch $@
 
@@ -1841,13 +1885,10 @@ data/basemap/glyphs_all: | data/basemap/glyphs ## Target that generates glyphs (
 	touch $@
 
 data/basemap/sprite_all: | data/basemap/sprite ## Build sprites currently fetched from Mapbox.
-	wget -O data/basemap/sprite/sprite@2x.png https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite@2x.png?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
-	wget -O data/basemap/sprite/sprite@2x.json https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite@2x.json?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
-	wget -O data/basemap/sprite/sprite.png https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite.png?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
-	wget -O data/basemap/sprite/sprite.json https://api.mapbox.com/styles/v1/akiyamka/cjushbakm094j1fryd5dn0x4q/0a2mkag2uzqs8kk8pfue80nq2/sprite.json?access_token=pk.eyJ1IjoiYWtpeWFta2EiLCJhIjoiY2p3NjNwdmkyMGp4NTN5cGI0cHFzNW5wZiJ9.WXaCSY3ZLzwB9AIJaOovLw
+	cp -r basemap/sprite/. data/basemap/sprite
 	touch $@
 
-data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server.
+data/basemap/metadata/zigzag/style_night_no_globe_view_support.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1858,7 +1899,9 @@ data/basemap/metadata/zigzag/style_night.json: kothic/src/komap.py basemap/scrip
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
+
+data/basemap/metadata/zigzag/style_night.json: data/basemap/metadata/zigzag/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/zigzag/style_night_no_globe_view_support.json > $@
 
 data/basemap/metadata/zigzag/style_night_ru.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server. (language=ru)
 	python2 kothic/src/komap.py \
@@ -1886,7 +1929,7 @@ data/basemap/metadata/zigzag/style_night_en.json: kothic/src/komap.py | data/bas
 		--locale en \
 		> $@
 
-data/basemap/metadata/zigzag/style_day.json: basemap/styles/ninja.mapcss basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Geocint server.
+data/basemap/metadata/zigzag/style_day_no_globe_view_support.json: basemap/styles/ninja.mapcss basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Geocint server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1898,7 +1941,9 @@ data/basemap/metadata/zigzag/style_day.json: basemap/styles/ninja.mapcss basemap
 		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
+
+data/basemap/metadata/zigzag/style_day.json: data/basemap/metadata/zigzag/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/zigzag/style_day_no_globe_view_support.json > $@
 
 data/basemap/metadata/zigzag/style_day_en.json: basemap/styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Geocint server. (language=en)
 	python2 kothic/src/komap.py \
@@ -1917,7 +1962,7 @@ data/basemap/metadata/zigzag/style_day_en.json: basemap/styles/ninja.mapcss koth
 data/basemap/metadata/zigzag/style_ninja.json: kothic/src/komap.py data/basemap/metadata/zigzag/style_day_en.json | data/basemap/metadata/zigzag ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/zigzag/style_day_en.json > $@
 
-data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server.
+data/basemap/metadata/sonic/style_day_no_globe_view_support.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1929,7 +1974,9 @@ data/basemap/metadata/sonic/style_day.json: kothic/src/komap.py basemap/scripts/
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
+
+data/basemap/metadata/sonic/style_day.json: data/basemap/metadata/sonic/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/sonic/style_day_no_globe_view_support.json > $@
 
 data/basemap/metadata/sonic/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server. (language=en)
 	python2 kothic/src/komap.py \
@@ -1948,7 +1995,7 @@ data/basemap/metadata/sonic/style_day_en.json: kothic/src/komap.py | data/basema
 data/basemap/metadata/sonic/style_ninja.json: kothic/src/komap.py data/basemap/metadata/sonic/style_day_en.json | data/basemap/metadata/sonic ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/sonic/style_day_en.json > $@
 
-data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server.
+data/basemap/metadata/sonic/style_night_no_globe_view_support.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1959,7 +2006,9 @@ data/basemap/metadata/sonic/style_night.json: kothic/src/komap.py basemap/script
 		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
+
+data/basemap/metadata/sonic/style_night.json: data/basemap/metadata/sonic/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/sonic/style_night_no_globe_view_support.json > $@
 
 data/basemap/metadata/sonic/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server. (language=en)
 	python2 kothic/src/komap.py \
@@ -1974,7 +2023,7 @@ data/basemap/metadata/sonic/style_night_en.json: kothic/src/komap.py | data/base
 		--locale en \
 		> $@
 
-data/basemap/metadata/lima/style_day.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for PROD server.
+data/basemap/metadata/lima/style_day_no_globe_view_support.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for PROD server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -1986,7 +2035,9 @@ data/basemap/metadata/lima/style_day.json: kothic/src/komap.py basemap/scripts/p
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
+
+data/basemap/metadata/lima/style_day.json: data/basemap/metadata/lima/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/lima/style_day_no_globe_view_support.json > $@
 
 data/basemap/metadata/lima/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for PROD server. (language=en)
 	python2 kothic/src/komap.py \
@@ -2005,7 +2056,7 @@ data/basemap/metadata/lima/style_day_en.json: kothic/src/komap.py | data/basemap
 data/basemap/metadata/lima/style_ninja.json: data/basemap/metadata/lima/style_day_en.json kothic/src/komap.py | data/basemap/metadata/lima ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/lima/style_day_en.json > $@
 
-data/basemap/metadata/lima/style_night.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server.
+data/basemap/metadata/lima/style_night_no_globe_view_support.json: kothic/src/komap.py basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -2016,7 +2067,9 @@ data/basemap/metadata/lima/style_night.json: kothic/src/komap.py basemap/scripts
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
 		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
-	cat $@ | python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | sponge $@
+
+data/basemap/metadata/lima/style_night.json: data/basemap/metadata/lima/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python basemap/scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/lima/style_night_no_globe_view_support.json > $@
 
 data/basemap/metadata/lima/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server. (language=en)
 	python2 kothic/src/komap.py \

@@ -1,0 +1,195 @@
+{
+    "airport-15": {
+        "width": 38,
+        "height": 38,
+        "x": 0,
+        "y": 0,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "embassy-15": {
+        "width": 38,
+        "height": 38,
+        "x": 38,
+        "y": 0,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "harbor-15": {
+        "width": 38,
+        "height": 38,
+        "x": 0,
+        "y": 38,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "home-15": {
+        "width": 38,
+        "height": 38,
+        "x": 38,
+        "y": 38,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "hospital-15": {
+        "width": 38,
+        "height": 38,
+        "x": 76,
+        "y": 0,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "marker-15": {
+        "width": 38,
+        "height": 38,
+        "x": 114,
+        "y": 0,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "marker-stroked-15": {
+        "width": 38,
+        "height": 38,
+        "x": 76,
+        "y": 38,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "shelter-15": {
+        "width": 38,
+        "height": 38,
+        "x": 114,
+        "y": 38,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "HOT": {
+        "width": 30,
+        "height": 30,
+        "x": 0,
+        "y": 76,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "airport-11": {
+        "width": 30,
+        "height": 30,
+        "x": 30,
+        "y": 76,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "embassy-11": {
+        "width": 30,
+        "height": 30,
+        "x": 60,
+        "y": 76,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "fire-truck": {
+        "width": 30,
+        "height": 30,
+        "x": 90,
+        "y": 76,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "harbor-11": {
+        "width": 30,
+        "height": 30,
+        "x": 120,
+        "y": 76,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "home-11": {
+        "width": 30,
+        "height": 30,
+        "x": 0,
+        "y": 106,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "hospital-11": {
+        "width": 30,
+        "height": 30,
+        "x": 30,
+        "y": 106,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "hydrant": {
+        "width": 30,
+        "height": 30,
+        "x": 60,
+        "y": 106,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "marker-11": {
+        "width": 30,
+        "height": 30,
+        "x": 90,
+        "y": 106,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "marker-stroked-11": {
+        "width": 30,
+        "height": 30,
+        "x": 120,
+        "y": 106,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "shelter-11": {
+        "width": 30,
+        "height": 30,
+        "x": 150,
+        "y": 76,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "hot-gray": {
+        "width": 42,
+        "height": 26,
+        "x": 180,
+        "y": 76,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "hot-red": {
+        "width": 42,
+        "height": 26,
+        "x": 222,
+        "y": 76,
+        "pixelRatio": 2,
+        "visible": true
+    },
+    "osm-user-shield": {
+        "x": 0,
+        "y": 136,
+        "pixelRatio": 2,
+        "width": 104,
+        "height": 190,
+        "content": [
+            22,
+            22,
+            81,
+            167
+        ],
+        "stretchX": [
+            [
+                22,
+                81
+            ]
+        ],
+        "stretchY": [
+            [
+                22,
+                167
+            ]
+        ]
+    }
+}

@@ -2,25 +2,30 @@ import sys
 import json
 from copy import deepcopy
 
-style = json.loads(sys.stdin.read())
+f = open(sys.argv[1])
+style = json.load(f)
 
-land_style = deepcopy(
-    next(
-        layer
-        for layer in style["layers"]
-        if layer["type"] == "fill"
-        and layer.get("filter") is not None
-        and layer["filter"] == ["all", ["==", ["get", "natural"], "coastline"]]
+try:
+    land_style = deepcopy(
+        next(
+            layer
+            for layer in style["layers"]
+            if layer["type"] == "fill"
+            and layer.get("filter") is not None
+            and layer["filter"] == ["all", ["==", ["get", "natural"], "coastline"]]
+        )
     )
-)
-land_style["layout"]["visibility"] = "none"
-land_style["paint"]["background-color"] = land_style["paint"]["fill-color"]
-del land_style["paint"]["fill-color"]
-del land_style["paint"]["fill-opacity"]
-land_style["type"] = "background"
-land_style["id"] = "background"
-land_style["filter"] = ["boolean", False]
-style["layers"].append(land_style)
+    land_style["layout"]["visibility"] = "none"
+    land_style["paint"]["background-color"] = land_style["paint"]["fill-color"]
+    del land_style["paint"]["fill-color"]
+    del land_style["paint"]["fill-opacity"]
+    land_style["type"] = "background"
+    land_style["id"] = "background"
+    land_style["filter"] = ["boolean", False]
+    style["layers"].append(land_style)
+except Exception:
+    sys.stderr.write("optional coastline fill style is not presented in the style")
+    pass
 
 try:
     coastline_style = deepcopy(
@@ -37,7 +42,7 @@ try:
     coastline_style["id"] = "coastline"
     style["layers"].append(coastline_style)
 except Exception:
-    sys.stderr.write("coastline style is not presented in the style")
+    sys.stderr.write("optional coastline style is not presented in the style")
     pass
 
 country_label_style = deepcopy(

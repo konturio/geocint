@@ -361,6 +361,11 @@ db/table/facebook_roads: data/mid/facebook_roads/extracted | db/table ## loading
 	psql -c "create index on facebook_roads using gist(geom);"
 	touch $@
 
+db/table/facebook_roads_h3: db/table/facebook_roads | db/table ## Build h3 overviews for facebook roads at all levels
+	psql -f tables/facebook_roads_h3.sql
+	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx | db/table ## Roads from OpenStreetMap.
 	psql -f tables/osm_roads.sql
 	touch $@

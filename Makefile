@@ -354,8 +354,9 @@ db/table/facebook_roads: data/mid/facebook_roads/extracted | db/table ## loading
 	psql -c "drop table if exists facebook_roads;"
 	psql -c "create table facebook_roads (fid serial not null, way_fbid text, highway_tag text, wkt text, geom geometry);"
 	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads'
+	psql -c "alter table facebook_roads alter column geom type geometry(linestring, 4326);"
 	psql -c "create index on facebook_roads using gist(geom);"
-	touch $@  
+	touch $@
 
 db/table/osm_roads: db/table/osm db/index/osm_tags_idx | db/table ## Roads from OpenStreetMap.
 	psql -f tables/osm_roads.sql

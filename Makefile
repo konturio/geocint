@@ -651,7 +651,7 @@ db/table/population_check_osm: db/table/kontur_boundaries db/table/osm_reports_l
 	touch $@
 
 data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
-	psql -qXc 'copy (select * from osm_gadm_comparison order by "Admin level"::int, "GADM name") to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc 'copy (select "OSM id", "Admin level", "OSM name", "GADM name" from osm_gadm_comparison order by id) to stdout with (format csv, header true, delimiter ";");' > $@
 
 data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | data/out/reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
 	psql -qXc 'copy (select "OSM ID", "Name", "Admin level", "Population", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ";");' > $@

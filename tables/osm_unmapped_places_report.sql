@@ -5,7 +5,7 @@ create table osm_unmapped_places_report as (
            'left=' || ST_XMin(envelope) || '&right=' || ST_XMax(envelope) || '&top=' || ST_YMax(envelope) || '&bottom=' || ST_YMin(envelope) as bounding_box
     from stat_h3, ST_Envelope(ST_Transform(geom, 4326)) as envelope
     where population > 1
-      and view_count > 10
+      and view_count > 1000
       and count = 0
     order by floor(log10(population / area_km2)) desc,
              view_count desc

@@ -1,16 +1,16 @@
 create or replace function calculate_isodist_h3(
     in source         geometry,
-    in max_distance   float,
+    in max_distance   double precision,
     in split_interval float,
     out h3            h3index,
-    out distance      float,
-    out geom          geometry
-)
-    returns setof record
-    parallel unsafe
+    inout resolution  integer,
+    out distance      double precision,
+    out geom          geometry,
+    in less_accurate  boolean = false
+) returns setof record
+    stable
     cost 10000
     language plpgsql
-    stable
 as
 $$
 declare
@@ -33,7 +33,9 @@ begin
     limit 1
     into start_node;
 
-    exit when start_node is null;
+    if start_node is null then
+        return ;
+    end if;
 
     return query
         with segments as (
@@ -41,6 +43,7 @@ begin
             from osm_road_segments s
             where ST_Intersects(s.seg_geom, max_area)
               and drive_time is not null
+              and (not less_accurate or length >= 100)
         ),
              driving_distance as (
                  select d.node,
@@ -126,45 +129,34 @@ begin
                  where d1.edge is null
                    and coalesce(d2.edge, d3.edge) is not null
              ),
-             points as (
-                 select distinct (ST_DumpPoints(t.geom)).geom
-                 from spanning_tree t
-             ),
              delaunay_triangles as (
                  select (ST_Dump(ST_ConstrainedDelaunayTriangles(ST_Collect(d.geom)))).geom
-                 from points d
+                 from spanning_tree d
              ),
              delaunay_minmax as (
                  select d.geom, ST_ZMin(d.geom) "min", ST_ZMax(d.geom) max
                  from delaunay_triangles d
-             ),
-             isodist as (
-                 select i * split_interval distance, ST_CollectionExtract(ST_Union(d.geom), 3) geom
-                 from generate_series(1, ceil(max_distance / split_interval)::integer) i
-                      cross join lateral (
-                     select ST_LocateBetweenElevations(
-                                    t.geom,
-                                    (i - 1) * split_interval,
-                                    i * split_interval
-                                ) geom
-                     from delaunay_minmax t
-                     where min <= i * split_interval
-                       and max >= (i - 1) * split_interval
-                     ) d
-                 group by i
              )
-        select h.h3, d.distance, h3_to_geo_boundary_geometry(h.h3)
+        select hex,
+               resolution,
+               avg(c.distance),
+               h3_to_geo_boundary_geometry(hex)
         from (
-                 select h3_polyfill(ST_Union(i.geom), 8) h3
-                 from isodist i
-             ) h
-             cross join lateral (
-            select i.distance
-            from h3_to_geo_boundary_geometry(h.h3) h3geom,
-                 isodist i
-            where ST_Intersects(i.geom, h3geom)
-            order by ST_Area(ST_Intersection(i.geom, h3geom)) desc
-            limit 1
-            ) d;
+                 select ST_Union(
+                                ST_LocateBetweenElevations(
+                                        d.geom,
+                                        (i - 1) * split_interval,
+                                        i * split_interval
+                                    )
+                            )              geom,
+                        i * split_interval distance
+                 from generate_series(1, ceil(max_distance / split_interval)::integer) i,
+                      delaunay_minmax d
+                 where min <= i * split_interval
+                   and max >= (i - 1) * split_interval
+                 group by i
+             ) c,
+             h3_polyfill(c.geom, resolution) hex
+        group by hex;
 end;
 $$;

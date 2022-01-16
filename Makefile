@@ -1530,7 +1530,7 @@ db/function/calculate_isodist_h3: db/table/osm_road_segments | db/function ## H3
 
 db/table/update_isochrone_destinations_h3_r8: db/table/isochrone_destinations_new db/table/isochrone_destinations_h3_r8 db/function/calculate_isodist_h3 | db/table ## Aggregate 30 km isodists to H3 hexagons with resolution 8 for new isochrone destinations.
 	psql -c 'delete from isochrone_destinations_h3_r8 where osm_id in (select osm_id from isochrone_destinations except all select osm_id from isochrone_destinations_new);'
-	psql -X -c 'copy (select osm_id from isochrone_destinations_new except all select osm_id from isochrone_destinations) to stdout;' | parallel --eta 'psql -c "insert into isochrone_destinations_h3_r8(osm_id, h3, type, distance, geom) select d.osm_id, i.h3, d.type, i.distance, i.geom from isochrone_destinations_new d, calculate_isodist_h3(geom, 30000, 1000, 8, true) i where d.osm_id = {};"'
+	psql -X -c 'copy (select osm_id from isochrone_destinations_new except all select osm_id from isochrone_destinations) to stdout;' | parallel --eta 'psql -c "insert into isochrone_destinations_h3_r8(osm_id, h3, type, distance, geom) select d.osm_id, i.h3, d.type, i.distance, i.geom from isochrone_destinations_new d, calculate_isodist_h3(geom, 30000, 8) i where d.osm_id = {};"'
 	psql -c 'vacuum full analyze isochrone_destinations_h3_r8;'
 	touch $@
 
@@ -1538,16 +1538,12 @@ db/table/update_isochrone_destinations: db/table/update_isochrone_destinations_h
 	psql -1 -c "drop table if exists isochrone_destinations; alter table isochrone_destinations_new rename to isochrone_destinations;"
 	touch $@
 
-db/table/countries_h3_r8: db/table/kontur_boundaries | db/table ## Build H3 hexagons for all countries using 8 resolution.
-	psql -f tables/countries_h3_r8.sql
-	touch $@
-
-db/table/isodist_fire_stations_h3: db/table/update_isochrone_destinations_h3_r8 db/table/countries_h3_r8 | db/table ## H3 hexagons from fire stations.
+db/table/isodist_fire_stations_h3: db/table/update_isochrone_destinations_h3_r8 db/table/osm_object_count_grid_h3 db/procedure/generate_overviews | db/table ## H3 hexagons from fire stations.
 	psql -f tables/isodist_fire_stations_h3.sql
 	psql -c "call generate_overviews('isodist_fire_stations_h3', '{distance}'::text[], '{avg}'::text[], 8);"
 	touch $@
 
-db/table/isodist_hospitals_h3: db/table/update_isochrone_destinations_h3_r8 db/table/countries_h3_r8 | db/table ## H3 hexagons from hospitals.
+db/table/isodist_hospitals_h3: db/table/update_isochrone_destinations_h3_r8 db/table/osm_object_count_grid_h3 db/procedure/generate_overviews | db/table ## H3 hexagons from hospitals.
 	psql -f tables/isodist_hospitals_h3.sql
 	psql -c "call generate_overviews('isodist_hospitals_h3', '{distance}'::text[], '{avg}'::text[], 8);"
 	touch $@

@@ -12,14 +12,16 @@ drop table if exists isodist_hospitals_h3;
 create table isodist_hospitals_h3 as (
     select h3, 8 resolution, round(min(distance) / 1000)::integer distance
     from (
-             select c.h3, d.distance
-             from countries_h3_r8 c
+             select g.h3, d.distance
+             from osm_object_count_grid_h3 g
                   cross join lateral (
-                 select s.h3, s.distance + ST_Distance(c.h3::geography, s.h3::geography) distance
+                 select s.h3, s.distance + ST_Distance(g.h3::geography, s.h3::geography) distance
                  from isodist_hospitals_h3_distinct s
-                 order by c.geom <-> s.geom
+                 order by g.h3::geometry <-> s.geom
                  limit 1
                  ) d
+             where g.highway_length > 0
+             and g.resolution = 8
              union all
              select h3, distance
              from isodist_hospitals_h3_distinct

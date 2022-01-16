@@ -1,12 +1,10 @@
 create or replace function calculate_isodist_h3(
-    in source         geometry,
-    in max_distance   double precision,
-    in split_interval float,
-    out h3            h3index,
-    inout resolution  integer,
-    out distance      double precision,
-    out geom          geometry,
-    in less_accurate  boolean = false
+    in source       geometry,
+    in max_distance double precision,
+    in resolution   integer,
+    out h3          h3index,
+    out distance    double precision,
+    out geom        geometry
 ) returns setof record
     stable
     cost 10000
@@ -24,7 +22,7 @@ begin
     from (
              select s.node_from, s.node_to, s.seg_geom
              from osm_road_segments s
-             where ST_Intersects(s.seg_geom, ST_Buffer(source::geography, split_interval)::geometry)
+             where ST_Intersects(s.seg_geom, max_area)
              order by source <-> s.seg_geom
              limit 1
          ) s,
@@ -43,7 +41,6 @@ begin
             from osm_road_segments s
             where ST_Intersects(s.seg_geom, max_area)
               and drive_time is not null
-              and (not less_accurate or length >= 100)
         ),
              driving_distance as (
                  select d.node,
@@ -128,35 +125,12 @@ begin
                          on s.node_to = d3.node
                  where d1.edge is null
                    and coalesce(d2.edge, d3.edge) is not null
-             ),
-             delaunay_triangles as (
-                 select (ST_Dump(ST_ConstrainedDelaunayTriangles(ST_Collect(d.geom)))).geom
-                 from spanning_tree d
-             ),
-             delaunay_minmax as (
-                 select d.geom, ST_ZMin(d.geom) "min", ST_ZMax(d.geom) max
-                 from delaunay_triangles d
              )
-        select hex,
-               resolution,
-               avg(c.distance),
-               h3_to_geo_boundary_geometry(hex)
-        from (
-                 select ST_Union(
-                                ST_LocateBetweenElevations(
-                                        d.geom,
-                                        (i - 1) * split_interval,
-                                        i * split_interval
-                                    )
-                            )              geom,
-                        i * split_interval distance
-                 from generate_series(1, ceil(max_distance / split_interval)::integer) i,
-                      delaunay_minmax d
-                 where min <= i * split_interval
-                   and max >= (i - 1) * split_interval
-                 group by i
-             ) c,
-             h3_polyfill(c.geom, resolution) hex
+        select hex, avg(ST_Z(p.geom)), h3_to_geo_boundary_geometry(hex)
+        from spanning_tree s,
+             ST_DumpPoints(ST_Segmentize(s.geom::geography, h3_edge_length(resolution, 'm'))::geometry) p,
+             h3_geo_to_h3(p.geom, resolution) hex
+        where ST_Z(p.geom) <= max_distance
         group by hex;
 end;
 $$;

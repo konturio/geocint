@@ -248,6 +248,16 @@ values ('mandays_maxtemp_over_32c_1c', 'Man-days above 32C, recent scenario', js
         '© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0'),
         '[["good"], ["bad"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('fire_station_distance', 'Fire brigade distance', jsonb_build_array(
+        '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('hospital_distance', 'Hospital distance', jsonb_build_array(
+        '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        '[["good"], ["bad"]]'::jsonb);
+
 update bivariate_indicators
 set is_base = true
 where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2','one');

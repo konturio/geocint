@@ -85,7 +85,9 @@ create table stat_h3_quality as (
                 avg(a.days_mintemp_above_25c_2c) as agg_days_mintemp_above_25c_2c,
                 avg(a.days_maxwetbulb_over_32c_1c) as agg_days_maxwetbulb_over_32c_1c,
                 avg(a.days_maxwetbulb_over_32c_2c) as agg_days_maxwetbulb_over_32c_2c,
-                avg(a.mandays_maxtemp_over_32c_1c) as agg_mandays_maxtemp_over_32c_1c
+                avg(a.mandays_maxtemp_over_32c_1c) as agg_mandays_maxtemp_over_32c_1c,
+                avg(a.fire_station_distance) as agg_fire_station_distance,
+                avg(a.hospital_distance) as agg_hospital_distance
             from
                 stat_h3 a
             where
@@ -249,4 +251,18 @@ set
     label = 'Number of nights per year'
 where
       numerator = 'days_mintemp_above_25c_1c'
+  and denominator = 'one';
+
+update bivariate_axis
+set
+    label = 'Distance to fire station'
+where
+      numerator = 'fire_station_distance'
+  and denominator = 'one';
+
+update bivariate_axis
+set
+    label = 'Distance to hospital'
+where
+      numerator = 'hospital_distance'
   and denominator = 'one';

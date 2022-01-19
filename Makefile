@@ -674,7 +674,7 @@ data/out/reports/population_check_osm.csv: db/table/population_check_osm | data/
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | data/out/reports ## Export report to CSV
-	psql -qXc 'copy (select population as "Kontur population", view_count as "osm.org view count", bounding_box as "Place bounding box" from osm_unmapped_places_report) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc 'copy osm_unmapped_places_report to stdout with (format csv, header true, delimiter ";");' > $@
 
 data/out/reports/osm_reports_list.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja
 	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' > $@

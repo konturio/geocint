@@ -10,4 +10,4 @@ left join lateral (
 ) o2 on true
 where o2.geog is null  -- select all facebook roads that are not within 10 meters with osm roads
         -- select facebook roads with less than 50% intersection length with 10m buffer from osm roads
-        or st_length(ST_intersection(f.geom::geography, o2.geog)) < 0.5 * st_length(f.geom::geography)
+        or st_length(ST_intersection(f.geom::geography, o2.geog)) < 0.5 * st_length(f.geom::geography) 

@@ -1,6 +1,6 @@
-all: prod dev basemap_all data/out/abu_dhabi_export db/table/fire_stations_h3 db/table/hospitals_h3 ## [FINAL] Meta-target on top of all other targets.
+all: prod dev basemap_all data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/zigzag/reports deploy/sonic/reports db/function/build_isochrone db/table/isochrone_destinations db/table/facebook_roads_h3 ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/zigzag/reports deploy/sonic/reports db/function/build_isochrone db/table/facebook_roads_h3 ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1514,32 +1514,46 @@ db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_re
 	psql -f tables/residential_pop_h3.sql
 	touch $@
 
-db/table/isochrone_destinations: db/table/osm db/index/osm_tags_idx | db/table ## All fire stations and hospitals extracted from OpenStreetMap dataset.
-	psql -f tables/isochrone_destinations.sql
+db/table/isochrone_destinations: | db/table ## Initialize isochrone_destinations table.
+	psql -c 'drop table if exists isochrone_destinations;'
+	psql -c 'create table isochrone_destinations (osm_id bigint, type text, tags jsonb, geom geometry);'
+	touch $@
+
+db/table/isochrone_destinations_new: db/table/isochrone_destinations db/table/osm db/index/osm_tags_idx | db/table ## Get new isochrone destinations from osm.
+	psql -f tables/isochrone_destinations_new.sql
+	touch $@
+
+db/table/isochrone_destinations_h3_r8: | db/table ## Initialize isochrone_destinations_h3_r8 table.
+	psql -c 'drop table if exists isochrone_destinations_h3_r8;'
+	psql -c 'create table isochrone_destinations_h3_r8 (osm_id bigint, h3 h3index, type text, distance float, geom geometry);'
+	psql -c 'create index on isochrone_destinations_h3_r8 using gist(geom, type);'
 	touch $@
 
 db/function/calculate_isodist_h3: db/table/osm_road_segments | db/function ## H3 isodist construction function.
 	psql -f functions/calculate_isodist_h3.sql
 	touch $@
 
-db/table/fire_stations_h3: db/table/isochrone_destinations db/function/calculate_isodist_h3 | db/function/calculate_isodist_h3 ## Calculate 30km h3 isodists from fire stations.
-	psql -c 'drop table if exists tmp_fire_stations_h3;'
-	psql -c 'create table tmp_fire_stations_h3(h3 h3index, distance float);'
-	psql -X -c 'copy (select geom from isochrone_destinations where type = '\''fire_station'\'') to stdout;' | parallel --eta 'psql -c "insert into tmp_fire_stations_h3(h3, distance) select h3, distance from calculate_isodist_h3('\''{}'\'', 30000, 1000);"'
-	psql -c 'vacuum full tmp_fire_stations_h3;'
-	psql -c 'drop table if exists fire_stations_h3;'
-	psql -c 'create table fire_stations_h3 as (select h3, min(distance) distance from tmp_fire_stations_h3 group by h3 order by h3);'
-	psql -c 'drop table tmp_fire_stations_h3;'
+db/table/update_isochrone_destinations_h3_r8: db/table/isochrone_destinations_new db/table/isochrone_destinations_h3_r8 db/function/calculate_isodist_h3 | db/table ## Aggregate 30 km isodists to H3 hexagons with resolution 8 for new isochrone destinations.
+	psql -c 'delete from isochrone_destinations_h3_r8 where osm_id in (select osm_id from isochrone_destinations except all select osm_id from isochrone_destinations_new);'
+	psql -X -c 'copy (select osm_id from isochrone_destinations_new except all select osm_id from isochrone_destinations) to stdout;' | parallel --eta 'psql -c "insert into isochrone_destinations_h3_r8(osm_id, h3, type, distance, geom) select d.osm_id, i.h3, d.type, i.distance, i.geom from isochrone_destinations_new d, calculate_isodist_h3(geom, 30000, 8) i where d.osm_id = {};"'
+	psql -c 'vacuum full analyze isochrone_destinations_h3_r8;'
 	touch $@
 
-db/table/hospitals_h3: db/table/isochrone_destinations db/function/calculate_isodist_h3 | db/function/calculate_isodist_h3 ## Calculate 30km h3 isodists from hospitals.
-	psql -c 'drop table if exists tmp_hospitals_h3;'
-	psql -c 'create table tmp_hospitals_h3(h3 h3index, distance float);'
-	psql -X -c 'copy (select geom from isochrone_destinations where type = '\''hospital'\'') to stdout;' | parallel --eta 'psql -c "insert into tmp_hospitals_h3(h3, distance) select h3, distance from calculate_isodist_h3('\''{}'\'', 30000, 1000);"'
-	psql -c 'vacuum full tmp_hospitals_h3;'
-	psql -c 'drop table if exists hospitals_h3;'
-	psql -c 'create table hospitals_h3 as (select h3, min(distance) distance from tmp_hospitals_h3 group by h3 order by h3);'
-	psql -c 'drop table tmp_hospitals_h3;'
+db/table/update_isochrone_destinations: db/table/update_isochrone_destinations_h3_r8 | db/table ## Update update_isochrone_destinations table.
+	psql -1 -c "drop table if exists isochrone_destinations; alter table isochrone_destinations_new rename to isochrone_destinations;"
+	touch $@
+
+db/table/isodist_fire_stations_h3: db/table/update_isochrone_destinations_h3_r8 db/table/osm_object_count_grid_h3 db/procedure/generate_overviews | db/table ## H3 hexagons from fire stations.
+	psql -f tables/isodist_fire_stations_h3.sql
+	psql -c "call generate_overviews('isodist_fire_stations_h3', '{distance}'::text[], '{avg}'::text[], 8);"
+	touch $@
+
+db/table/isodist_hospitals_h3: db/table/update_isochrone_destinations_h3_r8 db/table/osm_object_count_grid_h3 db/procedure/generate_overviews | db/table ## H3 hexagons from hospitals.
+	psql -f tables/isodist_hospitals_h3.sql
+	psql -c "call generate_overviews('isodist_hospitals_h3', '{distance}'::text[], '{avg}'::text[], 8);"
+	touch $@
+
+data/out/isochrone_destinations_export: db/table/update_isochrone_destinations db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 | data/out ## Temporary export target for isochrone destinations.
 	touch $@
 
 db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_h3 data/out/isochrone_destinations_export | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.

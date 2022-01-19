@@ -1,5 +1,5 @@
-drop table if exists isochrone_destinations;
-create table isochrone_destinations as (
+drop table if exists isochrone_destinations_new;
+create table isochrone_destinations_new as (
     select osm_id,
            tags ->> 'amenity'             "type",
            tags,
@@ -7,5 +7,5 @@ create table isochrone_destinations as (
     from osm o
     where tags @> '{"amenity":"fire_station"}'
        or tags @> '{"amenity":"hospital"}'
+    order by osm_id
 );
-create index on isochrone_destinations using gist (geom);

@@ -255,14 +255,14 @@ where
 
 update bivariate_axis
 set
-    label = 'Distance from fire station'
+    label = 'Distance to fire station'
 where
       numerator = 'fire_station_distance'
   and denominator = 'one';
 
 update bivariate_axis
 set
-    label = 'Distance from hospital'
+    label = 'Distance to hospital'
 where
       numerator = 'hospital_distance'
   and denominator = 'one';

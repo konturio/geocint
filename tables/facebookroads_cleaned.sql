@@ -1,5 +1,4 @@
-create index on osm_roads using gist((geom::geography));
-
+create index if not exists osm_roads_geom_geog_idx on osm_roads using gist((geom::geography));  
 
 drop table if exists facebookroads_cleaned;
 

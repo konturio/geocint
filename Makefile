@@ -755,6 +755,16 @@ db/table/iso_codes: data/in/iso_codes.csv | db/table ## Download ISO codes for c
 	cat data/in/iso_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy iso_codes from stdin with csv header;"
 	touch $@
 
+data/in/wikidata_hasc_codes.csv: | data/in ## Download HASC codes for admin boundaries from wikidata.
+	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT (?item AS ?wikidata_object) ?itemLabel ?hasc ?iso3166_2 ?area_sq_km ?osm_rel_id ?countryLabel ?geo WHERE { ?item wdt:P8119 ?object; wdt:P8119 ?hasc; OPTIONAL { ?item wdt:P300 ?iso3166_2. } OPTIONAL { ?item wdt:P2046 ?area_sq_km. } OPTIONAL { ?item wdt:P402 ?osm_rel_id. } OPTIONAL { ?item wdt:P17 ?country. } OPTIONAL { ?item wdt:P625 ?geo. } SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . } } ORDER BY (?hasc)' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
+
+db/table/wikidata_hasc_codes: data/in/wikidata_hasc_codes.csv| db/table ## Import wikidata HASC codes into database.
+	psql -c 'drop table if exists wikidata_hasc_codes;'
+	psql -c 'create table wikidata_hasc_codes(wikidata_item text, name text, hasc text, iso3166_2 text, area_sq_km real, osm_rel_id bigint, country text, geom geometry(Point, 4326));'
+	cat data/in/wikidata_hasc_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy wikidata_hasc_codes from stdin with csv header;"
+	touch $@
+
+
 data/in/un_population.csv: | data/in ## Download United Nations population division dataset.
 	wget 'https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv' -O $@
 

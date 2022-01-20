@@ -707,7 +707,7 @@ deploy/geocint/reports/test/reports.tar.gz: deploy/geocint/reports/osm_unmapped_
 
 deploy/geocint/reports/prod/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/reports/prod  ## OSM quality reports (most recent) production archive.
 	rm -f ~/public_html/prod/reports.tar.gz
-	cd ~/public_html/reports; tar -cf prod_reports.tar.gz -I pigz osm_reports_list.json population_check_osm.csv osm_gadm_comparison.csv osm_population_inconsistencies.csv osm_unmapped_places.csv
+	cd ~/public_html/reports; tar -cf prod_reports.tar.gz -I pigz osm_reports_list.json population_check_osm.csv osm_gadm_comparison.csv osm_population_inconsistencies.csv
 	touch $@
 
 deploy/s3/test/reports/reports.tar.gz: deploy/geocint/reports/test/reports.tar.gz | deploy/s3/test/reports ## Putting reports archive to AWS test reports folder in private bucket. Before it we backup the previous reports archive.

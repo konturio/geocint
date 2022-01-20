@@ -659,6 +659,10 @@ db/table/population_check_osm: db/table/kontur_boundaries db/table/osm_reports_l
 	psql -f tables/population_check_osm.sql
 	touch $@
 
+db/table/osm_unmapped_places_report: db/table/stat_h3 db/table/osm_reports_list | db/table ## Report with a list of vieved but unmapped populated places
+	psql -f tables/osm_unmapped_places_report.sql
+	touch $@
+
 data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
 	psql -qXc 'copy (select "OSM id", "Admin level", "OSM name", "GADM name" from osm_gadm_comparison order by id) to stdout with (format csv, header true, delimiter ";");' > $@
 
@@ -669,7 +673,10 @@ data/out/reports/population_check_osm.csv: db/table/population_check_osm | data/
 	psql -qXc 'copy (select osm_id as "OSM ID", coalesce(name_en, name) as "Name", pop_date as "OSM population date", osm_pop as "OSM population", kontur_pop as "Kontur population", diff_pop as "Population difference", round(diff_log::numeric, 2) as "Logarithmic population difference" from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-data/out/reports/osm_reports_list.json: db/table/osm_reports_list db/table/osm_gadm_comparison db/table/osm_population_inconsistencies db/table/population_check_osm | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja
+data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | data/out/reports ## Export report to CSV
+	psql -qXc 'copy osm_unmapped_places_report to stdout with (format csv, header true, delimiter ";");' > $@
+
+data/out/reports/osm_reports_list.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja
 	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' > $@
 	touch $@
 
@@ -685,18 +692,22 @@ deploy/geocint/reports/population_check_osm.csv: data/out/reports/population_che
 	mkdir -p ~/public_html/reports && cp data/out/reports/population_check_osm.csv ~/public_html/reports/population_check_osm.csv
 	touch $@
 
+deploy/geocint/reports/osm_unmapped_places.csv: data/out/reports/osm_unmapped_places.csv | deploy/geocint/reports ## Copy report file to public_html
+	mkdir -p ~/public_html/reports && cp data/out/reports/osm_unmapped_places.csv ~/public_html/reports/osm_unmapped_places.csv
+	touch $@
+
 deploy/geocint/reports/osm_reports_list.json: data/out/reports/osm_reports_list.json | deploy/geocint/reports ## Copy reports JSON file to public_html folder to make it available online.
 	mkdir -p ~/public_html/reports && cp data/out/reports/osm_reports_list.json ~/public_html/reports/osm_reports_list.json
 	touch $@
 
-deploy/geocint/reports/test/reports.tar.gz: deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/reports/test  ## OSM quality reports (most recent) testing archive.
+deploy/geocint/reports/test/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/reports/test  ## OSM quality reports (most recent) testing archive.
 	rm -f ~/public_html/test/reports.tar.gz
-	cd ~/public_html/reports; tar -cf test_reports.tar.gz -I pigz osm_reports_list.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv
+	cd ~/public_html/reports; tar -cf test_reports.tar.gz -I pigz osm_reports_list.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv
 	touch $@
 
-deploy/geocint/reports/prod/reports.tar.gz: deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/reports/prod  ## OSM quality reports (most recent) production archive.
+deploy/geocint/reports/prod/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_reports_list.json | deploy/geocint/reports/prod  ## OSM quality reports (most recent) production archive.
 	rm -f ~/public_html/prod/reports.tar.gz
-	cd ~/public_html/reports; tar -cf prod_reports.tar.gz -I pigz osm_reports_list.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv
+	cd ~/public_html/reports; tar -cf prod_reports.tar.gz -I pigz osm_reports_list.json population_check_osm.csv osm_gadm_comparison.csv osm_population_inconsistencies.csv
 	touch $@
 
 deploy/s3/test/reports/reports.tar.gz: deploy/geocint/reports/test/reports.tar.gz | deploy/s3/test/reports ## Putting reports archive to AWS test reports folder in private bucket. Before it we backup the previous reports archive.

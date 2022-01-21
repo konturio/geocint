@@ -61,3 +61,6 @@ create table osm_roads as (
       and osm_type = 'way'
       and ST_GeometryType(geog::geometry) = 'ST_LineString'
 );
+
+-- Create index on geom to use further for cleaning facebook roads
+create index on osm_roads using gist(geom);

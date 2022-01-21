@@ -82,20 +82,20 @@ values ('osm_gadm_comparison',
         true
         );
 
-insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
-values ('osm_unmapped_places',
-        'OSM unmapped places',
-        '/osm_unmapped_places.csv',
-        '',
-        'A list of viewed on [OpenStreetMap](https://www.openstreetmap.org) but unmapped places where people live according to [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset).',
-        'A list of viewed on [OpenStreetMap](https://www.openstreetmap.org) but unmapped places where people live according to [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset).',
-       '[
-          {
-            "Bounding box": "http://localhost:8111/load_and_zoom?{{Bounding box}}"
-          }]'::json,
-        false,
-        true
-        );
+-- insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+-- values ('osm_unmapped_places',
+--         'OSM unmapped places',
+--         '/osm_unmapped_places.csv',
+--         '',
+--         'A list of viewed on [OpenStreetMap](https://www.openstreetmap.org) but unmapped places where people live according to [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset).',
+--         'A list of viewed on [OpenStreetMap](https://www.openstreetmap.org) but unmapped places where people live according to [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset).',
+--        '[
+--           {
+--             "Bounding box": "http://localhost:8111/load_and_zoom?{{Bounding box}}"
+--           }]'::json,
+--         false,
+--         true
+--         );
 
 -- Populate timestamp column with previous values to keep them in case reports won't update (then old timestamp will be the valid one!)
 update osm_reports_list n

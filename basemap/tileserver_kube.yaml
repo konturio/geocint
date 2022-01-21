@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: basemap-claim
+spec:
+  resources:
+    requests:
+      storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tileserver-gl-deployment
+  labels:
+    app: tileserver-gl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: tileserver-gl
+  template:
+    metadata:
+      labels:
+        name: tileserver-gl
+    spec:
+      containers:
+        - name: tileserver-gl
+          image: maptiler/tileserver-gl
+          volumeMounts:
+            - name: basemap-storage
+              mountPath: /data
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 500
+            periodSeconds: 10
+      volumes:
+        - name: basemap-storage
+          persistentVolumeClaim:
+            claimName: basemap-claim
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tileserver-gl-service
+spec:
+  ports:
+  - port: 8080
+  selector:
+    name: tileserver-gl
+  type: NodePort

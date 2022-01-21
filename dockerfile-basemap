@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y postgresql-client-14 aria2 gdal-bin gol
   libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc
 
 # build and install osm2pgsql
-RUN git clone git://github.com/openstreetmap/osm2pgsql.git \
+RUN git clone https://github.com/openstreetmap/osm2pgsql.git \
     && mkdir osm2pgsql/build \
     && cd osm2pgsql/build \
     && cmake .. \

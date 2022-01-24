@@ -259,8 +259,9 @@ values ('hospital_distance', 'Hospital distance', jsonb_build_array(
         '[["good"], ["bad"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('fb_roads_length', 'HFacebook Roads length', jsonb_build_array(
-        '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+values ('total_road_length', 'Total Roads length', jsonb_build_array(
+        '©2019 Facebook, Inc. and its affiliates https://github.com/facebookmicrosites/Open-Mapping-At-Facebook/blob/main/LICENSE.md',
+        '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["bad"], ["good"]]'::jsonb);
 
 update bivariate_indicators

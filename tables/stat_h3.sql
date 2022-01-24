@@ -36,7 +36,7 @@ create table stat_h3_in as (
            coalesce(sum(populated_area) / 1000000.0, 0) as populated_area_km2,
            sum(fire_station_distance) as fire_station_distance,
            sum(hospital_distance) as hospital_distance,
-           sum(fb_roads_length) as fb_roads_length,
+           coalesce(sum(fb_roads_length + highway_length), 0) as total_road_length,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
@@ -302,7 +302,7 @@ create table stat_h3 as (
            a.pop_without_car,
            a.fire_station_distance,
            a.hospital_distance,
-           a.fb_roads_length,
+           a.total_road_length,
            (coalesce(b.avg_slope, 0))::float as avg_slope,
            (coalesce(g.avg_elevation, 0))::float as avg_elevation,
            (coalesce(cf.forest_area, 0))::float as forest,
@@ -336,7 +336,7 @@ create index stat_h3_brin_pt1 on stat_h3 using brin (
                                                      highway_length, resolution, zoom, geom, one, total_building_count,
                                                      covid19_vaccines, max_ts, total_hours, avgmax_ts, forest,
                                                      evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest,
-                                                     min_ts, residential, view_count, count_6_months, fb_roads_length);
+                                                     min_ts, residential, view_count, count_6_months, total_road_length);
 create index stat_h3_brin_pt2 on stat_h3 using brin (
                                                      gdp, highway_length_6_months, wildfires, avg_elevation,
                                                      building_count_6_months, local_hours, osm_users,

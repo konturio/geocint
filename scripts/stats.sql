@@ -50,6 +50,7 @@ from
             mandays_maxtemp_over_32c_1c,
             fire_station_distance,
             hospital_distance,
+            fb_roads_length,
             ST_AsMVTGeom(geom, ST_TileEnvelope($1, $2, $3), 8192, 64, true) as geom
         from stat_h3
         where zoom = $1

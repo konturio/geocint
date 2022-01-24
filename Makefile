@@ -628,7 +628,7 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 	psql -c "alter table gadm_countries_boundary alter column geom type geometry(multipolygon, 3857) using ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
 
-db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
+db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
@@ -756,14 +756,13 @@ db/table/iso_codes: data/in/iso_codes.csv | db/table ## Download ISO codes for c
 	touch $@
 
 data/in/wikidata_hasc_codes.csv: | data/in ## Download HASC codes for admin boundaries from wikidata.
-	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT (?item AS ?wikidata_object) ?itemLabel ?hasc ?iso3166_2 ?area_sq_km ?osm_rel_id ?countryLabel ?geo WHERE { ?item wdt:P8119 ?object; wdt:P8119 ?hasc; OPTIONAL { ?item wdt:P300 ?iso3166_2. } OPTIONAL { ?item wdt:P2046 ?area_sq_km. } OPTIONAL { ?item wdt:P402 ?osm_rel_id. } OPTIONAL { ?item wdt:P17 ?country. } OPTIONAL { ?item wdt:P625 ?geo. } SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . } } ORDER BY (?hasc)' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
+	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT (?item AS ?wikidata_object) ?itemLabel (SAMPLE(?hasc) AS ?hasc) WHERE { ?item wdt:P8119 ?object; wdt:P8119 ?hasc; SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . } } GROUP BY ?item ?itemLabel ORDER BY (?hasc)' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
 
 db/table/wikidata_hasc_codes: data/in/wikidata_hasc_codes.csv| db/table ## Import wikidata HASC codes into database.
 	psql -c 'drop table if exists wikidata_hasc_codes;'
-	psql -c 'create table wikidata_hasc_codes(wikidata_item text, name text, hasc text, iso3166_2 text, area_sq_km real, osm_rel_id bigint, country text, geom geometry(Point, 4326));'
+	psql -c 'create table wikidata_hasc_codes(wikidata_item text, name text, hasc text);'
 	cat data/in/wikidata_hasc_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy wikidata_hasc_codes from stdin with csv header;"
 	touch $@
-
 
 data/in/un_population.csv: | data/in ## Download United Nations population division dataset.
 	wget 'https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv' -O $@

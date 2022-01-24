@@ -42,8 +42,8 @@ create index on osm_admin_boundaries_in using gist(geom, ST_Area(geom));
 
 
 -- Join OSM admin boundaries and HASC codes based on max IOU
-drop table if exists kontur_boundaries;
-create table kontur_boundaries as
+drop table if exists kontur_boundaries_in;
+create table kontur_boundaries_in as
 with gadm_in as (
         select  b.osm_id,
                 g.id,
@@ -91,7 +91,17 @@ left join gadm_in g using(osm_id)
 order by b.osm_id, g.hasc is not null desc, g.iou desc;
 
 
+-- Join Wikidata HASC codes based on wikidata OSM tag
+drop table if exists kontur_boundaries;
+create table kontur_boundaries as
+select k.*, w.hasc hasc_wiki
+from kontur_boundaries_in k
+left join wikidata_hasc_codes w
+        on replace(w.wikidata_item, 'http://www.wikidata.org/entity/', '') = k.tags ->> 'wikidata';
+
+
 -- Drop temporary tables
 drop table if exists osm_admin_subdivided;
 drop table if exists osm_admin_boundaries_in;
+drop table if exists kontur_boundaries_in;
 

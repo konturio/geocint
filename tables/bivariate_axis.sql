@@ -87,7 +87,8 @@ create table stat_h3_quality as (
                 avg(a.days_maxwetbulb_over_32c_2c) as agg_days_maxwetbulb_over_32c_2c,
                 avg(a.mandays_maxtemp_over_32c_1c) as agg_mandays_maxtemp_over_32c_1c,
                 avg(a.fire_station_distance) as agg_fire_station_distance,
-                avg(a.hospital_distance) as agg_hospital_distance
+                avg(a.hospital_distance) as agg_hospital_distance,
+                avg(a.total_road_length) as agg_total_road_length
             from
                 stat_h3 a
             where
@@ -266,3 +267,10 @@ set
 where
       numerator = 'hospital_distance'
   and denominator = 'one';
+
+update bivariate_axis
+set
+ label = 'Total Roads Estimate (m/km²)'
+where
+ numerator = 'total_road_length'
+ and denominator = 'area_km2';

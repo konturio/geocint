@@ -16,31 +16,31 @@ local prefix = 'planet_osm'
 -- db (what used to be option -G|--multi-geometry).
 local multi_geometry = true
 
--- Set this to true if you want an hstore column (what used to be option
--- -k|--hstore). Can not be true if "hstore_all" is true.
-local hstore = true
+-- Set this to true if you want an jsonb column (what used to be option
+-- -k|--jsonb). Can not be true if "jsonb_all" is true.
+local jsonb = true
 
--- Set this to true if you want all tags in an hstore column (what used to
--- be option -j|--hstore-all). Can not be true if "hstore" is true.
-local hstore_all = false
+-- Set this to true if you want all tags in an jsonb column (what used to
+-- be option -j|--jsonb-all). Can not be true if "jsonb" is true.
+local jsonb_all = false
 
--- Only keep objects that have a value in one of the non-hstore columns
--- (normal action with --hstore is to keep all objects). Equivalent to
--- what used to be set through option --hstore-match-only.
-local hstore_match_only = true
+-- Only keep objects that have a value in one of the non-jsonb columns
+-- (normal action with --jsonb is to keep all objects). Equivalent to
+-- what used to be set through option --jsonb-match-only.
+local jsonb_match_only = true
 
--- Set this to add an additional hstore (key/value) column containing all tags
+-- Set this to add an additional jsonb (key/value) column containing all tags
 -- that start with the specified string, eg "name:". Will produce an extra
--- hstore column that contains all "name:xx" tags. Equivalent to what used to
--- be set through option -z|--hstore-column. Unlike the -z option which can
+-- jsonb column that contains all "name:xx" tags. Equivalent to what used to
+-- be set through option -z|--jsonb-column. Unlike the -z option which can
 -- be specified multiple time, this does only support a single additional
--- hstore column.
-local hstore_column = nil
+-- jsonb column.
+local jsonb_column = nil
 
 -- ---------------------------------------------------------------------------
 
-if hstore and hstore_all then
-    error("hstore and hstore_all can't be both true")
+if jsonb and jsonb_all then
+    error("jsonb and jsonb_all can't be both true")
 end
 
 -- Used for splitting up long linestrings
@@ -432,7 +432,7 @@ local non_point_columns = {
     'wood',
 }
 
-function gen_columns(text_columns, with_hstore, area, geometry_type)
+function gen_columns(text_columns, with_jsonb, area, geometry_type)
     columns = {}
 
     local add_column = function (name, type)
@@ -451,12 +451,12 @@ function gen_columns(text_columns, with_hstore, area, geometry_type)
         end
     end
 
-    if hstore_column then
-        add_column(hstore_column, 'hstore')
+    if jsonb_column then
+        add_column(jsonb_column, 'jsonb')
     end
 
-    if with_hstore then
-        add_column('tags', 'hstore')
+    if with_jsonb then
+        add_column('tags', 'jsonb')
     end
 
     add_column('way', geometry_type)
@@ -470,21 +470,21 @@ local tables = {}
 tables.point = osm2pgsql.define_table{
     name = prefix .. '_point',
     ids = { type = 'node', id_column = 'osm_id' },
-    columns = gen_columns(point_columns, hstore or hstore_all, nil, 'point'),
+    columns = gen_columns(point_columns, jsonb or jsonb_all, nil, 'point'),
     cluster = 'no',
 }
 
 tables.line = osm2pgsql.define_table{
     name = prefix .. '_line',
     ids = { type = 'way', id_column = 'osm_id' },
-    columns = gen_columns(non_point_columns, hstore or hstore_all, false, 'linestring'),
+    columns = gen_columns(non_point_columns, jsonb or jsonb_all, false, 'linestring'),
     cluster = 'no',
 }
 
 tables.polygon = osm2pgsql.define_table{
     name = prefix .. '_polygon',
     ids = { type = 'area', id_column = 'osm_id' },
-    columns = gen_columns(non_point_columns, hstore or hstore_all, true, 'geometry'),
+    columns = gen_columns(non_point_columns, jsonb or jsonb_all, true, 'geometry'),
     cluster = 'no',
 }
 
@@ -518,50 +518,50 @@ function make_column_hash(columns)
     return h
 end
 
-function make_get_output(columns, hstore_all)
+function make_get_output(columns, jsonb_all)
     local h = make_column_hash(columns)
-    if hstore_all then
+    if jsonb_all then
         return function(tags)
             local output = {}
-            local hstore_entries = {}
+            local jsonb_entries = {}
 
             for k, _ in pairs(tags) do
                 if h[k] then
                     output[k] = tags[k]
                 end
-                hstore_entries[k] = tags[k]
+                jsonb_entries[k] = tags[k]
             end
 
-            return output, hstore_entries
+            return output, jsonb_entries
         end
     else
         return function(tags)
             local output = {}
-            local hstore_entries = {}
+            local jsonb_entries = {}
 
             for k, _ in pairs(tags) do
                 if h[k] then
                     output[k] = tags[k]
                 else
-                    hstore_entries[k] = tags[k]
+                    jsonb_entries[k] = tags[k]
                 end
             end
 
-            return output, hstore_entries
+            return output, jsonb_entries
         end
     end
 end
 
 local has_generic_tag = make_check_in_list_func(generic_keys)
 
-local get_point_output = make_get_output(point_columns, hstore_all)
-local get_non_point_output = make_get_output(non_point_columns, hstore_all)
+local get_point_output = make_get_output(point_columns, jsonb_all)
+local get_non_point_output = make_get_output(non_point_columns, jsonb_all)
 
-function get_hstore_column(tags)
-    local len = #hstore_column
+function get_jsonb_column(tags)
+    local len = #jsonb_column
     local h = {}
     for k, v in pairs(tags) do
-        if k:sub(1, len) == hstore_column then
+        if k:sub(1, len) == jsonb_column then
             h[k:sub(len + 1)] = v
         end
     end
@@ -578,13 +578,13 @@ function osm2pgsql.process_node(object)
     end
 
     local output
-    local output_hstore = {}
-    if hstore or hstore_all then
-        output, output_hstore = get_point_output(object.tags)
-        if not next(output) and not next(output_hstore) then
+    local output_jsonb = {}
+    if jsonb or jsonb_all then
+        output, output_jsonb = get_point_output(object.tags)
+        if not next(output) and not next(output_jsonb) then
             return
         end
-        if hstore_match_only and not has_generic_tag(object.tags) then
+        if jsonb_match_only and not has_generic_tag(object.tags) then
             return
         end
     else
@@ -594,10 +594,10 @@ function osm2pgsql.process_node(object)
         end
     end
 
-    output.tags = output_hstore
+    output.tags = output_jsonb
 
-    if hstore_column then
-        output[hstore_column] = get_hstore_column(object.tags)
+    if jsonb_column then
+        output[jsonb_column] = get_jsonb_column(object.tags)
     end
 
     tables.point:add_row(output)
@@ -645,17 +645,17 @@ function osm2pgsql.process_way(object)
     end
 
     local output
-    local output_hstore = {}
-    if hstore or hstore_all then
-        output, output_hstore = get_non_point_output(object.tags)
-        if not next(output) and not next(output_hstore) then
+    local output_jsonb = {}
+    if jsonb or jsonb_all then
+        output, output_jsonb = get_non_point_output(object.tags)
+        if not next(output) and not next(output_jsonb) then
             return
         end
-        if hstore_match_only and not has_generic_tag(object.tags) then
+        if jsonb_match_only and not has_generic_tag(object.tags) then
             return
         end
-        if add_area and hstore_all then
-            output_hstore.area = 'yes'
+        if add_area and jsonb_all then
+            output_jsonb.area = 'yes'
         end
     else
         output = object.tags
@@ -679,10 +679,10 @@ function osm2pgsql.process_way(object)
         polygon = true
     end
 
-    output.tags = output_hstore
+    output.tags = output_jsonb
 
-    if hstore_column then
-        output[hstore_column] = get_hstore_column(object.tags)
+    if jsonb_column then
+        output[jsonb_column] = get_jsonb_column(object.tags)
     end
 
     if polygon and object.is_closed then
@@ -726,13 +726,13 @@ function osm2pgsql.process_relation(object)
     object.tags.type = nil
 
     local output
-    local output_hstore = {}
-    if hstore or hstore_all then
-        output, output_hstore = get_non_point_output(object.tags)
-        if not next(output) and not next(output_hstore) then
+    local output_jsonb = {}
+    if jsonb or jsonb_all then
+        output, output_jsonb = get_non_point_output(object.tags)
+        if not next(output) and not next(output_jsonb) then
             return
         end
-        if hstore_match_only and not has_generic_tag(object.tags) then
+        if jsonb_match_only and not has_generic_tag(object.tags) then
             return
         end
     else
@@ -742,7 +742,7 @@ function osm2pgsql.process_relation(object)
         end
     end
 
-    if not next(output) and not next(output_hstore) then
+    if not next(output) and not next(output_jsonb) then
         return
     end
 
@@ -760,10 +760,10 @@ function osm2pgsql.process_relation(object)
         make_polygon = true
     end
 
-    output.tags = output_hstore
+    output.tags = output_jsonb
 
-    if hstore_column then
-        output[hstore_column] = get_hstore_column(object.tags)
+    if jsonb_column then
+        output[jsonb_column] = get_jsonb_column(object.tags)
     end
 
     if not make_polygon then

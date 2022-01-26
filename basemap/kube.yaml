@@ -48,21 +48,23 @@ spec:
         image: postgis/postgis:14-master
         args:
           - "-c"
-          - "'maintenance_work_mem=1GB'"
+          - "maintenance_work_mem=1GB"
           - "-c"
-          - "'shared_buffers=2GB'"
+          - "shared_buffers=2GB"
           - "-c"
-          - "'effective_cache_size=128GB'"
+          - "effective_cache_size=128GB"
           - "-c"
-          - "'random_page_cost=1.1'"
+          - "random_page_cost=1.1"
           - "-c"
-          - "'effective_io_concurrency=200'"
+          - "effective_io_concurrency=200"
           - "-c"
-          - "'work_mem=2GB'"
+          - "work_mem=2GB"
           - "-c"
-          - "'max_connections=32'"
+          - "max_connections=32"
           - "-c"
-          - "'wal_level=minimal'"
+          - "wal_level=minimal"
+          - "-c"
+          - "max_wal_senders=0"
         env:
           - name: POSTGRES_USER
             value: gis

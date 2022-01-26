@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 
 max_retry=120
 counter=0
@@ -10,3 +9,5 @@ do
    echo "Trying to connect to postgres again. Try #$counter"
    ((counter++))
 done
+
+exit 0

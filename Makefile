@@ -1849,7 +1849,7 @@ db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | 
 
 db/table/osm2pgsql: data/planet-latest.osm.pbf basemap/osm2pgsql_styles/basemap.lua | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	bash basemap/scripts/wait_until_postgres_is_ready.sh
-	osm2pgsql --flat-nodes data/osm2pgsql_flat_nodes --slim -C 0 --style basemap/osm2pgsql_styles/basemap.lua --number-processes 8 --output=flex --create data/planet-latest.osm.pbf
+	osm2pgsql --style basemap/osm2pgsql_styles/basemap.lua --number-processes 32 --output=flex --create data/planet-latest.osm.pbf
 	touch $@
 
 db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries

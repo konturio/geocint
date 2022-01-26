@@ -36,7 +36,7 @@ create table stat_h3_in as (
            coalesce(sum(populated_area) / 1000000.0, 0) as populated_area_km2,
            sum(fire_station_distance) as fire_station_distance,
            sum(hospital_distance) as hospital_distance,
-           coalesce(sum(fb_roads_length + highway_length), 0) as total_road_length,
+           sum(coalesce(fb_roads_length, 0) + coalesce(highway_length, 0)) as total_road_length,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,

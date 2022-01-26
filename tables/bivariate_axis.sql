@@ -270,7 +270,7 @@ where
 
 update bivariate_axis
 set
- label = 'Total Roads Estimate (m/km²)'
+    label = 'Total Roads Estimate (m/km²)'
 where
- numerator = 'total_road_length'
- and denominator = 'area_km2';
+      numerator = 'total_road_length'
+  and denominator = 'area_km2';

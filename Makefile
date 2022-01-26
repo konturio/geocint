@@ -1900,7 +1900,7 @@ scripts/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL f
 	touch $@
 
 data/basemap.mbtiles: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql_latest db/table/land_polygons_vector | data ## Generating vector tiles.
-	tile_generator/tile_generator -j 16 --min-zoom 0 --max-zoom 14 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-mbtiles $@
+	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 14 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-mbtiles $@
 
 data/basemap: | data ## Directory for MAPCSS styles, icon sprites and font glyphs used with vector tiles.
 	mkdir -p $@

@@ -5,7 +5,7 @@ metadata:
 spec:
   resources:
     requests:
-      storage: 200Gi
+      storage: 500Gi
   accessModes:
     - ReadWriteOnce
 ---
@@ -16,7 +16,7 @@ metadata:
 spec:
   resources:
     requests:
-      storage: 400Gi
+      storage: 500Gi
   accessModes:
     - ReadWriteOnce
 ---
@@ -32,6 +32,7 @@ spec:
       containers:
       - name: basemap
         image: nexus.kontur.io:8085/build-basemap
+        imagePullPolicy: Always
         command: ["make", "-j", "data/basemap.mbtiles"]
         volumeMounts:
           - name: basemap-storage
@@ -45,6 +46,23 @@ spec:
             value: gis
       - name: postgres
         image: postgis/postgis:14-master
+        args:
+          - "-c"
+          - "'maintenance_work_mem=1GB'"
+          - "-c"
+          - "'shared_buffers=2GB'"
+          - "-c"
+          - "'effective_cache_size=128GB'"
+          - "-c"
+          - "'random_page_cost=1.1'"
+          - "-c"
+          - "'effective_io_concurrency=200'"
+          - "-c"
+          - "'work_mem=2GB'"
+          - "-c"
+          - "'max_connections=32'"
+          - "-c"
+          - "'wal_level=minimal'"
         env:
           - name: POSTGRES_USER
             value: gis

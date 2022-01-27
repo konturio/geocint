@@ -1847,7 +1847,7 @@ db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | 
 	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"
 	touch $@
 
-db/table/osm2pgsql: data/planet-latest.osm.pbf basemap/osm2pgsql_styles/basemap.lua | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
+db/table/osm2pgsql: data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	bash basemap/scripts/wait_until_postgres_is_ready.sh
 	osm2pgsql --style basemap/osm2pgsql_styles/basemap.lua --number-processes 32 --output=flex --create data/planet-latest.osm.pbf
 	touch $@
@@ -1880,10 +1880,6 @@ db/index/planet_osm_point_capital_idx: db/table/osm2pgsql | db/index ## index fo
 	psql -c "create index planet_osm_point_capital_idx on planet_osm_point using btree(\"capital\");"
 	touch $@
 
-db/table/osm2pgsql_latest: db/index/planet_osm_polygon_way_area_idx db/index/planet_osm_polygon_natural_idx db/index/planet_osm_polygon_admin_level_idx db/index/planet_osm_line_admin_level_idx db/index/planet_osm_line_highway_idx db/index/planet_osm_point_place_idx db/index/planet_osm_point_capital_idx | db/table ## Apply replication diffs
-	osm2pgsql-replication update -- --flat-nodes osm2pgsql_flat_nodes --style basemap/osm2pgsql_styles/basemap.lua --output=flex
-	touch $@
-
 kothic/src/komap.py: ## Clone Kothic from GIT
 	git clone -b master --single-branch https://github.com/kothic/kothic.git
 
@@ -1901,7 +1897,7 @@ scripts/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL f
 		> scripts/basemap.sql
 	touch $@
 
-data/basemap.mbtiles: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql_latest db/table/land_polygons_vector | data ## Generating vector tiles.
+data/basemap.mbtiles: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql db/table/land_polygons_vector | data ## Generating vector tiles.
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 14 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-mbtiles $@
 
 data/basemap: | data ## Directory for MAPCSS styles, icon sprites and font glyphs used with vector tiles.

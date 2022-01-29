@@ -200,7 +200,7 @@ data/mid/covid19: | data/mid  ## Directory for storing temporary file based data
 	mkdir -p $@
 
 data/mid/covid19/covid19_utah.csv: data/in/covid19/_us_csv | data/mid/covid19 ## Unzip COVID-19 data for Utah from the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University.
-	unzip -p data/in/covid19/utah_covid19.zip 'Overview_COVID-19 Cases by Date of Symptom Onset or Diagnosis_'* > $@
+	unzip -p data/in/covid19/utah_covid19.zip 'Overview_Seven-Day Rolling Average COVID-19 Cases by Test Report'* > $@
 
 data/mid/covid19/normalized_csv: data/in/covid19/_global_csv | data/mid/covid19  ## Normalize detailed daily global COVID-19 data from the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University.
 	rm -f data/mid/covid19/time_series_global_*_normalized.csv

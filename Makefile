@@ -1564,12 +1564,12 @@ db/table/update_isochrone_destinations: db/table/update_isochrone_destinations_h
 
 db/table/isodist_fire_stations_h3: db/table/update_isochrone_destinations db/table/osm_object_count_grid_h3 db/procedure/generate_overviews | db/table ## H3 hexagons from fire stations.
 	psql -f tables/isodist_fire_stations_h3.sql
-	psql -c "call generate_overviews('isodist_fire_stations_h3', '{distance}'::text[], '{avg}'::text[], 8);"
+	psql -c "call generate_overviews('isodist_fire_stations_h3', '{distance}'::text[], '{max}'::text[], 8);"
 	touch $@
 
 db/table/isodist_hospitals_h3: db/table/update_isochrone_destinations db/table/osm_object_count_grid_h3 db/procedure/generate_overviews | db/table ## H3 hexagons from hospitals.
 	psql -f tables/isodist_hospitals_h3.sql
-	psql -c "call generate_overviews('isodist_hospitals_h3', '{distance}'::text[], '{avg}'::text[], 8);"
+	psql -c "call generate_overviews('isodist_hospitals_h3', '{distance}'::text[], '{max}'::text[], 8);"
 	touch $@
 
 db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v2_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.

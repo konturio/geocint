@@ -2,9 +2,9 @@
 drop table if exists facebook_roads;
 create table facebook_roads as
 select
-       row_number() over()                                  as id,
-       f.highway_tag                                        as highway,
-       fgeom::geometry(Linestring, 4326) as geom
+       row_number() over()   as id,
+       f.highway_tag         as highway,
+       fgeom                 as geom
 from facebook_roads_in f,
      ST_SetSRID(f.geom, 4326) as fgeom
 left join osm_roads o

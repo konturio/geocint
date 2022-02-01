@@ -4,11 +4,12 @@ create table facebook_roads as
 select
        row_number() over()                                  as id,
        f.highway_tag                                        as highway,
-       ST_SetSRID(f.geom, 4326)::geometry(Linestring, 4326) as geom
-from facebook_roads_in f
+       fgeom::geometry(Linestring, 4326) as geom
+from facebook_roads_in f,
+     ST_SetSRID(f.geom, 4326) as fgeom
 left join osm_roads o
-    on ST_Intersects(f.geom, o.geom)
-           and ST_Length(ST_intersection(f.geom, ST_Buffer(o.geom::geography, 10)::geometry)) > 0.5 * ST_Length(f.geom)
+        on ST_Intersects(fgeom, o.geom)
+             and ST_Length(ST_intersection(fgeom, ST_Buffer(o.geom::geography, 10)::geometry)) > 0.5 * ST_Length(fgeom)
 where o.osm_id is null;
 
 

@@ -6,6 +6,8 @@ select
        coalesce(tags ->> 'name:en', tags ->> 'int_name', name) as "name",   -- We want english names first in the reports
        admin_level::smallint,
        (tags ->> 'population')::bigint population,
+       (tags ->> 'population:date') population_date,
+       (tags ->> 'source:population') population_source,
        geom
 from osm_admin_boundaries
 where tags ->> 'population' ~ '^\d+$'
@@ -20,6 +22,8 @@ select
        admin_level,
        name,
        population,
+       population_date,
+       population_source,
        ST_Subdivide(geom) geom
 from osm_admin_boundaries_in;
 create index on osm_admin_subdivided using gist(geom);
@@ -83,6 +87,8 @@ select
            case when u.group_id = u.osm_id  then o.name else ' - ' || o.name end                                     as "Name",
            o.admin_level                                                                                             as "Admin level",
            o.population                                                                                              as "Population",
+           o.population_date                                                                                         as "Population date",
+           o.population_source                                                                                       as "Population source",
            case when u.group_id = u.osm_id  then u.c_sum_pop else null end                                           as "SUM subregions population",
            case when u.group_id = u.osm_id  then u.pop_diff else null end                                            as "Population difference value",
            case when u.group_id = u.osm_id  then round(u.pop_diff_percent, 4) else null end                          as "Population difference %"

@@ -106,9 +106,9 @@ values ('osm_missing_roads',
         'A list of places with roads missing while comparing with [Facebook](https://github.com/facebookmicrosites/Open-Mapping-At-Facebook).',
        '[
           {
-            "Bounding box": "http://localhost:8111/load_and_zoom?{{Bounding box}}"
+            "Edit in RapiD": "https://mapwith.ai/rapid#background=Maxar-Premium&datasets=fbRoads&disable_features=boundaries&map=17.00/{{Edit in RapiD}}"
           }]'::json,
-        false,
+        true,
         false
         );
 

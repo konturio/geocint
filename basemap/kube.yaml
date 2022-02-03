@@ -31,12 +31,11 @@ spec:
     spec:
       containers:
       - name: basemap
-        image: nexus.kontur.io:8085/build-basemap
+        image: nexus.kontur.io:8085/konturdev/build-basemap
         imagePullPolicy: Always
-        command: ["make", "-j", "data/basemap.mbtiles"]
         volumeMounts:
           - name: basemap-storage
-            mountPath: /
+            mountPath: /data
         env:
           - name: PGHOST
             value: localhost

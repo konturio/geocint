@@ -98,3 +98,4 @@ spec:
       restartPolicy: Never
       imagePullSecrets:
           - name: kontur-nexus
+          - name: kontur-aws

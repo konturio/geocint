@@ -19,10 +19,14 @@ RUN git clone https://github.com/openstreetmap/osm2pgsql.git \
     && make \
     && make install
 
-COPY basemap /basemap
+COPY osm2pgsql_styles /osm2pgsql_styles
+COPY scripts /scripts
+COPY sprite /sprite
+COPY styles /styles
 COPY tile_generator /tile_generator
-COPY Makefile Makefile
+COPY Makefile /Makefile
+COPY start.sh /start.sh
 
-RUN chmod +x /basemap/start.sh
+RUN chmod +x /start.sh
 
-CMD [ "/basemap/start.sh" ]
+CMD [ "/start.sh" ]

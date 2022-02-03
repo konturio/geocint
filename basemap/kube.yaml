@@ -35,7 +35,7 @@ spec:
         imagePullPolicy: Always
         volumeMounts:
           - name: basemap-storage
-            mountPath: /data
+            mountPath: /persisted-volume
         env:
           - name: PGHOST
             value: localhost

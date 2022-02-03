@@ -44,6 +44,18 @@ spec:
             value: gis
           - name: PGDATABASE
             value: gis
+          - name: AWS_DEFAULT_REGION
+            value: eu-central-1
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: kontur-aws
+                key: access-key-id
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: kontur-aws
+                key: secret-access-key-id
       - name: postgres
         image: postgis/postgis:14-master
         args:

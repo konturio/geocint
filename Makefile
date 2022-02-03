@@ -2145,6 +2145,9 @@ data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_ninja.json data/ba
 data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_day_en.json data/basemap/metadata/lima/style_night.json data/basemap/metadata/lima/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to PROD server.
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/lima .
 
+deploy/s3/test/basemap.mbtiles: data/basemap.mbtiles | deploy/s3/test ## deploy basemap.mbtiles to S3
+	aws s3 sync --quiet data/basemap.mbtiles s3://basemap-locker01/TEST/basemap.mbtiles
+
 deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to TEST DVLP
 	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@zigzag.kontur.io:data/basemap.mbtiles.buffer
 	ansible zigzag_tileserver_gl -m shell -a 'warn:false' -a ' \

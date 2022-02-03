@@ -1854,30 +1854,37 @@ db/table/osm2pgsql: data/planet-latest.osm.pbf | db/table ## Yet another OpenStr
 	touch $@
 
 db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	bash basemap/scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_polygon_way_area_idx on planet_osm_polygon using btree(way_area);"
 	touch $@
 
 db/index/planet_osm_polygon_natural_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	bash basemap/scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_polygon_natural_idx on planet_osm_polygon using btree(\"natural\");"
 	touch $@
 
 db/index/planet_osm_polygon_admin_level_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	bash basemap/scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_polygon_admin_level_idx on planet_osm_polygon using btree(\"admin_level\");"
 	touch $@
 
 db/index/planet_osm_line_admin_level_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	bash basemap/scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_line_admin_level_idx on planet_osm_line using btree(\"admin_level\");"
 	touch $@
 
 db/index/planet_osm_line_highway_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	bash basemap/scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_line_highway_idx on planet_osm_line using btree(\"highway\");"
 	touch $@
 
 db/index/planet_osm_point_place_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	bash basemap/scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_point_place_idx on planet_osm_point using btree(\"place\");"
 	touch $@
 
 db/index/planet_osm_point_capital_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+	bash basemap/scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_point_capital_idx on planet_osm_point using btree(\"capital\");"
 	touch $@
 

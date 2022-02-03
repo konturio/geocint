@@ -2156,7 +2156,7 @@ data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja.json data/base
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/lima .
 
 deploy/s3/test/basemap.mbtiles: data/basemap.mbtiles | deploy/s3/test ## deploy basemap.mbtiles to S3
-	aws s3 sync --quiet data/basemap.mbtiles s3://basemap-locker01/TEST/basemap.mbtiles
+	aws s3 cp data/basemap.mbtiles s3://basemap-locker01/TEST/basemap.mbtiles
 	touch $@
 
 deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to TEST DVLP

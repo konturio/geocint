@@ -20,9 +20,6 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 data: ## Temporary file based datasets. Located on bcache. Some files could be returned to SSD.
 	mkdir -p $@
 
-scripts: ## scripts that perform transformation on top of table without creating new one
-	mkdir -p $@
-
 db: ## Directory for storing database objects creation footprints.
 	mkdir -p $@
 

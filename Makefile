@@ -11,7 +11,7 @@ prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api
 basemap_all: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build.
 	touch $@
 
-basemap_dev: deploy/geocint/basemap_mapcss deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment.
+basemap_dev: deploy/s3/test/basemap.mbtiles deploy/geocint/basemap_mapcss deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment.
 	touch $@
 
 basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
@@ -1881,6 +1881,9 @@ db/index/planet_osm_point_capital_idx: db/table/osm2pgsql | db/index ## index fo
 	psql -c "create index planet_osm_point_capital_idx on planet_osm_point using btree(\"capital\");"
 	touch $@
 
+db/index/planet_osm__all: db/index/planet_osm_polygon_way_area_idx db/index/planet_osm_polygon_natural_idx db/index/planet_osm_polygon_admin_level_idx db/index/planet_osm_line_admin_level_idx db/index/planet_osm_line_highway_idx db/index/planet_osm_point_place_idx db/index/planet_osm_point_capital_idx ## Aggregate target for osm2pgsql import indexes
+	touch $@
+
 kothic/src/komap.py: ## Clone Kothic from GIT
 	git clone -b master --single-branch https://github.com/kothic/kothic.git
 
@@ -1898,7 +1901,7 @@ scripts/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL f
 		> scripts/basemap.sql
 	touch $@
 
-data/basemap.mbtiles: tile_generator/tile_generator scripts/basemap.sql db/table/osm2pgsql db/table/land_polygons_vector | data ## Generating vector tiles.
+data/basemap.mbtiles: tile_generator/tile_generator scripts/basemap.sql db/index/planet_osm__all db/table/land_polygons_vector | data ## Generating vector tiles.
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 14 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-mbtiles $@
 
 data/basemap: | data ## Directory for MAPCSS styles, icon sprites and font glyphs used with vector tiles.
@@ -2147,6 +2150,7 @@ data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja.json data/base
 
 deploy/s3/test/basemap.mbtiles: data/basemap.mbtiles | deploy/s3/test ## deploy basemap.mbtiles to S3
 	aws s3 sync --quiet data/basemap.mbtiles s3://basemap-locker01/TEST/basemap.mbtiles
+	touch $@
 
 deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to TEST DVLP
 	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@zigzag.kontur.io:data/basemap.mbtiles.buffer

@@ -1785,13 +1785,13 @@ deploy/s3/test/bivariate_tables_dump: data/out/population/bivariate_tables.sqld.
 	touch $@
 
 deploy/zigzag/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/zigzag ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on TEST DVLP server.
-	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible zigzag_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
-	ansible zigzag_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
-	ansible zigzag_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
-	ansible zigzag_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/stat_h3.sqld.gz'
-	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
-	ansible zigzag_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
+	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible zigzag_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
+	ansible zigzag_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
+	ansible zigzag_insights_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
+	ansible zigzag_insights_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/stat_h3.sqld.gz'
+	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
+	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
 deploy/sonic/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/sonic ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on TEST QA server.

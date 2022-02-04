@@ -14,11 +14,13 @@ $$
 declare
     max_area geometry;
     start_node bigint;
+    start_distance double precision;
 begin
     source = ST_Transform(source, 4326);
     max_area = ST_Buffer(source::geography, max_distance)::geometry;
 
-    select (array [s.node_from, s.node_to])[p.path[1]] node_id
+    select (array [s.node_from, s.node_to])[p.path[1]] node_id,
+           ST_Distance(source::geography, p.geom::geography)
     from (
              select s.node_from, s.node_to, s.seg_geom
              from osm_road_segments s
@@ -29,7 +31,7 @@ begin
          ST_DumpPoints(s.seg_geom) p
     order by source <-> p.geom
     limit 1
-    into start_node;
+    into start_node, start_distance;
 
     if start_node is null then
         return ;
@@ -45,7 +47,7 @@ begin
              driving_distance as (
                  select d.node,
                         d.edge,
-                        d.agg_cost
+                        d.agg_cost + start_distance agg_cost
                  from pgr_drivingdistance(
                               'select seg_id as id, ' ||
                                   '       node_from as source, ' ||
@@ -128,7 +130,10 @@ begin
              )
         select hex, avg(ST_Z(p.geom)), h3_to_geo_boundary_geometry(hex)
         from spanning_tree s,
-             ST_DumpPoints(ST_Segmentize(s.geom::geography, h3_edge_length(resolution, 'm'))::geometry) p,
+             ST_DumpPoints(ST_Segmentize(
+                     s.geom::geography,
+                     h3_edge_length(resolution, 'm')
+                 )::geometry) p,
              h3_geo_to_h3(p.geom, resolution) hex
         where ST_Z(p.geom) <= max_distance
         group by hex;

@@ -34,8 +34,8 @@ create table stat_h3_in as (
            coalesce(sum(pop_not_well_eng_speak), 0) as pop_not_well_eng_speak,
            coalesce(sum(pop_without_car), 0) as pop_without_car,
            coalesce(sum(populated_area) / 1000000.0, 0) as populated_area_km2,
-           sum(fire_station_distance) as fire_station_distance,
-           sum(hospital_distance) as hospital_distance,
+           coalesce(sum(fire_station_distance), 0) as fire_station_distance,
+           coalesce(sum(hospital_distance), 0) as hospital_distance,
            sum(coalesce(fb_roads_length, 0) + coalesce(highway_length, 0)) as total_road_length,
            1::float as one
     from (

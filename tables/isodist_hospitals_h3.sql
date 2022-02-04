@@ -10,7 +10,7 @@ create index on isodist_hospitals_h3_distinct using gist (geom);
 
 drop table if exists isodist_hospitals_h3;
 create table isodist_hospitals_h3 as (
-    select h3, 8 resolution, round(min(distance) / 1000)::integer distance
+    select h3, 8 resolution, min(distance) / 1000 distance
     from (
              select h3, distance
              from isodist_hospitals_h3_distinct
@@ -28,19 +28,6 @@ create table isodist_hospitals_h3 as (
              where g.highway_length > 0
                and g.resolution = 8
                and i.h3 is null
-             union all
-             select p.h3, d.distance
-             from population_grid_h3 p
-                  left outer join osm_object_count_grid_h3 g
-                     on (g.highway_length > 0 and g.resolution = 8 and g.h3 = p.h3)
-                  cross join lateral (
-                 select s.h3, s.distance + ST_Distance(p.h3::geography, s.h3::geography) * 10 distance
-                 from isodist_hospitals_h3_distinct s
-                 order by p.h3::geometry <-> s.geom
-                 limit 1
-                 ) d
-             where p.resolution = 8
-               and g.h3 is null
          ) f
     group by h3
 );

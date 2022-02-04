@@ -31,8 +31,12 @@ select
         b.osm_id,
         b.osm_type,
         b.boundary,
-        b.admin_level,
-        coalesce(b.name, b.tags ->> 'int_name', b.tags ->> 'name:en') as "name", -- boundary name with graceful fallback
+        case
+            -- Special rule for Palestinian Territories - because of it's disputed status it often lacks admin_level key:
+            when b.admin_level is null and b.tags @> '{"ISO3166-1":"PS"}' then '2'
+            else b.admin_level
+        end                                                             as admin_level,
+        coalesce(b.name, b.tags ->> 'int_name', b.tags ->> 'name:en')   as "name",         -- boundary name with graceful fallback
         b.tags,
         p.population,
         b.geom
@@ -85,8 +89,7 @@ select distinct on (b.osm_id)
         b.tags,
         b.population,
         b.geom
-from
-        osm_admin_boundaries_in b
+from osm_admin_boundaries_in b
 left join gadm_in g using(osm_id)
 order by b.osm_id, g.hasc is not null desc, g.iou desc;
 

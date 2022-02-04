@@ -144,7 +144,7 @@ data/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL func
 		--renderer=mvt-sql \
 		--stylesheet styles/ninja.mapcss \
 		--stylesheet styles/mapsme_mod/style-clear/style.mapcss \
-		--osm2pgsql-style basemap/osm2pgsql_styles/default.style \
+		--osm2pgsql-style osm2pgsql_styles/default.style \
 		--locale en,ru,be,pl,uk \
 		> data/basemap.sql
 	touch $@

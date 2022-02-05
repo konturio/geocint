@@ -664,7 +664,7 @@ data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | 
 	psql -qXc 'copy osm_unmapped_places_report to stdout with (format csv, header true, delimiter ";");' > $@
 
 data/out/reports/osm_missing_roads.csv: db/table/osm_missing_roads | data/out/reports ## Export report to CSV
-	psql -qXc 'copy (select "Country", "OSM roads length, km", "Facebook roads length, km", "Place bounding box" from osm_missing_roads where "Country" in (\'Saint Lucia\', \'Romania\', \'Albania\') and diff > 3.5 order by diff desc) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc "copy (select \"Country\", \"OSM roads length, km\", \"Facebook roads length, km\", \"Place bounding box\" from osm_missing_roads where \"Country\" in ('Saint Lucia', 'Romania', 'Albania') and diff > 3.5 order by diff desc) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_reports_list_test.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (development version)
 	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' > $@

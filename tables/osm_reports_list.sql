@@ -97,6 +97,22 @@ values ('osm_unmapped_places',
         false
         );
 
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+values ('osm_missing_roads',
+        'OSM missing roads',
+        '/osm_missing_roads.csv',
+        '',
+        'A list of places with roads missing while comparing with [Facebook](https://github.com/facebookmicrosites/Open-Mapping-At-Facebook).',
+        'A list of places with roads missing while comparing with [Facebook](https://github.com/facebookmicrosites/Open-Mapping-At-Facebook).',
+       '[
+          {
+            "Bounding box": "http://localhost:8111/load_and_zoom?{{Bounding box}}"
+          }]'::json,
+        true,
+        false
+        );
+
+
 -- Populate timestamp column with previous values to keep them in case reports won't update (then old timestamp will be the valid one!)
 update osm_reports_list n
     set last_updated = o.last_updated

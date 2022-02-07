@@ -12,14 +12,14 @@ create index on country_boundaries_subdivided_in using gist(geom);
 drop table if exists osm_missing_roads;
 create table osm_missing_roads as
 select s.h3                                                               as h3,
-       b.name_en                                                          as "Country",
-       round(s.highway_length::numeric / 1000, 2)                         as "OSM roads length, km",
-       round((s.total_road_length - s.highway_length)::numeric / 1000, 2) as "Facebook roads length, km",
-       abs(log(s.highway_length + 1) - log(s.total_road_length + 1))      as  diff,
+       b.name_en                                                          as country,
+       round(s.highway_length::numeric / 1000, 2)                         as osm_roads_length_km,
+       round((s.total_road_length - s.highway_length)::numeric / 1000, 2) as facebook_roads_length_km,
+       abs(log(s.highway_length + 1) - log(s.total_road_length + 1))      as diff,
        'left='    || ST_XMin(ST_Envelope(ST_Transform(s.geom, 4326))) ||
        '&right='  || ST_XMax(ST_Envelope(ST_Transform(s.geom, 4326))) ||
        '&top='    || ST_YMax(ST_Envelope(ST_Transform(s.geom, 4326))) ||
-       '&bottom=' || ST_YMin(ST_Envelope(ST_Transform(s.geom, 4326)))     as "Place bounding box"
+       '&bottom=' || ST_YMin(ST_Envelope(ST_Transform(s.geom, 4326)))     as bbox
 from stat_h3 s
 left join country_boundaries_subdivided_in b
        on ST_Intersects(s.h3::geometry, b.geom)

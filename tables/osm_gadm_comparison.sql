@@ -39,10 +39,13 @@ with list as (                                        -- Compare aggregated chil
         order by g1.admin_level
 )
 select  row_number() over(order by l.admin_level, l.gid, g.admin_level, g.gadm_name)  as id,
-        g.admin_level                                                                 as "Admin level",
-        case when l.gid = g.gid then g.gadm_name  else '   - ' || g.gadm_name end     as "GADM name",
-        case when l.gid = g.gid then g.osm_name   else '   - ' || g.osm_name  end     as "OSM name",
-        g.osm_id                                                                      as "OSM id"
+        -- Mark whether it's a "subrow" (if true) and will have a special style
+        -- (see OSM population inconsistencies and OSM-GADM comparison reports):
+        case when l.gid = g.gid then false else true end                              as subrow,
+        g.admin_level                                                                 as admin_level,
+        g.gadm_name                                                                   as gadm_name,
+        g.osm_name                                                                    as osm_name,
+        g.osm_id                                                                      as osm_id
 from list l
 left join gadm_in g
         on l.gid = g.gid

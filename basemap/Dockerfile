@@ -6,7 +6,7 @@ RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main"
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
 # install osm2pgsql dependencies
-RUN apt-get update && apt-get install -y postgresql-client-14 aria2 gdal-bin golang python2 git make cmake g++ \
+RUN apt-get update && apt-get install -y postgresql-client-14 aria2 gdal-bin golang python2 awscli git make cmake g++ \
   libboost-dev libboost-system-dev \
   libboost-filesystem-dev libexpat1-dev zlib1g-dev \
   libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc
@@ -19,8 +19,14 @@ RUN git clone https://github.com/openstreetmap/osm2pgsql.git \
     && make \
     && make install
 
-COPY basemap /basemap
+COPY osm2pgsql_styles /osm2pgsql_styles
+COPY scripts /scripts
+COPY sprite /sprite
+COPY styles /styles
 COPY tile_generator /tile_generator
-COPY Makefile Makefile
+COPY Makefile /Makefile
+COPY start.sh /start.sh
 
-CMD ["make", "-j", "data/basemap.mbtiles"]
+RUN chmod +x /start.sh
+
+CMD [ "/start.sh" ]

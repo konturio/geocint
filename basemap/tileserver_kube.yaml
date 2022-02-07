@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: basemap-claim
+  name: tileserver-gl-claim
 spec:
   resources:
     requests:
-      storage: 10Gi
+      storage: 150Gi
   accessModes:
     - ReadWriteOnce
 ---
@@ -28,8 +28,15 @@ spec:
       containers:
         - name: tileserver-gl
           image: maptiler/tileserver-gl
+          args:
+            - "-p"
+            - "8080"
+            - "--mbtiles"
+            - "basemap.mbtiles"
+          ports:
+            - containerPort: 8080
           volumeMounts:
-            - name: basemap-storage
+            - name: tileserver-gl-storage
               mountPath: /data
           livenessProbe:
             httpGet:
@@ -37,10 +44,37 @@ spec:
               port: 8080
             initialDelaySeconds: 500
             periodSeconds: 10
+      initContainers:
+        - name: download-basemap-from-s3
+          image: amazon/aws-cli
+          volumeMounts:
+            - name: tileserver-gl-storage
+              mountPath: /data
+          env:
+            - name: AWS_DEFAULT_REGION
+              value: eu-central-1
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: kontur-aws
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: kontur-aws
+                  key: secret-access-key-id
+          command:
+            - aws
+            - s3
+            - sync
+            - s3://basemap-locker01/TEST/
+            - /data
       volumes:
-        - name: basemap-storage
+        - name: tileserver-gl-storage
           persistentVolumeClaim:
-            claimName: basemap-claim
+            claimName: tileserver-gl-claim
+      imagePullSecrets:
+        - name: kontur-aws
 ---
 apiVersion: v1
 kind: Service
@@ -48,7 +82,8 @@ metadata:
   name: tileserver-gl-service
 spec:
   ports:
-  - port: 8080
+  - port: 80
+    targetPort: 8080
   selector:
     name: tileserver-gl
-  type: NodePort
+  type: LoadBalancer

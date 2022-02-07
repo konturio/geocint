@@ -10,7 +10,7 @@ create index on isodist_fire_stations_h3_distinct using gist (geom);
 
 drop table if exists isodist_fire_stations_h3;
 create table isodist_fire_stations_h3 as (
-    select h3, 8 resolution, min(distance) distance
+    select h3, 8 resolution, min(distance) / 1000 distance
     from (
              select h3, distance
              from isodist_fire_stations_h3_distinct

@@ -82,18 +82,25 @@ with unnested as (
     ) a
 )
 select
-        -- Generic id for proper sorting while further export to CSV
-        row_number() over(order by u.admin_level, u.pop_diff desc, (u.group_id = u.osm_id) desc, o.name)  as id,
-        case when u.group_id = u.osm_id  then false else true end                                         as subrow,
-        u.osm_id                                                                                          as osm_id,
-        o.name                                                                                            as "name",
-        o.admin_level                                                                                     as admin_level,
-        o.population                                                                                      as population,
-        o.population_date                                                                                 as population_date,
-        o.population_source                                                                               as population_source,
-        case when u.group_id = u.osm_id  then u.c_sum_pop else null end                                   as sum_subregions_population,
-        case when u.group_id = u.osm_id  then u.pop_diff  else null end                                   as population_difference_value,
-        case when u.group_id = u.osm_id  then round(u.pop_diff_percent, 4) else null end                  as population_difference_percent
+        -- Generic id for proper sorting while further export to CSV:
+        row_number() over(order by u.admin_level, u.pop_diff desc, (u.group_id = u.osm_id) desc, o.name)                    as id,
+
+        -- Mark start of the string with subrow_ prefix if needed:
+        case when u.group_id = u.osm_id then '' else 'subrow_' end ||
+        -- Generate link to object properties on osm.org:
+        coalesce('href_[' || u.osm_id || '](https://www.openstreetmap.org/relation/' || u.osm_id || ')', '')                as "OSM id",
+
+        -- Generate link for JOSM remote desktop:
+        'hrefIcon_[' || case when u.group_id = u.osm_id then '' else 'tab_' end ||
+        o.name || '](http://localhost:8111/load_object?new_layer=false&objects=r' || u.osm_id || '&relation_members=true)'  as "Name",
+
+        o.admin_level                                                                                                       as "Admin level",
+        o.population                                                                                                        as "Population",
+        o.population_date                                                                                                   as "Population date",
+        o.population_source                                                                                                 as "Population source",
+        case when u.group_id = u.osm_id  then u.c_sum_pop else null end                                                     as "SUM subregions population",
+        case when u.group_id = u.osm_id  then u.pop_diff  else null end                                                     as "Population difference value",
+        case when u.group_id = u.osm_id  then round(u.pop_diff_percent, 4) else null end                                    as "Population difference %"
 from unnested u
 left join osm_admin_boundaries_in o using(osm_id)
 order by u.admin_level, u.pop_diff desc, (u.group_id = u.osm_id) desc, o.name;

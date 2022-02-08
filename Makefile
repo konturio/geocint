@@ -1136,6 +1136,24 @@ data/out/kontur_population.gpkg.gz: db/table/kontur_population_h3 | data/out  ##
 data/in/kontur_population_v2: | data/in ## Kontur Population v2 (input).
 	mkdir -p $@
 
+data/in/kontur_boundaries_v2: | data/in ## Kontur Boundaries v2 (input).
+	mkdir -p $@
+
+data/mid/kontur_boundaries_v2: | data/mid ## Kontur Boundaries v2 dataset.
+	mkdir -p $@
+
+data/in/kontur_boundaries_v2/kontur_boundaries_20211029.gpkg.gz: | data/in/kontur_population_v2 ## Download Kontur Boundaries v2 gzip to geocint.
+	rm -rf $@
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/kontur_boundaries_20211029.gpkg.gz $@ --profile geocint_pipeline_sender
+
+data/mid/kontur_boundaries_v2/kontur_boundaries_20211029.gpkg: data/in/kontur_boundaries_v2/kontur_boundaries_20211029.gpkg.gz | data/mid/kontur_boundaries_v2 ## Unzip Kontur Boundaries v2 geopackage archive.
+	gzip -dck data/in/kontur_boundaries_v2/kontur_boundaries_20211029.gpkg.gz > $@
+
+db/table/kontur_boundaries_v2: data/mid/kontur_boundaries_v2/kontur_boundaries_20211029.gpkg ## Import Kontur Boundaries v2 into database.
+	psql -c "drop table if exists kontur_boundaries_v2;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_boundaries_v2/kontur_boundaries_20211029.gpkg -t_srs EPSG:4326 -nln kontur_boundaries_v2 -lco GEOMETRY_NAME=geom
+	touch $@
+
 data/in/kontur_population_v2/kontur_population_20200928.gpkg.gz: | data/in/kontur_population_v2 ## Download Kontur Population v2 gzip to geocint.
 	rm -rf $@
 	wget https://adhoc.kontur.io/data/kontur_population_20200928.gpkg.gz -O $@

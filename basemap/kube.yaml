@@ -30,7 +30,7 @@ spec:
   template:
     spec:
       containers:
-      - name: basemap
+      - name: basemap-rendering
         image: nexus.kontur.io:8085/konturdev/build-basemap
         imagePullPolicy: Always
         volumeMounts:
@@ -97,5 +97,5 @@ spec:
           claimName: basemap-postgres-claim
       restartPolicy: Never
       imagePullSecrets:
-          - name: kontur-nexus
-          - name: kontur-aws
+        - name: kontur-nexus
+        - name: kontur-aws

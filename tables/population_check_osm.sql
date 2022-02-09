@@ -1,20 +1,13 @@
 drop table if exists population_check_osm;
 create table population_check_osm as (
-    select
-            -- Generate link to object properties on osm.org:
-           'href_[' || osm_id || '](https://www.openstreetmap.org/relation/' || osm_id || ')'                       as "OSM id",
-
-            -- Generate link for JOSM remote desktop:
-           'hrefIcon_[' || coalesce(tags ->> 'name:en', tags ->> 'int_name', name) ||
-           '](http://localhost:8111/load_object?new_layer=false&objects=r' || osm_id || '&relation_members=true)'   as "Name",
-
-           tags ->> 'population:date'                                                                               as "OSM population date",
-           round(osm_pop)                                                                                           as "OSM population",
-           round(b.population)                                                                                      as "Kontur population",
-           round(osm_pop - b.population)                                                                            as "Population difference",
-
-           -- (b.population + 1) to prevent "2201E: cannot take logarithm of zero" when b.population = 0:
-           round(abs(log(osm_pop) - log(b.population + 1))::numeric, 2)                                             as diff_log
+    select osm_id,
+           name,
+           coalesce(tags ->> 'name:en', tags ->> 'int_name') "name_en",
+           tags ->> 'population:date'                        "pop_date",
+           round(osm_pop)                                    "osm_pop",
+           round(b.population)                               "kontur_pop",
+           round(osm_pop - b.population)                     "diff_pop",
+           abs(log(osm_pop) - log(b.population + 1))         "diff_log"     -- (b.population + 1) to prevent "2201E: cannot take logarithm of zero" when b.population = 0
     from kontur_boundaries b,
          parse_float(tags ->> 'population') osm_pop,
          ST_Area(geom::geography) "area"

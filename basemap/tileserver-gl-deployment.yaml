@@ -51,6 +51,11 @@ spec:
             - name: tileserver-gl-storage
               mountPath: /data
           env:
+            - name: S3_BASEMAP_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: basemap-config
+                  key: s3-basemap-path
             - name: AWS_DEFAULT_REGION
               value: eu-central-1
             - name: AWS_ACCESS_KEY_ID
@@ -67,7 +72,7 @@ spec:
             - aws
             - s3
             - sync
-            - s3://basemap-locker01/TEST/
+            - $(S3_BASEMAP_PATH)
             - /data
       volumes:
         - name: tileserver-gl-storage

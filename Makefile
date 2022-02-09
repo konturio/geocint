@@ -1008,6 +1008,9 @@ data/in/microsoft_buildings/download: | data/in/microsoft_buildings ## Download 
 	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wisconsin.zip
 	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wyoming.zip
 	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/australia-buildings/Australia_2020-06-21.geojson.zip
+	cd data/in/microsoft_buildings; wget -c -nc https://minedbuildings.blob.core.windows.net/southeast-asia/indonesia.geojsonl.zip
+	cd data/in/microsoft_buildings; wget -c -nc https://minedbuildings.blob.core.windows.net/southeast-asia/philippines.geojsonl.zip
+	cd data/in/microsoft_buildings; wget -c -nc https://minedbuildings.blob.core.windows.net/southeast-asia/malaysia.geojsonl.zip
 	touch $@
 
 data/mid/microsoft_buildings: | data/mid  ## Microsoft Building Footprints dataset (intermediate).
@@ -1020,7 +1023,7 @@ data/mid/microsoft_buildings/unzip: data/in/microsoft_buildings/download | data/
 db/table/microsoft_buildings: data/mid/microsoft_buildings/unzip | db/table  ## Microsoft Building Footprints dataset imported into database.
 	psql -c "drop table if exists microsoft_buildings;"
 	psql -c "create table microsoft_buildings (ogc_fid serial not null, geom geometry(polygon,4326));"
-	cd data/mid/microsoft_buildings; ls *.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom -a_srs EPSG:4326'
+	find data/mid/microsoft_buildings/ -name "*.geojson*" -type f | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom -a_srs EPSG:4326'
 	psql -c "create index on microsoft_buildings using gist(geom);"
 	touch $@
 

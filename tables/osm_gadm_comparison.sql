@@ -26,8 +26,7 @@ create index on gadm_in(parent_gid);
 -- Then prepare full list of boundaries with their sub boundaries for features not consistent in OpenStreetMap and GADM
 drop table if exists osm_gadm_comparison;
 create table osm_gadm_comparison as
--- Compare aggregated children counts from OpenStreetMap and GADM:
-with list as (
+with list as (                                        -- Compare aggregated children counts from OpenStreetMap and GADM
         select g1.gid,
                g1.admin_level
         from gadm_in g1
@@ -39,19 +38,11 @@ with list as (
         having count(g2.id) filter (where g2.osm_id is not null) < count(g2.id)
         order by g1.admin_level
 )
-select  row_number() over(order by l.admin_level, l.gid, g.admin_level, g.gadm_name)                                            as id,
-        g.admin_level                                                                                                           as "Admin level",
-
-        -- Mark start of the string with subrow_ prefix if needed:
-        case when l.gid = g.gid then '' else 'subrow_' end ||
-        -- Generate link to object properties on osm.org:
-        coalesce('href_[' || g.osm_id || '](https://www.openstreetmap.org/relation/' || g.osm_id || ')', '')                    as "OSM id",
-
-        -- Generate link for JOSM remote desktop:
-        'hrefIcon_[' || case when l.gid = g.gid then '' else 'tab_' end ||
-        g.osm_name || '](http://localhost:8111/load_object?new_layer=false&objects=r' || g.osm_id || '&relation_members=true)'  as "OSM name",
-
-        case when l.gid = g.gid then '' else 'tab_' end || g.gadm_name                                                          as "GADM name"
+select  row_number() over(order by l.admin_level, l.gid, g.admin_level, g.gadm_name)  as id,
+        g.admin_level                                                                 as "Admin level",
+        case when l.gid = g.gid then g.gadm_name  else '   - ' || g.gadm_name end     as "GADM name",
+        case when l.gid = g.gid then g.osm_name   else '   - ' || g.osm_name  end     as "OSM name",
+        g.osm_id                                                                      as "OSM id"
 from list l
 left join gadm_in g
         on l.gid = g.gid

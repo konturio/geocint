@@ -341,10 +341,13 @@ data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/
 	ls data/in/facebook_roads/*.tar.gz | parallel 'tar -C data/mid/facebook_roads -xf {}'
 	touch $@
 
-db/table/facebook_roads: data/mid/facebook_roads/extracted db/table/osm_roads | db/table ## loading files into the db
+db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## loading files into the db
 	psql -c "drop table if exists facebook_roads_in;"
 	psql -c "create table facebook_roads_in (fid serial not null, way_fbid text, highway_tag text, wkt text, geom geometry);"
 	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_in'
+	touch $@
+
+db/table/facebook_roads: db/table/facebook_roads_in db/table/osm_roads | db/table ## filtering fb roads with osm roads
 	psql -f tables/facebook_roads.sql
 	touch $@
 

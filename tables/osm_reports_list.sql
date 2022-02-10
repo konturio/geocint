@@ -82,6 +82,23 @@ values ('osm_missing_roads',
         true
         );
 
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+values ('osm_missing_boundaries_report',
+        'OSM missing boundaries',
+        '/osm_missing_boundaries_report.csv',
+        '',
+        'A list of boundaries that disappeared from Kontur Boundaries dataset nightly version compared to the [last public one](https://data.humdata.org/dataset/kontur-boundaries). In most cases this means that the boundary polygon can not be extracted because relation in OpenStreetMap is broken and needs to be repaired',
+        'A list of boundaries that disappeared from Kontur Boundaries dataset nightly version compared to the [last public one](https://data.humdata.org/dataset/kontur-boundaries). In most cases this means that the boundary polygon can not be extracted because relation in OpenStreetMap is broken and needs to be repaired',
+       '[
+          {
+            "OSM ID": "https://www.openstreetmap.org/relation/{{OSM id}}"
+          },
+          {
+            "Name": "http://localhost:8111/load_object?new_layer=false&objects=r{{OSM id}}&relation_members=true"
+          }]'::json,
+        true,
+        false
+        );
 
 -- Populate timestamp column with previous values to keep them in case reports won't update (then old timestamp will be the valid one!)
 update osm_reports_list n

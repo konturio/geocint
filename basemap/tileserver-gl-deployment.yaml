@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: tileserver-gl
-          image: maptiler/tileserver-gl
+          image: nexus.kontur.io:8084/maptiler/tileserver-gl
           args:
             - "-p"
             - "8080"
@@ -46,7 +46,7 @@ spec:
             periodSeconds: 10
       initContainers:
         - name: download-basemap-from-s3
-          image: amazon/aws-cli
+          image: nexus.kontur.io:8084/amazon/aws-cli
           volumeMounts:
             - name: tileserver-gl-storage
               mountPath: /data
@@ -80,6 +80,7 @@ spec:
             claimName: tileserver-gl-claim
       imagePullSecrets:
         - name: kontur-aws
+        - name: kontur-nexus
 ---
 apiVersion: v1
 kind: Service

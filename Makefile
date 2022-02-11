@@ -654,17 +654,17 @@ db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries db/ta
 	touch $@
 
 data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
-	psql -qXc 'copy (select "OSM id", "Admin level", "OSM name", "GADM name" from osm_gadm_comparison order by id) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc "copy (select \"OSM id\", \"Admin level\", \"OSM name\", \"GADM name\" from osm_gadm_comparison order by id limit 10000) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | data/out/reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
-	psql -qXc 'copy (select "OSM ID", "Name", "Admin level", "Population", "Population date", "Population source", "SUM subregions population", "Population difference value", "Population difference %" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc "copy (select \"OSM id\", \"Name\", \"Admin level\", \"Population\", \"Population date\", \"Population source\", \"SUM subregions population\", \"Population difference value\", \"Population difference %\" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/population_check_osm.csv: db/table/population_check_osm | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
-	psql -qXc 'copy (select osm_id as "OSM ID", coalesce(name_en, name) as "Name", pop_date as "OSM population date", osm_pop as "OSM population", kontur_pop as "Kontur population", diff_pop as "Population difference", round(diff_log::numeric, 2) as "Logarithmic population difference" from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc "copy (select \"OSM id\", \"Name\", \"OSM population date\", \"OSM population\", \"Kontur population\", \"Population difference\", diff_log as \"Logarithmic population difference\" from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ';');" > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | data/out/reports ## Export report to CSV
-	psql -qXc 'copy osm_unmapped_places_report to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc "copy (select population as \"Kontur population\", view_count as \"osm.org view count\", \"Place bounding box\" from osm_unmapped_places_report order by id) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_missing_roads.csv: db/table/osm_missing_roads | data/out/reports ## Export report to CSV
 	psql -qXc "copy (select \"Country\", \"OSM roads length, km\", \"Facebook roads length, km\", \"Place bounding box\" from osm_missing_roads where \"Country\" in ('Saint Lucia', 'Romania', 'Albania') and diff > 3.5 order by diff desc) to stdout with (format csv, header true, delimiter ';');" > $@

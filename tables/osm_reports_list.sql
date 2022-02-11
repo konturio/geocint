@@ -18,7 +18,6 @@ create table osm_reports_list
     last_updated text,
     description_brief text,
     description_full text,
-    column_link_templates json,
     sortable boolean not null default true,
     public_access boolean not null default true
 );
@@ -26,20 +25,13 @@ create table osm_reports_list
 
 -- Populate table with reports
 -- Population tag check report:
-insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
 values ('population_tag_check',
         'Population tag check',
         '/population_check_osm.csv',
         '',
         'Find discrepancies between [Kontur Population](https://www.kontur.io/portfolio/population-dataset/) and [OpenStreetMap](https://wiki.openstreetmap.org/wiki/Key:population) data to see potential errors in OpenStreetMap population data. [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset) is a global population dataset generated based on various public data sources including OpenStreetMap. Inconsistencies in the values between Kontur data and OpenStreetMap population key on administrative division boundaries may indicate inaccuracies in OSM data.',
         'Find discrepancies between [Kontur Population](https://www.kontur.io/portfolio/population-dataset/) and [OpenStreetMap](https://wiki.openstreetmap.org/wiki/Key:population) data to see potential errors in OpenStreetMap population data. [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset) is a global population dataset generated based on various public data sources including OpenStreetMap. Inconsistencies in the values between Kontur data and OpenStreetMap population key on administrative division boundaries may indicate inaccuracies in OSM data.',
-       '[
-          {
-            "OSM ID": "https://www.openstreetmap.org/relation/{{OSM ID}}"
-          },
-          {
-            "Name": "http://localhost:8111/load_object?new_layer=false&objects=r{{OSM ID}}&relation_members=true"
-          }]'::json,
         true,
         true
         );
@@ -52,13 +44,6 @@ values ('osm_population_inconsistencies',
         '',
         'This report indicates potential errors in OpenStreetMap population key values. [Kontur](https://www.kontur.io/) analyzes boundary objects to check if the population numbers on different levels of administrative boundaries do not conflict with each other. For example, a country’s population may not be smaller than the sum of its region’s population.',
         'This report indicates potential errors in OpenStreetMap population key values. [Kontur](https://www.kontur.io/) analyzes boundary objects to check if the population numbers on different levels of administrative boundaries do not conflict with each other. For example, a country’s population may not be smaller than the sum of its region’s population.',
-       '[
-          {
-            "OSM ID": "https://www.openstreetmap.org/relation/{{OSM ID}}"
-          },
-          {
-            "Name": "http://localhost:8111/load_object?new_layer=false&objects=r{{OSM ID}}&relation_members=true"
-          }]'::json,
         false,
         true
         );
@@ -71,13 +56,6 @@ values ('osm_gadm_comparison',
         '',
         'Compare [GADM](https://gadm.org/data.html) and OpenStreetMap statistics on administrative division to find potential gaps in OSM data. GADM boundary data is a global dataset with an administrative division of all countries. Its [license](https://gadm.org/license.html) forbids importing it into OpenStreetMap but this report by [Kontur](https://www.kontur.io/) allows you to analyze the hierarchy of boundaries in GADM and OpenStreetMap. The last column shows the number of subregions for every admin boundary found in GADM/OSM to make potential conclusions. GADM is not the [''ground truth''](https://wiki.openstreetmap.org/wiki/Ground_truth), but a big difference in stats is a good reason to look carefully into OSM data.',
         'Compare [GADM](https://gadm.org/data.html) and OpenStreetMap statistics on administrative division to find potential gaps in OSM data. GADM boundary data is a global dataset with an administrative division of all countries. Its [license](https://gadm.org/license.html) forbids importing it into OpenStreetMap but this report by [Kontur](https://www.kontur.io/) allows you to analyze the hierarchy of boundaries in GADM and OpenStreetMap. The last column shows the number of subregions for every admin boundary found in GADM/OSM to make potential conclusions. GADM is not the [''ground truth''](https://wiki.openstreetmap.org/wiki/Ground_truth), but a big difference in stats is a good reason to look carefully into OSM data.',
-       '[
-          {
-            "OSM ID": "https://www.openstreetmap.org/relation/{{OSM ID}}"
-          },
-          {
-            "OSM name": "http://localhost:8111/load_object?new_layer=false&objects=r{{OSM ID}}&relation_members=true"
-          }]'::json,
         false,
         true
         );
@@ -89,10 +67,6 @@ values ('osm_unmapped_places',
         '',
         'A list of viewed on [OpenStreetMap](https://www.openstreetmap.org) but unmapped places where people live according to [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset).',
         'A list of viewed on [OpenStreetMap](https://www.openstreetmap.org) but unmapped places where people live according to [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset).',
-       '[
-          {
-            "Bounding box": "http://localhost:8111/load_and_zoom?{{Bounding box}}"
-          }]'::json,
         false,
         false
         );
@@ -104,10 +78,6 @@ values ('osm_missing_roads',
         '',
         'A list of places with roads missing while comparing with [Facebook](https://github.com/facebookmicrosites/Open-Mapping-At-Facebook).',
         'A list of places with roads missing while comparing with [Facebook](https://github.com/facebookmicrosites/Open-Mapping-At-Facebook).',
-       '[
-          {
-            "Bounding box": "http://localhost:8111/load_and_zoom?{{Bounding box}}"
-          }]'::json,
         true,
         false
         );

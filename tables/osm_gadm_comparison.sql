@@ -6,7 +6,8 @@ create table gadm_in as
         select
                 g.id,
                 k.osm_id,
-                k.admin_level::int,
+                k.osm_type,
+                k.admin_level::int                                            as admin_level,
                 coalesce(k.tags ->> 'name:en', k.tags ->> 'int_name', k.name) as osm_name,   -- We want english names first in the reports
                 g.name gadm_name,
                 g.gid,
@@ -38,11 +39,21 @@ with list as (                                        -- Compare aggregated chil
         having count(g2.id) filter (where g2.osm_id is not null) < count(g2.id)
         order by g1.admin_level
 )
-select  row_number() over(order by l.admin_level, l.gid, g.admin_level, g.gadm_name)  as id,
-        g.admin_level                                                                 as "Admin level",
-        case when l.gid = g.gid then g.gadm_name  else '   - ' || g.gadm_name end     as "GADM name",
-        case when l.gid = g.gid then g.osm_name   else '   - ' || g.osm_name  end     as "OSM name",
-        g.osm_id                                                                      as "OSM id"
+select  row_number() over(order by l.admin_level, l.gid, g.admin_level, g.gadm_name)       as id,
+        g.admin_level                                                                      as "Admin level",
+
+        -- Generate link to object properties on osm.org
+        -- Mark start of the string with subrow_ prefix if needed:
+        case when l.gid = g.gid then '' else 'subrow_' end ||
+        coalesce('href_[' || g.osm_id || '](https://www.openstreetmap.org/' ||
+        g.osm_type || '/' || g.osm_id || ')', '')                                           as "OSM id",
+
+        -- Generate link for JOSM remote desktop:
+        'hrefIcon_[' || case when l.gid = g.gid then '' else 'tab_' end ||
+        g.osm_name || '](http://localhost:8111/load_object?new_layer=false&objects=' ||
+        left(g.osm_type, 1) || g.osm_id || '&relation_members=true)'                        as "OSM name",
+
+        case when l.gid = g.gid then '' else 'tab_' end || g.gadm_name                      as "GADM name"
 from list l
 left join gadm_in g
         on l.gid = g.gid

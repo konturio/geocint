@@ -346,7 +346,7 @@ data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/
 
 db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## loading files into the db
 	psql -c "drop table if exists facebook_roads_in;"
-	psql -c "create table facebook_roads_in (fid serial not null, way_fbid text, highway_tag text, wkt text, geom geometry);"
+	psql -c "create table facebook_roads_in (way_fbid text, highway_tag text, geom geometry);"
 	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_in'
 	touch $@
 

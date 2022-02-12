@@ -2,7 +2,7 @@
 drop table if exists facebook_roads;
 create table facebook_roads as
 select
-       row_number() over()   as id,
+       way_fbid,
        f.highway_tag         as highway,
        fgeom                 as geom
 from facebook_roads_in f,

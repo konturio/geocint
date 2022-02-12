@@ -37,7 +37,7 @@ values ('population_tag_check',
         );
 
 -- Population inconsistencies report:
-insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
 values ('osm_population_inconsistencies',
         'Population inconsistencies',
         '/osm_population_inconsistencies.csv',
@@ -49,7 +49,7 @@ values ('osm_population_inconsistencies',
         );
 
 -- OSM-GADM comparison report:
-insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
 values ('osm_gadm_comparison',
         'OSM-GADM comparison',
         '/osm_gadm_comparison.csv',
@@ -60,7 +60,7 @@ values ('osm_gadm_comparison',
         true
         );
 
-insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
 values ('osm_unmapped_places',
         'OSM unmapped places',
         '/osm_unmapped_places.csv',
@@ -71,7 +71,7 @@ values ('osm_unmapped_places',
         false
         );
 
-insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
 values ('osm_missing_roads',
         'OSM missing roads',
         '/osm_missing_roads.csv',

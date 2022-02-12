@@ -542,6 +542,7 @@ data/in/raster/esa_world_cover/download: | data/in/raster/esa_world_cover ## Dow
 
 data/mid/raster/esa_world_cover/unzip: data/in/raster/esa_world_cover/download | data/mid/raster/esa_world_cover ## Unzip ESA World Cover rasters
 	find data/in/raster/esa_world_cover -name "*.zip" -type f  | parallel "unzip -o {} -d data/mid/raster/esa_world_cover"
+	touch $@
 
 db/table/esa_world_cover: data/mid/raster/esa_world_cover/unzip | db/table ## Prepare table for raster data. Import ESA World Cover raster tiles into database.
 	psql -c "drop table if exists esa_world_cover;"

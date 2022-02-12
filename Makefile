@@ -1340,7 +1340,7 @@ data/out/abu_dhabi: | data/out ## Directory for Abu Dhabi datasets output.
 	mkdir -p $@
 
 data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson: db/table/abu_dhabi_admin_boundaries | data/out/abu_dhabi  ## Abu Dhabi admin boundaries from GADM (Database of Global Administrative Areas) exported to geojson.
-	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select gid, name, gadm_level, geom from abu_dhabi_admin_boundaries' -nln abu_dhabi_admin_boundaries
+	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select id as gid, name, gadm_level, geom from abu_dhabi_admin_boundaries' -nln abu_dhabi_admin_boundaries
 
 data/out/abu_dhabi/abu_dhabi_eatery.csv: db/table/abu_dhabi_eatery | data/out/abu_dhabi ## Abu Dhabi eatery from OpenStreetMap exported to csv.
 	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_eatery) to stdout with csv header;' > $@
@@ -1351,7 +1351,7 @@ data/out/abu_dhabi/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops | dat
 data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops | data/out/abu_dhabi ## H3 bivariate layer with population vs food shops for Abu Dhabi exported to csv.
 	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
 
-db/table/abu_dhabi_buildings_population: db/table/abu_dhabi_admin_boundaries db/table/abu_dhabi_buildings db/table/kontur_population_h3 | db/table ## Distribute Kontur population by buildings in Abu Dhabi.
+db/table/abu_dhabi_buildings_population: db/table/abu_dhabi_buildings | db/table ## Distribute Kontur population by buildings in Abu Dhabi.
 	psql -f tables/abu_dhabi_buildings_population.sql
 	touch $@
 

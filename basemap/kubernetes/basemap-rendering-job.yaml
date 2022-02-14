@@ -78,10 +78,7 @@ spec:
           - "max_wal_senders=0"
         env:
           - name: S3_BASEMAP_PATH
-            valueFrom:
-              configMapKeyRef:
-                name: basemap-config
-                key: s3-basemap-path
+            value: 
           - name: POSTGRES_USER
             value: gis
           - name: POSTGRES_DATABASE

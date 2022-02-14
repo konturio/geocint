@@ -37,7 +37,7 @@ values ('population_tag_check',
         );
 
 -- Population inconsistencies report:
-insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
 values ('osm_population_inconsistencies',
         'Population inconsistencies',
         '/osm_population_inconsistencies.csv',
@@ -49,7 +49,7 @@ values ('osm_population_inconsistencies',
         );
 
 -- OSM-GADM comparison report:
-insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
 values ('osm_gadm_comparison',
         'OSM-GADM comparison',
         '/osm_gadm_comparison.csv',
@@ -60,7 +60,7 @@ values ('osm_gadm_comparison',
         true
         );
 
-insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
 values ('osm_unmapped_places',
         'OSM unmapped places',
         '/osm_unmapped_places.csv',
@@ -68,10 +68,10 @@ values ('osm_unmapped_places',
         'A list of viewed on [OpenStreetMap](https://www.openstreetmap.org) but unmapped places where people live according to [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset).',
         'A list of viewed on [OpenStreetMap](https://www.openstreetmap.org) but unmapped places where people live according to [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset).',
         false,
-        false
+        true
         );
 
-insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, column_link_templates, sortable, public_access)
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
 values ('osm_missing_roads',
         'OSM missing roads',
         '/osm_missing_roads.csv',
@@ -79,7 +79,7 @@ values ('osm_missing_roads',
         'A list of places with roads missing while comparing with [Facebook](https://github.com/facebookmicrosites/Open-Mapping-At-Facebook).',
         'A list of places with roads missing while comparing with [Facebook](https://github.com/facebookmicrosites/Open-Mapping-At-Facebook).',
         true,
-        false
+        true
         );
 
 

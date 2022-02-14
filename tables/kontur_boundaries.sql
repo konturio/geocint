@@ -79,7 +79,6 @@ select distinct on (b.osm_id)
         b.osm_id,
         b.osm_type,
         g.id as gadm_id,
-        b.osm_type,
         b.boundary,
         b.admin_level,
         b.name,

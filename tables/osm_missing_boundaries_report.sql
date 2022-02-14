@@ -15,11 +15,18 @@ create table osm_missing_boundaries_report as (
         left join osm_admin_boundaries k using (osm_id)
         where k.osm_id is null
     )
-    select row_number() over ()     as id,
-           b.osm_id                 as "OSM id",
-           b.admin_level            as "Admin_level",
-           b.name                   as "Name",
-           c.name                   as "Country"
+    select row_number() over ()                                                                             as id,
+
+           -- Generate link to object properties on osm.org:
+           'href_[' || b.osm_id || '](https://www.openstreetmap.org/' || osm_type || '/' || osm_id || ')'   as "OSM id",
+
+           -- Generate link for JOSM remote desktop:
+           'hrefIcon_[' || b.name ||
+           '](http://localhost:8111/load_object?new_layer=false&objects=' ||
+           left(b.osm_type, 1) || osm_id || '&relation_members=true)'                                       as "Name",
+
+           b.admin_level                                                                                    as "Admin level",
+           c.name                                                                                           as "Country"
     from missing_boundaries b
     left join country_boundaries_subdivided_in c
         on ST_Intersects(ST_PointOnSurface(b.geom), c.geom)

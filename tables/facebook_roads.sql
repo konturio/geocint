@@ -11,7 +11,3 @@ left join osm_roads o
         on ST_Intersects(fgeom, o.geom)
              and ST_Length(ST_intersection(fgeom, ST_Buffer(o.geom::geography, 10)::geometry)) > 0.5 * ST_Length(fgeom)
 where o.osm_id is null;
-
-
--- Drop temporary tables
-drop table if exists facebook_roads_in;

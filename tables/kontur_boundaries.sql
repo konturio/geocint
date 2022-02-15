@@ -1,11 +1,11 @@
 -- Prepare subdivided osm admin boundaries table with index for further queries
-drop table if exists osm_admin_subdivided;
-create table osm_admin_subdivided as
+drop table if exists osm_admin_subdivided_in;
+create table osm_admin_subdivided_in as
 select
         osm_id,
         ST_Subdivide(ST_Transform(geom, 3857)) as geom
 from osm_admin_boundaries;
-create index on osm_admin_subdivided using gist(geom);
+create index on osm_admin_subdivided_in using gist(geom);
 
 
 -- Sum population from h3 to osm admin boundaries (rounding to integers)
@@ -20,7 +20,7 @@ with sum_population as (
                                 else ST_Area(ST_Intersection(h.geom, b.geom)) / ST_Area(h.geom)
                         end) -- Calculate intersection area for each h3 cell and boundary polygon
                 )) as population
-        from osm_admin_subdivided b
+        from osm_admin_subdivided_in b
         join kontur_population_h3 h
                 on ST_Intersects(h.geom, b.geom)
                         and h.resolution = 8
@@ -104,7 +104,7 @@ left join wikidata_hasc_codes w
 
 
 -- Drop temporary tables
-drop table if exists osm_admin_subdivided;
+drop table if exists osm_admin_subdivided_in;
 drop table if exists osm_admin_boundaries_in;
 drop table if exists kontur_boundaries_in;
 

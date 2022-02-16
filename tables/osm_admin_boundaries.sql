@@ -19,6 +19,7 @@ create table osm_admin_boundaries as (
 );
 
 create index on osm_admin_boundaries using gist(geom);
+create index on osm_admin_boundaries (osm_id);
 
 delete from osm_admin_boundaries a
 using osm_admin_boundaries b

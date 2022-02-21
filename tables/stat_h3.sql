@@ -34,8 +34,8 @@ create table stat_h3_in as (
            coalesce(sum(pop_not_well_eng_speak), 0) as pop_not_well_eng_speak,
            coalesce(sum(pop_without_car), 0) as pop_without_car,
            coalesce(sum(populated_area) / 1000000.0, 0) as populated_area_km2,
-           coalesce(sum(fire_station_distance), 0) as fire_station_distance,
-           coalesce(sum(hospital_distance), 0) as hospital_distance,
+           coalesce(sum(man_distance_to_fire_brigade), 0) as man_distance_to_fire_brigade,
+           coalesce(sum(man_distance_to_hospital), 0) as man_distance_to_hospital,
            sum(coalesce(fb_roads_length, 0) + coalesce(highway_length, 0)) as total_road_length,
            1::float as one
     from (
@@ -48,7 +48,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from osm_object_count_grid_h3
              union all
@@ -61,7 +61,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from kontur_population_h3
              union all
@@ -74,7 +74,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from gdp_h3
              union all
@@ -87,7 +87,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, h3_get_resolution(h3) as resolution
              from user_hours_h3
              union all
@@ -100,7 +100,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, h3_get_resolution(h3) as resolution
              from residential_pop_h3
              union all
@@ -113,7 +113,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from tile_logs_h3
              union all
@@ -126,7 +126,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from building_count_grid_h3
              union all
@@ -139,7 +139,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from global_fires_stat_h3
              union all
@@ -152,7 +152,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from covid19_vaccine_accept_us_counties_h3
              union all
@@ -165,7 +165,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from covid19_h3
              union all
@@ -178,7 +178,7 @@ create table stat_h3_in as (
                     population as population_v2, null::float as industrial_area, null::float as volcanos_count,
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from kontur_population_v2_h3
              union all
@@ -191,7 +191,7 @@ create table stat_h3_in as (
                     null::float as population_v2, industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from osm_landuse_industrial_h3
              union all
@@ -204,7 +204,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, volcanos_count, null::float as pop_under_5_total,
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from osm_volcanos_h3
              union all
@@ -216,7 +216,7 @@ create table stat_h3_in as (
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, pop_under_5_total,
                     pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from us_census_tracts_stats_h3
              union all
@@ -229,7 +229,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, distance as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, man_distance as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from isodist_fire_stations_h3
              union all
@@ -242,7 +242,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, distance as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, man_distance as man_distance_to_hospital,
                     null::float as fb_roads_length, resolution
              from isodist_hospitals_h3
              union all
@@ -255,7 +255,7 @@ create table stat_h3_in as (
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as fire_station_distance, null::float as hospital_distance,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     fb_roads_length as fb_roads_length, resolution
              from facebook_roads_h3
         ) z
@@ -300,8 +300,8 @@ create table stat_h3 as (
            a.pop_disability_total,
            a.pop_not_well_eng_speak,
            a.pop_without_car,
-           a.fire_station_distance,
-           a.hospital_distance,
+           a.man_distance_to_fire_brigade,
+           a.man_distance_to_hospital,
            a.total_road_length,
            (coalesce(b.avg_slope, 0))::float as avg_slope,
            (coalesce(g.avg_elevation, 0))::float as avg_elevation,
@@ -347,5 +347,5 @@ create index stat_h3_brin_pt2 on stat_h3 using brin (
                                                      days_maxtemp_over_32c_1c, days_maxtemp_over_32c_2c,
                                                      days_mintemp_above_25c_1c, days_mintemp_above_25c_2c,
                                                      days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c, avg_slope,
-                                                     fire_station_distance, hospital_distance
+                                                     man_distance_to_fire_brigade, man_distance_to_hospital
     );

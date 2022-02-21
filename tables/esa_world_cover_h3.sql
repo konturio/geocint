@@ -1,24 +1,16 @@
 drop table if exists esa_world_cover_h3_in;
 create table esa_world_cover_h3_in as (
-    select p_h3                                                               as h3,
-           8                                                                  as resolution,
-           coalesce(sum(cell_area) filter (where p.val = 10), 0) /1000000     as tree_cover,
-           coalesce(sum(cell_area) filter (where p.val = 20), 0) /1000000     as shrubland,
-           coalesce(sum(cell_area) filter (where p.val = 30), 0) /1000000     as grassland,
-           coalesce(sum(cell_area) filter (where p.val = 40), 0) /1000000     as cropland,
-           coalesce(sum(cell_area) filter (where p.val = 50), 0) /1000000     as built_up,
-           coalesce(sum(cell_area) filter (where p.val = 60), 0) /1000000     as bare_sparse_vegetation,
-           coalesce(sum(cell_area) filter (where p.val = 70), 0) /1000000     as show_and_ice,
-           coalesce(sum(cell_area) filter (where p.val = 80), 0) /1000000     as permanent_water_bodies,
-           coalesce(sum(cell_area) filter (where p.val = 90), 0) /1000000     as herbaceous,
-           coalesce(sum(cell_area) filter (where p.val = 95), 0) /1000000     as mangroves,
-           coalesce(sum(cell_area) filter (where p.val = 100), 0) /1000000    as moss_and_lichen,
-           ST_Area(h3_to_geo_boundary_geometry(p_h3)::geography) / 1000000.0  as area_km2
+    select p_h3                                                              as h3,
+           8                                                                 as resolution,
+           coalesce(sum(cell_area) filter (where p.val = 1), 0) /1000000     as tree_cover,
+           coalesce(sum(cell_area) filter (where p.val = 2), 0) /1000000     as shrubland,
+           coalesce(sum(cell_area) filter (where p.val = 4), 0) /1000000     as cropland,
+           ST_Area(h3_to_geo_boundary_geometry(p_h3)::geography) / 1000000.0 as area_km2
     from esa_world_cover c,
           ST_PixelAsPolygons(rast) p,
           h3_geo_to_h3(p.geom::box::point, 8) as p_h3,
           ST_Area(p.geom::geography) as cell_area
-    where p.val in (10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 100)
+    where p.val in (1, 2, 4)
     group by 1
          
 );
@@ -37,20 +29,11 @@ $$
         res = 8;
         while res > 0
             loop
-                insert into esa_world_cover_h3_in (h3, tree_cover, shrubland, grassland, cropland, built_up, bare_sparse_vegetation, 
-                                                       show_and_ice, permanent_water_bodies, herbaceous, mangroves, moss_and_lichen, area_km2, resolution)
+                insert into esa_world_cover_h3_in (h3, tree_cover, shrubland, cropland, area_km2, resolution)
                 select h3_to_parent(h3),
                        sum(tree_cover),
                        sum(shrubland),
-                       sum(grassland),
                        sum(cropland),
-                       sum(built_up),
-                       sum(bare_sparse_vegetation),
-                       sum(show_and_ice),
-                       sum(permanent_water_bodies),
-                       sum(herbaceous),
-                       sum(mangroves),
-                       sum(moss_and_lichen),
                        ST_Area(h3_to_geo_boundary_geometry(h3_to_parent(h3))::geography) / 1000000.0,
                        (res - 1)
                 from esa_world_cover_h3_in
@@ -77,7 +60,7 @@ $$
         carry     jsonb;
         carry_out jsonb;
     begin
-        columns = '{tree_cover, shrubland, grassland, cropland, built_up, bare_sparse_vegetation, show_and_ice, permanent_water_bodies, herbaceous, mangroves, moss_and_lichen}';
+        columns = '{tree_cover, shrubland, cropland}';
         res = 8;
         while res > 0
             loop

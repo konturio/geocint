@@ -68,9 +68,6 @@ data/out/global_fires: | data/out ## Data generated within project Global Fires.
 data/out/docker: | data/out ## Docker images.
 	mkdir -p $@
 
-data/tiles/stat: | data/tiles ## Directory for storing statistics on basemap vector tiles (currently unused).
-	mkdir -p $@
-
 data/out/population: | data/out ## Directory for storing data_stat_h3 and bivariate datasets dump.
 	mkdir -p $@
 
@@ -1668,11 +1665,15 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 	psql -f tables/stat_h3.sql
 	touch $@
 
-db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 | data/tiles/stat ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
+db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
 	psql -f tables/bivariate_axis.sql
 	touch $@
 
-db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3 | data/tiles/stat ## Precalculated correlations for bivariate layers
+db/table/bivariate_axis_analytics: db/table/bivariate_axis db/table/stat_h3 | db/table ## Precalculated axis parameters for the whole world.
+	psql -X -c "copy (select numerator||' '||denominator from bivariate_axis) to stdout;" | parallel --colsep ' ' "psql -f tables/bivariate_axis_analytics.sql -v numer={1} -v denom={2} -v numer_text=\"'{1}'\" -v denom_text=\"'{2}'\" "
+	touch $@
+
+db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3 | db/table ## Precalculated correlations for bivariate layers
 	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
 
@@ -1704,7 +1705,7 @@ db/table/tile_logs: data/tile_logs/_download | db/table ## OpenStreetMap tiles u
 	psql -c "call generate_overviews('tile_logs_h3', '{view_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-data/tiles/stats_tiles.tar.bz2: tile_generator/tile_generator db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors db/table/stat_h3 db/table/osm_meta | data/tiles ## Generate vector tiles from stat_h3 table (main table with summarized statistics aggregated on H3 hexagons grid) and archive it for further deploy to QA and production servers.
+data/tiles/stats_tiles.tar.bz2: tile_generator/tile_generator db/table/bivariate_axis_analytics db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors db/table/stat_h3 db/table/osm_meta | data/tiles ## Generate vector tiles from stat_h3 table (main table with summarized statistics aggregated on H3 hexagons grid) and archive it for further deploy to QA and production servers.
 	# Generate vector tiles from stat_h3 table:
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/stats.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/stats
 	# Generate JSON style file for vector tiles from stat_h3:
@@ -1851,7 +1852,7 @@ data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## C
 	mv $@__TMP $@
 	touch $@
 
-data/out/population/bivariate_tables.sqld.gz: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## Crafting bivariate tables SQL dump
+data/out/population/bivariate_tables.sqld.gz: db/table/bivariate_axis_analytics db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## Crafting bivariate tables SQL dump
 	bash -c "pg_dump --clean --if-exists --no-owner -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@

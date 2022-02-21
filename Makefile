@@ -1,10 +1,10 @@
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/zigzag/stats_tiles deploy/zigzag/users_tiles deploy/sonic/stats_tiles deploy/sonic/users_tiles deploy/geocint/isochrone_tables deploy/zigzag/population_api_tables deploy/sonic/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/zigzag/reports deploy/sonic/reports db/function/build_isochrone db/table/esa_world_cover_h3 db/table/esa_world_cover_builtup_h3## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/population_api_tables deploy/test/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover_h3 db/table/esa_world_cover_builtup_h3 ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-prod: deploy/lima/stats_tiles deploy/lima/users_tiles deploy/lima/population_api_tables deploy/lima/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/lima/reports data/out/reports/population_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/population_api_tables deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/prod/reports data/out/reports/population_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Pipeline finished. Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -101,13 +101,13 @@ data/mid/ndvi_2019_06_10: | data/mid ## Directory for NDVI rasters.
 deploy:  ## Directory for deployment targets footprints.
 	mkdir -p $@
 
-deploy/lima: | deploy ## We use lima.kontur.io as a production server.
+deploy/prod: | deploy ## folder for prod deployment footprints.
 	mkdir -p $@
 
-deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test software before setting it live to prod.
+deploy/test: | deploy ## folder for test deployment footprints.
 	mkdir -p $@
 
-deploy/zigzag: | deploy ## Target-created directory for deployments on test server zigzag.kontur.io
+deploy/dev: | deploy ## folder for dev deployment footprints.
 	mkdir -p $@
 
 deploy/geocint: | deploy ## We use geocint as a GIS development server.
@@ -144,7 +144,7 @@ deploy/geocint/reports/test: | deploy/geocint ## Directory for storing deploy re
 deploy/geocint/reports/prod: | deploy/geocint ## Directory for storing deploy ready OpenStreetMap quality report files (production).
 	mkdir -p $@
 
-deploy/lima/osrm-backend-by-car: deploy/geocint/belarus-latest.osm.pbf | deploy/lima ## Send message through Amazon Simple Queue Service to trigger rebuild Belarus road graph in OSRM in Docker on remote server.
+deploy/prod/osrm-backend-by-car: deploy/geocint/belarus-latest.osm.pbf | deploy/prod ## Send message through Amazon Simple Queue Service to trigger rebuild Belarus road graph in OSRM in Docker on remote server.
 	aws sqs send-message --output json --region eu-central-1 --queue-url https://sqs.eu-central-1.amazonaws.com/001426858141/PuppetmasterInbound.fifo --message-body '{"jsonrpc":"2.0","method":"rebuildDockerImage","params":{"imageName":"kontur-osrm-backend-by-car","osmPbfUrl":"https://geocint.kontur.io/gis/belarus-latest.osm.pbf"},"id":"'`uuid`'"}' --message-group-id rebuildDockerImage--kontur-osrm-backend-by-car
 	touch $@
 
@@ -788,21 +788,21 @@ deploy/s3/prod/reports/reports.tar.gz: deploy/geocint/reports/prod/reports.tar.g
 	aws s3 cp ~/public_html/reports/prod_reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz --profile geocint_pipeline_sender
 	touch $@
 
-deploy/zigzag/reports: deploy/s3/test/reports/reports.tar.gz | deploy/zigzag ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Zigzag server.
+deploy/dev/reports: deploy/s3/test/reports/reports.tar.gz | deploy/dev ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Dev server.
 	ansible zigzag_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'
 	ansible zigzag_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
 	ansible zigzag_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
 	ansible zigzag_disaster_ninja -m file -a 'path=$$HOME/reports/reports.tar.gz state=absent'
 	touch $@
 
-deploy/sonic/reports: deploy/s3/test/reports/reports.tar.gz | deploy/sonic ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Sonic server.
+deploy/test/reports: deploy/s3/test/reports/reports.tar.gz | deploy/test ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Test server.
 	ansible sonic_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'
 	ansible sonic_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
 	ansible sonic_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
 	ansible sonic_disaster_ninja -m file -a 'path=$$HOME/reports/reports.tar.gz state=absent'
 	touch $@
 
-deploy/lima/reports: deploy/s3/prod/reports/reports.tar.gz | deploy/lima ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Lima server.
+deploy/prod/reports: deploy/s3/prod/reports/reports.tar.gz | deploy/prod ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Prod server.
 	ansible lima_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'
 	ansible lima_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
 	ansible lima_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
@@ -1720,7 +1720,7 @@ deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint ## C
 	mv /var/www/tiles/stats /var/www/tiles/stats_old; mv /var/www/tiles/stats_new /var/www/tiles/stats
 	touch $@
 
-deploy/zigzag/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/zigzag ## Deploy vector tiles from stat_h3 table to TEST DVLP server.
+deploy/dev/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/dev ## Deploy vector tiles from stat_h3 table to DEV server.
 	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
 	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1739,7 +1739,7 @@ deploy/zigzag/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/zigzag ## Dep
 	'
 	touch $@
 
-deploy/sonic/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/sonic ## Deploy vector tiles from stat_h3 table to TEST QA server.
+deploy/test/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/test ## Deploy vector tiles from stat_h3 table to TEST QA server.
 	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible sonic_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
 	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1758,7 +1758,7 @@ deploy/sonic/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/sonic ## Deplo
 	'
 	touch $@
 
-deploy/lima/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/lima ## Deploy vector tiles from stat_h3 table to PROD server.
+deploy/prod/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/prod ## Deploy vector tiles from stat_h3 table to PROD server.
 	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1789,7 +1789,7 @@ deploy/geocint/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/geocint ## C
 	mv /var/www/tiles/users /var/www/tiles/users_old; mv /var/www/tiles/users_new /var/www/tiles/users
 	touch $@
 
-deploy/zigzag/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/zigzag ## Deploy vector tiles from osm_users_hex table to TEST DVLP server.
+deploy/dev/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/dev ## Deploy vector tiles from osm_users_hex table to TEST DVLP server.
 	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_live_dashboard -m copy -a 'src=data/tiles/users_tiles.tar.bz2 dest=$$HOME/tmp/users_tiles.tar.bz2'
 	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1808,7 +1808,7 @@ deploy/zigzag/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/zigzag ## Dep
 	'
 	touch $@
 
-deploy/sonic/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/sonic ## Deploy vector tiles from osm_users_hex table to TEST QA server.
+deploy/test/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/test ## Deploy vector tiles from osm_users_hex table to TEST QA server.
 	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible sonic_live_dashboard -m copy -a 'src=data/tiles/users_tiles.tar.bz2 dest=$$HOME/tmp/users_tiles.tar.bz2'
 	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1827,7 +1827,7 @@ deploy/sonic/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/sonic ## Deplo
 	'
 	touch $@
 
-deploy/lima/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/lima ## Deploy vector tiles from osm_users_hex table to PROD server.
+deploy/prod/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/prod ## Deploy vector tiles from osm_users_hex table to PROD server.
 	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_live_dashboard -m copy -a 'src=data/tiles/users_tiles.tar.bz2 dest=$$HOME/tmp/users_tiles.tar.bz2'
 	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
@@ -1868,7 +1868,7 @@ deploy/s3/test/bivariate_tables_dump: data/out/population/bivariate_tables.sqld.
 	aws s3 cp data/out/population/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
-deploy/zigzag/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/zigzag ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on TEST DVLP server.
+deploy/dev/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/dev ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on TEST DVLP server.
 	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
 	ansible zigzag_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
@@ -1878,7 +1878,7 @@ deploy/zigzag/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/
 	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
-deploy/sonic/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/sonic ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on TEST QA server.
+deploy/test/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/test ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on TEST QA server.
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
 	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
@@ -1904,7 +1904,7 @@ deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/stat_h3_dump de
 	bash scripts/check_population_api_tables_dump_dates.sh
 	touch $@
 
-deploy/lima/population_api_tables: deploy/s3/prod/population_api_tables_check_mdate | deploy/lima ## Getting population_api_tables dump from AWS private prod folder and restoring it.
+deploy/prod/population_api_tables: deploy/s3/prod/population_api_tables_check_mdate | deploy/prod ## Getting population_api_tables dump from AWS private prod folder and restoring it.
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
 	ansible lima_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'

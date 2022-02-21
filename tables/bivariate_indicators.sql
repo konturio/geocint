@@ -249,12 +249,12 @@ values ('mandays_maxtemp_over_32c_1c', 'Man-days above 32C, recent scenario', js
         '[["good"], ["bad"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('fire_station_distance', 'Fire brigade distance', jsonb_build_array(
+values ('man_distance_to_fire_brigade', 'Man-distance to fire brigade', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["good"], ["bad"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('hospital_distance', 'Hospital distance', jsonb_build_array(
+values ('man_distance_to_hospital', 'Man-distance to hospitals', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["good"], ["bad"]]'::jsonb);
 

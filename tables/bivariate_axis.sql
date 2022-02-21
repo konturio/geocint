@@ -86,8 +86,8 @@ create table stat_h3_quality as (
                 avg(a.days_maxwetbulb_over_32c_1c) as agg_days_maxwetbulb_over_32c_1c,
                 avg(a.days_maxwetbulb_over_32c_2c) as agg_days_maxwetbulb_over_32c_2c,
                 avg(a.mandays_maxtemp_over_32c_1c) as agg_mandays_maxtemp_over_32c_1c,
-                avg(a.fire_station_distance) as agg_fire_station_distance,
-                avg(a.hospital_distance) as agg_hospital_distance,
+                avg(a.man_distance_to_fire_brigade) as agg_man_distance_to_fire_brigade,
+                avg(a.man_distance_to_hospital) as agg_man_distance_to_hospital,
                 avg(a.total_road_length) as agg_total_road_length
             from
                 stat_h3 a
@@ -256,16 +256,16 @@ where
 
 update bivariate_axis
 set
-    label = 'Distance to fire station'
+    label = 'Man-distance to fire brigade'
 where
-      numerator = 'fire_station_distance'
+      numerator = 'man_distance_to_fire_brigade'
   and denominator = 'one';
 
 update bivariate_axis
 set
-    label = 'Distance to hospital'
+    label = 'Man-distance to hospitals'
 where
-      numerator = 'hospital_distance'
+      numerator = 'man_distance_to_hospital'
   and denominator = 'one';
 
 update bivariate_axis

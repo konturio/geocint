@@ -274,3 +274,19 @@ set
 where
       numerator = 'total_road_length'
   and denominator = 'area_km2';
+
+
+-- columns for advanced analytics
+alter table bivariate_axis
+    add column sum_value double precision,
+    add column sum_quality double precision,
+    add column min_value double precision,
+    add column min_quality double precision,
+    add column max_value double precision,
+    add column max_quality double precision,
+    add column stddev_value double precision,
+    add column stddev_quality double precision,
+    add column median_value double precision,
+    add column median_quality double precision,
+    add column mean_value double precision,
+    add column mean_quality double precision;

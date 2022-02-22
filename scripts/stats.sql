@@ -27,7 +27,7 @@ from
             forest,
             avg_ndvi,
             covid19_confirmed,
-            population_v2,
+            population_prev,
             industrial_area,
             volcanos_count,
             pop_under_5_total,

@@ -28,6 +28,7 @@ from
             avg_ndvi,
             covid19_confirmed,
             population_v2,
+            population_v3,
             industrial_area,
             volcanos_count,
             pop_under_5_total,

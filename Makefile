@@ -1147,6 +1147,9 @@ data/out/kontur_population.gpkg.gz: db/table/kontur_population_h3 | data/out  ##
 data/in/kontur_population_v2: | data/in ## Kontur Population v2 (input).
 	mkdir -p $@
 
+data/in/kontur_population_v3: | data/in ## Kontur Population v3 (input).
+	mkdir -p $@
+
 data/in/kontur_boundaries_v2: | data/in ## Kontur Boundaries v2 (input).
 	mkdir -p $@
 
@@ -1169,20 +1172,40 @@ data/in/kontur_population_v2/kontur_population_20200928.gpkg.gz: | data/in/kontu
 	rm -rf $@
 	wget https://adhoc.kontur.io/data/kontur_population_20200928.gpkg.gz -O $@
 
+data/in/kontur_population_v3/kontur_population_20211109.gpkg.gz: | data/in/kontur_population_v3 ## Download Kontur Population v3 gzip to geocint.
+	rm -rf $@
+	wget https://data.humdata.org/dataset/38f46aa9-00dd-4ac9-98c9-5ecaea384c9f/resource/5973b5fc-44dd-468a-b216-b39a9bbd162f/download/kontur_population_20211109.gpkg.gz -O $@
+
 data/mid/kontur_population_v2: | data/mid ## Kontur Population v2 dataset.
+	mkdir -p $@
+
+data/mid/kontur_population_v3: | data/mid ## Kontur Population v3 dataset.
 	mkdir -p $@
 
 data/mid/kontur_population_v2/kontur_population_20200928.gpkg: data/in/kontur_population_v2/kontur_population_20200928.gpkg.gz | data/mid/kontur_population_v2 ## Unzip Kontur Population v2 geopackage archive.
 	gzip -dck data/in/kontur_population_v2/kontur_population_20200928.gpkg.gz > $@
+
+data/mid/kontur_population_v3/kontur_population_20211109.gpkg: data/in/kontur_population_v3/kontur_population_20211109.gpkg.gz | data/mid/kontur_population_v3 ## Unzip Kontur Population v3 geopackage archive.
+	gzip -dck data/in/kontur_population_v3/kontur_population_20211109.gpkg.gz > $@
 
 db/table/kontur_population_v2: data/mid/kontur_population_v2/kontur_population_20200928.gpkg ## Import population v2 into database.
 	psql -c "drop table if exists kontur_population_v2;"
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_population_v2/kontur_population_20200928.gpkg -t_srs EPSG:4326 -nln kontur_population_v2 -lco GEOMETRY_NAME=geom
 	touch $@
 
+db/table/kontur_population_v3: data/mid/kontur_population_v3/kontur_population_20211109.gpkg ## Import population v3 into database.
+	psql -c "drop table if exists kontur_population_v3;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_population_v3/kontur_population_20211109.gpkg -t_srs EPSG:4326 -nln kontur_population_v3 -lco GEOMETRY_NAME=geom
+	touch $@
+
 db/table/kontur_population_v2_h3: db/table/kontur_population_v2 ## Generate h3 hexagon for population v2.
 	psql -f tables/kontur_population_v2_h3.sql
 	psql -c "call generate_overviews('kontur_population_v2_h3', '{population}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+db/table/kontur_population_v3_h3: db/table/kontur_population_v3 ## Generate h3 hexagon for population v3.
+	psql -f tables/kontur_population_v3_h3.sql
+	psql -c "call generate_overviews('kontur_population_v3_h3', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table ## Admin boundaries polygons with raw population values extracted from OpenStreetMap dataset.

@@ -1168,14 +1168,12 @@ db/table/kontur_boundaries_v2: data/mid/kontur_boundaries_v2/kontur_boundaries_v
 data/in/kontur_population_v3/kontur_population_20211109.gpkg.gz: | data/in/kontur_population_v3 ## Download Kontur Population v3 gzip to geocint.
 	rm -rf $@
 	wget -c -nc https://data.humdata.org/dataset/38f46aa9-00dd-4ac9-98c9-5ecaea384c9f/resource/5973b5fc-44dd-468a-b216-b39a9bbd162f/download/kontur_population_20211109.gpkg.gz -O $@
-	touch $@
 
 data/mid/kontur_population_v3: | data/mid ## Kontur Population v3 dataset.
 	mkdir -p $@
 
 data/mid/kontur_population_v3/kontur_population_20211109.gpkg: data/in/kontur_population_v3/kontur_population_20211109.gpkg.gz | data/mid/kontur_population_v3 ## Unzip Kontur Population v3 geopackage archive.
 	gzip -dck data/in/kontur_population_v3/kontur_population_20211109.gpkg.gz > $@
-	touch $@
 
 db/table/kontur_population_v3: data/mid/kontur_population_v3/kontur_population_20211109.gpkg | db/table ## Import population v3 into database.
 	psql -c "drop table if exists kontur_population_v3;"

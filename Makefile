@@ -895,6 +895,12 @@ db/table/un_population: data/in/un_population.csv | db/table ## UN (United Natio
 data/in/prescale_to_osm.csv: | data/in ## Download master table with right population values from osm
 	wget -c -nc "https://docs.google.com/spreadsheets/d/1-XuFA8c3sweMhCi52tdfhepGXavimUWA7vPc3BoQb1c/export?format=csv&gid=0" -O $@
 
+db/table/prescale_to_osm: data/in/prescale_to_osm | db/table ## Load prescale_to_osm data to the table
+	psql -c 'drop table if exists prescale_to_osm;'
+	psql -c 'create table ts prescale_to_osm (osm_type text, osm_id bigint, name text, right_population bigint, change_date date);'
+	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm from stdin with csv header delimiter ',';"
+	touch $@
+
 #db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table
 #	psql -f tables/population_check_un.sql
 #	touch $@

@@ -893,8 +893,7 @@ db/table/un_population: data/in/un_population.csv | db/table ## UN (United Natio
 	touch $@
 
 data/in/prescale_to_osm.csv: | data/in ## Download master table with right population values from osm
-	wget -c -nc "https://docs.google.com/spreadsheets/d/1-XuFA8c3sweMhCi52tdfhepGXavimUWA7vPc3BoQb1c/export?format=csv&gid=0" -O "data/in/prescale_to_osm.csv"
-	touch $@
+	wget -c -nc "https://docs.google.com/spreadsheets/d/1-XuFA8c3sweMhCi52tdfhepGXavimUWA7vPc3BoQb1c/export?format=csv&gid=0" -O $@
 
 #db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table
 #	psql -f tables/population_check_un.sql

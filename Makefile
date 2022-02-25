@@ -856,7 +856,7 @@ db/table/prescale_to_osm/check_changes: db/tables/changed_population | db/table 
 	if [ $$(cat $@__CHANG_POP) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
 	if [ 0 -lt $$(cat $@__CHANG_POP) ]; then echo "Some population values in OSM was changed. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
 	rm $@__CHANG_POP
-	touch $$
+	touch $@
 
 
 #db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table

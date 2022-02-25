@@ -14,6 +14,22 @@ create table osm_missing_boundaries_report as (
         from kontur_boundaries_v2 k2
         left join osm_admin_boundaries k using (osm_id)
         where k.osm_id is null
+     ) ,
+    -- Here, we check whether the missing boundary polygon still exists in OSM table, but have another value in boundary key
+    -- In most cases that means valid change to e.g. boundary = historic or boundary = unofficial. So we filter out those cases:
+    missing_boundaries_filtered as (
+        select b.*
+        from (
+            select k2.*
+            from kontur_boundaries_v2 k2
+            left join osm_admin_boundaries k using (osm_id)
+            where k.osm_id is null
+         ) b
+        left join osm o
+            on b.osm_id = o.osm_id
+                and o.tags ? 'boundary'
+                and ST_Dimension(o.geog::geometry) = 2
+        where o.osm_id is null
     )
     select row_number() over ()                                                                             as id,
 

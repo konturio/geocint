@@ -10,8 +10,7 @@ create table esa_world_cover_h3_in as (
     from esa_world_cover c,
            ST_PixelAsPolygons(rast) p,
            h3_geo_to_h3(p.geom::box::point, 8) as p_h3,
-           ST_Area(p.geom) * 111319.49079 * 111319.49079 * 
-           (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) as cell_area
+           ST_Area(p.geom) * 111319.49079 * 111319.49079 * (cos(radians(ST_Y(ST_Centroid(p.geom))))) as cell_area
     where p.val in (1, 2, 4)
     group by 1
          

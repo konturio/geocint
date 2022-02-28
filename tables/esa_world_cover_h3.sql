@@ -19,6 +19,7 @@ create table esa_world_cover_h3_in as (
 
 -- p.val list based on ESA world Cover Product User Manual
 -- from: https://worldcover2020.esa.int/data/docs/WorldCover_PUM_V1.1.pdf
+-- Area calculation based on https://github.com/wgnet/globalmap/blob/master/code/postgis_wrappers/ST_Fast_Real_Area.sql
 
 
 -- generate overviews
@@ -37,7 +38,7 @@ $$
                        sum(shrubland),
                        sum(cropland),
                        ST_Area(h3_to_geo_boundary_geometry(h3_to_parent(h3))* 111319.49079 * 111319.49079 * 
-                       (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) / 1000000.0,
+                       (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(h3_to_parent(h3))))))) / 1000000.0,
                        (res - 1)
                 from esa_world_cover_h3_in
                 where resolution = res

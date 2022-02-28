@@ -2,18 +2,23 @@ drop table if exists esa_world_cover_h3_in;
 create table esa_world_cover_h3_in as (
     select p_h3                                                                              as h3,
            8                                                                                 as resolution,
-           coalesce(sum(cell_area) filter (where p.val = 1), 0) /1000000                     as tree_cover,
-           coalesce(sum(cell_area) filter (where p.val = 2), 0) /1000000                     as shrubland,
-           coalesce(sum(cell_area) filter (where p.val = 4), 0) /1000000                     as cropland,
+           coalesce(sum(cell_area) filter (where p.val = 1), 0) * 111319.49079 * 111319.49079 *
+           (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) / 1000000.0 as tree_cover,
+
+           coalesce(sum(cell_area) filter (where p.val = 2), 0) * 111319.49079 * 111319.49079 *
+           (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) / 1000000.0 as shrubland,
+
+           coalesce(sum(cell_area) filter (where p.val = 4), 0) * 111319.49079 * 111319.49079 *
+           (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) / 1000000.0 as cropland,
+
            ST_Area(h3_to_geo_boundary_geometry(p_h3)) * 111319.49079 * 111319.49079 * 
-           (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) / 1000000.0  as area_km2
+           (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) / 1000000.0 as area_km2
     from esa_world_cover c,
            ST_PixelAsPolygons(rast) p,
            h3_geo_to_h3(p.geom::box::point, 8) as p_h3,
-           ST_Area(p.geom) * 111319.49079 * 111319.49079 * (cos(radians(ST_Y(ST_Centroid(p.geom))))) as cell_area
+           ST_Area(p.geom) as cell_area
     where p.val in (1, 2, 4)
     group by 1
-         
 );
 
 -- p.val list based on ESA world Cover Product User Manual

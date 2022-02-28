@@ -4,10 +4,13 @@ create table facebook_roads as
 select
        way_fbid,
        f.highway_tag         as highway,
-       fgeom                 as geom
-from facebook_roads_in f,
-     ST_SetSRID(f.geom, 4326) as fgeom
+       f.geom
+from facebook_roads_in f
 left join osm_roads o
-        on ST_Intersects(fgeom, o.geom)
-             and ST_Length(ST_intersection(fgeom, ST_Buffer(o.geom::geography, 10)::geometry)) > 0.5 * ST_Length(fgeom)
-where o.osm_id is null;
+        on ST_Intersects(f.geom, o.geom)
+             and ST_Length(
+             	ST_Intersection(
+             		f.geom, ST_Buffer(o.geom::geography, 10, 'endcap=flat join=bevel')::geometry
+             	    -- `endcap=flat join=bevel` lessens points in buffer geom
+             	)) > 0.5 * ST_Length(f.geom)
+where o.osm_id is null

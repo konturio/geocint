@@ -8,10 +8,10 @@ update prescale_to_osm
 	from osm o
 	where prescale_to_osm.osm_id = o.ism_id;
 
--- Move changed objects from prescale to osm to new table for recheck
 drop table if exists changed_population;
 create table changed_population (osm_type text, osm_id bigint, name text, right_population bigint, change_date date, actual_pop bigint);
 
+-- Move changed objects from prescale to osm to new table for recheck
 with changes as (
 	delete 
 		from prescale_to_osm 

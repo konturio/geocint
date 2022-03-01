@@ -860,6 +860,19 @@ db/table/prescale_to_osm/check_changes: db/tables/changed_population | db/table 
 	rm $@__CHANG_POP $@__WRONG_GEOM
 	touch $@
 
+db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/changed_population | db/procedure ## Transform admin boundaries with raw population values into solid continuous coverage with calculated population for every feature.
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=2
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=3
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=4
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=5
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=6
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=7
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=8
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=9
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=10
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=11
+	touch $@
+
 
 #db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table
 #	psql -f tables/population_check_un.sql

@@ -38,3 +38,5 @@ insert into changed_population (osm_type,
 	                            geom) 
 	select * 
 	from changes;
+
+create index on prescale_to_osm using gist(geom);

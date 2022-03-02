@@ -877,6 +877,10 @@ db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/presca
 	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=11
 	touch $@
 
+db/tables/prescale_to_osm_h3_r8: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table ## Create h3 r8 table with hexs with population
+	psql -f tables/prescale_to_osm_h3_r8.sql
+	touch $@
+
 
 #db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table
 #	psql -f tables/population_check_un.sql

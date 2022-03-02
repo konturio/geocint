@@ -49,3 +49,5 @@ insert into table prescale_to_osm_boundaries (geom, osm_type, osm_id, population
 
 create index on prescale_to_osm_boundaries using gist (geom);
 create index on prescale_to_osm_boundaries using gist (ST_PointOnSurface(geom));
+
+drop table if exists prescale_to_osm;

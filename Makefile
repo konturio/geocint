@@ -860,7 +860,7 @@ db/table/prescale_to_osm/check_changes: db/tables/changed_population | db/table 
 	rm $@__CHANG_POP $@__WRONG_GEOM
 	touch $@
 
-db/tables/prescale_to_osm_boundaries: db/table/changed_population | db/table ## Create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
+db/table/prescale_to_osm_boundaries: db/table/changed_population | db/table ## Create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
 	psql -f tables/prescale_to_osm_boundaries.sql
 	touch $@
 

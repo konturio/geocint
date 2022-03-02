@@ -854,7 +854,7 @@ db/tables/changed_population: db/table/prescale_to_osm | db/table ## Check chang
 db/table/prescale_to_osm/check_changes: db/tables/changed_population | db/table ## Check the number of object with nonactual osm population
 	psql -q -X -t -c 'select count(*) from changed_population where geom is null;' > $@__WRONG_GEOM
 	psql -q -X -t -c 'select count(*) from changed_population where right_population <> actual_pop;' > $@__CHANG_POP
-	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__CHANG_POP) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
 	if [ 0 -lt $$(cat $@__CHANG_POP) ]; then echo "Some population values in OSM was changed. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
 	if [ 0 -lt $$(cat $@__WRONG_GEOM) ]; then echo "Some geometry values is null. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
 	rm $@__CHANG_POP $@__WRONG_GEOM

@@ -1,6 +1,6 @@
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/population_api_tables deploy/test/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover_h3 db/table/esa_world_cover_builtup_h3 ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/population_api_tables deploy/test/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover_h3 db/table/esa_world_cover_builtup_h3 db/table/prescale_to_osm/check_changes ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -841,17 +841,17 @@ db/table/un_population: data/in/un_population.csv | db/table ## UN (United Natio
 data/in/prescale_to_osm.csv: | data/in ## Download master table with right population values from osm
 	wget -c -nc "https://docs.google.com/spreadsheets/d/1-XuFA8c3sweMhCi52tdfhepGXavimUWA7vPc3BoQb1c/export?format=csv&gid=0" -O $@
 
-db/table/prescale_to_osm: data/in/prescale_to_osm | db/table ## Load prescale_to_osm data to the table
+db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescale_to_osm data to the table
 	psql -c 'drop table if exists prescale_to_osm;'
 	psql -c 'create table prescale_to_osm (osm_type text, osm_id bigint, name text, right_population bigint, change_date date);'
 	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm from stdin with csv header delimiter ',';"
 	touch $@
 
-db/tables/changed_population: db/table/prescale_to_osm | db/table ## Check changes in osm population tags
+db/table/changed_population: db/table/prescale_to_osm | db/table ## Check changes in osm population tags
 	psql -f tables/changed_population.sql
 	touch $@
 
-db/table/prescale_to_osm/check_changes: db/tables/changed_population | db/table ## Check the number of object with nonactual osm population
+db/table/prescale_to_osm/check_changes: db/table/changed_population | db/table ## Check the number of object with nonactual osm population
 	psql -q -X -t -c 'select count(*) from changed_population where geom is null;' > $@__WRONG_GEOM
 	psql -q -X -t -c 'select count(*) from changed_population where right_population <> actual_pop;' > $@__CHANG_POP
 	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
@@ -877,7 +877,7 @@ db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/presca
 	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=11
 	touch $@
 
-db/tables/prescale_to_osm_h3_r8: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table ## Create h3 r8 table with hexs with population
+db/table/prescale_to_osm_h3_r8: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table ## Create h3 r8 table with hexs with population
 	psql -f tables/prescale_to_osm_h3_r8.sql
 	touch $@
 

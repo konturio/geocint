@@ -37,5 +37,40 @@ where area is null;
 
 vacuum prescale_to_osm_boundaries;
 
--- TODO: process overlaps on same admin level
+
+-- Check overlap polys on the last(12) admin level
+-- Resolve all conflicts with reducing poly with less population
+do
+$$
+    begin 
+        if :current_level = 11 then
+            -- Create CTE with unique pairs of overlap polygons
+            with prep as (
+                select distinct on (ST_Area(ST_Intersection(o.geom, p.geom))) 
+                    case 
+                        when o.population >= p.population 
+                            then p.osm_id
+                            else o.osm_id
+                        end as prep_id,
+                        when o.population >= p.population 
+                            then p.geom
+                            else o.geom
+                        end as f_geom,
+                        when o.population >= p.population 
+                            then o.geom
+                            else p.geom
+                        end as s_geom
+                                    
+                from prescale_to_osm_boundaries o, prescale_to_osm_boundaries p 
+                where ST_Overlaps(o.geom, p.geom) and o.id_0 <> p.id_0)
+
+                -- Resolve overlap conflicts with reducing less population polygons
+                update prescale_to_osm_boundaries 
+                    set geom = ST_Difference(f_geom, s_geom)
+                    from prep 
+                    where osm_id = prep_id;
+        end if;
+    end;
+$$;
+
 -- TODO: remove water

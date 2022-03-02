@@ -914,7 +914,11 @@ db/table/prescale_to_osm/check_changes: db/tables/changed_population | db/table 
 	rm $@__CHANG_POP $@__WRONG_GEOM
 	touch $@
 
-db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/changed_population | db/procedure ## Transform admin boundaries with raw population values into solid continuous coverage with calculated population for every feature.
+db/tables/prescale_to_osm_boundaries: db/table/changed_population | db/table ## Create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
+	psql -f tables/prescale_to_osm_boundaries.sql
+	touch $@
+
+db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/prescale_to_osm_boundaries | db/procedure ## Transform admin boundaries with raw population values into solid continuous coverage with calculated population for every feature.
 	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=2
 	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=3
 	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=4

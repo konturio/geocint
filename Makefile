@@ -1037,7 +1037,7 @@ db/procedure/insert_projection_54009: | db/procedure ## Add ESRI-54009 projectio
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/tables/prescale_to_osm_h3_r8 | db/table ## General table for population data at hexagons.
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/prescale_to_osm_h3_r8 | db/table ## General table for population data at hexagons.
 	# IMPORTANT: removed WorldPop dependencies - db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@

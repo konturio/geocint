@@ -1,11 +1,6 @@
--- Add actual osm population column
-alter table if exists prescale_to_osm
-add column if not exists actual_pop bigint,
-add column if not exists geom geometry(geometry, 4326);
-
 -- Update prescale_to osm with actual population data
 update prescale_to_osm
-	set actual_pop = o.tags ->> 'population',
+	set actual_osm_pop = o.tags ->> 'population',
 	set geom = o.geom
 	from osm_admin_boundaries o
 	where prescale_to_osm.osm_id = o.osm_id;
@@ -18,16 +13,16 @@ create table changed_population (osm_type text,
 	                             name text, 
 	                             right_population bigint, 
 	                             change_date date, 
-	                             actual_pop bigint, 
+	                             actual_osm_pop bigint, 
 	                             geom geometry(geometry, 4326));
 
 -- Move cases with outdated population and null-geometry objects to new table for recheck
 with changes as (
 	delete 
 		from prescale_to_osm 
-		where right_population <> actual_pop
+		where right_population <> actual_osm_pop
 		or geom is null
-		returning osm_type, osm_id, name, right_population, change_date, actual_pop, geom
+		returning osm_type, osm_id, name, right_population, change_date, actual_osm_pop, geom
 )
 
 
@@ -36,7 +31,7 @@ insert into changed_population (osm_type,
 	                            name, 
 	                            right_population, 
 	                            change_date, 
-	                            actual_pop, 
+	                            actual_osm_pop, 
 	                            geom) 
 	select * 
 	from changes;

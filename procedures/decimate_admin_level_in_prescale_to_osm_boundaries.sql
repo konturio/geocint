@@ -22,19 +22,14 @@ set admin_level      = admin_level + 1,
                   and d.admin_level = r.admin_level + 1
             ),
                 population
-        ),
-    area             = null
+        )
 where admin_level = :current_level;
 
 delete
 from prescale_to_osm_boundaries
 where geom is null
    or ST_IsEmpty(geom);
-
-update prescale_to_osm_boundaries
-set area = ST_Area(ST_Transform(geom, 4326)::geography)
-where area is null;
-
+   
 vacuum prescale_to_osm_boundaries;
 
 

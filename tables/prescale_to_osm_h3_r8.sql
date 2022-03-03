@@ -7,7 +7,7 @@ create table prescale_to_osm_h3_r8 as (
             8                      as resolution,
             osm_id                 as osm_id,
             h3_polyfill(geom)      as h3,            
-            population/count(h3_p) as divided_population        
+            population/count(h3_p) as population        
     from (
         select distinct on (h3)
             osm_id            as id,

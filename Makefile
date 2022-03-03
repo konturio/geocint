@@ -843,8 +843,8 @@ data/in/prescale_to_osm.csv: | data/in ## Download master table with right popul
 
 db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescale_to_osm data to the table
 	psql -c 'drop table if exists prescale_to_osm;'
-	psql -c 'create table prescale_to_osm (osm_type text, osm_id bigint, name text, right_population bigint, change_date date);'
-	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm from stdin with csv header delimiter ',';"
+	psql -c 'create table prescale_to_osm (osm_type text, osm_id bigint, name text, right_population bigint, actual_osm_pop bigint, change_date date, geom geometry(geometry, 4326));'
+	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm(osm_type, osm_id, name, right_population, change_date) from stdin with csv header delimiter ',';"
 	touch $@
 
 db/table/changed_population: db/table/prescale_to_osm | db/table ## Check changes in osm population tags
@@ -853,7 +853,7 @@ db/table/changed_population: db/table/prescale_to_osm | db/table ## Check change
 
 db/table/prescale_to_osm/check_changes: db/table/changed_population | db/table ## Check the number of object with nonactual osm population
 	psql -q -X -t -c 'select count(*) from changed_population where geom is null;' > $@__WRONG_GEOM
-	psql -q -X -t -c 'select count(*) from changed_population where right_population <> actual_pop;' > $@__CHANG_POP
+	psql -q -X -t -c 'select count(*) from changed_population where right_population <> actual_osm_pop;' > $@__CHANG_POP
 	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
 	if [ 0 -lt $$(cat $@__CHANG_POP) ]; then echo "Some population values in OSM was changed. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
 	if [ 0 -lt $$(cat $@__WRONG_GEOM) ]; then echo "Some geometry values is null. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" question; fi

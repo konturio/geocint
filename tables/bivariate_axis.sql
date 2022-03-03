@@ -275,6 +275,34 @@ where
       numerator = 'total_road_length'
   and denominator = 'area_km2';
 
+update bivariate_axis
+set
+    label = 'Distance to fire station (km)'
+where
+      numerator = 'man_distance_to_fire_brigade'
+  and denominator = 'population';
+
+update bivariate_axis
+set
+    label = 'OSM roads density (m/km²)'
+where
+      numerator = 'highway_length'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'OSM roads density (m/km²)'
+where
+      numerator = 'highway_length'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'Meta and OSM roads density (m/km2)'
+where
+      numerator = 'total_road_length'
+  and denominator = 'area_km2';
+
 
 -- columns for advanced analytics
 alter table bivariate_axis

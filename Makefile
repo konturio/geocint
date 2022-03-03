@@ -843,7 +843,7 @@ data/in/prescale_to_osm.csv: | data/in ## Download master table with right popul
 
 db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescale_to_osm data to the table
 	psql -c 'drop table if exists prescale_to_osm;'
-	psql -c 'create table prescale_to_osm (osm_type text, osm_id bigint, name text, right_population bigint, actual_osm_pop bigint, change_date date, geom geometry(geometry, 4326));'
+	psql -c 'create table prescale_to_osm (osm_type text, osm_id bigint, name text, right_population bigint, actual_osm_pop bigint, change_date date, geom geometry);'
 	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm(osm_type, osm_id, name, right_population, change_date) from stdin with csv header delimiter ',';"
 	touch $@
 

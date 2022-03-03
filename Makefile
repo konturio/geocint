@@ -931,7 +931,6 @@ db/table/prescale_to_osm_h3_r8: db/procedure/decimate_admin_level_in_prescale_to
 	psql -f tables/prescale_to_osm_h3_r8.sql
 	touch $@
 
-
 #db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table
 #	psql -f tables/population_check_un.sql
 #	touch $@

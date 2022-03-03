@@ -1,7 +1,7 @@
 -- Create table with boundaries of polygons from prescale to osm
 drop table if exists prescale_to_osm_boundaries;
 create table prescale_to_osm_boundaries as (
-    select ST_Transform(geog::geometry, 4326) as geom,
+    select geom,
            osm_type,
            osm_id,
            (case
@@ -14,7 +14,7 @@ create table prescale_to_osm_boundaries as (
                     then (tags ->> 'admin_level')::float
                 else null
                end)                           as admin_level
-    from osm
+    from osm_admin_boundaries
     where ST_Dimension(geog::geometry) = 2
       and tags ? 'population'
       and tags ->> 'admin_level' is not null
@@ -24,7 +24,7 @@ create table prescale_to_osm_boundaries as (
 
 -- Insert all boundaries, which are included in goal polygons
 insert into table prescale_to_osm_boundaries (geom, osm_type, osm_id, population, admin_level)
-    select ST_Transform(o.geog::geometry, 4326) as geom,
+    select o.geom,
            o.osm_type,
            o.osm_id,
            (case
@@ -37,7 +37,7 @@ insert into table prescale_to_osm_boundaries (geom, osm_type, osm_id, population
                     then (tags ->> 'admin_level')::float
                 else null
                end)                           as admin_level
-    from osm o 
+    from osm_admin_boundaries o 
     left join prescale_to_osm_boundaries p
     on ST_Intersects(o.geom, p.geom)
     where ST_Dimension(o.geog::geometry) = 2

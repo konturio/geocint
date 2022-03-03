@@ -7,16 +7,8 @@ update prescale_to_osm
 
 -- Create table for storing cases with population that is different with last osm dump
 -- Also for cases wiht null geometry
-drop table if exists changed_population;
-create table changed_population (osm_type text, 
-	                             osm_id bigint, 
-	                             name text, 
-	                             right_population bigint, 
-	                             change_date date, 
-	                             actual_osm_pop bigint, 
-	                             geom geometry(geometry, 4326));
-
 -- Move cases with outdated population and null-geometry objects to new table for recheck
+drop table if exists changed_population;
 with changes as (
 	delete 
 		from prescale_to_osm 
@@ -25,14 +17,7 @@ with changes as (
 		returning osm_type, osm_id, name, right_population, change_date, actual_osm_pop, geom
 )
 
-
-insert into changed_population (osm_type, 
-	                            osm_id, 
-	                            name, 
-	                            right_population, 
-	                            change_date, 
-	                            actual_osm_pop, 
-	                            geom) 
+create table changed_population as 
 	select * 
 	from changes;
 

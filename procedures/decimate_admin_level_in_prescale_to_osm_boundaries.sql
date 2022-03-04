@@ -42,19 +42,21 @@ $$
             -- Create CTE with unique pairs of overlap polygons
             with prep as (
                 select distinct on (ST_Area(ST_Intersection(o.geom, p.geom))) 
-                    case 
+                    (case 
                         when o.population >= p.population 
                             then p.osm_id
                             else o.osm_id
-                        end as prep_id,
+                        end) as prep_id,
+                    (case
                         when o.population >= p.population 
                             then p.geom
                             else o.geom
-                        end as f_geom,
+                        end) as f_geom,
+                    (case
                         when o.population >= p.population 
                             then o.geom
                             else p.geom
-                        end as s_geom
+                        end) as s_geom
                                     
                 from prescale_to_osm_boundaries o, prescale_to_osm_boundaries p 
                 where ST_Overlaps(o.geom, p.geom) and o.id_0 <> p.id_0)

@@ -1,6 +1,6 @@
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/population_api_tables deploy/test/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover_h3 db/table/esa_world_cover_builtup_h3 ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/population_api_tables deploy/test/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover  ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -549,13 +549,13 @@ db/table/esa_world_cover: data/mid/raster/esa_world_cover/selection | db/table #
 	psql -c "vacuum analyze esa_world_cover;"
 	touch $@
 
-db/table/esa_world_cover_h3: db/table/esa_world_cover | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
-	psql -f tables/esa_world_cover_h3.sql
-	touch $@
+# db/table/esa_world_cover_h3: db/table/esa_world_cover | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
+# 	psql -f tables/esa_world_cover_h3.sql
+# 	touch $@
 
-db/table/esa_world_cover_builtup_h3: db/table/esa_world_cover | db/table ## Count of 'urban' pixels from ESA land cover raster into h3 hexagons on 8 resolution.
-	psql -f tables/esa_world_cover_builtup_h3.sql
-	touch $@
+# db/table/esa_world_cover_builtup_h3: db/table/esa_world_cover | db/table ## Count of 'urban' pixels from ESA land cover raster into h3 hexagons on 8 resolution.
+# 	psql -f tables/esa_world_cover_builtup_h3.sql
+# 	touch $@
 
 db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
 	psql -f tables/osm_residential_landuse.sql

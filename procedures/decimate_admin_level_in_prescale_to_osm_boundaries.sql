@@ -56,8 +56,7 @@ $$
                         when o.population >= p.population 
                             then o.geom
                             else p.geom
-                        end) as s_geom
-                                    
+                        end) as s_geom                                    
                 from prescale_to_osm_boundaries o, prescale_to_osm_boundaries p 
                 where ST_Overlaps(o.geom, p.geom) and o.id_0 <> p.id_0)
 

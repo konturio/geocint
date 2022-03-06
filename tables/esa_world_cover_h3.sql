@@ -1,25 +1,26 @@
 drop table if exists esa_world_cover_h3_in;
 create table esa_world_cover_h3_in as (
-    select p_h3                                                                              as h3,
-           8                                                                                 as resolution,
-           coalesce(sum(cell_area) filter (where p.val = 1), 0) * 111319.49079 * 111319.49079 *
-           (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) / 1000000.0 as tree_cover,
-
-           coalesce(sum(cell_area) filter (where p.val = 2), 0) * 111319.49079 * 111319.49079 *
-           (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) / 1000000.0 as shrubland,
-
-           coalesce(sum(cell_area) filter (where p.val = 4), 0) * 111319.49079 * 111319.49079 *
-           (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) / 1000000.0 as cropland,
-
-           ST_Area(h3_to_geo_boundary_geometry(p_h3)) * 111319.49079 * 111319.49079 * 
-           (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(p_h3)))))) / 1000000.0 as area_km2
-    from esa_world_cover c,
-           ST_PixelAsPolygons(rast) p,
-           h3_geo_to_h3(p.geom::box::point, 8) as p_h3,
-           ST_Area(p.geom) as cell_area
-    where p.val in (1, 2, 4)
-    group by 1
-);
+select
+    h3,
+    8 as resolution,
+    coalesce(sum(ST_Area(dp.geom)) filter (where dp.val = 1), 0) * 111319.49079 * 111319.49079 *
+    (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(h3)))))) / 1000000.0 as tree_cover,
+    coalesce(sum(ST_Area(dp.geom)) filter (where dp.val = 2), 0) * 111319.49079 * 111319.49079 *
+    (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(h3)))))) / 1000000.0 as shrubland,
+    coalesce(sum(ST_Area(dp.geom)) filter (where dp.val = 4), 0) * 111319.49079 * 111319.49079 *
+    (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(h3)))))) / 1000000.0 as cropland,
+    ST_Area(h3_to_geo_boundary_geometry(h3)) * 111319.49079 * 111319.49079 * 
+    (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(h3)))))) / 1000000.0 as area_km2
+from
+    esa_world_cover as esa,
+    h3_polyfill(ST_Buffer(ST_Envelope(esa.rast), 0.0047), 8) as h3,
+    ST_Clip(
+        rast,
+        h3_to_geo_boundary_geometry(h3)::geometry,
+        true
+    ) as intersection,
+    ST_DumpAsPolygons(intersection) as dp
+group by h3);
 
 -- p.val list based on ESA world Cover Product User Manual
 -- from: https://worldcover2020.esa.int/data/docs/WorldCover_PUM_V1.1.pdf

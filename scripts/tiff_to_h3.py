@@ -1,39 +1,39 @@
 #!/usr/bin/python
 
 import sys
-
 from osgeo import osr, ogr
 from shapely import wkt, geometry
 import h3
-
 import geopandas as gpd
-
 import rasterio
 from rasterio.mask import mask
 from shapely.geometry import mapping
-
 import numpy as np
 
 # Call Example
 # python3 tiff_to_h3.py '/home/frolui/code/test/esa_data/raster1.tif' '/home/frolui/code/test/esa_data/raster_info.csv' 8 'True'
 # use "True" to import wkt geometry of hexagons in csv, and ahother value to drop it
 
+# Workflow body function
 def Pipeline(rasterfile, out_csv, h3_level, geom_flag):
 
     # Open raster and set variables
     rast = rasterio.open(rasterfile, driver='GTiff')
+    # Get spatial reference of input raster
     source_srs = int(rast.crs.to_authority()[1])
+    # Set h3 level for hexagons, which will be create
     h3_level = int(h3_level)
 
+    # Create buffer polygon from input raster bounding box, buffer width - average inradios of hexagon on actual h3_level
     buffer = GetHulfHexBuffer(CreatePoly(rast, source_srs), h3_level, source_srs)
+    # Create shapely Polygon from buffer
     shapely_polygon_fig = wkt.loads(buffer.ExportToWkt())
+    # Create list of hexagons
     hexs = h3.polyfill(geometry.mapping(shapely_polygon_fig), h3_level, geo_json_conformant = True)
-
-    # gdf = PrepareGeoDataFrame(hexs)
-
+    # Count number of pixels bu class for each hexagon from hexs list
     final = CountPixels(PrepareGeoDataFrame(hexs, source_srs), rast)
 
-
+    # Export final geodataframe to out_csv file
     if geom_flag == 'True':
         final.to_csv(out_csv)
         print (str(rasterfile) + ' succesfully done')
@@ -41,8 +41,7 @@ def Pipeline(rasterfile, out_csv, h3_level, geom_flag):
         final.drop('geom',axis=1).to_csv(out_csv)
         print (str(rasterfile) + ' succesfully done')
 
-# Create Polygon with Spatial Reference from SRID
-# Order of arguments is - xmin, ymax, xmax, ymin
+# Create Bounding Box Polygon with Spatial Reference from SRID
 def CreatePoly(rast, source_srs):
     geom = ogr.CreateGeometryFromWkt(geometry.box(*rast.bounds).wkt)
     
@@ -83,11 +82,12 @@ def GetHulfHexBuffer(geom, h3_level, source_srs):
 
 # Prepare geodataframe
 def PrepareGeoDataFrame(hexs, source_srs):
+    # Create shapely Polygon geometry from h3 index
     polygonise = lambda hex_id: geometry.Polygon(
                                     h3.h3_to_geo_boundary(
                                         hex_id, geo_json=True)
                                         )
-
+    # Load h3 index and polygons from list into geopandas.GeoSeries
     polys = gpd.GeoSeries(list(map(polygonise, hexs)), \
                                     index=hexs, \
                                     crs="EPSG:"+str(source_srs) \
@@ -124,6 +124,7 @@ def CountPixels(geodataframe, rast):
         geodataframe.loc[index, 'class_5'] = np.count_nonzero(out_image == 5)
         geodataframe.loc[index, 'class_0'] = np.count_nonzero(out_image == 0)
     
+    # Close raster
     rast.close()    
     return geodataframe
 

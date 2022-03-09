@@ -14,6 +14,10 @@ from shapely.geometry import mapping
 
 import numpy as np
 
+# Call Example
+# python3 tiff_to_h3.py '/home/frolui/code/test/esa_data/raster1.tif' '/home/frolui/code/test/esa_data/raster_info.csv' 8 'True'
+# use "True" to import wkt geometry of hexagons in csv, and ahother value to drop it
+
 def Pipeline(rasterfile, out_csv, h3_level, geom_flag):
 
     # Open raster and set variables
@@ -32,8 +36,10 @@ def Pipeline(rasterfile, out_csv, h3_level, geom_flag):
 
     if geom_flag == 'True':
         final.to_csv(out_csv)
+        print (str(rasterfile) + ' succesfully done')
     else:
         final.drop('geom',axis=1).to_csv(out_csv)
+        print (str(rasterfile) + ' succesfully done')
 
 # Create Polygon with Spatial Reference from SRID
 # Order of arguments is - xmin, ymax, xmax, ymin

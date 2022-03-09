@@ -23,7 +23,7 @@ def Pipeline(rasterfile, out_csv, h3_level, geom_flag):
 
     buffer = GetHulfHexBuffer(CreatePoly(rast, source_srs), h3_level, source_srs)
     shapely_polygon_fig = wkt.loads(buffer.ExportToWkt())
-    hexs = h3.polyfill(geometry.mapping(shapely_polygon_fig), 8, geo_json_conformant = True)
+    hexs = h3.polyfill(geometry.mapping(shapely_polygon_fig), h3_level, geo_json_conformant = True)
 
     # gdf = PrepareGeoDataFrame(hexs)
 
@@ -106,15 +106,9 @@ def PrepareGeoDataFrame(hexs, source_srs):
 # Iterate gpd and set values
 def CountPixels(geodataframe, rast):
     # Iterate throw geodataframe
-    counter = 0
 
     for index in geodataframe.index:
         # extract the raster values values within the polygon 
-        counter += 1
-
-        # with rasterio.open(rasterfile, driver='GTiff') as src:
-        #     out_image, out_transform = mask(src, [mapping(geodataframe.loc[index, 'geom'])], crop=True)
-
         out_image, out_transform = mask(rast, [mapping(geodataframe.loc[index, 'geom'])], crop=True)
             
         # Set value
@@ -123,8 +117,6 @@ def CountPixels(geodataframe, rast):
         geodataframe.loc[index, 'class_4'] = np.count_nonzero(out_image == 4)
         geodataframe.loc[index, 'class_5'] = np.count_nonzero(out_image == 5)
         geodataframe.loc[index, 'class_0'] = np.count_nonzero(out_image == 0)
-
-        print(index, '---', counter)
     
     rast.close()    
     return geodataframe

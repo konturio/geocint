@@ -554,7 +554,7 @@ data/mid/raster/esa_world_cover_csv/calculation: data/mid/raster/esa_world_cover
 	cd data/mid/raster/esa_world_cover ; ls *.tif | xargs -n1 -I % echo %" "% | sed 's/.\{4\}$//' | sed s/$/.csv/ | parallel --colsep " " "python3 scripts/tiff_to_h3.py {1} 'data/mid/raster/esa_world_cover_csv/'{2} 8 False"
 	touch $@
 
-db/table/esa_world_cover_h3_r8: db/table/esa_world_cover_csv/calculation | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
+db/table/esa_world_cover_h3_r8: data/mid/raster/esa_world_cover_csv/calculation | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
     psql -c "drop table if exists esa_world_cover_h3_r8_in;"
     psql -c "create table esa_world_cover_h3_r8_in (h3 h3index, class_1 smallint, class_2 smallint, class_4 smallint, class_5 smallint, class_0 smallint, area numeric);"
     ls data/mid/global_fires/*_proc.csv | parallel "cat {} | psql -c \"copy esa_world_cover_h3_r8_in from stdin with csv header;\" "

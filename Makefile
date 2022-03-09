@@ -555,15 +555,14 @@ data/mid/raster/esa_world_cover_csv/calculation: data/mid/raster/esa_world_cover
 	touch $@
 
 db/table/esa_world_cover_h3_r8: data/mid/raster/esa_world_cover_csv/calculation | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
-    psql -c "drop table if exists esa_world_cover_h3_r8_in;"
-    psql -c "create table esa_world_cover_h3_r8_in (h3 h3index, class_1 smallint, class_2 smallint, class_4 smallint, class_5 smallint, class_0 smallint, area numeric);"
-    ls data/mid/global_fires/*_proc.csv | parallel "cat {} | psql -c \"copy esa_world_cover_h3_r8_in from stdin with csv header;\" "
-    psql -c "delete from esa_world_cover_h3_r8_in where class_1 = 0 and class_2 = 0 and class_4 = 0 and class_5 = 0;"
-    psql -c "drop table if exists esa_world_cover_h3_r8;"
-    psql -c "select h3, sum(class_1) as class_1, sum(class_2) as class_2, sum(class_4) as class_4, sum(class_5) as class_5, avg(area) as area into esa_world_cover_h3_r8 from esa_world_cover_h3_r8_in group by h3;"
-    psql -c "drop table if exists esa_world_cover_h3_r8_in;"
-    touch $@
-
+	psql -c "drop table if exists esa_world_cover_h3_r8_in;"
+	psql -c "create table esa_world_cover_h3_r8_in (h3 h3index, class_1 smallint, class_2 smallint, class_4 smallint, class_5 smallint, class_0 smallint, area numeric);"
+	ls data/mid/global_fires/*_proc.csv | parallel "cat {} | psql -c \"copy esa_world_cover_h3_r8_in from stdin with csv header;\" "
+	psql -c "delete from esa_world_cover_h3_r8_in where class_1 = 0 and class_2 = 0 and class_4 = 0 and class_5 = 0;"
+	psql -c "drop table if exists esa_world_cover_h3_r8;"
+	psql -c "select h3, sum(class_1) as class_1, sum(class_2) as class_2, sum(class_4) as class_4, sum(class_5) as class_5, avg(area) as area into esa_world_cover_h3_r8 from esa_world_cover_h3_r8_in group by h3;"
+	psql -c "drop table if exists esa_world_cover_h3_r8_in;"
+	touch $@
 
 db/table/esa_world_cover: data/mid/raster/esa_world_cover/selection | db/table ## Prepare table for raster data. Import 4 class tiffs and load into database.
 	psql -c "drop table if exists esa_world_cover;"

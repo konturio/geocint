@@ -57,11 +57,7 @@ create table prescale_to_osm_boundaries as
                      then (tags ->> 'population')::float
                  else null
                 end)                           as population,
-            (case
-                 when (tags ->> 'admin_level') ~ E'^[[:digit:]]+([.][[:digit:]]+)?$'
-                     then (tags ->> 'admin_level')::float
-                 else null
-                end)                           as admin_level
+            admin_level
             from prep_mid
             where ST_Dimension(geom) = 2
                   and tags ? 'population'

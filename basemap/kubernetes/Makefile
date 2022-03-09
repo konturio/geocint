@@ -1,7 +1,7 @@
 # Basemap rendering job
 
 basemap-rendering-job-dev.yaml: basemap-rendering-job.yaml
-	sed  -e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/TEST\//g' \
+	sed  -e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/DEV\//g' \
 		basemap-rendering-job.yaml > $@
 
 deploy-rendering-job-dev: basemap-rendering-job-dev.yaml
@@ -15,7 +15,7 @@ deploy-rendering-job-test: basemap-rendering-job-test.yaml
 	kubectl apply -f basemap-rendering-job-dev.yaml -n test-basemap
 
 basemap-rendering-job-prod.yaml: basemap-rendering-job.yaml
-	sed  -e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/TEST\//g' \
+	sed  -e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/PROD\//g' \
 		basemap-rendering-job.yaml > $@
 
 deploy-rendering-job-prod: basemap-rendering-job-prod.yaml
@@ -25,7 +25,7 @@ deploy-rendering-job-prod: basemap-rendering-job-prod.yaml
 
 tileserver-gl-deployment-dev.yaml: tileserver-gl-deployment.yaml
 	sed -e 's/%PORT%/3000/g' \
-		-e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/TEST\//g' \
+		-e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/DEV\//g' \
 		tileserver-gl-deployment.yaml > $@
 
 deploy-tileserver-gl-dev: tileserver-gl-deployment-dev.yaml
@@ -41,7 +41,7 @@ deploy-tileserver-gl-test: tileserver-gl-deployment-test.yaml
 
 tileserver-gl-deployment-prod.yaml: tileserver-gl-deployment.yaml
 	sed -e 's/%PORT%/3002/g' \
-		-e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/TEST\//g' \
+		-e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/PROD\//g' \
 		tileserver-gl-deployment.yaml > $@
 
 deploy-tileserver-gl-prod: tileserver-gl-deployment-prod.yaml

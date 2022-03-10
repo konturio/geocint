@@ -108,3 +108,21 @@ drop table if exists osm_admin_subdivided_in;
 drop table if exists osm_admin_boundaries_in;
 drop table if exists kontur_boundaries_in;
 
+-- Clipping Crimea from Russia boundary and South Federal County boundary by Ukrain border
+with ukrain_border as (
+    select geom 
+    from kontur_boundaries
+    where osm_id = 60199
+)
+
+update kontur_boundaries k
+        set geom = ST_Multi(ST_Difference(k.geom, u.geom))
+        from ukrain_border u
+        where k.osm_id in ('60189', '1059500');
+
+-- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode' like '2%' bcs all ukrainian postcode like '9%'
+delete from kontur_boundaries where (tags ->> 'addr:country' = 'RU' 
+        and admin_level = '8' 
+        and ST_Intersects(geom, ST_GeomFromText('POLYGON((32.0 46.5, 36.5 46.5, 36.5 44.0, 32.0 44.0, 32.0 46.5 ))', 4326)))
+        or (tags ->> 'addr:postcode' like '2%');
+

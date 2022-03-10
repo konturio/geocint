@@ -114,7 +114,6 @@ with ukrain_border as (
     from kontur_boundaries
     where osm_id = 60199
 )
-
 update kontur_boundaries k
         set geom = ST_Multi(ST_Difference(k.geom, u.geom))
         from ukrain_border u

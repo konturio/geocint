@@ -119,10 +119,14 @@ update kontur_boundaries k
         from ukrain_border u
         where k.osm_id in ('60189', '1059500');
 
--- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode' first digit is 2 bcs all ukrainian postcode have 9 as first digit
+-- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode' 
+-- first digit is 2 bcs all ukrainian postcode have 9 as first digit
 delete from kontur_boundaries 
         where ((tags ->> 'addr:country' = 'RU' 
                 and admin_level::int > 3 )
                 or (tags ->> 'addr:postcode' like '2%')) 
-                and ST_Intersects(geom, ST_GeomFromText('POLYGON((32.00 46.50, 36.52 46.50, 36.52 44.00, 32.00 44.00, 32.00 46.50 ))', 4326));
+                and ST_Intersects(geom, ST_GeomFromText('POLYGON((32.00 46.50, 36.50 46.50, 
+                                                                  36.65 45.37, 36.51 45.27, 
+                                                                  36.50 44.00, 32.00 44.00, 
+                                                                  32.0 46.5 ))', 4326));
 

@@ -124,5 +124,5 @@ delete from kontur_boundaries
         where ((tags ->> 'addr:country' = 'RU' 
                 and admin_level::int > 3 )
                 or (tags ->> 'addr:postcode' like '2%')) 
-                and ST_Intersects(geom, ST_GeomFromText('POLYGON((32.0 46.5, 36.5 46.5, 36.5 44.0, 32.0 44.0, 32.0 46.5 ))', 4326));
+                and ST_Intersects(geom, ST_GeomFromText('POLYGON((32.00 46.50, 36.52 46.50, 36.52 44.00, 32.00 44.00, 32.00 46.50 ))', 4326));
 

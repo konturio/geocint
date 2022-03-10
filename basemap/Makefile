@@ -150,7 +150,8 @@ data/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL func
 	touch $@
 
 data/basemap.mbtiles: tile_generator/tile_generator data/basemap.sql db/index/planet_osm__all db/table/land_polygons_vector | data ## Generating vector tiles.
-	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 14 --sql-query-filepath 'scripts/basemap.sql' --db-config 'dbname=gis user=gis' --output-mbtiles $@
+	rm data/basemap.mbtiles
+	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 14 --sql-query-filepath 'data/basemap.sql' --db-config 'dbname=gis user=gis' --output-mbtiles $@
 
 data/basemap: | data ## Directory for MAPCSS styles, icon sprites and font glyphs used with vector tiles.
 	mkdir -p $@
@@ -397,7 +398,7 @@ data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja.json data/base
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/lima .
 
 deploy/s3/test/basemap.mbtiles: data/basemap.mbtiles | deploy/s3/test ## deploy basemap.mbtiles to S3
-	aws s3 cp data/basemap.mbtiles s3://basemap-locker01/TEST/basemap.mbtiles
+	aws s3 cp data/basemap.mbtiles $(S3_BASEMAP_PATH)
 	touch $@
 
 deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to TEST DVLP

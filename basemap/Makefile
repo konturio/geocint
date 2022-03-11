@@ -1,10 +1,7 @@
-basemap_all: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build.
-	touch $@
+clean:
+	rm -rf db data deploy
 
-basemap_dev: deploy/s3/test/basemap.mbtiles deploy/geocint/basemap_mapcss deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment.
-	touch $@
-
-basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
+basemap_all: kill_postgres ## [FINAL] All basemap related targets, temporarily removed from main build.
 	touch $@
 
 data: ## Temporary file based datasets. Located on bcache. Some files could be returned to SSD.
@@ -56,12 +53,6 @@ deploy/geocint: | deploy ## We use geocint as a GIS development server.
 	mkdir -p $@
 
 deploy/s3: | deploy ## Target-created directory for deployments on S3.
-	mkdir -p $@
-
-deploy/s3/test: | deploy/s3 ## Target-created directory for deployments on S3 test division.
-	mkdir -p $@
-
-deploy/s3/prod: | deploy/s3 ## Target-created directory for deployments on S3 prod division.
 	mkdir -p $@
 
 data/planet-latest.osm.pbf: | data ## Download latest planet OSM pbf extraction through Bit torrent and rename it to planet-latest.osm.pbf.
@@ -397,12 +388,12 @@ data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_ninja.json data/ba
 data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_day_en.json data/basemap/metadata/lima/style_night.json data/basemap/metadata/lima/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to PROD server.
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/lima .
 
-kill_postgres:
-	pkill postgres
-
-deploy/s3/test/basemap.mbtiles: kill_postgres data/basemap.mbtiles | deploy/s3/test ## deploy basemap.mbtiles to S3
+deploy/s3/basemap.mbtiles: data/basemap.mbtiles | deploy/s3 ## deploy basemap.mbtiles to S3
 	aws s3 cp data/basemap.mbtiles $(S3_BASEMAP_PATH)
 	touch $@
+
+kill_postgres: deploy/s3/basemap.mbtiles
+	pkill postgres
 
 deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to TEST DVLP
 	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@zigzag.kontur.io:data/basemap.mbtiles.buffer

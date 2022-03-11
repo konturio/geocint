@@ -13,4 +13,5 @@ ln -s /persisted-volume/db db
 mkdir -p /persisted-volume/deploy
 ln -s /persisted-volume/deploy deploy
 
-make deploy/s3/test/basemap.mbtiles
+make clean
+make basemap_all

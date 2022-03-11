@@ -30,6 +30,7 @@ spec:
     spec:
       template:
         spec:
+          shareProcessNamespace: true
           containers:
           - name: basemap-rendering
             image: nexus.kontur.io:8084/konturdev/build-basemap

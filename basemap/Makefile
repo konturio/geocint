@@ -1,5 +1,5 @@
 clean:
-	rm -rf db data deploy
+	rm -rf db/* data/* deploy/*
 
 basemap_all: kill_postgres ## [FINAL] All basemap related targets, temporarily removed from main build.
 	touch $@

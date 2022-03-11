@@ -1600,7 +1600,7 @@ db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table ## 
 	psql -f tables/osm_admin_boundaries.sql
 	touch $@
 
-db/table/hexagonify_boundaries: db/table/osm_admin_boundaries | db/table ## H3 hexagons from OSM boundaries polygons for country level.
+db/table/hexagonify_boundaries: db/table/osm_admin_boundaries db/table/facebook_roads | db/table ## H3 hexagons from OSM boundaries polygons for country level.
 	psql -f tables/hexagonify_boundaries.sql
 	touch $@
 
@@ -1877,8 +1877,8 @@ deploy/dev/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/biv
 	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
 	ansible zigzag_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
-	ansible zigzag_insights_api -m postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
 	ansible zigzag_insights_api -m postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/stat_h3.sqld.gz'
+	ansible zigzag_insights_api -m postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
 	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
 	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
@@ -1887,8 +1887,8 @@ deploy/test/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bi
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
 	ansible sonic_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
-	ansible sonic_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
 	ansible sonic_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/stat_h3.sqld.gz'
+	ansible sonic_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
 	ansible sonic_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
@@ -1913,8 +1913,8 @@ deploy/prod/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible lima_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
 	ansible lima_population_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
-	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
 	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/stat_h3.sqld.gz'
+	ansible lima_population_api -m postgresql_db -a 'name=population-api maintenance_db=population-api login_user=population-api login_host=localhost state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
 	ansible lima_population_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@

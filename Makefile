@@ -551,13 +551,13 @@ data/mid/raster/esa_world_cover/selection: data/in/raster/esa_world_cover/downlo
 	touch $@
 
 data/mid/raster/esa_world_cover_csv/calculation: data/mid/raster/esa_world_cover/selection | data/mid/raster/esa_world_cover_csv ## Precalculate the number of pixels for each hexagon by classes
-	cd data/mid/raster/esa_world_cover ; ls *.tif | xargs -n1 -I % echo %" "% | sed 's/.\{4\}$//' | sed s/$/.csv/ | parallel --colsep " " "python3 scripts/tiff_to_h3.py {1} 'data/mid/raster/esa_world_cover_csv/'{2} 8 False"
+	cd data/mid/raster/esa_world_cover ; ls *.tif | xargs -n1 -I % echo %" "% | rev | cut -c5- | rev | sed 's/.*/&.csv/' | parallel --colsep " " "python3 scripts/tiff_to_h3.py {1} 'data/mid/raster/esa_world_cover_csv/'{2} 8 False"
 	touch $@
 
 db/table/esa_world_cover_h3_r8: data/mid/raster/esa_world_cover_csv/calculation | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
 	psql -c "drop table if exists esa_world_cover_h3_r8_in;"
 	psql -c "create table esa_world_cover_h3_r8_in (h3 h3index, class_1 smallint, class_2 smallint, class_4 smallint, class_5 smallint, class_0 smallint, area numeric);"
-	ls data/mid/global_fires/*_proc.csv | parallel "cat {} | psql -c \"copy esa_world_cover_h3_r8_in from stdin with csv header;\" "
+	ls data/mid/raster/esa_world_cover_csv/*_proc.csv | parallel "cat {} | psql -c \"copy esa_world_cover_h3_r8_in from stdin with csv header;\" "
 	psql -c "delete from esa_world_cover_h3_r8_in where class_1 = 0 and class_2 = 0 and class_4 = 0 and class_5 = 0;"
 	psql -c "drop table if exists esa_world_cover_h3_r8;"
 	psql -c "select h3, sum(class_1) as class_1, sum(class_2) as class_2, sum(class_4) as class_4, sum(class_5) as class_5, avg(area) as area into esa_world_cover_h3_r8 from esa_world_cover_h3_r8_in group by h3;"

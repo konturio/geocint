@@ -488,6 +488,15 @@ tables.polygon = osm2pgsql.define_table{
     cluster = 'no',
 }
 
+tables.boundaries_lang_override = osm2pgsql.define_relation_table('boundaries_lang_override', {
+    { column = 'lang', type = 'text' },
+    { column = 'geom', type = 'geometry' },
+})
+
+boundary_id_lang = {}
+boundary_id_lang[148838] = "name" -- United States
+boundary_id_lang[80500] = "name" -- Australia
+
 phase2_admin_ways = {}
 
 function make_check_in_list_func(list)
@@ -724,6 +733,14 @@ function osm2pgsql.process_relation(object)
         return
     end
     object.tags.type = nil
+
+    if boundary_id_lang[object.id] ~= nil then
+        tables.boundaries_lang_override:add_row({
+            geom = { create = 'area' },
+            name = object.tags.name,
+            lang = boundary_id_lang[object.id]
+        })
+    end
 
     local output
     local output_hstore = {}

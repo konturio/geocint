@@ -7,6 +7,17 @@ select
 from osm_admin_boundaries;
 create index on osm_admin_subdivided_in using gist(geom);
 
+-- Clipping Crimea from Russia boundary and South Federal County boundary by Ukrain border
+-- To exclude Crimea population from Russia population calculation
+with ukrain_border as (
+    select ST_Transform(geom, 3857) geom
+    from osm_admin_boundaries
+    where osm_id = 60199
+)
+update osm_admin_subdivided_in k
+        set geom = ST_Multi(ST_Difference(k.geom, u.geom))
+        from ukrain_border u
+        where k.osm_id in ('60189', '1059500');
 
 -- Sum population from h3 to osm admin boundaries (rounding to integers)
 drop table if exists osm_admin_boundaries_in;

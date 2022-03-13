@@ -16,7 +16,7 @@ metadata:
 spec:
   resources:
     requests:
-      storage: 500Gi
+      storage: 600Gi
   accessModes:
     - ReadWriteOnce
 ---
@@ -25,7 +25,7 @@ kind: CronJob
 metadata:
   name: basemap
 spec:
-  schedule: "0 0 * * *" # Run once a day at midnight
+  schedule: "0 0 */2 * *" # Run once a day at midnight
   jobTemplate:
     spec:
       template:

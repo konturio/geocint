@@ -134,7 +134,7 @@ update kontur_boundaries k
 -- first digit is 2 bcs all ukrainian postcode have 9 as first digit
 delete from kontur_boundaries 
         where ((tags ->> 'addr:country' = 'RU' 
-                and admin_level::int > 3 )
+                and admin_level::numeric > 3 )
                 or (tags ->> 'addr:postcode' like '2%')) 
                 and ST_Intersects(geom, ST_GeomFromText('POLYGON((32.00 46.50, 36.50 46.50, 
                                                                   36.65 45.37, 36.51 45.27, 

@@ -25,12 +25,12 @@ kind: CronJob
 metadata:
   name: basemap
 spec:
-  schedule: "0 0 */2 * *" # Run once a day at midnight
+  schedule: "0 0 */2 * *" # Run once in two days at midnight
   jobTemplate:
     spec:
       template:
         spec:
-          shareProcessNamespace: true
+          shareProcessNamespace: true # required to shut down postgres when pipeline is done
           containers:
           - name: basemap-rendering
             image: nexus.kontur.io:8084/konturdev/build-basemap

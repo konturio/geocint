@@ -54,7 +54,7 @@ from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 4,
-       'Kontur OpenStreetMap Roads Length Beta',
+       'Kontur OpenStreetMap Road Length Beta',
        'highway_length',
        'area_km2',
        'total_road_length',

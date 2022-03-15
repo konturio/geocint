@@ -1,10 +1,7 @@
-basemap_all: basemap_dev basemap_prod ## [FINAL] All basemap related targets, temporarily removed from main build.
-	touch $@
+clean:
+	rm -rf db/* data/* deploy/*
 
-basemap_dev: deploy/s3/test/basemap.mbtiles deploy/geocint/basemap_mapcss deploy/zigzag/basemap deploy/sonic/basemap ## Deploy basemap on development environment.
-	touch $@
-
-basemap_prod: deploy/lima/basemap ## Deploy basemap on production environment.
+basemap_all: deploy/s3/basemap.mbtiles ## [FINAL] All basemap related targets, temporarily removed from main build.
 	touch $@
 
 data: ## Temporary file based datasets. Located on bcache. Some files could be returned to SSD.
@@ -58,12 +55,6 @@ deploy/geocint: | deploy ## We use geocint as a GIS development server.
 deploy/s3: | deploy ## Target-created directory for deployments on S3.
 	mkdir -p $@
 
-deploy/s3/test: | deploy/s3 ## Target-created directory for deployments on S3 test division.
-	mkdir -p $@
-
-deploy/s3/prod: | deploy/s3 ## Target-created directory for deployments on S3 prod division.
-	mkdir -p $@
-
 data/planet-latest.osm.pbf: | data ## Download latest planet OSM pbf extraction through Bit torrent and rename it to planet-latest.osm.pbf.
 	rm -f data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
 	cd data; aria2c https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent --seed-time=0
@@ -82,50 +73,41 @@ data/mid/daylight_coastlines/land_polygons.shp: data/in/daylight_coastlines.tgz 
 	touch $@
 
 db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | db/table ## Import land vector polygons from Daylight Coastlines in database
-	bash scripts/wait_until_postgres_is_ready.sh
 	psql -c "drop table if exists land_polygons_vector;"
 	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" -a_srs EPSG:4326 data/mid/daylight_coastlines/land_polygons.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -nln land_polygons_vector
 	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"
 	touch $@
 
 db/table/osm2pgsql: data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
-	bash scripts/wait_until_postgres_is_ready.sh
 	psql -c "create extension if not exists hstore;"
 	osm2pgsql --style osm2pgsql_styles/basemap.lua --flat-nodes data/osm2pgsql_flat_nodes --slim --number-processes 32 --output=flex --create data/planet-latest.osm.pbf
 	touch $@
 
 db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
-	bash scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_polygon_way_area_idx on planet_osm_polygon using btree(way_area);"
 	touch $@
 
 db/index/planet_osm_polygon_natural_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
-	bash scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_polygon_natural_idx on planet_osm_polygon using btree(\"natural\");"
 	touch $@
 
 db/index/planet_osm_polygon_admin_level_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
-	bash scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_polygon_admin_level_idx on planet_osm_polygon using btree(\"admin_level\");"
 	touch $@
 
 db/index/planet_osm_line_admin_level_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
-	bash scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_line_admin_level_idx on planet_osm_line using btree(\"admin_level\");"
 	touch $@
 
 db/index/planet_osm_line_highway_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
-	bash scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_line_highway_idx on planet_osm_line using btree(\"highway\");"
 	touch $@
 
 db/index/planet_osm_point_place_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
-	bash scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_point_place_idx on planet_osm_point using btree(\"place\");"
 	touch $@
 
 db/index/planet_osm_point_capital_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
-	bash scripts/wait_until_postgres_is_ready.sh
 	psql -c "create index planet_osm_point_capital_idx on planet_osm_point using btree(\"capital\");"
 	touch $@
 
@@ -136,7 +118,6 @@ kothic/src/komap.py: ## Clone Kothic from GIT
 	git clone -b master --single-branch https://github.com/kothic/kothic.git
 
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
-	bash scripts/wait_until_postgres_is_ready.sh
 	cd tile_generator; go get; go build -o tile_generator
 
 data/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
@@ -397,38 +378,8 @@ data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_ninja.json data/ba
 data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_day_en.json data/basemap/metadata/lima/style_night.json data/basemap/metadata/lima/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to PROD server.
 	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/lima .
 
-deploy/s3/test/basemap.mbtiles: data/basemap.mbtiles | deploy/s3/test ## deploy basemap.mbtiles to S3
+deploy/s3/basemap.mbtiles: data/basemap.mbtiles | deploy/s3 ## deploy basemap.mbtiles to S3
 	aws s3 cp data/basemap.mbtiles $(S3_BASEMAP_PATH)
-	touch $@
-
-deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to TEST DVLP
-	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@zigzag.kontur.io:data/basemap.mbtiles.buffer
-	ansible zigzag_tileserver_gl -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
-		systemctl --user restart podman.tileserver-gl.service; \
-	'
-	touch $@
-
-deploy/sonic/basemap.mbtiles: data/basemap.mbtiles | deploy/sonic ## deploy basemap.mbtiles to TEST QA
-	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@sonic.kontur.io:data/basemap.mbtiles.buffer
-	ansible sonic_tileserver_gl -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
-		systemctl --user restart podman.tileserver-gl.service; \
-	'
-	touch $@
-
-deploy/lima/basemap.mbtiles: data/basemap.mbtiles | deploy/lima ## deploy basemap.mbtiles to PROD
-	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@lima.kontur.io:data/basemap.mbtiles.buffer
-	ansible lima_tileserver_gl -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
-		systemctl --user restart podman.tileserver-gl.service; \
-	'
 	touch $@
 
 deploy/zigzag/basemap: deploy/zigzag/basemap.mbtiles data/basemap/zigzag.tar.bz2 | deploy/zigzag ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST DVLP server.

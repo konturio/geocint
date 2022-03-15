@@ -13,4 +13,12 @@ ln -s /persisted-volume/db db
 mkdir -p /persisted-volume/deploy
 ln -s /persisted-volume/deploy deploy
 
-make deploy/s3/test/basemap.mbtiles
+# wait until postgres which is running in another container will be ready
+bash scripts/wait_until_postgres_is_ready.sh
+make clean
+make basemap_all
+# since kubernetes consider job done after all containers
+# are exit. postgres which is running in another container
+# also need to be killed. it is possible to just kill it by name
+# because `shareProcessNamespace` is enabled.
+pkill postgres

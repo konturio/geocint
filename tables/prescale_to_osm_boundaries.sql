@@ -27,6 +27,7 @@ create index on prescale_to_osm using gist(geom);
 drop table if exists prescale_to_osm_boundaries;
 
 -- Get boundaries with admin_level for objects from prescale_to_osm
+create table prescale_to_osm_boundaries as
 with prep as (select p.geom,
                      p.osm_id, 
                      p.admin_level,
@@ -47,26 +48,24 @@ with prep_mid as (select o.geom,
                   select * 
                       from prep
 )
-
-create table prescale_to_osm_boundaries as
-    select  geom,
-            osm_type,
-            osm_id, 
-            (case
-                 when (tags ->> 'population') ~ E'^[[:digit:]]+([.][[:digit:]]+)?$'
-                     then (tags ->> 'population')::float
-                 else null
-            end)                               as population,
-            (case
-                 when (tags ->> 'admin_level') ~ E'^[[:digit:]]+([.][[:digit:]]+)?$'
-                     then (tags ->> 'admin_level')::float
-                 else null
-            end)                               as admin_level
-            from prep_mid
-            where ST_Dimension(geom) = 2
-                  and tags ? 'population'
-                  and tags ->> 'admin_level' is not null
-            order by 1;
+select  geom,
+        osm_type,
+        osm_id, 
+        (case
+             when (tags ->> 'population') ~ E'^[[:digit:]]+([.][[:digit:]]+)?$'
+                 then (tags ->> 'population')::float
+             else null
+        end)                               as population,
+        (case
+             when (tags ->> 'admin_level') ~ E'^[[:digit:]]+([.][[:digit:]]+)?$'
+                 then (tags ->> 'admin_level')::float
+             else null
+        end)                               as admin_level
+from prep_mid
+where ST_Dimension(geom) = 2
+    and tags ? 'population'
+    and tags ->> 'admin_level' is not null
+order by 1;
 
 create index on prescale_to_osm_boundaries using gist (geom);
 create index on prescale_to_osm_boundaries using gist (ST_PointOnSurface(geom));

@@ -6,30 +6,20 @@ create table population_grid_h3_r8_in as (
            8                         as resolution,
            null::float               as population,
            coalesce(sum(ghs_pop), 0) as ghs_pop,
-           sum(hrsl_pop)             as hrsl_pop,
+           sum(hrsl_pop)             as hrsl_pop
            --sum(worldpop)             as worldpop,
-           sum(prescale_pop)         as prescale_pop
     from (
              select h3,
                     population  as ghs_pop,
-                    null::float as hrsl_pop,
+                    null::float as hrsl_pop
                     --null::float as worldpop
-                    null::float as prescale_pop
              from ghs_globe_population_grid_h3_r8
              union all
              select h3,
                     null::float as ghs_pop,
-                    population  as hrsl_pop,
+                    population  as hrsl_pop
                     --null::float as worldpop
-                    null::float as prescale_pop
              from hrsl_population_grid_h3_r8
-             union all
-             select h3,
-                    null::float as ghs_pop,
-                    null::float  as hrsl_pop,
-                    --null::float as worldpop
-                    population as prescale_pop
-             from prescale_to_osm_h3_r8
 --              union all
 --              select h3,
 --                     null::float as ghs_pop,
@@ -49,16 +39,14 @@ create table population_grid_h3_r8 as (
            resolution,
            population,
            ghs_pop,
-           case when b.geom is not null then coalesce(p.hrsl_pop, 0) end as hrsl_pop,
+           case when b.geom is not null then coalesce(p.hrsl_pop, 0) end as hrsl_pop
            --worldpop
-           prescale_pop
     from population_grid_h3_r8_in p
              left outer join
          hrsl_population_boundary b
          on ST_Intersects(b.geom, p.geom)
 );
 
-drop table if exists prescale_to_osm_h3_r8;
 drop table population_grid_h3_r8_in;
 
 -- update population_grid_h3_r8 p
@@ -70,7 +58,15 @@ drop table population_grid_h3_r8_in;
 update population_grid_h3_r8 p
 -- set population counts starting with more high resolution raster data (30m, 100m and whole planet)
 -- IMPORTANT: worldpop removed from coalesce
-set population = coalesce(prescale_pop, coalesce(hrsl_pop, ghs_pop));
+set population = coalesce(hrsl_pop, ghs_pop);
+
+-- Prescale population to osm using coefficient
+update population_grid_h3_r8 p
+set population = p.population * b.coefficient
+from prescale_to_osm_h3_r8 b
+where p.h3 = b.h3;
+
+drop table if exists prescale_to_osm_h3_r8;
 
 vacuum full analyze population_grid_h3_r8;
 create index on population_grid_h3_r8 using gist (geom, population);

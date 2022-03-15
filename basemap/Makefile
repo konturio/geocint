@@ -83,31 +83,36 @@ db/table/osm2pgsql: data/planet-latest.osm.pbf | db/table ## Yet another OpenStr
 	osm2pgsql --style osm2pgsql_styles/basemap.lua --flat-nodes data/osm2pgsql_flat_nodes --slim --number-processes 32 --output=flex --create data/planet-latest.osm.pbf
 	touch $@
 
-db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+db/table/osm2pgsql_fill_lang:data/planet-latest.osm.pbf | db/table ## fill missing name:[lang]
+	psql -c "update planet_osm_point set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
+	psql -c "update planet_osm_line set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
+	psql -c "update planet_osm_polygon set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
+
+db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_polygon_way_area_idx on planet_osm_polygon using btree(way_area);"
 	touch $@
 
-db/index/planet_osm_polygon_natural_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+db/index/planet_osm_polygon_natural_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_polygon_natural_idx on planet_osm_polygon using btree(\"natural\");"
 	touch $@
 
-db/index/planet_osm_polygon_admin_level_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+db/index/planet_osm_polygon_admin_level_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_polygon_admin_level_idx on planet_osm_polygon using btree(\"admin_level\");"
 	touch $@
 
-db/index/planet_osm_line_admin_level_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+db/index/planet_osm_line_admin_level_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_line_admin_level_idx on planet_osm_line using btree(\"admin_level\");"
 	touch $@
 
-db/index/planet_osm_line_highway_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+db/index/planet_osm_line_highway_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_line_highway_idx on planet_osm_line using btree(\"highway\");"
 	touch $@
 
-db/index/planet_osm_point_place_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+db/index/planet_osm_point_place_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_point_place_idx on planet_osm_point using btree(\"place\");"
 	touch $@
 
-db/index/planet_osm_point_capital_idx: db/table/osm2pgsql | db/index ## index for basemap low zoom queries
+db/index/planet_osm_point_capital_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_point_capital_idx on planet_osm_point using btree(\"capital\");"
 	touch $@
 

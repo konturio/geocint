@@ -488,7 +488,7 @@ tables.polygon = osm2pgsql.define_table{
     cluster = 'no',
 }
 
-tables.boundaries_lang_override = osm2pgsql.define_relation_table('boundaries_lang_override', {
+tables.countries = osm2pgsql.define_relation_table('countries', {
     { column = 'lang', type = 'text' },
     { column = 'geom', type = 'geometry' },
 })
@@ -735,7 +735,7 @@ function osm2pgsql.process_relation(object)
     object.tags.type = nil
 
     if boundary_id_lang[object.id] ~= nil then
-        tables.boundaries_lang_override:add_row({
+        tables.countries:add_row({
             geom = { create = 'area' },
             name = object.tags.name,
             lang = boundary_id_lang[object.id]

@@ -108,10 +108,14 @@ order by b.osm_id, g.hasc is not null desc, g.iou desc;
 -- Join Wikidata HASC codes based on wikidata OSM tag
 drop table if exists kontur_boundaries;
 create table kontur_boundaries as
-select k.*, w.hasc hasc_wiki
+select k.*, 
+       w.hasc       as hasc_wiki,
+       p.population as wiki_population
 from kontur_boundaries_in k
 left join wikidata_hasc_codes w
-        on replace(w.wikidata_item, 'http://www.wikidata.org/entity/', '') = k.tags ->> 'wikidata';
+        on replace(w.wikidata_item, 'http://www.wikidata.org/entity/', '') = k.tags ->> 'wikidata'
+left join wikidata_population p
+        on replace(p.wikidata_item, 'http://www.wikidata.org/entity/', '') = k.tags ->> 'wikidata';
 
 
 -- Drop temporary tables

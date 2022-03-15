@@ -11,7 +11,7 @@ prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/population_api
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_population_csv/download
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -666,7 +666,7 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 	psql -c "alter table gadm_countries_boundary alter column geom type geometry(multipolygon, 3857) using ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
 
-db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
+db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes db/table/wikidata_population | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
@@ -711,7 +711,7 @@ data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inc
 	psql -qXc "copy (select \"OSM id\", \"Name\", \"Admin level\", \"Population\", \"Population date\", \"Population source\", \"SUM subregions population\", \"Population difference value\", \"Population difference %\" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/population_check_osm.csv: db/table/population_check_osm | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
-	psql -qXc "copy (select \"OSM id\", \"Name\", \"OSM population date\", \"OSM population\", \"Kontur population\", \"Population difference\", diff_log as \"Logarithmic population difference\" from population_check_osm where diff_log > 1 order by diff_log desc) to stdout with (format csv, header true, delimiter ';');" > $@
+	psql -qXc "copy (select * from population_check_osm order by \"OSM-Kontur Population difference\" desc limit 50000) to stdout with (format csv, header true, delimiter ';');" > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | data/out/reports ## Export report to CSV
@@ -822,6 +822,19 @@ db/table/wikidata_hasc_codes: data/in/wikidata_hasc_codes.csv| db/table ## Impor
 	psql -c 'drop table if exists wikidata_hasc_codes;'
 	psql -c 'create table wikidata_hasc_codes(wikidata_item text, name text, hasc text);'
 	cat data/in/wikidata_hasc_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy wikidata_hasc_codes from stdin with csv header;"
+	touch $@
+
+data/in/wikidata_population_csv: | data/in ## Wikidata population csv (input).
+	mkdir -p $@
+
+data/in/wikidata_population_csv/download: | data/in/wikidata_population_csv ## Download Wikidata population.
+	cat static_data/wikidata_population/wikidata_population_ranges.txt | parallel --colsep " " 'wget "https://query.wikidata.org/sparql?query=SELECT%20%3Fcountry%20%3FcountryLabel%20%3Fpopulation%20%0AWHERE%20%7B%20%3Fcountry%20wdt%3AP1082%20%3Fpopulation.%20%0A%20%20%20%20%20%20%20FILTER({1}%20%3C%3D%20%3Fpopulation%20%26%26%20%3Fpopulation%20%3C%20{2}).%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22.%20%7D%20%7D" --retry-on-http-error=500 --header "Accept: text/csv" -O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv'
+	touch $@
+
+db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Import wikidata population into database.
+	psql -c 'drop table if exists wikidata_population;'
+	psql -c 'create table wikidata_population(wikidata_item text, name text, population numeric);'
+	ls data/in/wikidata_population_csv/*.csv | parallel 'cat {} | psql -c "copy wikidata_population from stdin with csv header;"'
 	touch $@
 
 data/in/un_population.csv: | data/in ## Download United Nations population division dataset.

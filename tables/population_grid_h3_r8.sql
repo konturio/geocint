@@ -30,7 +30,7 @@ create table population_grid_h3_r8_in as (
     group by 1
 );
 
-create index on population_grid_h3_r8_in using gist (geom, hrsl_pop, worldpop);
+create index on population_grid_h3_r8_in using gist (geom, hrsl_pop); --, worldpop);
 
 drop table if exists population_grid_h3_r8;
 create table population_grid_h3_r8 as (
@@ -60,13 +60,14 @@ update population_grid_h3_r8 p
 -- IMPORTANT: worldpop removed from coalesce
 set population = coalesce(hrsl_pop, ghs_pop);
 
--- Prescale population to osm using coefficient
-update population_grid_h3_r8 p
-set population = p.population * b.coefficient
-from prescale_to_osm_h3_r8 b
-where p.h3 = b.h3;
-
 drop table if exists prescale_to_osm_h3_r8;
 
 vacuum full analyze population_grid_h3_r8;
 create index on population_grid_h3_r8 using gist (geom, population);
+
+-- Prescale population to osm using coefficient
+update population_grid_h3_r8 p
+set population = p.population * b.coefficient
+from prescale_to_osm_h3_r8 b
+where b.geom && p.geom 
+      and ST_Intersects(b.geom, ST_PointOnSurface(p.geom));

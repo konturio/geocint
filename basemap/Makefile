@@ -382,36 +382,6 @@ deploy/s3/basemap.mbtiles: data/basemap.mbtiles | deploy/s3 ## deploy basemap.mb
 	aws s3 cp data/basemap.mbtiles $(S3_BASEMAP_PATH)
 	touch $@
 
-deploy/zigzag/basemap.mbtiles: data/basemap.mbtiles | deploy/zigzag ## deploy basemap.mbtiles to TEST DVLP
-	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@zigzag.kontur.io:data/basemap.mbtiles.buffer
-	ansible zigzag_tileserver_gl -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
-		systemctl --user restart podman.tileserver-gl.service; \
-	'
-	touch $@
-
-deploy/sonic/basemap.mbtiles: data/basemap.mbtiles | deploy/sonic ## deploy basemap.mbtiles to TEST QA
-	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@sonic.kontur.io:data/basemap.mbtiles.buffer
-	ansible sonic_tileserver_gl -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
-		systemctl --user restart podman.tileserver-gl.service; \
-	'
-	touch $@
-
-deploy/lima/basemap.mbtiles: data/basemap.mbtiles | deploy/lima ## deploy basemap.mbtiles to PROD
-	rsync -y --inplace -ptPz -e 'ssh -p 27257' data/basemap.mbtiles tileserver-gl@lima.kontur.io:data/basemap.mbtiles.buffer
-	ansible lima_tileserver_gl -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		renameat2 -e "$$HOME/data/basemap.mbtiles.buffer" "$$HOME/data/basemap.mbtiles"; \
-		systemctl --user restart podman.tileserver-gl.service; \
-	'
-	touch $@
-
 deploy/zigzag/basemap: deploy/zigzag/basemap.mbtiles data/basemap/zigzag.tar.bz2 | deploy/zigzag ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST DVLP server.
 	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_live_dashboard -m copy -a 'src=data/basemap/zigzag.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'

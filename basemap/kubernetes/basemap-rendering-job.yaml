@@ -26,6 +26,7 @@ metadata:
   name: basemap
 spec:
   schedule: "0 0 */2 * *" # Run once in two days at midnight
+  concurrencyPolicy: "Forbid"
   jobTemplate:
     spec:
       template:

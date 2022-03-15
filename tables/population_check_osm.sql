@@ -12,10 +12,10 @@ create table population_check_osm as (
            tags ->> 'population:date'                                                                    as "OSM population date",
            round(osm_pop)                                                                                as "OSM population",
            round(b.population)                                                                           as "Kontur population",
-           round(osm_pop - b.population)                                                                 as "Population difference",
-
-           -- (b.population + 1) to prevent "2201E: cannot take logarithm of zero" when b.population = 0:
-           round(abs(log(osm_pop) - log(b.population + 1))::numeric, 2)                                  as diff_log
+           b.wiki_population                                                                             as "Wikidata population",
+           round(osm_pop - b.population)                                                                 as "OSM-Kontur Population difference",
+           -- if wiki_population is null return null
+           round(b.wiki_population - b.population)                                                       as "Wikidata-Kontur Population difference"
     from kontur_boundaries b,
          parse_float(tags ->> 'population') osm_pop,
          ST_Area(geom::geography) "area"
@@ -23,7 +23,7 @@ create table population_check_osm as (
       and population is not null
       -- exclude boundaries with a small area (for example, the Vatican City)
       and area > 737327.6 -- average hexagon area at 8 resolution
-    order by "diff_log" desc
+    order by "OSM-Kontur Population difference" desc
 );
 
 -- Update timestamp in reports table (for further export to reports API JSON):

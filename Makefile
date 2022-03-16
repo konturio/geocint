@@ -86,6 +86,12 @@ data/mid/gadm: | data/mid ## Unzipped GADM (Database of Global Administrative Ar
 data/in/wb/gdp: | data/in ## Directory for storing downloaded GDP (Gross domestic product) World Bank datasets.
 	mkdir -p $@
 
+data/in/foursquare: | data/in ## Directory for storing foursquare places and visits data
+	mkdir -p $@
+
+data/mid/foursquare: | data/mid ## Directory for storing unzipped foursquare data
+	mkdir -p $@
+
 data/mid/wb/gdp: | data/mid ## Intermediate GDP (Gross domestic product) World Bank data.
 	mkdir -p $@
 
@@ -1678,7 +1684,42 @@ db/table/isodist_hospitals_h3: db/table/update_isochrone_destinations db/table/k
 	psql -c "call generate_overviews('isodist_hospitals_h3', '{man_distance}'::text[], '{max}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/hexagonify_boundaries | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+data/in/foursquare/downloaded: | data/in/foursquare ## download and rename 4sq archives
+	cd data/in/foursquare; aws s3 sync s3://geodata-eu-central-1-kontur/private/geocint/in/foursquare/ ./ --profile geocint_pipeline_sender
+	touch $@
+
+data/mid/foursquare/kontour_places.csv: data/in/foursquare/downloaded | data/mid/foursquare ## extract archive and filter csv
+	rm -f $@
+	zcat data/in/foursquare/kontour_places.csv.gz | sed ':a;s/^\(\([^"]*,\?\|"[^",]*",\?\)*"[^",]*\),/\1 /;ta' | cut -d, -f1,4,5 > $@
+
+data/mid/foursquare/kontour_visits.csv: data/in/foursquare/downloaded | data/mid/foursquare ## extract archives and filter csv
+	rm -f $@
+	touch $@
+	ls data/in/foursquare/part*.gz | parallel "zcat {} | cut -d, -f2,6,7 >> data/mid/foursquare/kontour_visits.csv"
+
+db/table/foursquare_places: data/mid/foursquare/kontour_places.csv | db/table ## Import 4sq places into database.
+	psql -c 'drop table if exists foursquare_places;'
+	psql -c 'create table foursquare_places(fsq_id text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);'
+	cat data/mid/foursquare/kontour_places.csv | psql -c "copy foursquare_places (fsq_id, latitude, longitude) from stdin with csv header delimiter ','"
+	touch $@
+
+db/table/foursquare_visits: data/mid/foursquare/kontour_visits.csv | db/table ## Import 4sq visits into database.
+	psql -c 'drop table if exists foursquare_visits;'
+	psql -c 'create table foursquare_visits (protectedts text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);'
+	cat data/mid/foursquare/kontour_visits.csv | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header delimiter',' "
+	touch $@
+
+db/table/foursquare_places_h3: db/table/foursquare_places | db/table ## Aggregate 4sq places count  on H3 hexagon grid.
+	psql -f tables/foursquare_places_h3.sql
+	psql -c "call generate_overviews('foursquare_places_h3', '{foursquare_places_count}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visits count on H3 hexagon grid.
+	psql -f tables/foursquare_visits_h3.sql
+	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/hexagonify_boundaries db/table/foursquare_places_h3 db/table/foursquare_visits_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 

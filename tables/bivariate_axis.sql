@@ -303,6 +303,21 @@ where
       numerator = 'total_road_length'
   and denominator = 'area_km2';
 
+update bivariate_axis
+set
+    label = 'Foursquare Japan places count'
+where
+      numerator = 'foursquare_places_count'
+  and denominator = 'one';
+
+update bivariate_axis
+set
+    label = 'Foursquare Japan visits count'
+where
+      numerator = 'foursquare_visits_count'
+  and denominator = 'one';
+
+
 
 -- columns for advanced analytics
 alter table bivariate_axis

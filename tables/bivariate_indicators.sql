@@ -267,6 +267,18 @@ values ('total_road_length', 'Total Roads length', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["unimportant"], ["important"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('foursquare_places_count', 'Foursquare Japan places count', jsonb_build_array(
+        '©Foursquare Labs Inc',
+        'Sample data'),
+        '[["unimportant"], ["important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('foursquare_visits_count', 'Foursquare Japan visits count', jsonb_build_array(
+        '©Foursquare Labs Inc',
+        'Sample data'),
+        '[["unimportant"], ["important"]]'::jsonb);
+
 update bivariate_indicators
 set is_base = true
 where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2','one');

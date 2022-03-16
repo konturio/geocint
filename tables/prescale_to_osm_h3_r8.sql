@@ -33,17 +33,3 @@ left join sum_population p using(osm_id);
 create index on prescale_to_osm_h3_r8 using gist(geom);
 
 drop table if exists prescale_to_osm_boundaries;
-
--- -- Get all hexs on 8 resolution, that cover prescale_to_osm_boundaries with coefficient
--- drop table if exists prescale_to_osm_h3_r8;
--- create table prescale_to_osm_h3_r8 as (
---     select distinct on (h3)
---             8                      as resolution,
---             osm_id                 as osm_id,
---             h3_polyfill(geom, 8)   as h3,            
---             coefficient            as coefficient 
---     from prescale_to_osm_h3_r8_in
---     group by osm_id, coefficient, geom
--- );
-
--- drop table if exists prescale_to_osm_h3_r8_in;

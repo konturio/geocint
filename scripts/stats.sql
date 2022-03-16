@@ -51,6 +51,8 @@ from
             man_distance_to_fire_brigade,
             man_distance_to_hospital,
             total_road_length,
+            foursquare_visits_count,
+            foursquare_places_count,
             ST_AsMVTGeom(geom, ST_TileEnvelope($1, $2, $3), 8192, 64, true) as geom
         from stat_h3
         where zoom = $1

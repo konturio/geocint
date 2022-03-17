@@ -279,6 +279,9 @@ values ('foursquare_visits_count', 'Foursquare Japan visits count', jsonb_build_
         'Sample data'),
         '[["unimportant"], ["important"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('view_avg', 'OSM Map Views before and after 24.02.2022', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
+
 update bivariate_indicators
 set is_base = true
 where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2','one');

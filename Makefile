@@ -1719,7 +1719,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/hexagonify_boundaries db/table/foursquare_places_h3 db/table/foursquare_visits_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/hexagonify_boundaries db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_views_diff_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -1761,6 +1761,25 @@ db/table/tile_logs: data/tile_logs/_download | db/table ## OpenStreetMap tiles u
 	psql -f tables/tile_stats.sql
 	psql -f tables/tile_logs_h3.sql
 	psql -c "call generate_overviews('tile_logs_h3', '{view_count}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+db/table/tile_logs_before2402: data/tile_logs/_download | db/table ## OpenStreetMap tiles logs before 24.02.2022  imported into database.
+	psql -c "drop table if exists tile_logs_before2402;"
+	psql -c "create table tile_logs_before2402 (tile_date timestamptz, z int, x int, y int, view_count int) tablespace evo4tb;"
+	find data/tile_logs/ -type f -size +10M -newermt 2022-02-02 ! -newermt 2022-02-25 | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs_before2402 from stdin with csv'"
+	psql -f tables/tile_stats_before2402.sql
+	touch $@
+
+db/table/tile_logs_after2402: data/tile_logs/_download | db/table ## OpenStreetMap tiles logs after 24.02.2022 imported into database.
+	psql -c "drop table if exists tile_logs_after2402;"
+	psql -c "create table tile_logs_after2402 (tile_date timestamptz, z int, x int, y int, view_count int) tablespace evo4tb;"
+	find data/tile_logs/ -type f -size +10M -newermt 2022-02-25 | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs_after2402 from stdin with csv'"
+	psql -f tables/tile_stats_after2402.sql
+	touch $@
+
+db/table/tile_views_diff_h3: db/table/tile_logs_before2402 db/table/tile_logs_after2402 | db/table ## calculate difference between Map Views and haxagonify it.
+	psql -f tables/tile_views_diff.sql
+	psql -c "call generate_overviews('tile_views_diff_h3', '{view_avg}'::text[], '{avg}'::text[], 8);"
 	touch $@
 
 data/tiles/stats_tiles.tar.bz2: tile_generator/tile_generator db/table/bivariate_axis_analytics db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors db/table/stat_h3 db/table/osm_meta | data/tiles ## Generate vector tiles from stat_h3 table (main table with summarized statistics aggregated on H3 hexagons grid) and archive it for further deploy to QA and production servers.

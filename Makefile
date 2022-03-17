@@ -1690,12 +1690,12 @@ data/in/foursquare/downloaded: | data/in/foursquare ## download and rename 4sq a
 
 data/mid/foursquare/kontour_places.csv: data/in/foursquare/downloaded | data/mid/foursquare ## extract archive and filter csv
 	rm -f $@
-	zcat data/in/foursquare/kontour_places.csv.gz | sed ':a;s/^\(\([^"]*,\?\|"[^",]*",\?\)*"[^",]*\),/\1 /;ta' | cut -d, -f1,4,5 > $@
+	zcat data/in/foursquare/kontour_places.csv.gz | sed ':a;s/^\(\([^"]*,\?\|"[^",]*",\?\)*"[^",]*\),/\1 /;ta' | cut -d, -f1,4,5 | egrep -v "\[ | evaluation_sample | roof" | grep -vP "\w*[A-Z]+\w*" | sed '/,/!d' > $@
 
 data/mid/foursquare/kontour_visits.csv: data/in/foursquare/downloaded | data/mid/foursquare ## extract archives and filter csv
 	rm -f $@
-	touch $@
-	ls data/in/foursquare/part*.gz | parallel "zcat {} | cut -d, -f2,6,7 >> data/mid/foursquare/kontour_visits.csv"
+	echo "protectedts, latitude, longitude" > $@
+	ls data/in/foursquare/part*.gz | parallel "zcat {} | tail -n +2 | cut -d, -f2,6,7 >> data/mid/foursquare/kontour_visits.csv"
 
 db/table/foursquare_places: data/mid/foursquare/kontour_places.csv | db/table ## Import 4sq places into database.
 	psql -c 'drop table if exists foursquare_places;'

@@ -34,7 +34,8 @@ create table topology_boundary_mid2 as
            k.admin_level,
            ST_Difference(k.geom, w.geom) as geom
     from topology_boundary_mid1 k 
-    join topology_boundary_mid1 using(osm_id)
+    join topology_boundary_mid1 w
+    on ST_Intersects(k.geom, w.geom)
     where k.admin_level < w.admin_level;
 
 -- all lines on the level to 1 multilinestring and after create difference

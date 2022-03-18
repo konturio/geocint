@@ -1693,10 +1693,15 @@ data/mid/foursquare/kontour_places.csv: data/in/foursquare/downloaded | data/mid
 	rm -f $@
 	zcat data/in/foursquare/kontour_places.csv.gz | sed ':a;s/^\(\([^"]*,\?\|"[^",]*",\?\)*"[^",]*\),/\1 /;ta' | cut -d, -f1,4,5 | egrep -v "\[ | evaluation_sample | roof" | grep -vP "\w*[A-Z]+\w*" | sed '/,/!d' > $@
 
-data/mid/foursquare/kontour_visits.csv: data/in/foursquare/downloaded | data/mid/foursquare ## extract archives and filter csv
-	rm -f $@
-	echo "protectedts, latitude, longitude" > $@
-	ls data/in/foursquare/part*.gz | parallel "zcat {} | tail -n +2 | cut -d, -f2,6,7 >> data/mid/foursquare/kontour_visits.csv"
+data/mid/foursquare/kontour_visits_csv: data/in/foursquare/downloaded | data/mid/foursquare ## extract archives and filter csv
+	rm -f data/mid/foursquare/kontour_visits*.csv
+	zcat data/in/foursquare/part-00132-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195596-1.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2021_08.csv
+	zcat data/in/foursquare/part-00191-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195595-1.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2021_09.csv
+	zcat data/in/foursquare/part-00075-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195592-1.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2021_10.csv
+	zcat data/in/foursquare/part-00055-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195594-1.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2021_11.csv
+	zcat data/in/foursquare/part-00075-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195592-2.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2021_12.csv
+	zcat data/in/foursquare/part-00194-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195593-1.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2022_01.csv
+	touch $@
 
 db/table/foursquare_places: data/mid/foursquare/kontour_places.csv | db/table ## Import 4sq places into database.
 	psql -c 'drop table if exists foursquare_places;'
@@ -1704,10 +1709,10 @@ db/table/foursquare_places: data/mid/foursquare/kontour_places.csv | db/table ##
 	cat data/mid/foursquare/kontour_places.csv | psql -c "copy foursquare_places (fsq_id, latitude, longitude) from stdin with csv header delimiter ','"
 	touch $@
 
-db/table/foursquare_visits: data/mid/foursquare/kontour_visits.csv | db/table ## Import 4sq visits into database.
+db/table/foursquare_visits: data/mid/foursquare/kontour_visits_csv | db/table ## Import 4sq visits into database.
 	psql -c 'drop table if exists foursquare_visits;'
 	psql -c 'create table foursquare_visits (protectedts text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);'
-	cat data/mid/foursquare/kontour_visits.csv | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header delimiter',' "
+	ls data/mid/foursquare/kontour_visits*.csv | parallel 'cat {} | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header delimiter ','; "'
 	touch $@
 
 db/table/foursquare_places_h3: db/table/foursquare_places | db/table ## Aggregate 4sq places count  on H3 hexagon grid.

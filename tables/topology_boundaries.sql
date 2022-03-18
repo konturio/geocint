@@ -26,13 +26,14 @@ create table topology_boundary_mid1 as
            ST_Boundary(geom) as geom
     from topology_boundary_in;
 
--- Remove repeated borders with admin_level > min
-update topology_boundary_mid1 k
-set geom = ST_Difference(k.geom, w.geom)
-       from topology_boundary_mid1 w
-       where ST_Intersects(k.geom, w.geom) 
-             and k.admin_level > w.admin_level;
+-- Dump to segments and remove repeated
+drop table if exists topology_boundary_mid2;
+create table topology_boundary_mid2 as
+       select distinct on (geom) admin_level,
+                                 geom
+       from (select (ST_DumpSegments(geom)).geom, 
+                     admin_level 
+             from topology_boundary_mid1) as squ
+       order by geom, admin_level;
 
--- all lines on the level to 1 multilinestring and after create difference
-
--- Check topology consistency
+create index on topology_boundary_mid2 using gist(geom);

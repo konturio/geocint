@@ -27,16 +27,11 @@ create table topology_boundary_mid as
     from topology_boundary_in;
 
 -- Remove repeated borders with admin_level > min
-drop table if exists topology_boundary_mid2;
-create table topology_boundary_mid2 as
-	select k.osm_id, 
-           k.gadm_id, 
-           k.admin_level,
-           ST_Difference(k.geom, w.geom) as geom
-    from topology_boundary_mid1 k 
-    join topology_boundary_mid1 w
-    on ST_Intersects(k.geom, w.geom)
-    where k.admin_level < w.admin_level;
+update topology_boundary_mid1 k
+set geom = ST_Difference(k.geom, w.geom)
+       from topology_boundary_mid1 w
+       where ST_Intersects(k.geom, w.geom) 
+             and k.admin_level > w.admin_level;
 
 -- all lines on the level to 1 multilinestring and after create difference
 

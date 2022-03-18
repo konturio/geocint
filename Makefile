@@ -834,13 +834,14 @@ data/in/wikidata_population_csv: | data/in ## Wikidata population csv (input).
 	mkdir -p $@
 
 data/in/wikidata_population_csv/download: | data/in/wikidata_population_csv ## Download Wikidata population.
+	rm -f data/in/wikidata_population_csv/*_wiki_pop.csv
 	cat static_data/wikidata_population/wikidata_population_ranges.txt | parallel -j2 --colsep " " 'wget "https://query.wikidata.org/sparql?query=SELECT%20%3Fcountry%20%3FcountryLabel%20%3Fpopulation%20%0AWHERE%20%7B%20%3Fcountry%20wdt%3AP1082%20%3Fpopulation.%20%0A%20%20%20%20%20%20%20FILTER({1}%20%3C%3D%20%3Fpopulation%20%26%26%20%3Fpopulation%20%3C%20{2}).%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22.%20%7D%20%7D" --retry-on-http-error=500 --header "Accept: text/csv" -O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv'
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Import wikidata population into database.
 	psql -c 'drop table if exists wikidata_population;'
 	psql -c 'create table wikidata_population(wikidata_item text, name text, population numeric);'
-	ls data/in/wikidata_population_csv/*.csv | parallel 'cat {} | psql -c "copy wikidata_population from stdin with csv header;"'
+	ls data/in/wikidata_population_csv/*_wiki_pop.csv | parallel 'cat {} | psql -c "copy wikidata_population from stdin with csv header;"'
 	touch $@
 
 data/in/un_population.csv: | data/in ## Download United Nations population division dataset.

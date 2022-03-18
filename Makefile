@@ -1712,7 +1712,7 @@ db/table/foursquare_places: data/mid/foursquare/kontour_places.csv | db/table ##
 db/table/foursquare_visits: data/mid/foursquare/kontour_visits_csv | db/table ## Import 4sq visits into database.
 	psql -c 'drop table if exists foursquare_visits;'
 	psql -c 'create table foursquare_visits (protectedts text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);'
-	ls data/mid/foursquare/kontour_visits*.csv | parallel 'cat {} | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header delimiter ','; "'
+	ls data/mid/foursquare/kontour_visits*.csv | parallel 'cat {} | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header; "'
 	touch $@
 
 db/table/foursquare_places_h3: db/table/foursquare_places | db/table ## Aggregate 4sq places count  on H3 hexagon grid.

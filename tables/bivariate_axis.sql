@@ -88,7 +88,9 @@ create table stat_h3_quality as (
                 avg(a.mandays_maxtemp_over_32c_1c) as agg_mandays_maxtemp_over_32c_1c,
                 avg(a.man_distance_to_fire_brigade) as agg_man_distance_to_fire_brigade,
                 avg(a.man_distance_to_hospital) as agg_man_distance_to_hospital,
-                avg(a.total_road_length) as agg_total_road_length
+                avg(a.total_road_length) as agg_total_road_length,
+                avg(a.foursquare_places_count) as agg_foursquare_places_count,
+                avg(a.foursquare_visits_count) as agg_foursquare_visits_count
             from
                 stat_h3 a
             where

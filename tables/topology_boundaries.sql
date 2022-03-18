@@ -19,7 +19,7 @@ drop table if exists water_polygons_4326;
 
 -- Transform osm_boundaries from polys to lines
 drop table if exists topology_boundary_mid1;
-create table topology_boundary_mid as
+create table topology_boundary_mid1 as
     select k.osm_id, 
            k.gadm_id, 
            k.admin_level,

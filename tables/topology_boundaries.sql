@@ -8,7 +8,7 @@ create table water_polygons_4326 as
 -- Clip water polys from osm_boundaries
 drop table if exists topology_boundary_in;
 create table topology_boundary_in as
-select k.admin_level,
+select k.kontur_admin_level          as admin_level,
        ST_Difference(k.geom, w.geom) as geom
 from kontur_boundaries     as k,
      water_polygons_4326   as w;

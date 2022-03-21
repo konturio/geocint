@@ -34,4 +34,5 @@ create table topology_boundary as
              from topology_boundary_mid) as squ
        order by geom, admin_level;
 
+drop table if exists topology_boundary_mid;
 create index on topology_boundary using gist(geom);

@@ -7,16 +7,16 @@ select
 from osm_admin_boundaries;
 create index on osm_admin_subdivided_in using gist(geom);
 
--- Clipping Crimea from Russia boundary and South Federal County boundary by Ukrain border
+-- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
 -- To exclude Crimea population from Russia population calculation
-with ukrain_border as (
+with ukraine_border as (
     select ST_Transform(geom, 3857) geom
     from osm_admin_boundaries
     where osm_id = 60199
 )
 update osm_admin_subdivided_in k
         set geom = ST_Multi(ST_Difference(k.geom, u.geom))
-        from ukrain_border u
+        from ukraine_border u
         where k.osm_id in ('60189', '1059500');
 
 -- Sum population from h3 to osm admin boundaries (rounding to integers)
@@ -47,6 +47,7 @@ select
             when b.admin_level is null and b.tags @> '{"ISO3166-1":"PS"}' then '2'
             else b.admin_level
         end                                                             as admin_level,
+        b.kontur_admin_level,
         coalesce(b.name, b.tags ->> 'int_name', b.tags ->> 'name:en')   as "name",         -- boundary name with graceful fallback
         b.tags,
         p.population,
@@ -92,6 +93,7 @@ select distinct on (b.osm_id)
         g.id as gadm_id,
         b.boundary,
         b.admin_level,
+        b.kontur_admin_level,
         b.name,
         coalesce(b.tags->>'name:en', b.tags->>'int_name') as name_en,
         g.hasc,
@@ -123,19 +125,19 @@ drop table if exists osm_admin_subdivided_in;
 drop table if exists osm_admin_boundaries_in;
 drop table if exists kontur_boundaries_in;
 
--- Clipping Crimea from Russia boundary and South Federal County boundary by Ukrain border
-with ukrain_border as (
+-- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
+with ukraine_border as (
     select geom 
     from kontur_boundaries
     where osm_id = 60199
 )
 update kontur_boundaries k
         set geom = ST_Multi(ST_Difference(k.geom, u.geom))
-        from ukrain_border u
+        from ukraine_border u
         where k.osm_id in ('60189', '1059500');
 
 -- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode' 
--- first digit is 2 bcs all ukrainian postcode have 9 as first digit
+-- first digit is 2 bcs all ukraineian postcode have 9 as first digit
 delete from kontur_boundaries 
         where ((tags ->> 'addr:country' = 'RU' 
                 and admin_level::numeric > 3 )

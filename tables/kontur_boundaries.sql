@@ -146,5 +146,3 @@ delete from kontur_boundaries
                                                                   36.65 45.37, 36.51 45.27, 
                                                                   36.50 44.00, 32.00 44.00, 
                                                                   32.0 46.5 ))', 4326));
-
-create index on kontur_boundaries using gist(geom);

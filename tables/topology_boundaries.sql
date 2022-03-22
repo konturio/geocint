@@ -15,15 +15,6 @@ from kontur_boundaries     as k,
 
 drop table if exists water_polygons_4326;
 
--- Transform osm_boundaries from polys to lines
-drop table if exists topology_boundary_mid;
-create table topology_boundary_mid as
-    select k.admin_level,
-           ST_Boundary(geom) as geom
-    from topology_boundary_in;
-
-drop table if exists topology_boundary_in;
-
 -- Dump to segments and remove repeated
 drop table if exists topology_boundary;
 create table topology_boundary as
@@ -31,8 +22,8 @@ create table topology_boundary as
                                  geom
        from (select (ST_DumpSegments(geom)).geom, 
                      admin_level 
-             from topology_boundary_mid) as squ
+             from topology_boundary_in) as squ
        order by geom, admin_level;
 
-drop table if exists topology_boundary_mid;
+drop table if exists topology_boundary_in;
 create index on topology_boundary using gist(geom);

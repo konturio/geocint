@@ -682,7 +682,7 @@ data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: db/table/kontur_boundaries
 	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
 	cd data/out/kontur_boundaries/; pigz kontur_boundaries.gpkg
 
-db/table/topology_boundaries: db/table/kontur_boundaries ## Create topology build of kontur boundaries
+db/table/topology_boundaries: db/table/kontur_boundaries db/table/water_polygons_vector ## Create topology build of kontur boundaries
 	psql -f tables/topology_boundaries.sql
 	touch $@
 

@@ -826,7 +826,7 @@ db/table/iso_codes: data/in/iso_codes.csv | db/table ## Download ISO codes for c
 	touch $@
 
 data/in/wikidata_hasc_codes.csv: | data/in ## Download HASC codes for admin boundaries from wikidata.
-	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT (?item AS ?wikidata_object) ?itemLabel (SAMPLE(?hasc) AS ?hasc) WHERE { ?item wdt:P8119 ?object; wdt:P8119 ?hasc; SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . } } GROUP BY ?item ?itemLabel ORDER BY (?hasc)' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
+	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT (?item AS ?wikidata_object) ?itemLabel ?hasc WHERE { SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". } { SELECT DISTINCT ?item ?itemLabel ?hasc WHERE {{ ?item wdt:P8119 ?object; wdt:P8119 ?hasc; } UNION { ?item wdt:P297 ?object; wdt:P297 ?hasc; } SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . }}order by DESC(?hasc) }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
 
 db/table/wikidata_hasc_codes: data/in/wikidata_hasc_codes.csv| db/table ## Import wikidata HASC codes into database.
 	psql -c 'drop table if exists wikidata_hasc_codes;'

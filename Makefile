@@ -1,6 +1,6 @@
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/population_api_tables deploy/test/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover db/table/topology_boundaries ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/population_api_tables deploy/test/population_api_tables deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover db/table/topology_boundaries data/out/kontur_boundaries_per_country/export ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -684,6 +684,24 @@ data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: db/table/kontur_boundaries
 
 db/table/topology_boundaries: db/table/kontur_boundaries db/table/water_polygons_vector ## Create topology build of kontur boundaries
 	psql -f tables/topology_boundaries.sql
+	touch $@
+
+data/out/kontur_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_boundaries
+	mkdir -p $@
+
+db/table/hdx_locations: db/table/wikidata_hasc_codes | db/table ## Create table with HDX locations with hasc codes
+	psql -c "drop table if exists location;"
+	psql -c "create table location (href text, code text, hasc text, name text);"
+	psql -c "\copy location (href, code, hasc, name) from 'static_data/kontur_boundaries/hdx_locations.csv' with csv header delimiter ';';"
+	psql -c "create table hasc_location as select distinct on (hasc) l.*, replace(h.wikidata_item, 'http://www.wikidata.org/entity/', '') as wikicode from location l left join wikidata_hasc_codes h using(hasc);"
+	touch $@
+
+data/out/kontur_boundaries_per_country/export: db/table/hdx_locations | data/out/kontur_boundaries_per_country ## Extraction boundaries data per country, drop temporary table and zipping gpkg
+	psql -f tables/boundary_export.sql
+	rm -f data/out/kontur_boundaries_per_country/*.gpkg
+	cat static_data/kontur_boundaries/gpkg_export_commands.txt | parallel '{}'
+	psql -c "drop table if exists boundary_export;"
+	cd data/out/kontur_boundaries_per_country/; pigz *.gpkg
 	touch $@
 
 db/table/osm_reports_list: | db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja

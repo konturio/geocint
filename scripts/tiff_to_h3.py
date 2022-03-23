@@ -123,6 +123,7 @@ def CountPixels(geodataframe, rast):
         geodataframe.loc[index, 'class_4'] = np.count_nonzero(out_image == 4)
         geodataframe.loc[index, 'class_5'] = np.count_nonzero(out_image == 5)
         geodataframe.loc[index, 'class_0'] = np.count_nonzero(out_image == 0)
+        geodataframe.loc[index, 'class_all'] = np.count_nonzero(out_image <= 5)
     
     # Close raster
     rast.close()    

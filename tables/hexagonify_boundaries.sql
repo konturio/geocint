@@ -6,7 +6,7 @@ create table hexagonify_boundaries as (
                admin_level::int,
                ST_Area(geom) as area,
                geom
-        from osm_admin_boundaries
+        from kontur_boundaries
         where admin_level ~ '^\d{1,2}$' -- filter to match only integer OSM admin levels
     ),
     -- generate h3 grid for every boundary:

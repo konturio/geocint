@@ -1624,7 +1624,7 @@ db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table ## 
 	psql -f tables/osm_admin_boundaries.sql
 	touch $@
 
-db/table/hexagonify_boundaries: db/table/osm_admin_boundaries db/table/facebook_roads | db/table ## H3 hexagons from OSM boundaries polygons for country level.
+db/table/hexagonify_boundaries: db/table/kontur_boundaries db/table/facebook_roads | db/table ## H3 hexagons from Kontur boundaries polygons for country level.
 	psql -f tables/hexagonify_boundaries.sql
 	touch $@
 

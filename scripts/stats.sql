@@ -53,6 +53,7 @@ from
             total_road_length,
             foursquare_visits_count,
             foursquare_places_count,
+            view_count_bf2402,
             ST_AsMVTGeom(geom, ST_TileEnvelope($1, $2, $3), 8192, 64, true) as geom
         from stat_h3
         where zoom = $1

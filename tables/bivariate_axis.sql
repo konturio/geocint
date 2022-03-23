@@ -319,7 +319,12 @@ where
       numerator = 'foursquare_visits_count'
   and denominator = 'one';
 
-
+update bivariate_axis
+set
+    label = 'Map views 30 days before 24.02.2022'
+where
+      numerator = 'view_count_bf2402'
+  and denominator = 'one';
 
 -- columns for advanced analytics
 alter table bivariate_axis

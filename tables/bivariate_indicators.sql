@@ -284,6 +284,12 @@ set is_base = true
 where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2','one');
 
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('view_count_bf2402', 'OSM Map Views 30 days before 24.02.2022',
+        jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
+
+
 --- this is an ugly hack to enable Parallel Seq Scan on bivariate_indicators
 -- Postgres parallel seq scan works on page level, so we can't really get it to run more workers than there are
 -- pages in source table, so we make sure that the pages are filled in as sparsely as possible.

@@ -1,5 +1,5 @@
 drop table if exists esa_world_cover_h3_in;
-explain create table esa_world_cover_h3_in as (
+create table esa_world_cover_h3_in as (
     select
         h3,
         8 as resolution,

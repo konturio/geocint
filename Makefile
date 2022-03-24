@@ -710,6 +710,7 @@ db/table/hdx_locations: db/table/wikidata_hasc_codes | db/table ## Create table 
 	psql -c "drop table if exists location;"
 	psql -c "create table location (href text, code text, hasc text, name text);"
 	psql -c "\copy location (href, code, hasc, name) from 'static_data/kontur_boundaries/hdx_locations.csv' with csv header delimiter ';';"
+	psql -c "drop table if exists hasc_location;"
 	psql -c "create table hasc_location as select distinct on (hasc) l.*, replace(h.wikidata_item, 'http://www.wikidata.org/entity/', '') as wikicode from location l left join wikidata_hasc_codes h using(hasc);"
 	touch $@
 

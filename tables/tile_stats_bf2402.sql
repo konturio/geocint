@@ -5,11 +5,11 @@ create table tile_stats_bf2402 as (
            y,
            sum(view_count) as view_count_bf2402
     from tile_logs_bf2402
-    group by 1, 2, 3, 4
+    group by 1, 2, 3
 );
 
-drop table if exists tile_stats_z17_bf2402 tablespace evo4tb;
-create table tile_stats_z17_bf2402 as (
+drop table if exists tile_stats_z17_bf2402;
+create table tile_stats_z17_bf2402 tablespace evo4tb as (
     select 17                               as z,
            nx                               as x,
            ny                               as y,
@@ -24,6 +24,6 @@ create table tile_stats_z17_bf2402 as (
     select z, x, y, view_count_bf2402
     from tile_stats_bf2402
     where z > 17
-);
+) ;
 
 create index on tile_stats_z17_bf2402 using btree (z, x, y);

@@ -11,7 +11,7 @@ prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/population_api
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_population_csv/download
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_population_csv/download data/in/wikidata_hasc_codes.csv
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -710,12 +710,13 @@ db/table/hdx_locations: db/table/wikidata_hasc_codes | db/table ## Create table 
 	psql -c "drop table if exists location;"
 	psql -c "create table location (href text, code text, hasc text, name text);"
 	psql -c "\copy location (href, code, hasc, name) from 'static_data/kontur_boundaries/hdx_locations.csv' with csv header delimiter ';';"
+	psql -c "drop table if exists hasc_location;"
 	psql -c "create table hasc_location as select distinct on (hasc) l.*, replace(h.wikidata_item, 'http://www.wikidata.org/entity/', '') as wikicode from location l left join wikidata_hasc_codes h using(hasc);"
 	touch $@
 
 data/out/kontur_boundaries_per_country/export: db/table/hdx_locations | data/out/kontur_boundaries_per_country ## Extraction boundaries data per country, drop temporary table and zipping gpkg
 	psql -f tables/boundary_export.sql
-	rm -f data/out/kontur_boundaries_per_country/*.gpkg
+	rm -f data/out/kontur_boundaries_per_country/*.gpkg.gz
 	cat static_data/kontur_boundaries/gpkg_export_commands.txt | parallel '{}'
 	psql -c "drop table if exists boundary_export;"
 	cd data/out/kontur_boundaries_per_country/; pigz *.gpkg

@@ -715,7 +715,7 @@ db/table/hdx_locations: db/table/wikidata_hasc_codes | db/table ## Create table 
 
 data/out/kontur_boundaries_per_country/export: db/table/hdx_locations | data/out/kontur_boundaries_per_country ## Extraction boundaries data per country, drop temporary table and zipping gpkg
 	psql -f tables/boundary_export.sql
-	rm -f data/out/kontur_boundaries_per_country/*.gpkg
+	rm -f data/out/kontur_boundaries_per_country/*.gpkg.gz
 	cat static_data/kontur_boundaries/gpkg_export_commands.txt | parallel '{}'
 	psql -c "drop table if exists boundary_export;"
 	cd data/out/kontur_boundaries_per_country/; pigz *.gpkg

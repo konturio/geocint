@@ -4,7 +4,7 @@ dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geo
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/population_api_tables deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/osm_admin_boundaries deploy/prod/reports data/out/reports/population_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/population_api_tables deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Pipeline finished. Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1664,14 +1664,14 @@ db/table/hexagonify_boundaries: db/table/kontur_boundaries db/table/facebook_roa
 	psql -f tables/hexagonify_boundaries.sql
 	touch $@
 
-data/osm_admin_boundaries.geojson.gz: db/table/osm_admin_boundaries ## Export to geojson and archive administrative boundaries polygons extracted from OpenStreetMap dataset.
-	rm -vf data/osm_admin_boundaries.geojson*
-	ogr2ogr -f GeoJSON data/osm_admin_boundaries.geojson PG:'dbname=gis' -sql "select * from osm_admin_boundaries" -nln osm_admin_boundaries
-	pigz data/osm_admin_boundaries.geojson
+data/kontur_boundaries.geojson.gz: db/table/kontur_boundaries ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset.
+	rm -vf data/kontur_boundaries.geojson*
+	ogr2ogr -f GeoJSON data/kontur_boundaries.geojson PG:'dbname=gis' -sql "select osm_id, osm_type, boundary, admin_level, name, tags, geom from kontur_boundaries" -nln osm_admin_boundaries
+	pigz data/kontur_boundaries.geojson
 	touch $@
 
-deploy/s3/osm_admin_boundaries: data/osm_admin_boundaries.geojson.gz | deploy/s3 ## Deploy OpenStreetMap admin boundaries dataset to Amazon S3.
-	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/osm_admin_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+deploy/s3/kontur_boundaries: data/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3.
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
 db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float db/function/parse_integer | db/table ## All the buildings (but not all the properties yet) extracted from OpenStreetMap dataset.

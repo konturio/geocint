@@ -12,6 +12,8 @@ insert into water_polygons_vector (gid, geom)
         gid, ST_Subdivide(geom, 100) as geom
     from complex_areas_to_subdivide;
 
+create index on water_polygons_vector using gist(geom);
+
 vacuum full water_polygons_vector;
 vacuum analyze water_polygons_vector;
 

@@ -9,7 +9,7 @@ create index on water_polygons_4326 using gist(geom);
 
 drop table if exists topology_boundary_in;
 create table topology_boundary_in as
-select kontur_admin_level as admin_level, ST_Boundary((ST_DumpRings((ST_Dump(geom)).geom)).geom) as geom from kontur_boundaries
+select osm_id, kontur_admin_level as admin_level, ST_Boundary((ST_DumpRings((ST_Dump(geom)).geom)).geom) as geom from kontur_boundaries
 where admin_level is not null;
 
 -- Clip water polys from osm_boundaries
@@ -23,14 +23,17 @@ where exists(select from water_polygons_4326 where ST_Intersects(topology_bounda
 drop table if exists water_polygons_4326;
 
 -- Dump to segments and remove repeated
-drop table if exists topology_boundary;
-create table topology_boundary as
-       select distinct on (geom) admin_level,
-                                 geom
-       from (select (ST_DumpSegments(geom)).geom, 
-                     admin_level 
+drop table if exists topology_boundary_mid;
+create table topology_boundary_mid as
+       select min(osm_id) as osm_id, min(admin_level) as admin_level, geom
+       from (select (ST_DumpSegments(geom)).geom, osm_id, admin_level 
              from topology_boundary_in) as squ
-       order by geom, admin_level;
+       group by geom;
+
+create table topology_boundary as
+select osm_id, admin_level, ST_LineMerge(ST_Union(geom)) as geom
+from topology_boundary_mid
+group by osm_id, admin_level;
 
 drop table if exists topology_boundary_in;
-create index on topology_boundary using gist(geom);
+drop table if exists topology_boundary_mid;

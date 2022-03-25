@@ -1,5 +1,15 @@
 #!/bin/bash
 
+cleanup() {
+# since kubernetes consider job done after all containers
+# are exit. postgres which is running in another container
+# also need to be killed. it is possible to just kill it by name
+# because `shareProcessNamespace` is enabled.
+  pkill postgres
+}
+
+set -e
+
 # NOTE: with current Makefile structure there multiple output directories
 # need to be persisted across executions.
 # I can't wire single persisted volume into multiple paths and I don't won't
@@ -13,12 +23,9 @@ ln -s /persisted-volume/db db
 mkdir -p /persisted-volume/deploy
 ln -s /persisted-volume/deploy deploy
 
+trap 'cleanup' EXIT
+
 # wait until postgres which is running in another container will be ready
 bash scripts/wait_until_postgres_is_ready.sh
-make clean
 make basemap_all
-# since kubernetes consider job done after all containers
-# are exit. postgres which is running in another container
-# also need to be killed. it is possible to just kill it by name
-# because `shareProcessNamespace` is enabled.
-pkill postgres
+make clean

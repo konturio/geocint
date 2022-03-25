@@ -83,10 +83,11 @@ db/table/osm2pgsql: data/planet-latest.osm.pbf | db/table ## Yet another OpenStr
 	osm2pgsql --style osm2pgsql_styles/basemap.lua --flat-nodes data/osm2pgsql_flat_nodes --slim --number-processes 32 --output=flex --create data/planet-latest.osm.pbf
 	touch $@
 
-db/table/osm2pgsql_fill_lang:data/planet-latest.osm.pbf | db/table ## fill missing name:[lang]
+db/table/osm2pgsql_fill_lang: db/table/osm2pgsql  | db/table ## fill missing name:[lang]
 	psql -c "update planet_osm_point set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
 	psql -c "update planet_osm_line set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
 	psql -c "update planet_osm_polygon set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
+	touch $@
 
 db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_polygon_way_area_idx on planet_osm_polygon using btree(way_area);"
@@ -136,7 +137,7 @@ data/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL func
 	touch $@
 
 data/basemap.mbtiles: tile_generator/tile_generator data/basemap.sql db/index/planet_osm__all db/table/land_polygons_vector | data ## Generating vector tiles.
-	rm data/basemap.mbtiles
+	rm -f data/basemap.mbtiles
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 14 --sql-query-filepath 'data/basemap.sql' --db-config 'dbname=gis user=gis' --output-mbtiles $@
 
 data/basemap: | data ## Directory for MAPCSS styles, icon sprites and font glyphs used with vector tiles.

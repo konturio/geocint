@@ -16,7 +16,7 @@ metadata:
 spec:
   resources:
     requests:
-      storage: 600Gi
+      storage: 1500Gi
   accessModes:
     - ReadWriteOnce
 ---
@@ -40,6 +40,8 @@ spec:
               - name: basemap-storage
                 mountPath: /persisted-volume
             env:
+              - name: S3_BASEMAP_PATH
+                value: %S3_BASEMAP_PATH%
               - name: PGHOST
                 value: localhost
               - name: PGUSER
@@ -80,8 +82,6 @@ spec:
               - "-c"
               - "max_wal_senders=0"
             env:
-              - name: S3_BASEMAP_PATH
-                value: 
               - name: POSTGRES_USER
                 value: gis
               - name: POSTGRES_DATABASE

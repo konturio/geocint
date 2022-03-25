@@ -494,8 +494,8 @@ tables.countries = osm2pgsql.define_relation_table('countries', {
 })
 
 boundary_id_lang = {}
-boundary_id_lang[148838] = "name" -- United States
-boundary_id_lang[80500] = "name" -- Australia
+boundary_id_lang[148838] = "name:en" -- United States
+boundary_id_lang[80500] = "name:en" -- Australia
 
 phase2_admin_ways = {}
 

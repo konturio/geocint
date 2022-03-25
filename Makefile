@@ -714,7 +714,7 @@ db/table/hdx_locations: db/table/wikidata_hasc_codes | db/table ## Create table 
 	psql -c "create table hasc_location as select distinct on (hasc) l.*, replace(h.wikidata_item, 'http://www.wikidata.org/entity/', '') as wikicode from location l left join wikidata_hasc_codes h using(hasc);"
 	touch $@
 
-data/out/kontur_boundaries_per_country/export: db/table/hdx_locations | data/out/kontur_boundaries_per_country ## Extraction boundaries data per country, drop temporary table and zipping gpkg
+data/out/kontur_boundaries_per_country/export: db/table/hdx_locations db/table/kontur_boundaries | data/out/kontur_boundaries_per_country ## Extraction boundaries data per country, drop temporary table and zipping gpkg
 	psql -f tables/boundary_export.sql
 	rm -f data/out/kontur_boundaries_per_country/*.gpkg.gz
 	cat static_data/kontur_boundaries/gpkg_export_commands.txt | parallel '{}'

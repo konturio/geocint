@@ -3,15 +3,22 @@ drop table if exists water_polygons_4326;
 create table water_polygons_4326 as
 	select gid,
            ST_Transform(geom, 4326) as geom
-    from water_polygons_vector;    
+    from water_polygons_vector;
 
--- Clip water polys from osm_boundaries
+create index on water_polygons_4326 using gist(geom);
+
 drop table if exists topology_boundary_in;
 create table topology_boundary_in as
-select k.kontur_admin_level          as admin_level,
-       ST_Difference(k.geom, w.geom) as geom
-from kontur_boundaries     as k,
-     water_polygons_4326   as w;
+select kontur_admin_level as admin_level, ST_Boundary((ST_DumpRings((ST_Dump(geom)).geom)).geom) as geom from kontur_boundaries
+where admin_level is not null;
+
+-- Clip water polys from osm_boundaries
+update topology_boundary_in
+set geom = ST_Difference(topology_boundary_in.geom,
+       (select ST_Union(geom)
+       from water_polygons_4326
+       where ST_Intersects(topology_boundary_in.geom, water_polygons_4326.geom)))
+where exists(select from water_polygons_4326 where ST_Intersects(topology_boundary_in.geom, water_polygons_4326.geom));
 
 drop table if exists water_polygons_4326;
 

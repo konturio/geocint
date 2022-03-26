@@ -31,7 +31,7 @@ $$
                        sum(shrubland),
                        sum(cropland),
                        ST_Area(h3_to_geo_boundary_geometry(h3_to_parent(h3))* 111319.49079 * 111319.49079 * 
-                       (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(h3_to_parent(h3))))))) / 1000000.0,
+                       (cos(radians(ST_Y(ST_Centroid(h3_to_geo_boundary_geometry(h3_to_parent(h3))))))) / 1000000.0),
                        (res - 1)
                 from esa_world_cover_h3_in
                 where resolution = res

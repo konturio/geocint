@@ -112,18 +112,26 @@ drop table if exists kontur_boundaries;
 create table kontur_boundaries as
 select k.*, 
        w.hasc       as hasc_wiki,
-       p.population as wiki_population
+       p.population as max_wiki_population
 from kontur_boundaries_in k
 left join wikidata_hasc_codes w
         on replace(w.wikidata_item, 'http://www.wikidata.org/entity/', '') = k.tags ->> 'wikidata'
 left join wikidata_population p
         on replace(p.wikidata_item, 'http://www.wikidata.org/entity/', '') = k.tags ->> 'wikidata';
 
-
 -- Drop temporary tables
 drop table if exists osm_admin_subdivided_in;
 drop table if exists osm_admin_boundaries_in;
 drop table if exists kontur_boundaries_in;
+
+-- Special case for Soutern Federal District and Russia
+update kontur_boundaries
+set max_wiki_population = 14044580
+where osm_id = '1059500';
+
+update kontur_boundaries
+set max_wiki_population = 143666931
+where osm_id = '60189';
 
 -- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
 with ukraine_border as (

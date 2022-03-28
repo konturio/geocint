@@ -888,9 +888,12 @@ data/in/wikidata_population_csv/download: | data/in/wikidata_population_csv ## D
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Import wikidata population into database.
+	psql -c 'drop table if exists wikidata_population_in;'
+	psql -c 'create table wikidata_population_in(wikidata_item text, name text, population numeric);'
+	ls data/in/wikidata_population_csv/*_wiki_pop.csv | parallel 'cat {} | psql -c "copy wikidata_population_in from stdin with csv header;"'
 	psql -c 'drop table if exists wikidata_population;'
-	psql -c 'create table wikidata_population(wikidata_item text, name text, population numeric);'
-	ls data/in/wikidata_population_csv/*_wiki_pop.csv | parallel 'cat {} | psql -c "copy wikidata_population from stdin with csv header;"'
+	psql -c 'create table wikidata_population as select wikidata_item, name, max(population) from wikidata_population_in group by wikidata_item, name;'
+	psql -c 'drop table if exists wikidata_population_in;'
 	touch $@
 
 data/in/un_population.csv: | data/in ## Download United Nations population division dataset.

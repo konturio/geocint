@@ -20,13 +20,26 @@ create table osm_admin_boundaries as (
 
 create index on osm_admin_boundaries using gist(geom);
 create index on osm_admin_boundaries (osm_id);
-
-delete from osm_admin_boundaries a
-using osm_admin_boundaries b
-where a.osm_id > b.osm_id and ST_Equals(a.geom, b.geom);
-
-
 create index on osm_admin_boundaries using gist(ST_PointOnSurface(geom));
+
+-- faster than checking st_equals and deleting, 
+-- also there is hope that it uses index
+drop table if exists osm_admin_boundaries_duplicates;
+create table osm_admin_boundaries_duplicates as
+select  a.osm_id, b.osm_id as osm_id2, a.geom as g1, b.geom as g2
+from    osm_admin_boundaries a,
+        osm_admin_boundaries b
+where   a.osm_id > b.osm_id and 
+        ST_PointOnSurface(a.geom) = ST_PointOnSurface(b.geom);
+
+with toup as (select    osm_id
+    from    osm_admin_boundaries_duplicates
+    where   ST_Equals(g1, g2))
+delete from osm_admin_boundaries
+where osm_id in (select osm_id from toup);
+
+drop table if exists osm_admin_boundaries_duplicates;
+
 
 -- generating parent_id for admin_level > 2 
 -- parent_id points to it's country

@@ -21,7 +21,7 @@ create index on topology_boundary_mid using btree(osm_id, admin_level);
 
 drop table if exists topology_boundary;
 create table topology_boundary as
-select osm_id, admin_level, ST_LineMerge(ST_Union(geom)) as geom
+select osm_id, admin_level, (ST_Dump(ST_LineMerge(ST_Union(geom)))).geom as geom
 from topology_boundary_mid
 group by osm_id, admin_level;
 

@@ -78,12 +78,24 @@ db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | 
 	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"
 	touch $@
 
-db/table/osm2pgsql: data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
+data/in/topology_boundaries.geojson: | data/in
+	wget https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/topology_boundaries.geojson.gz -O data/in/topology_boundaries.geojson.gz
+	pigz -d data/in/topology_boundaries.geojson.gz
+
+db/table/kontur_topology_boundary: data/in/topology_boundaries.geojson | db/table
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" -a_srs EPSG:3857 data/in/topology_boundaries.geojson -nln kontur_topology_boundary -lco GEOMETRY_NAME=geom
+	touch $@
+
+db/table/osm2pgsql: db/table/kontur_topology_boundaries data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	psql -c "create extension if not exists hstore;"
 	osm2pgsql --style osm2pgsql_styles/basemap.lua --flat-nodes data/osm2pgsql_flat_nodes --slim --number-processes 32 --output=flex --create data/planet-latest.osm.pbf
 	touch $@
 
-db/table/osm2pgsql_fill_lang: db/table/osm2pgsql  | db/table ## fill missing name:[lang]
+db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql | db/table
+	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, way) select -osm_id as osm_id, 'administrative' as boundary, admin_level, geom as way from kontur_topology_boundary;"
+	touch $@
+
+db/table/osm2pgsql_fill_lang: db/table/osm2pgsql_with_boundaries | db/table ## fill missing name:[lang]
 	psql -c "update planet_osm_point set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
 	psql -c "update planet_osm_line set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
 	psql -c "update planet_osm_polygon set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"

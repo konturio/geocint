@@ -27,5 +27,6 @@ trap 'cleanup' EXIT
 
 # wait until postgres which is running in another container will be ready
 bash scripts/wait_until_postgres_is_ready.sh
-make basemap_all
+
+make -j basemap_all
 make clean

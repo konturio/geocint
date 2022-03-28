@@ -709,7 +709,7 @@ data/out/topology_boundaries.geojson.gz: db/table/topology_boundaries | data/out
 	pigz data/out/topology_boundaries.geojson
 
 deploy/s3/topology_boundaries: data/out/topology_boundaries.geojson.gz | deploy/s3 ## Uploads compressed geojson with topology build of Kontur Boundaries in public directory in geodata-us-east-1-kontur s3 bucket
-	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/topology_boundaries.geojson.gz --body data/out/topology_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	aws s3 cp data/out/topology_boundaries.geojson.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/topology_boundaries.geojson.gz --profile geocint_pipeline_sender --acl public-read
 	touch $@
 
 data/out/kontur_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_boundaries

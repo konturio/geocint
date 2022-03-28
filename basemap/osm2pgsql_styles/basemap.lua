@@ -497,8 +497,6 @@ boundary_id_lang = {}
 boundary_id_lang[148838] = "name:en" -- United States
 boundary_id_lang[80500] = "name:en" -- Australia
 
-phase2_admin_ways = {}
-
 function make_check_in_list_func(list)
     local h = {}
     for _, k in ipairs(list) do
@@ -612,34 +610,9 @@ function osm2pgsql.process_node(object)
     tables.point:add_row(output)
 end
 
-function admin_level(v)
-    return v and string.find(v, "^-?%d+$") and tonumber(v) < 100 and tonumber(v) > 0 and v or nil
-end
-
 function osm2pgsql.process_way(object)
-    -- administrative boundaries are processed on stage 2
-    -- if boundary is not included in any relation it will not be inserted in database
-    if osm2pgsql.stage == 1 and object.tags.boundary == 'administrative' then
-        return
-    end
-
-    -- stage 2 processing of administrative boundaries
-    if osm2pgsql.stage == 2 and phase2_admin_ways[object.id] then
-        if phase2_admin_ways[object.id].maritime then
-            object.tags.maritime = phase2_admin_ways[object.id].maritime
-        end
-
-        if object.tags.boundary_type == 'maritime' then
-            object.tags.maritime = 'yes'
-        end
-
-        output = {}
-        output.boundary = 'administrative'
-        output.admin_level = phase2_admin_ways[object.id].level
-        output.maritime = object.tags.maritime
-        output.way = { create = 'line', split_at = max_length }
-        tables.line:add_row(output)
-
+    -- skip boundary=administrative, Kontur Boundaries are used instead
+    if object.tags.boundary == 'administrative' then
         return
     end
 
@@ -703,26 +676,6 @@ function osm2pgsql.process_way(object)
     end
 end
 
-function osm2pgsql.select_relation_members(relation)
-    if relation.tags.type == 'boundary' and relation.tags.boundary == 'administrative' then
-        local admin = tonumber(admin_level(relation.tags.admin_level))
-        if admin ~= nil then
-            for _, ref in ipairs(osm2pgsql.way_member_ids(relation)) do
-                if phase2_admin_ways[ref] == nil then
-                    phase2_admin_ways[ref] = {level = admin}
-                elseif admin < phase2_admin_ways[ref].level then
-                    phase2_admin_ways[ref].level = admin
-                end
-
-                if relation.tags.maritime then
-                    phase2_admin_ways[ref].maritime = relation.tags.maritime
-                end
-            end
-            return { ways = osm2pgsql.way_member_ids(relation) }
-        end
-    end
-end
-
 function osm2pgsql.process_relation(object)
     if clean_tags(object.tags) then
         return
@@ -764,7 +717,8 @@ function osm2pgsql.process_relation(object)
     end
 
     local make_boundary = false
-    if type == 'boundary' and object.tags.boundary == 'administrative' then
+    -- skip boundary=administrative, Kontur Boundaries are used instead
+    if object.tags.boundary == 'administrative' then
         return
     end
 

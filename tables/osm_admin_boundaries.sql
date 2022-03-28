@@ -85,7 +85,7 @@ $$
                 order by 1),
             qcnt as (select   parent_id, kontur_admin_level,
                             -- avg(area_geom) as avg_area_in_cnt --switch here also 
-                            percentile_cont(0.5) within group (order by area_geom) as avg_area_in_cnt
+                            percentile_cont(0.8) within group (order by area_geom) as avg_area_in_cnt
                 from    osm_admin_lvls_in
                 where   kontur_admin_level = var_lvl
                 group by    parent_id, kontur_admin_level),

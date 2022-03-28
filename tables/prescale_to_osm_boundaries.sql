@@ -9,6 +9,7 @@ update prescale_to_osm
 -- Also for cases wiht null geometry
 -- Move cases with outdated population and null-geometry objects to new table for recheck
 drop table if exists changed_population;
+
 with changes as (
     delete 
         from prescale_to_osm 
@@ -16,7 +17,6 @@ with changes as (
         or geom is null
         returning osm_type, osm_id, name, right_population, change_date, actual_osm_pop, geom
 )
-
 create table changed_population as 
     select * 
     from changes;
@@ -46,10 +46,8 @@ with prep_mid as (select o.geom,
                       where o.admin_level > p.admin_level
                   union all
                   select * 
-                      from prep
-)
+                      from prep)
 select  geom,
-        osm_type,
         osm_id, 
         (case
              when (tags ->> 'population') ~ E'^[[:digit:]]+([.][[:digit:]]+)?$'

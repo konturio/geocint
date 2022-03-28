@@ -19,7 +19,6 @@ with sum_population as (
 )
 select
         b.geom,
-        b.osm_type,
         b.osm_id,
         (case
              when p.population is not null and p.population > 0

@@ -892,7 +892,7 @@ db/table/wikidata_population: data/in/wikidata_population_csv/download | db/tabl
 	psql -c 'create table wikidata_population_in(wikidata_item text, name text, population numeric);'
 	ls data/in/wikidata_population_csv/*_wiki_pop.csv | parallel 'cat {} | psql -c "copy wikidata_population_in from stdin with csv header;"'
 	psql -c 'drop table if exists wikidata_population;'
-	psql -c 'create table wikidata_population as select wikidata_item, name, max(population) from wikidata_population_in group by wikidata_item, name;'
+	psql -c 'create table wikidata_population as select wikidata_item, name, max(population) max_population from wikidata_population_in group by wikidata_item, name;'
 	psql -c 'drop table if exists wikidata_population_in;'
 	touch $@
 

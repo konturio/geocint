@@ -881,9 +881,12 @@ data/in/wikidata_hasc_codes.csv: | data/in ## Download HASC codes for admin boun
 	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT (?item AS ?wikidata_object) ?itemLabel ?hasc WHERE { SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". } { SELECT DISTINCT ?item ?itemLabel ?hasc WHERE {{ ?item wdt:P8119 ?object; wdt:P8119 ?hasc; } UNION { ?item wdt:P297 ?object; wdt:P297 ?hasc; } SERVICE wikibase:label { bd:serviceParam wikibase:language "en" . }}order by DESC(?hasc) }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
 
 db/table/wikidata_hasc_codes: data/in/wikidata_hasc_codes.csv| db/table ## Import wikidata HASC codes into database.
+	psql -c 'drop table if exists wikidata_hasc_codes_in;'
+	psql -c 'create table wikidata_hasc_codes_in (wikidata_item text, name text, hasc text);'
+	cat data/in/wikidata_hasc_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy wikidata_hasc_codes_in from stdin with csv header;"
 	psql -c 'drop table if exists wikidata_hasc_codes;'
-	psql -c 'create table wikidata_hasc_codes(wikidata_item text, name text, hasc text);'
-	cat data/in/wikidata_hasc_codes.csv | sed -e '/PM,PM,SPM/d' | psql -c "copy wikidata_hasc_codes from stdin with csv header;"
+	psql -c 'create table wikidata_hasc_codes as select distinct on (wikidata_item) * from wikidata_hasc_codes_in order by wikidata_item, hasc desc;'
+	psql -c 'drop table if exists wikidata_hasc_codes_in;'
 	touch $@
 
 data/in/wikidata_population_csv: | data/in ## Wikidata population csv (input).

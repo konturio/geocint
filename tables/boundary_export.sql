@@ -12,12 +12,13 @@ create index on hasc_boundaries using gist(geom);
 -- Extract data from kontur_boundaries and assign high level hasc codes
 drop table if exists boundary_export;
 create table boundary_export as
-select k.admin_level,
+select k.kontur_admin_level as admin_level,
        k.name, 
        k.name_en, 
-       k.population, 
+       k.population,
        k.geom,
-       h.hasc
+       h.hasc as location,
+       k.hasc_wiki as hasc
 from kontur_boundaries k,
      hasc_boundaries h
      where ST_Intersects(ST_PointOnSurface(k.geom), h.geom);

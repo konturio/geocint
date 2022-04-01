@@ -111,8 +111,8 @@ order by b.osm_id, g.hasc is not null desc, g.iou desc;
 drop table if exists kontur_boundaries;
 create table kontur_boundaries as
 select k.*, 
-       w.hasc             as hasc_wiki,
-       p.max_population   as max_wiki_population
+       w.hasc                    as hasc_wiki,
+       round(p.max_population)   as max_wiki_population
 from kontur_boundaries_in k
 left join wikidata_hasc_codes w
         on replace(w.wikidata_item, 'http://www.wikidata.org/entity/', '') = k.tags ->> 'wikidata'

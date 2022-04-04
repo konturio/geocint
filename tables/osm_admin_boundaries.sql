@@ -6,7 +6,7 @@ create table osm_admin_boundaries as (
            tags ->> 'admin_level' as admin_level,
            tags ->> 'name'        as "name",
            tags,
-           geog::geometry         as geom
+           ST_Normalize(geog::geometry)         as geom
     from osm
     where (
             tags ? 'admin_level'
@@ -16,6 +16,7 @@ create table osm_admin_boundaries as (
         and not (tags ->> 'name' is null and tags @> '{"admin_level":"2"}')
     )
        or tags @> '{"ISO3166-1":"PS"}' -- Special rule for Palestinian Territories - because of it's disputed status it often lacks admin_level key
+    order by osm_id
 );
 
 create index on osm_admin_boundaries using gist(geom);
@@ -30,13 +31,10 @@ select  a.osm_id, b.osm_id as osm_id2, a.geom as g1, b.geom as g2
 from    osm_admin_boundaries a,
         osm_admin_boundaries b
 where   a.osm_id > b.osm_id and 
-        ST_PointOnSurface(a.geom) = ST_PointOnSurface(b.geom);
+    a.geom = b.geom;
 
-with toup as (select    osm_id
-    from    osm_admin_boundaries_duplicates
-    where   ST_Equals(g1, g2))
 delete from osm_admin_boundaries
-where osm_id in (select osm_id from toup);
+where osm_id in (select osm_id from osm_admin_boundaries_duplicates);
 
 drop table if exists osm_admin_boundaries_duplicates;
 

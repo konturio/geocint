@@ -32,12 +32,9 @@ from    osm_admin_boundaries a,
         osm_admin_boundaries b
 where   a.osm_id > b.osm_id and 
     a.geom = b.geom;
-    
-with toup as (select    osm_id
-    from    osm_admin_boundaries_duplicates
-    where   ST_Equals(g1, g2))
+
 delete from osm_admin_boundaries
-where osm_id in (select osm_id from toup);
+where osm_id in (select osm_id from osm_admin_boundaries_duplicates);
 
 drop table if exists osm_admin_boundaries_duplicates;
 

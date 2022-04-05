@@ -4,6 +4,7 @@ create table hexagonify_boundaries as (
     with osm_country_boundaries as (
         select osm_id,
                admin_level::int,
+               hasc_wiki,
                ST_Area(geom) as area,
                geom
         from kontur_boundaries
@@ -14,6 +15,7 @@ create table hexagonify_boundaries as (
         select  h3_polyfill(ST_Subdivide(geom), 8) as h3,
                 osm_id,
                 admin_level,
+                hasc_wiki,
                 area
         from osm_country_boundaries
         -- According to OpenStreetMap wiki only levels from 2 to 11 are valid:
@@ -38,7 +40,8 @@ create table hexagonify_boundaries as (
            max(osm_id) filter (where admin_level = 8)  as osm_id_lvl_8,
            max(osm_id) filter (where admin_level = 9)  as osm_id_lvl_9,
            max(osm_id) filter (where admin_level = 10) as osm_id_lvl_10,
-           max(osm_id) filter (where admin_level = 11) as osm_id_lvl_11
+           max(osm_id) filter (where admin_level = 11) as osm_id_lvl_11,
+           array_agg(hasc_wiki) as hasc_wiki
     from h3_in_2
     group by h3
 );

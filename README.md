@@ -107,3 +107,19 @@ Script for adding user role and schema to geocint database. If no username is pr
 are added to the geocint_users group role. You need to add the following line to pg_hba.conf.
 
 `local   gis +geocint_users  trust`
+
+
+### How to analyse build time for tables
+
+Logs for every build are stored in `/home/gis/geocint/logs`
+
+This command can show lastN {*Total times in ms*} for some {*tablename*} ordered by date
+
+```bash
+cd /home/gis/geocint/logs
+find . -type f -regex ".*/db/table/osm_admin_boundaries/log.txt" -mtime -50 -printf "%T+ %p; " -exec awk '/Time:/ {sum += $4} END {print sum/60000 " min"}' '{}' \; | sort
+```
+
+`-mtime -50` - collects every row from 50 days ago to now
+
+`-regex ".*/db/table/osm_admin_boundaries/log.txt"` - change `osm_admin_boundaries` to your {*tablename*}

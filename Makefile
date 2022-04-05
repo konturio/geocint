@@ -723,15 +723,14 @@ db/table/hdx_locations: db/table/wikidata_hasc_codes | db/table ## Create table 
 	psql -c "create table hasc_location as select distinct on (hasc) l.*, replace(h.wikidata_item, 'http://www.wikidata.org/entity/', '') as wikicode from location l left join wikidata_hasc_codes h using(hasc);"
 	touch $@
 
-data/out/gpkg_export_commands.txt: | data/out ## Create file with per country extraction commands
+data/out/kontur_boundaries_per_country/gpkg_export_commands.txt: | data/out/kontur_boundaries_per_country ## Create file with per country extraction commands
 	cat static_data/kontur_boundaries/hdx_locations.csv | parallel --colsep ';' 'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}".gpkg PG:*dbname=gis* -sql *select admin_level, name, name_en, population, hasc, geom from boundary_export where location = %"{3}"% order by admin_level;* -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
 	sed -i '1d' $@
 
-data/out/kontur_boundaries_per_country/export: db/table/hdx_locations db/table/kontur_boundaries data/out/gpkg_export_commands.txt | data/out/kontur_boundaries_per_country ## Extraction boundaries data per country, drop temporary table and zipping gpkg
+data/out/kontur_boundaries_per_country/export: db/table/hdx_locations db/table/kontur_boundaries data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | data/out/kontur_boundaries_per_country ## Extraction boundaries data per country, drop temporary table and zipping gpkg
 	psql -f tables/boundary_export.sql
 	rm -f data/out/kontur_boundaries_per_country/*.gpkg.gz
-	cat data/out/gpkg_export_commands.txt | parallel '{}'
-	rm -f data/out/gpkg_export_commands.txt
+	cat data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | parallel '{}'
 	psql -c "drop table if exists boundary_export;"
 	# We cannot delete them before, bcs it is administrative units of Netherlandsand  we want to have it in Netherlands extraction
 	ogrinfo -dialect SQLite -sql "delete from sql_statement where name='Uithuizen' or name='Delfzijl'" data/out/kontur_boundaries_per_country/kontur_boundaries_DE.gpkg

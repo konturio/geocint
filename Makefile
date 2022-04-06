@@ -1753,7 +1753,7 @@ db/table/global_rva_indexes: db/table ## Global RVA indexes to Bivariate Manager
 
 db/table/global_rva_h3_r8: db/table/global_rva_indexes ## Join Global RVA with h3 r8 hexagones by hasc codes
 	psql -c "drop table if exists global_rva_h3_r8;"
-	psql -c "create table global_rva_h3_r8 as (select g.*, h.h3, h.resolution from global_rva_indexes g right join hexagonify_boundaries h on g.hasc = h.hasc_wiki);"
+	psql -c "create table global_rva_h3_r8 as (select g.*, h.h3, h.resolution from global_rva_indexes g join hexagonify_boundaries h on g.hasc = h.hasc_wiki);"
 	touch $@
 
 data/in/foursquare/downloaded: | data/in/foursquare ## download and rename 4sq archives

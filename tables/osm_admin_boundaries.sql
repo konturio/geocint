@@ -55,56 +55,85 @@ create index on osm_admin_cnt_subdivided_in using gist(geom);
 create table osm_admin_lvls_in as
 select  b.osm_id,
         p.osm_id as parent_id,
-        b.admin_level::int as admin_level,
+        replace(b.admin_level, '2.5', '3')::int as admin_level,
         ST_Area(b.geom::geography) as area_geom,
-        b.admin_level::int as kontur_admin_level
-from    osm_admin_boundaries as b,
-        osm_admin_cnt_subdivided_in as p
-where   admin_level ~E'^\\d+$'
-        and admin_level::int > 2
-        and st_intersects(ST_PointOnSurface(b.geom), p.geom);
+        replace(b.admin_level, '2.5', '3')::int as kontur_admin_level
+from        osm_admin_boundaries as b
+LEFT JOIN   osm_admin_cnt_subdivided_in as p
+ON          st_intersects(ST_PointOnSurface(b.geom), p.geom)
+where   replace(b.admin_level,'2.5', '3') ~* '^\d+$' and 
+        replace(b.admin_level,'2.5', '3')::int > 2
 
+-- fix for lvls without parent_id
+update osm_admin_lvls_in
+set parent_id = (select max(parent_id) + 1 from osm_admin_lvls_in where parent_id is not null)
+where parent_id is null;
 
-do 
+-- here happens rearangment of level within country
+-- some countries has lvl=3 smaller by area than lvl>3
+-- after this they switch places
+with oldsort as (select parent_id, kontur_admin_level,
+        avg(area_geom) as ar
+    from osm_admin_lvls_in
+    group by parent_id, kontur_admin_level),
+newsort as (select parent_id,
+        array_agg(distinct kontur_admin_level order by kontur_admin_level) as levels
+    from oldsort
+    group by parent_id), 
+toup as (select oldsort.parent_id, kontur_admin_level, levels,
+    -- new order by avg(area_geom) desc
+    dense_rank() over(partition by oldsort.parent_id order by ar desc, kontur_admin_level) as id2
+    from oldsort, newsort
+    where oldsort.parent_id = newsort.parent_id)
+update osm_admin_lvls_in as o
+set kontur_admin_level = levels[id2]
+from toup
+where o.parent_id = toup.parent_id
+    and o.kontur_admin_level = toup.kontur_admin_level;
+
+do
 $$
     declare 
         var_lvl int;
     begin
-        for var_lvl in  select distinct admin_level 
+        for var_lvl in  select distinct kontur_admin_level 
                         from osm_admin_lvls_in 
-                        where admin_level between 2 and 8 
+                        where kontur_admin_level between 2 and 8
                         order by 1 
         loop
-            with qwrld as (select   kontur_admin_level, 
+	        with qwrld as (select   kontur_admin_level, 
                                     -- avg(area_geom) as avg_area_in_world, --was used for v1, can be switched back
                                     percentile_cont(0.8) within group (order by area_geom) as avg_area_in_world
                 from osm_admin_lvls_in
                 group by 1
                 order by 1),
             qcnt as (select   parent_id, kontur_admin_level,
-                            -- avg(area_geom) as avg_area_in_cnt --switch here also 
-                            percentile_cont(0.8) within group (order by area_geom) as avg_area_in_cnt
+                            -- avg(area_geom) as avg_area_in_cnt --switch here also
+                            percentile_cont(0.5) within group (order by area_geom) as avg_area_in_cnt
                 from    osm_admin_lvls_in
                 where   kontur_admin_level = var_lvl
                 group by    parent_id, kontur_admin_level),
             -- in next query I use abs(avg_area_in_world - avg_area_in_cnt) - to take the closest admin_level by area similarity
             qres as (select   distinct on (qcnt.parent_id, qcnt.kontur_admin_level)
-                                qcnt.parent_id, qcnt.kontur_admin_level, qwrld.kontur_admin_level as nadm_lvl, abs(avg_area_in_world - avg_area_in_cnt)
+                                qcnt.parent_id, qcnt.kontur_admin_level, qwrld.kontur_admin_level as nadm_lvl, 
+                                abs(avg_area_in_world - avg_area_in_cnt)
                 from    qcnt, qwrld
                 order by    qcnt.parent_id, qcnt.kontur_admin_level, abs(avg_area_in_world - avg_area_in_cnt) ),
             -- with new admin_level I need firstly update levels in other levels to prevent overlapping
-            -- if new lvl = 4 I need to move all levels from 4 to .. +1
+            -- if new lvl = 4 I need to move all levels from 4 to .. +1 
             upchild as (update    osm_admin_lvls_in as o
                 set     kontur_admin_level = o.kontur_admin_level + 1
-                from    qres
-                where   o.parent_id = qres.parent_id
-                        and o.kontur_admin_level >= qres.nadm_lvl
+                from qres
+                where   o.parent_id = qres.parent_id 
+                    and qres.kontur_admin_level < qres.nadm_lvl --check is it going to update in next step?
+                    and o.kontur_admin_level > qres.kontur_admin_level --update all levels bigger than new
                 returning 1)
             update  osm_admin_lvls_in as o
-            set     kontur_admin_level = qres.nadm_lvl
+            set     kontur_admin_level = GREATEST(qres.kontur_admin_level, qres.nadm_lvl) --sometimes nadm_lvl=3 and klvl=4, this prevents overlapping
             from    qres
             where   o.parent_id = qres.parent_id
-                    and o.kontur_admin_level = qres.kontur_admin_level;
+                    and o.kontur_admin_level = qres.kontur_admin_level
+                   	and qres.kontur_admin_level >= qres.nadm_lvl;
         end loop;
     end; 
 $$;

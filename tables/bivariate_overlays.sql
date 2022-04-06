@@ -5,10 +5,10 @@ create table bivariate_overlays
     ord           float,
     name          text,
     description   text,
-    x_numerator   text,
-    x_denominator text,
-    y_numerator   text,
-    y_denominator text,
+    x_numerator   text, -- vertical axis on DN
+    x_denominator text, -- vertical axis on DN
+    y_numerator   text, -- horizontal axis on DN
+    y_denominator text, -- horizontal axis on DN
     active        boolean,
     colors        jsonb
 );
@@ -116,3 +116,15 @@ select 8,
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id":"A1","color":"rgb(103,176,100)"},{"id":"A2","color":"rgb(103,176,100)"},{"id":"A3","color":"rgb(103,176,100)"},{"id":"B1","color":"rgb(232,232,157)"},{"id":"B2","color":"rgb(228,185,129)"},{"id":"B3","color":"rgb(228,127,129)"},{"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(229,154,55)"},{"id":"C3","color":"rgb(228,26,28)"}]'
 from osm_meta;
+
+insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
+select 9,
+       'Kontur OpenStreetMap Views before/after 24.02.22',
+       'view_count_bf2402',
+       'area_km2',
+       'view_count',
+       'area_km2',
+       true,
+       'This map shows difference of map views in Jan 25-Feb 24 2022 and last 30 days.',
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(28,26,228)"},{"id":"B1","color":"rgb(129,127,228)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(228,26,28)"},{"id":"C2","color":"rgb(98,98,140)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+;

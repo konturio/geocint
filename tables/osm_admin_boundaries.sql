@@ -52,6 +52,7 @@ where   admin_level ~E'^\\d+$'
 
 create index on osm_admin_cnt_subdivided_in using gist(geom);
 
+drop table if exists osm_admin_lvls_in;
 create table osm_admin_lvls_in as
 select  b.osm_id,
         p.osm_id as parent_id,
@@ -62,7 +63,7 @@ from        osm_admin_boundaries as b
 LEFT JOIN   osm_admin_cnt_subdivided_in as p
 ON          st_intersects(ST_PointOnSurface(b.geom), p.geom)
 where   replace(b.admin_level,'2.5', '3') ~* '^\d+$' and 
-        replace(b.admin_level,'2.5', '3')::int > 2
+        replace(b.admin_level,'2.5', '3')::int > 2;
 
 -- fix for lvls without parent_id
 update osm_admin_lvls_in

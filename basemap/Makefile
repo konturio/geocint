@@ -92,7 +92,7 @@ db/table/osm2pgsql: db/table/kontur_topology_boundaries data/planet-latest.osm.p
 	touch $@
 
 db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql | db/table
-	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, way) select -osm_id as osm_id, 'administrative' as boundary, admin_level, geom as way from kontur_topology_boundary;"
+	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, maritime, way) select -osm_id as osm_id, 'administrative' as boundary, admin_level, maritime, geom as way from kontur_topology_boundary;"
 	touch $@
 
 db/table/osm2pgsql_fill_lang: db/table/osm2pgsql_with_boundaries | db/table ## fill missing name:[lang]

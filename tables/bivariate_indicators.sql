@@ -286,7 +286,7 @@ where param_id in ('population', 'total_building_count', 'area_km2', 'populated_
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('view_count_bf2402', 'OSM Map Views 30 days before 24.02.2022',
-        jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        jsonb_build_array('© Kontur', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
 
 

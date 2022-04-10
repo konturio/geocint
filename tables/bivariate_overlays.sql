@@ -125,6 +125,6 @@ select 9,
        'view_count',
        'area_km2',
        true,
-       'This map shows difference of map views in Jan 25-Feb 24 2022 and last 30 days.',
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(28,26,228)"},{"id":"B1","color":"rgb(129,127,228)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(228,26,28)"},{"id":"C2","color":"rgb(98,98,140)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+       'This map shows how many times users viewed OpenStreetMap in particular region for the last 30 days in comparison to 30 days before 24.02.2022.',
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(129,127,228)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(28,26,228)"},{"id":"C2","color":"rgb(98,98,140)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 ;

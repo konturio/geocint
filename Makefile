@@ -1752,8 +1752,11 @@ db/table/global_rva_indexes: db/table ## Global RVA indexes to Bivariate Manager
 	touch $@
 
 db/table/global_rva_h3_r8: db/table/global_rva_indexes ## Join Global RVA with h3 r8 hexagones by hasc codes
+	psql -c "drop table if exists hexagonify_h3;"
+	psql -c "create table hexagonify_h3 as (select h3, min(k) from hexagonify_boundaries, unnest(hasc_wiki) as k group by h3);"
 	psql -c "drop table if exists global_rva_h3_r8;"
-	psql -c "create table global_rva_h3_r8 as (select g.*, h.h3, h.resolution from global_rva_indexes g join hexagonify_boundaries h on g.hasc = h.hasc_wiki);"
+	psql -c "create table global_rva_h3_r8 as (select g.*, h.h3, 8 as resolution from global_rva_indexes g join hexagonify_h3 h on g.hasc = h.hasc_wiki);"
+	psql -c "drop table if exists hexagonify_h3;"
 	touch $@
 
 db/table/global_rva_h3: db/table/global_rva_h3_r8 ## Generation overviws of global rva indexes

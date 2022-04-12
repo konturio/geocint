@@ -1712,14 +1712,13 @@ db/table/isochrone_destinations: | db/table ## Initialize isochrone_destinations
 	psql -c 'create table isochrone_destinations (osm_id bigint, type text, tags jsonb, geom geometry);'
 	touch $@
 
-db/table/isochrone_destinations_new: db/table/isochrone_destinations db/table/osm db/index/osm_tags_idx | db/table ## Get new isochrone destinations from osm.
+db/table/isochrone_destinations_new: db/table/isochrone_destinations db/index/osm_tags_idx | db/table ## Get new isochrone destinations from osm.
 	psql -f tables/isochrone_destinations_new.sql
 	touch $@
 
 db/table/isochrone_destinations_h3_r8: | db/table ## Initialize isochrone_destinations_h3_r8 table.
 	psql -c 'drop table if exists isochrone_destinations_h3_r8;'
 	psql -c 'create table isochrone_destinations_h3_r8 (osm_id bigint, h3 h3index, type text, distance float, geom geometry);'
-	psql -c 'create index on isochrone_destinations_h3_r8 using gist(geom, type);'
 	touch $@
 
 db/function/calculate_isodist_h3: db/table/osm_road_segments | db/function ## H3 isodist construction function.
@@ -1728,8 +1727,8 @@ db/function/calculate_isodist_h3: db/table/osm_road_segments | db/function ## H3
 
 db/table/update_isochrone_destinations_h3_r8: db/table/isochrone_destinations_new db/table/isochrone_destinations_h3_r8 db/function/calculate_isodist_h3 | db/table ## Aggregate 30 km isodists to H3 hexagons with resolution 8 for new isochrone destinations.
 	psql -c 'delete from isochrone_destinations_h3_r8 where osm_id in (select osm_id from isochrone_destinations except all select osm_id from isochrone_destinations_new);'
+	psql -c 'vacuum isochrone_destinations_h3_r8;'
 	psql -X -c 'copy (select osm_id from isochrone_destinations_new except all select osm_id from isochrone_destinations) to stdout;' | parallel --eta 'psql -c "insert into isochrone_destinations_h3_r8(osm_id, h3, type, distance, geom) select d.osm_id, i.h3, d.type, i.distance, i.geom from isochrone_destinations_new d, calculate_isodist_h3(geom, 30000, 8) i where d.osm_id = {};"'
-	psql -c 'vacuum full analyze isochrone_destinations_h3_r8;'
 	touch $@
 
 db/table/update_isochrone_destinations: db/table/update_isochrone_destinations_h3_r8 | db/table ## Update update_isochrone_destinations table.

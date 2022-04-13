@@ -63,4 +63,4 @@ create table osm_roads as (
 );
 
 -- Create index on geom to use further for cleaning facebook roads
-create index on osm_roads using gist(geom);
+-- create index on osm_roads using gist(geom);

@@ -11,7 +11,7 @@ create table boundaries_in as
 	from kontur_boundaries k join
 	     global_rva_indexes g
 	on g.hasc = k.hasc_wiki
-	where hasc_wiki in (select hasc from global_rva_indexes);
+	where k.hasc_wiki in (select hasc from global_rva_indexes);
 
 -- generate h3 grid for every boundary:
 drop table if exists boundaries_h3_in;

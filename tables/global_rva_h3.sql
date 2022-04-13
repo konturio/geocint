@@ -5,19 +5,7 @@ create table boundaries_in as
 	       kontur_admin_level as admin_level,
 	       geom               as geom
 	from kontur_boundaries
-	where hasc_wiki in ('RU','FK','KP','DK','SI','SN','PN','CZ','KR','VE','BS','MH','AU','QA','MZ','EE','VN','TD','NF',
-		                'KW','AR','MG','BR','BV','RW','NA','PL','VU','MC','VC','GI','EG','TT','MU','NU','HU','FI','WF',
-		                'ST','NR','EC','KG','AO','MR','IE','DJ','BD','AQ','ES','TH','BA','TN','AL','GS','VA','GF','MM',
-		                'PY','US','SG','CK','KE','YE','UG','LY','NZ','GU','DM','IN','CN','NE','BN','ME','ET','MY','MV',
-		                'MQ','VG','SE','SB','GH','CH','BT','PW','PK','LU','BO','FM','ML','LV','FJ','PG','RO','TZ','BI',
-		                'SO','ZW','ER','LC','CG','FO','GA','MN','GY','WS','PA','LB','MD','PT','TO','UM','NG','CC','IL',
-		                'GB','IT','GP','CR','MK','GR','BJ','CM','GW','CX','TK','TF','SV','JP','UZ','TL','TV','CL','GE',
-		                'BM','AT','LI','CI','NI','TJ','LR','BZ','YT','LA','MT','BY','EH','LK','SA','SM','DE','SK','SJ',
-		                'SS','LT','JM','SH','SR','CY','PF','BB','SZ','AG','RS','TM','TG','JE','RE','UA','DO','NO','TR',
-		                'PS','BH','CU','MA','SY','CO','BE','DZ','PM','AS','AZ','GL','GT','PE','KZ','SL','UY','AE','HN',
-		                'IQ','IR','CF','NL','GQ','GM','ZM','LS','CD','SD','TC','HK','KM','IO','NP','BW','MP','AI','KN',
-		                'BF','SC','VI','AW','CA','PR','FR','KY','MX','GG','MS','PH','NC','IM','ID','OM','AM','KI','AF',
-		                'HT','ZA','AD','GN','JO','BG','IS','HR','KH','MW','HM','GD','CV','BQ');
+	where hasc_wiki in (select hasc from global_rva_indexes);
 
 -- generate h3 grid for every boundary:
 drop table if exists boundaries_h3_in;

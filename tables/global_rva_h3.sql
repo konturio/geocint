@@ -13,33 +13,18 @@ create table boundaries_in as
 	on g.hasc = k.hasc_wiki
 	where k.hasc_wiki in (select hasc from global_rva_indexes);
 
--- generate h3 grid for every boundary:
-drop table if exists boundaries_h3_in;
-create table boundaries_h3_in as
-    select  h3_polyfill(ST_Subdivide(geom), 8) as h3,
-            admin_level,
-            mhr_index,
-	        mhe_index,
-	        resilience_index,
-	        coping_capacity_index,
-	        vulnerability_index
-    from boundaries_in;
-
--- drop temporary table
-drop table if exists boundaries_in;
-
 -- remove duplicates with low admin level
-drop table if exists global_rva_h3 ;
+drop table if exists global_rva_h3;
 create table global_rva_h3  as
-	select distinct on (h3) h3,
+	select distinct on (h3) h3_polyfill(ST_Subdivide(geom), 8) as h3,
 	                        mhr_index,
 	                        mhe_index,
 	                        resilience_index,
 	                        coping_capacity_index,
 	                        vulnerability_index,
 	                        8 as resolution
-	from boundaries_h3_in
+	from boundaries_in
 	order by admin_level desc;
 
 -- drop temporary table
-drop table if exists boundaries_h3_in;
+drop table if exists boundaries_in;

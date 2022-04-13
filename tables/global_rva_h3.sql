@@ -43,8 +43,8 @@ create index on boundaries_h3_mid using gin(hasc);
 drop table if exists boundaries_h3_in;
 
 -- Create table with pdc data joined with hexs by hasc
-drop table if exists global_rva_h3_r8;
-create table global_rva_h3_r8 as
+drop table if exists global_rva_h3;
+create table global_rva_h3 as
 	select b.h3,
 	       8 as resolution,
 	       g.*

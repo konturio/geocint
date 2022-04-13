@@ -25,7 +25,7 @@ create table boundaries_h3_mid as
 	                        hasc
 	from boundaries_h3_in
 	order by admin_level desc;
-create index on boundaries_h3_mid using gin(hasc);
+create index on boundaries_h3_mid using btree(hasc);
 
 -- drop temporary table
 drop table if exists boundaries_h3_in;

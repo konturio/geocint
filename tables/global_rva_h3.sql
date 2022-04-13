@@ -24,7 +24,7 @@ create table global_rva_h3  as
 	                        vulnerability_index,
 	                        8 as resolution
 	from boundaries_in
-	order by admin_level desc;
+	order by h3, admin_level desc;
 
 -- drop temporary table
 drop table if exists boundaries_in;

@@ -17,7 +17,7 @@ create table boundaries_in as
 		                'PS','BH','CU','MA','SY','CO','BE','DZ','PM','AS','AZ','GL','GT','PE','KZ','SL','UY','AE','HN',
 		                'IQ','IR','CF','NL','GQ','GM','ZM','LS','CD','SD','TC','HK','KM','IO','NP','BW','MP','AI','KN',
 		                'BF','SC','VI','AW','CA','PR','FR','KY','MX','GG','MS','PH','NC','IM','ID','OM','AM','KI','AF',
-		                'HT','ZA','AD','GN','JO','BG','IS','HR','KH','MW','HM','GD','CV');
+		                'HT','ZA','AD','GN','JO','BG','IS','HR','KH','MW','HM','GD','CV','BQ');
 
 -- generate h3 grid for every boundary:
 drop table if exists boundaries_h3_in;
@@ -46,8 +46,12 @@ drop table if exists boundaries_h3_in;
 drop table if exists global_rva_h3;
 create table global_rva_h3 as
 	select b.h3,
-	       8 as resolution,
-	       g.*
+	       8                       as resolution,
+	       g.mhr_index             as mhr_index,
+	       g.mhe_index             as mhe_index,
+	       g.resilience_index      as resilience_index,
+	       g.coping_capacity_index as coping_capacity_index,
+	       g.vulnerability_index   as vulnerability_index
 	       from global_rva_indexes g,
 	            boundaries_h3_mid b
 	       where g.hasc = b.hasc;

@@ -54,6 +54,11 @@ from
             foursquare_visits_count,
             foursquare_places_count,
             view_count_bf2402,
+            coalesce(mhr_index, 0) as mhr_index,
+            coalesce(mhe_index, 0) as mhe_index,
+            coalesce(resilience_index, 0) as resilience_index,
+            coalesce(coping_capacity_index, 0) as coping_capacity_index,
+            coalesce(vulnerability_index, 0) as vulnerability_index,
             ST_AsMVTGeom(geom, ST_TileEnvelope($1, $2, $3), 8192, 64, true) as geom
         from stat_h3
         where zoom = $1

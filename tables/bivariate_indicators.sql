@@ -289,6 +289,30 @@ values ('view_count_bf2402', 'OSM Map Views 30 days before 24.02.2022',
         jsonb_build_array('© Kontur', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('mhr_index', 'mhr_index', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('mhe_index', 'mhe_index', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('coping_capacity_index', 'coping_capacity_index', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('resilience_index', 'resilience_index', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('vulnerability_index', 'vulnerability_index', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["good"], ["bad"]]'::jsonb);
 
 --- this is an ugly hack to enable Parallel Seq Scan on bivariate_indicators
 -- Postgres parallel seq scan works on page level, so we can't really get it to run more workers than there are

@@ -91,7 +91,12 @@ create table stat_h3_quality as (
                 avg(a.total_road_length) as agg_total_road_length,
                 avg(a.foursquare_places_count) as agg_foursquare_places_count,
                 avg(a.foursquare_visits_count) as agg_foursquare_visits_count,
-                avg(a.view_count_bf2402) as agg_view_count_bf2402
+                avg(a.view_count_bf2402) as agg_view_count_bf2402,
+                avg(a.mhr_index) as agg_mhr_index,
+                avg(a.mhe_index) as agg_mhe_index,
+                avg(a.resilience_index) as agg_resilience_index,
+                avg(a.coping_capacity_index) as agg_coping_capacity_index,
+                avg(a.vulnerability_index) as agg_vulnerability_index
             from
                 stat_h3 a
             where

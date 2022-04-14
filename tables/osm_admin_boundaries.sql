@@ -153,6 +153,8 @@ where 	admin_level = '2';
 
 -- kontur_admin_level is null for all objects with errors in admin_level (f.e. text value in admin_level)
 -- i left this on purpose, it is discussable 
+-- If you have a problems with kontur_admin_level with 'Swalbard and Jan Mayen' and 'United States Minor Islands'
+-- kontur_admin_level assign to null for them in tables/kontur_boundaries.sql
 
 drop table if exists osm_admin_cnt_subdivided_in;
 drop table if exists osm_admin_lvls_in;

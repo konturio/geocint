@@ -1,17 +1,48 @@
+--Prepare osm_admin_boundaries_in with additional boundaries
+drop table if exists osm_admin_boundaries_in;
+create table osm_admin_boundaries_in as
+        select * from osm_admin_boundaries
+        union all
+        -- Add 'Swalbard and Jan Mayen' and 'United States Minor Islands' boundary
+        select max(o.osm_id)+1          as osm_id,
+               null                     as osm_type,
+               'iso'                    as boundary,
+               null                     as admin_level,
+               'Svalbard and Jan Mayen' as name,
+               '{"name:en": "Svalbard and Jan Mayen", "wikidata": "Q842829", "ISO3166-2": "NO-SJ"}' as tags,
+               a.geom                   as geom,
+               null                     as kontur_admin_level
+        from osm_admin_boundaries o,
+             (select ST_Union(ST_Normalize(geog::geometry)) from osm where osm_id in ('1337397','1337126') and osm_type = 'relation') a
+        union all
+        select max(o.osm_id)+2                        as osm_id,
+               null                                   as osm_type,
+               'iso'                                  as boundary,
+               null                                   as admin_level,
+               'United States Minor Outlying Islands' as name,
+               '{"name:en": "United States Minor Outlying Islands", "wikidata": "Q16645", "ISO3166-2": "US-UM"}' as tags,
+               b.geom                                 as geom,
+               null                                   as kontur_admin_level
+        from osm_admin_boundaries o,
+             (select ST_Union(ST_Normalize(geog::geometry)) 
+                  from osm where osm_id in ('8161698','6430384','7248458','12814070','7248454','7248460',
+                                            '7248461','7248459','7248455','5748709','11212373') 
+                                 and osm_type = 'relation') b;
+
 -- Prepare subdivided osm admin boundaries table with index for further queries
 drop table if exists osm_admin_subdivided_in;
 create table osm_admin_subdivided_in as
 select
         osm_id,
         ST_Subdivide(ST_Transform(geom, 3857)) as geom
-from osm_admin_boundaries;
+from osm_admin_boundaries_in;
 create index on osm_admin_subdivided_in using gist(geom);
 
 -- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
 -- To exclude Crimea population from Russia population calculation
 with ukraine_border as (
     select ST_Transform(geom, 3857) geom
-    from osm_admin_boundaries
+    from osm_admin_boundaries_in
     where osm_id = 60199
 )
 update osm_admin_subdivided_in k
@@ -20,8 +51,8 @@ update osm_admin_subdivided_in k
         where k.osm_id in ('60189', '1059500');
 
 -- Sum population from h3 to osm admin boundaries (rounding to integers)
-drop table if exists osm_admin_boundaries_in;
-create table osm_admin_boundaries_in as
+drop table if exists osm_admin_boundaries_mid;
+create table osm_admin_boundaries_mid as
 with sum_population as (
         select
                 b.osm_id,
@@ -52,10 +83,12 @@ select
         b.tags,
         p.population,
         b.geom
-from osm_admin_boundaries b
+from osm_admin_boundaries_in b
 left join sum_population p using(osm_id);
-create index on osm_admin_boundaries_in using gist(geom, ST_Area(geom));
+create index on osm_admin_boundaries_mid using gist(geom, ST_Area(geom));
 
+-- Drop temporary table
+drop table if exists osm_admin_boundaries_in;
 
 -- Join OSM admin boundaries and HASC codes based on max IOU
 drop table if exists kontur_boundaries_in;
@@ -75,7 +108,7 @@ with gadm_in as (
                         ST_Area(ST_Union(b.geom, g.geom)) as iou
                 from (
                         select b.osm_id, b.geom
-                        from osm_admin_boundaries_in b
+                        from osm_admin_boundaries_mid b
                         where ST_Area(b.geom) between 0.1 * ST_Area(g.geom) and 10 * ST_Area(g.geom)
                                 and (g.geom && b.geom)
                         order by abs(ST_Area(b.geom) - ST_Area(g.geom))
@@ -102,7 +135,7 @@ select distinct on (b.osm_id)
         b.tags,
         b.population,
         b.geom
-from osm_admin_boundaries_in b
+from osm_admin_boundaries_mid b
 left join gadm_in g using(osm_id)
 order by b.osm_id, g.hasc is not null desc, g.iou desc;
 
@@ -121,7 +154,7 @@ left join wikidata_population p
 
 -- Drop temporary tables
 drop table if exists osm_admin_subdivided_in;
-drop table if exists osm_admin_boundaries_in;
+drop table if exists osm_admin_boundaries_mid;
 drop table if exists kontur_boundaries_in;
 
 -- Special case for Soutern Federal District and Russia

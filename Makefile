@@ -689,7 +689,7 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 	psql -c "alter table gadm_countries_boundary alter column geom type geometry(multipolygon, 3857) using ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
 
-db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes db/table/wikidata_population | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
+db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes db/table/wikidata_population db/table/osm | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 

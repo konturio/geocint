@@ -14,6 +14,7 @@ create table osm_admin_boundaries_in as
                null                     as kontur_admin_level
         from osm_admin_boundaries o,
              (select ST_Union(ST_Normalize(geog::geometry)) as geom from osm where osm_id in ('1337397','1337126') and osm_type = 'relation') a
+             group by a.geom
         union all
         select max(o.osm_id)+2                        as osm_id,
                null                                   as osm_type,
@@ -27,7 +28,8 @@ create table osm_admin_boundaries_in as
              (select ST_Union(ST_Normalize(geog::geometry)) as geom
                   from osm where osm_id in ('8161698','6430384','7248458','12814070','7248454','7248460',
                                             '7248461','7248459','7248455','5748709','11212373') 
-                                 and osm_type = 'relation') b;
+                                 and osm_type = 'relation') b
+             group by b.geom;
 
 -- Prepare subdivided osm admin boundaries table with index for further queries
 drop table if exists osm_admin_subdivided_in;

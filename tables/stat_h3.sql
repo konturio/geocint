@@ -432,7 +432,7 @@ create table stat_h3 as (
            a.mhe_index, 
            a.resilience_index, 
            a.coping_capacity_index, 
-           a.vulnerability_index
+           a.vulnerability_index,
            (coalesce(b.avg_slope, 0))::float as avg_slope,
            (coalesce(g.avg_elevation, 0))::float as avg_elevation,
            (coalesce(cf.forest_area, 0))::float as forest,

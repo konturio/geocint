@@ -15,6 +15,8 @@ metadata:
   name: tileserver-gl-deployment
   labels:
     app: tileserver-gl
+    tier: %TIER%
+    version: 1.0.1
 spec:
   replicas: 1
   selector:

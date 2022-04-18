@@ -285,7 +285,9 @@ where
 
 update bivariate_axis
 set
-    label = 'Distance to fire station (km)'
+    label = 'Distance to fire station (km)',
+    p25 = 3.0, 
+    p75 = 10.0
 where
       numerator = 'man_distance_to_fire_brigade'
   and denominator = 'population';

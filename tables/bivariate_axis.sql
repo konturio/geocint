@@ -336,7 +336,7 @@ where
 
 update bivariate_axis
 set
-    label = 'OSM Map Views, Jan 25-Feb 24 2022, n/km²)'
+    label = 'OSM Map Views, Jan 25-Feb 24 2022 (n/km²)'
 where
       numerator = 'view_count_bf2402'
   and denominator = 'area_km2';

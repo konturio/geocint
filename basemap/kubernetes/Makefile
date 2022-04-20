@@ -33,7 +33,8 @@ teardown-rendering-job-prod: basemap-rendering-job-prod.yaml
 # Tileserver-GL deployment
 
 tileserver-gl-deployment-dev.yaml: tileserver-gl-deployment.yaml
-	sed -e 's/%PORT%/3000/g' \
+	sed -e 's/%TIER%/dev/g' \
+		-e 's/%PORT%/3000/g' \
 		-e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/DEV\//g' \
 		tileserver-gl-deployment.yaml > $@
 
@@ -44,7 +45,8 @@ teardown-tileserver-gl-dev: tileserver-gl-deployment-dev.yaml
 	kubectl delete -f tileserver-gl-deployment-dev.yaml -n dev-basemap
 
 tileserver-gl-deployment-test.yaml: tileserver-gl-deployment.yaml
-	sed -e 's/%PORT%/3001/g' \
+	sed -e 's/%TIER%/test/g' \
+		-e 's/%PORT%/3001/g' \
 		-e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/TEST\//g' \
 		tileserver-gl-deployment.yaml > $@
 
@@ -55,7 +57,8 @@ teardown-tileserver-gl-test: tileserver-gl-deployment-test.yaml
 	kubectl delete -f tileserver-gl-deployment-test.yaml -n test-basemap
 
 tileserver-gl-deployment-prod.yaml: tileserver-gl-deployment.yaml
-	sed -e 's/%PORT%/3002/g' \
+	sed -e 's/%TIER%/prod/g' \
+		-e 's/%PORT%/3002/g' \
 		-e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/PROD\//g' \
 		tileserver-gl-deployment.yaml > $@
 

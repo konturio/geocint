@@ -3,22 +3,25 @@ kind: PersistentVolumeClaim
 metadata:
   name: tileserver-gl-claim
 spec:
+  accessModes:
+    - ReadWriteOnce
   resources:
     requests:
       storage: 150Gi
-  accessModes:
-    - ReadWriteOnce
+  storageClassName: local-path
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tileserver-gl-deployment
   labels:
     app: tileserver-gl
-    tier: %TIER%
+    tier: '%TIER%'
     version: 1.0.1
+  name: tileserver-gl-deployment
 spec:
+  progressDeadlineSeconds: 600
   replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       name: tileserver-gl
@@ -29,69 +32,78 @@ spec:
     spec:
       containers:
         - name: tileserver-gl
-          image: nexus.kontur.io:8084/maptiler/tileserver-gl
           args:
-            - "-p"
-            - "8080"
-            - "--mbtiles"
-            - "basemap.mbtiles"
-          ports:
-            - containerPort: 8080
-          volumeMounts:
-            - name: tileserver-gl-storage
-              mountPath: /data
+            - '-p'
+            - '8080'
+            - '--mbtiles'
+            - basemap.mbtiles
+          image: 'nexus.kontur.io:8084/maptiler/tileserver-gl'
+          imagePullPolicy: Always
           livenessProbe:
+            failureThreshold: 3
             httpGet:
               path: /health
               port: 8080
+              scheme: HTTP
             initialDelaySeconds: 500
             periodSeconds: 10
-      initContainers:
-        - name: download-basemap-from-s3
-          image: nexus.kontur.io:8084/amazon/aws-cli
+            successThreshold: 1
+            timeoutSeconds: 1
+          ports:
+            - containerPort: 8080
+              protocol: TCP
           volumeMounts:
-            - name: tileserver-gl-storage
-              mountPath: /data
-          env:
-            - name: S3_BASEMAP_PATH
-              value: %S3_BASEMAP_PATH%
-            - name: AWS_DEFAULT_REGION
-              value: eu-central-1
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: kontur-aws
-                  key: access-key-id
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: kontur-aws
-                  key: secret-access-key-id
-          command:
+            - mountPath: /data
+              name: tileserver-gl-storage
+      imagePullSecrets:
+        - name: kontur-aws
+        - name: kontur-nexus
+      initContainers:
+        - command:
             - aws
             - s3
             - sync
             - $(S3_BASEMAP_PATH)
             - /data
+          env:
+            - name: S3_BASEMAP_PATH
+              value: '%S3_BASEMAP_PATH%'
+            - name: AWS_DEFAULT_REGION
+              value: eu-central-1
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  key: access-key-id
+                  name: kontur-aws
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: secret-access-key-id
+                  name: kontur-aws
+          image: 'nexus.kontur.io:8084/amazon/aws-cli'
+          imagePullPolicy: Always
+          name: download-basemap-from-s3
+          volumeMounts:
+            - mountPath: /data
+              name: tileserver-gl-storage
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
       volumes:
         - name: tileserver-gl-storage
           persistentVolumeClaim:
             claimName: tileserver-gl-claim
-      imagePullSecrets:
-        - name: kontur-aws
-        - name: kontur-nexus
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: tileserver-gl-service
   annotations:
     metallb.universe.tf/address-pool: default
     metallb.universe.tf/allow-shared-ip: SHARED-IP-01
+  name: tileserver-gl-service
 spec:
   ports:
-  - port: %PORT%
-    targetPort: 8080
+    - port: '%PORT%'
+      targetPort: 8080
   selector:
     name: tileserver-gl
   type: LoadBalancer

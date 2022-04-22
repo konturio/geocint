@@ -1,6 +1,6 @@
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3_r8 db/table/ndpba_rva_h3 ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3_r8 db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Pipeline finished. Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -11,7 +11,7 @@ prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/population_api
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_population_csv/download data/in/wikidata_hasc_codes.csv
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_population_csv/download data/in/wikidata_hasc_codes.csv data/in/kontur_events/download
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -2085,3 +2085,41 @@ deploy/prod/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 # deploy/prod/cleanup_cache: deploy/prod/population_api_tables | deploy/prod ## Clear insights-api cache on Prod.
 #	bash scripts/check_http_response_code.sh GET https://apps.kontur.io/insights-api/cache/cleanUp 200
 #	touch $@
+
+
+data/in/kontur_events: | data/in ## Download dir for kontur_events files.
+	mkdir -p $@
+
+data/out/kontur_events: | data/out ## Output dir for kontur_events updated files
+	mkdir -p $@
+
+data/in/kontur_events/download: | data/in/kontur_events ## Download kontur-events.geojsons for every tier.
+	rm -f data/in/kontur_events/*.geojson
+	aws s3 cp "s3://event-api-locker01/kontur_events/EXP/kontur-events.geojson"      data/in/kontur_events/kontur-events-exp.geojson  --profile kontur-events
+	aws s3 cp "s3://event-api-locker01/kontur_events/TEST DEV/kontur-events.geojson" data/in/kontur_events/kontur-events-dev.geojson  --profile kontur-events
+	aws s3 cp "s3://event-api-locker01/kontur_events/TEST QA/kontur-events.geojson"  data/in/kontur_events/kontur-events-test.geojson --profile kontur-events
+	aws s3 cp "s3://event-api-locker01/kontur_events/PROD/kontur-events.geojson"     data/in/kontur_events/kontur-events-prod.geojson --profile kontur-events
+	touch $@
+
+data/out/kontur_events/updated:  data/in/kontur_events/download | data/out/kontur_events ## update.
+	rm -f data/out/kontur_events/*.geojson
+	cat data/in/kontur_events/kontur-events-exp.geojson  | jq | sed "/updated_at/c\ \"updated_at\" : \"${shell date '+%d-%m-%YT%H:%M:%SZ'}\"" | jq -c . > data/out/kontur_events/kontur-events-exp.geojson
+	cat data/in/kontur_events/kontur-events-dev.geojson  | jq | sed "/updated_at/c\ \"updated_at\" : \"${shell date '+%d-%m-%YT%H:%M:%SZ'}\"" | jq -c . > data/out/kontur_events/kontur-events-dev.geojson
+	cat data/in/kontur_events/kontur-events-test.geojson | jq | sed "/updated_at/c\ \"updated_at\" : \"${shell date '+%d-%m-%YT%H:%M:%SZ'}\"" | jq -c . > data/out/kontur_events/kontur-events-test.geojson
+	cat data/in/kontur_events/kontur-events-prod.geojson | jq | sed "/updated_at/c\ \"updated_at\" : \"${shell date '+%d-%m-%YT%H:%M:%SZ'}\"" | jq -c . > data/out/kontur_events/kontur-events-prod.geojson
+	touch $@
+
+deploy/s3/test/kontur_events_updated: data/out/kontur_events/updated | deploy/s3/test ## create backups and load updated files.
+	aws s3 cp "s3://event-api-locker01/kontur_events/EXP/kontur-events.geojson" "s3://event-api-locker01/kontur_events/EXP/kontur-events.geojson.bak" --profile kontur-events
+	aws s3 cp data/out/kontur_events/kontur-events-exp.geojson "s3://event-api-locker01/kontur_events/EXP/kontur-events.geojson" --profile kontur-events
+	aws s3 cp "s3://event-api-locker01/kontur_events/TEST DEV/kontur-events.geojson" "s3://event-api-locker01/kontur_events/TEST DEV/kontur-events.geojson.bak" --profile kontur-events
+	aws s3 cp data/out/kontur_events/kontur-events-dev.geojson "s3://event-api-locker01/kontur_events/TEST DEV/kontur-events.geojson" --profile kontur-events
+	aws s3 cp "s3://event-api-locker01/kontur_events/TEST QA/kontur-events.geojson" "s3://event-api-locker01/kontur_events/TEST QA/kontur-events.geojson.bak" --profile kontur-events
+	aws s3 cp data/out/kontur_events/kontur-events-test.geojson "s3://event-api-locker01/kontur_events/TEST QA/kontur-events.geojson" --profile kontur-events
+	touch $@
+
+deploy/s3/prod/kontur_events_updated: data/out/kontur_events/updated | deploy/s3/prod ## create backups and load updated files.
+	aws s3 cp "s3://event-api-locker01/kontur_events/PROD/kontur-events.geojson" "s3://event-api-locker01/kontur_events/PROD/kontur-events.geojson.bak" --profile kontur-events
+	aws s3 cp data/out/kontur_events/kontur-events-prod.geojson "s3://event-api-locker01/kontur_events/PROD/kontur-events.geojson" --profile kontur-events
+	touch $@
+

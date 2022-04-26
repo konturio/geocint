@@ -1,4 +1,3 @@
--- Create new table facebook_roads selecting only features that have less than 50% intersection with 10m buffer from Open Street Map roads
 drop table if exists facebook_roads;
 create table facebook_roads as
 select
@@ -6,11 +5,4 @@ select
        f.highway_tag         as highway,
        f.geom
 from facebook_roads_in f
-left join osm_roads o
-        on ST_Intersects(f.geom, o.geom)
-             and ST_Length(
-             	ST_Intersection(
-             		f.geom, ST_Buffer(o.geom::geography, 10, 'endcap=flat join=bevel')::geometry
-             	    -- `endcap=flat join=bevel` lessens points in buffer geom
-             	)) > 0.5 * ST_Length(f.geom)
-where o.osm_id is null
+where ST_NPoints(geom) = 2; -- ai roads are segments. osm roads are lines.

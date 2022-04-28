@@ -2,6 +2,7 @@
 -- Facebook roads spec: https://github.com/facebookmicrosites/Open-Mapping-At-Facebook/wiki/Available-Countries
 -- Note: The point of our filter is to remove the newly mapped roads that were mapped in OSM after the dataset was published by FB.
 
+-- NOTE: facebook_roads need to be manually delete after facebook_roads_in refresh
 create table if not exists facebook_roads as (
     select
         way_fbid,

@@ -1,5 +1,5 @@
-drop table if exists osm_water_polygons_unsorted;
-create table osm_water_polygons_unsorted as (
+drop table if exists osm_water_polygons;
+create table osm_water_polygons as (
     select osm_type,
            osm_id,
            geom
@@ -20,15 +20,7 @@ create table osm_water_polygons_unsorted as (
     from osm_water_lines_buffers_subdivided
 );
 
-drop table if exists osm_water_polygons;
-create table osm_water_polygons as (
-    select *
-    from osm_water_polygons_unsorted
-    order by _ST_SortableHash(geom)
-);
-drop table osm_water_polygons_unsorted;
-vacuum analyze osm_water_polygons;
-create index on osm_water_polygons using gist (geom);
+create index on osm_water_polygons using gist(geom);
 
 drop table if exists osm_water_polygons_in_subdivided;
 drop table if exists osm_water_lines_buffers_subdivided;

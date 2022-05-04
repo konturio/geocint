@@ -1042,9 +1042,9 @@ db/table/global_fires: data/in/global_fires/download_new_updates data/mid/global
 	ls data/mid/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {} | psql -c 'set time zone utc; copy global_fires_in (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;'"
 	psql -c "vacuum analyze global_fires_in;"
 	psql -c "create table if not exists global_fires (like global_fires_in);"
-	psql -c "insert into global_fires select distinct on (n.hash) n.* from global_fires_in n left outer join global_fires gf on n.hash = gf.hash where gf is null;"
+	psql -c "insert into global_fires select distinct on (n.hash) n.* from global_fires_in n left outer join global_fires gf on n.hash = gf.hash where gf.hash is null;"
 	psql -c "vacuum analyze global_fires;"
-	psql -c "create index if not exists global_fires_full_acq_datetime_idx on global_fires_full using brin (acq_datetime);"
+	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
 	psql -c "drop table global_fires_in;"
 	rm -f data/mid/global_fires/*.csv
 	touch $@

@@ -19,7 +19,6 @@ create table osm_unpopulated as (
 	        or tags @> '{"population":"0"}'
 	        or (tags ->> 'highway') in ('motorway','trunk', 'primary', 'secondary', 'tertiary')
 	)
-    order by _ST_SortableHash(geog::geometry)
 );
 
 create index on osm_unpopulated using gist (geom);

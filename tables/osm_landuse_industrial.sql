@@ -12,7 +12,6 @@ create table osm_landuse_industrial as (
             or tags @> '{"landuse":"harbour"}'
             or tags @> '{"landuse":"industrial"}')
       and ST_Dimension(geog::geometry) = 2
-    order by _ST_SortableHash(geog::geometry)
 );
 
 create index on osm_landuse_industrial using gist (geom);

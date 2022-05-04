@@ -8,7 +8,6 @@ create table osm_volcanos as (
     where tags @> '{"natural":"volcano"}'
       and tags ->> 'volcano:status' in ('active', 'dormant')
       and ST_Dimension(geog::geometry) = 0
-    order by _ST_SortableHash(geog::geometry)
 );
 
 create index on osm_volcanos using gist (geom);

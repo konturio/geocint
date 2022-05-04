@@ -70,26 +70,23 @@ with unnested as (
     select
            unnest(array_prepend(osm_id, children)) osm_id,
            osm_id group_id,
-           admin_level,
-           name,
            population,
            c_sum_pop,
            pop_diff,
-           pop_diff_percent
+           pop_diff_percent,
+        -- this column used to sort as buckets
+           tmpSort
     from (
-        select *
+        select *, row_number() over(order by admin_level) as tmpSort
         from osm_admin_hierarchy
         order by admin_level, pop_diff_percent desc
     ) a
-)
-select
-        -- Generic id for proper sorting while further export to CSV:
-        row_number() over(
-            order by u.admin_level, u.pop_diff desc, (u.group_id = u.osm_id) desc, o.name
-        )                                                                                   as id,
-
+),
+step1 as (
+    select
         -- Mark start of the string with subrow_ prefix if needed:
         case when u.group_id = u.osm_id then '' else 'subrow_' end ||
+
         -- Generate link to object properties on osm.org:
         coalesce('href_[' || u.osm_id || '](https://www.openstreetmap.org/' ||
         o.osm_type || '/' || u.osm_id || ')', '')                                           as "OSM id",
@@ -106,9 +103,13 @@ select
         case when u.group_id = u.osm_id  then u.c_sum_pop end                               as "SUM subregions population",
         case when u.group_id = u.osm_id  then u.pop_diff  end                               as "Population difference value",
         case when u.group_id = u.osm_id  then round(u.pop_diff_percent, 4) end              as "Population difference %"
-from unnested u
-left join osm_admin_boundaries_in o using(osm_id)
-order by u.admin_level, u.pop_diff desc, (u.group_id = u.osm_id) desc, o.name;
+    from unnested u
+    left join osm_admin_boundaries_in o using(osm_id)
+    order by tmpSort, admin_level, u.pop_diff desc, o.name
+)
+-- generate id
+select row_number() over() as id, *
+from step1;
 
 
 -- Drop unnecessary tables

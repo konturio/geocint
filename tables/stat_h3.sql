@@ -40,12 +40,11 @@ create table stat_h3_in as (
            coalesce(sum(foursquare_places_count), 0) as foursquare_places_count,
            coalesce(sum(foursquare_visits_count), 0) as foursquare_visits_count,
            coalesce(sum(view_count_bf2402), 0) as view_count_bf2402,
-           coalesce(sum(road_segments_length), 0) as road_segments_length,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
                     building_count_6_months as building_count_6_months,  null::float as total_building_count,
-                    highway_length as highway_length, highway_length_6_months as highway_length_6_months, osm_users as osm_users,
+                    null::float as highway_length, highway_length_6_months as highway_length_6_months, osm_users as osm_users,
                     null::float as population, null::float as residential, null::float as gdp, min_ts as min_ts, max_ts as max_ts,
                     avgmax_ts as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
@@ -54,7 +53,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from osm_object_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -68,7 +67,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from kontur_population_h3
              union all
              select h3, null::float as count, null::float as count_6_months,null::float as building_count,
@@ -82,7 +81,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from gdp_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -96,7 +95,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, h3_get_resolution(h3) as resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, h3_get_resolution(h3) as resolution
              from user_hours_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -110,7 +109,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, h3_get_resolution(h3) as resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, h3_get_resolution(h3) as resolution
              from residential_pop_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -124,7 +123,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from tile_logs_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -138,7 +137,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from building_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -152,7 +151,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from global_fires_stat_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -166,7 +165,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from covid19_vaccine_accept_us_counties_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -180,7 +179,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from covid19_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -194,7 +193,7 @@ create table stat_h3_in as (
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from kontur_population_v3_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -208,7 +207,7 @@ create table stat_h3_in as (
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from osm_landuse_industrial_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -222,7 +221,7 @@ create table stat_h3_in as (
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from osm_volcanos_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -235,7 +234,7 @@ create table stat_h3_in as (
                     pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from us_census_tracts_stats_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -249,7 +248,7 @@ create table stat_h3_in as (
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, man_distance as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from isodist_fire_stations_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -263,7 +262,7 @@ create table stat_h3_in as (
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, man_distance as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from isodist_hospitals_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -277,7 +276,7 @@ create table stat_h3_in as (
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     fb_roads_length as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from facebook_roads_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -291,7 +290,7 @@ create table stat_h3_in as (
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from foursquare_places_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -305,7 +304,7 @@ create table stat_h3_in as (
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    foursquare_visits_count, null::float as view_count_bf2402, null::float as road_segments_length, resolution
+                    foursquare_visits_count, null::float as view_count_bf2402, resolution
              from foursquare_visits_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -319,7 +318,7 @@ create table stat_h3_in as (
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, 
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, view_count_bf2402, null::float as road_segments_length, resolution
+                    null::float as foursquare_visits_count, view_count_bf2402, resolution
              from tile_logs_bf2402_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -333,7 +332,7 @@ create table stat_h3_in as (
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, 
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402, road_segments_length, resolution
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, highway_length, resolution
              from osm_road_segments_h3
         ) z
     group by 2, 1
@@ -383,7 +382,6 @@ create table stat_h3 as (
            a.foursquare_places_count,
            a.foursquare_visits_count,
            a.view_count_bf2402,
-           a.road_segments_length,
            (coalesce(b.avg_slope, 0))::float as avg_slope,
            (coalesce(g.avg_elevation, 0))::float as avg_elevation,
            (coalesce(cf.forest_area, 0))::float as forest,
@@ -437,5 +435,5 @@ create index stat_h3_brin_pt2 on stat_h3 using brin (
                                                      days_mintemp_above_25c_1c, days_mintemp_above_25c_2c,
                                                      days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c, avg_slope,
                                                      man_distance_to_fire_brigade, man_distance_to_hospital,
-                                                     foursquare_visits_count, foursquare_places_count, road_segments_length
+                                                     foursquare_visits_count, foursquare_places_count
     );

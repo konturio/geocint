@@ -59,7 +59,6 @@ from
             resilience_index,
             coping_capacity_index,
             vulnerability_index,
-            road_segments_length,
             ST_AsMVTGeom(geom, ST_TileEnvelope($1, $2, $3), 8192, 64, true) as geom
         from stat_h3
         where zoom = $1

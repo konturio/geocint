@@ -7,27 +7,50 @@ select coalesce(tags ->> 'name:en', tags ->> 'int_name', name) as name_en,
 from osm_admin_boundaries where admin_level = '2';
 create index on country_boundaries_subdivided_in using gist(geom);
 
-
 -- Missing roads table based on difference between OpenStreetMap and Facebook datasets
 drop table if exists osm_missing_roads;
 create table osm_missing_roads as
-select s.h3                                                                     as h3,
-       b.name_en                                                                as "Country",
-       round(s.highway_length::numeric / 1000, 2)                               as "OSM roads length, km",
-       round((s.total_road_length - s.highway_length)::numeric / 1000, 2)       as "Facebook roads length, km",
-       abs(log(s.highway_length + 1) - log(s.total_road_length + 1))            as diff,
-
-       -- Generate link for JOSM remote desktop:
-       'hrefIcon_[Edit in JOSM](http://localhost:8111/load_and_zoom?' ||
-       'left='    || ST_XMin(ST_Envelope(ST_Transform(s.geom, 4326))) ||
-       '&right='  || ST_XMax(ST_Envelope(ST_Transform(s.geom, 4326))) ||
-       '&top='    || ST_YMax(ST_Envelope(ST_Transform(s.geom, 4326))) ||
-       '&bottom=' || ST_YMin(ST_Envelope(ST_Transform(s.geom, 4326))) || ')'    as "Place bounding box"
-from stat_h3 s
-left join country_boundaries_subdivided_in b
-       on ST_Intersects(s.h3::geometry, b.geom)
-where s.total_road_length > 0
-  and s.resolution = 8;
+with q as (select distinct on (s.h3, b.name_en) s.h3 as h3, -- on h3 can intersects w/ >1 cnt polygons
+        b.name_en, s.geom,
+        population,
+        round(s.highway_length::numeric / 1000, 2) as osm_l,
+        round((s.total_road_length - s.highway_length)::numeric / 1000, 2) as fb_l,
+        abs(log(s.highway_length + 1) - log(s.total_road_length + 1)) as diff
+    from stat_h3 s
+    left join country_boundaries_subdivided_in b
+        on ST_Intersects(s.h3::geometry, b.geom)
+    where s.total_road_length > 0   -- fb roads
+        and population > 0 -- take only populated places
+        and s.resolution = 8),
+res as (select h3, q.name_en, geom,
+        -- doing this to take only N biggest diffs, N=100
+        -- and biggest rounded to .1 diff within country and h3 w/ highest population 
+        rank() over(partition by q.name_en order by round(diff::numeric, 1) desc, population desc) as rank_by_cnt,
+        osm_l, fb_l, diff
+    from q, (select name_en,
+                percentile_cont(0.5) within group (order by population) as pcont,
+                percentile_cont(0.5) within group (order by diff) as pdiff
+            from q
+            group by name_en) as pop_percentile
+    where diff > 0
+        and q.name_en = pop_percentile.name_en
+        and population > pcont
+        and diff > pdiff
+        and diff > 0.25 -- some small countries has very small diff
+        )
+select h3,
+    name_en as "Country",
+    osm_l as "OSM roads length, km",
+    fb_l as "Facebook roads length, km",
+    diff,
+    -- Generate link for JOSM remote desktop:
+    'hrefIcon_[Edit in JOSM](http://localhost:8111/load_and_zoom?' ||
+    'left='    || ST_XMin(ST_Envelope(ST_Transform(geom, 4326))) ||
+    '&right='  || ST_XMax(ST_Envelope(ST_Transform(geom, 4326))) ||
+    '&top='    || ST_YMax(ST_Envelope(ST_Transform(geom, 4326))) ||
+    '&bottom=' || ST_YMin(ST_Envelope(ST_Transform(geom, 4326))) || ')'    as "Place bounding box"
+from res
+where rank_by_cnt < 101; --limit to 100 for each country
 
 -- Drop temporary tables
 drop table if exists country_boundaries_subdivided_in;

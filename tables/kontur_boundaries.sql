@@ -92,11 +92,10 @@ create index on osm_admin_boundaries_mid using gist(geom, ST_Area(geom));
 -- Drop temporary table
 drop table if exists osm_admin_boundaries_in;
 
--- Join OSM admin boundaries and HASC codes based on max IOU
-drop table if exists kontur_boundaries_in;
-create table kontur_boundaries_in as
-with gadm_in as (
-        select  b.osm_id,
+drop table if exists gadm_in;
+create table gadm_in as (
+        select distinct on (g.id)
+                b.osm_id,
                 g.id,
                 g.hasc,
                 g.gadm_level,
@@ -108,20 +107,15 @@ with gadm_in as (
                         -- Calculate Intersection Over Union between OSM and GADM:
                         ST_Area(ST_Intersection(b.geom, g.geom))::numeric /
                         ST_Area(ST_Union(b.geom, g.geom)) as iou
-                from (
-                        select b.osm_id, b.geom
-                        from osm_admin_boundaries_mid b
-                        where ST_Area(b.geom) between 0.1 * ST_Area(g.geom) and 10 * ST_Area(g.geom)
-                                and (g.geom && b.geom)
-                        order by abs(ST_Area(b.geom) - ST_Area(g.geom))
-                        offset 0
-                ) b
-                where ST_Intersects(g.geom, b.geom)
-                order by 2 desc
-                limit 1
+                from osm_admin_boundaries_mid b
+                where ST_Intersects(g.geom, b.geom) and ST_Area(b.geom) between 0.1 * ST_Area(g.geom) and 10 * ST_Area(g.geom)
         ) b on true
-        order by g.geom, g.gadm_level
-)
+        order by g.id, b.iou desc
+);
+
+-- Join OSM admin boundaries and HASC codes based on max IOU
+drop table if exists kontur_boundaries_in;
+create table kontur_boundaries_in as
 select distinct on (b.osm_id)
         b.osm_id,
         b.osm_type,

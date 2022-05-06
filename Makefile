@@ -1027,29 +1027,30 @@ data/in/global_fires/firms_archive.tar.gz: | data/in/global_fires ## Download ag
 	touch $@
 
 data/mid/global_fires/extract_firms_archive: data/in/global_fires/firms_archive.tar.gz | data/mid/global_fires ## Extract aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System).
-	tar -xvf $< -C data/mid/global_fires
+	tar -I pigz -xvf $< -C data/mid/global_fires
 	touch $@
 
 data/in/global_fires/new_updates: | data/in ## Last updates for active fire products from FIRMS (Fire Information for Resource Management System).
 	mkdir -p $@
 
-data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 48 hours.
+data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 7 days.
 	rm -f data/in/global_fires/new_updates/*.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
+	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_7d.csv
+	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_7d.csv
+	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv
 	cp data/in/global_fires/new_updates/*.csv data/mid/global_fires/
 	touch $@
 
 db/table/global_fires: data/in/global_fires/download_new_updates data/mid/global_fires/extract_firms_archive | db/table ## 20 years active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
-	psql -c "create table if not exists global_fires (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);"
-	rm -f data/mid/global_fires/*_proc.csv
-	ls data/mid/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {}"
-	ls data/mid/global_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy global_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
+	psql -c "drop table if exists global_fires_in;"
+	psql -c "create table global_fires_in(latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text) tablespace evo4tb;"
+	ls data/mid/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {} | psql -c 'set time zone utc; copy global_fires_in (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;'"
+	psql -c "vacuum analyze global_fires_in;"
+	psql -c "create table if not exists global_fires (like global_fires_in) tablespace evo4tb;"
+	psql -c "insert into global_fires select distinct on (n.hash) n.* from global_fires_in n left outer join global_fires gf on n.hash = gf.hash where gf.hash is null;"
 	psql -c "vacuum analyze global_fires;"
-	psql -c "create index if not exists global_fires_hash_idx on global_fires (hash);"
 	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
-	psql -c "delete from global_fires where id in(select id from(select id, row_number() over(partition by hash order by id) as row_num from global_fires) t where t.row_num > 1);"
+	psql -c "drop table global_fires_in;"
 	rm -f data/mid/global_fires/*.csv
 	touch $@
 
@@ -1059,7 +1060,7 @@ db/table/global_fires_stat_h3: db/table/global_fires ## Aggregate active fire da
 
 data/out/global_fires/global_fires_h3_r8_13months.csv.gz: db/table/global_fires | data/out/global_fires ## Daily export of fires for last 13 months (archived CSV).
 	rm -rf $@
-	psql -q -X -c "set timezone to utc; copy (select h3_r8, acq_datetime from global_fires where acq_datetime > (select max(acq_datetime) from global_fires) - interval '13 months' order by 1,2) to stdout with csv;" | pigz > $@
+	psql -q -X -c "set timezone to utc; copy (select h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8) as h3, acq_datetime from global_fires where acq_datetime > now() - interval '13 months' order by 1,2) to stdout with csv;" | pigz > $@
 
 deploy/geocint/global_fires_h3_r8_13months.csv.gz: data/out/global_fires/global_fires_h3_r8_13months.csv.gz | deploy/geocint  ## Copy last 13 months fires to public_html folder to make it available online.
 	cp -vp data/out/global_fires/global_fires_h3_r8_13months.csv.gz ~/public_html/global_fires_h3_r8_13months.csv.gz

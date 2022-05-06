@@ -1,4 +1,3 @@
-
 set timezone to 'UTC';
 
 drop table if exists global_fires_stat_h3;
@@ -11,7 +10,6 @@ create table global_fires_stat_h3 as (
     where acq_datetime > now() - interval '13 months'
     group by 1
 );
-
 
 do
 $$

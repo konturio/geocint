@@ -6,8 +6,8 @@
 create table if not exists facebook_roads as (
     select
         way_fbid,
-        f.highway_tag as highway,
-        f.geom as geom
+        highway_tag as highway,
+        geom as geom
     from facebook_roads_in
 );
 

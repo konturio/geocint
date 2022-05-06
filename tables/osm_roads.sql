@@ -3,6 +3,7 @@ create table osm_roads as (
     select
         osm_id,
         osm_type,
+        ts,
         geog::geometry as geom,
         way_nodes,
         tags ->> 'name' as name,

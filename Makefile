@@ -353,7 +353,7 @@ db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## load
 	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_in'
 	touch $@
 
-db/table/facebook_roads: db/table/facebook_roads_in | db/table ## filtering fb roads with osm roads
+db/table/facebook_roads: db/table/facebook_roads_in db/table/osm_roads | db/table ## filtering fb roads with osm roads
 	psql -f tables/facebook_roads.sql
 	touch $@
 

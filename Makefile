@@ -390,7 +390,7 @@ db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_seg
 
 db/table/osm_road_segments_h3: db/table/osm_road_segments | db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_h3.sql
-	psql -c "call generate_overviews('osm_road_segments_h3', '{road_segments_length}'::text[], '{sum}'::text[], 8);"
+	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.

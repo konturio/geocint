@@ -1,5 +1,6 @@
 /.project
 /.psqlrc
+/.vscode
 /Makefile.*
 .DS_Store
 .idea

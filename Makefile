@@ -1,3 +1,5 @@
+export PGDATABASE = gis
+
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
 dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3_r8 db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated ## [FINAL] Builds all targets for development. Run on every branch.
@@ -621,10 +623,9 @@ db/table/gebco_2020_slopes: data/mid/gebco_2020_geotiff/gebco_2020_merged_4326_s
 	raster2pgsql -M -Y -s 4326 data/mid/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif -t auto gebco_2020_slopes | psql -q
 	touch $@
 
-db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table ## H3 hexagons table with average slope values from 1 to 8 resolution.
-	psql -f tables/gebco_values_into_h3.sql -v table_name=gebco_2020_slopes -v table_name_h3=gebco_2020_slopes_h3 -v item_name=avg_slope
-	psql -c "call generate_overviews('gebco_2020_slopes_h3', '{avg_slope}'::text[], '{avg}'::text[], 8);"
-	psql -c "create index on gebco_2020_slopes_h3 (h3, avg_slope);"
+db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table ## GEBCO (General Bathymetric Chart of the Oceans) slope data in h3.
+	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2020_slopes -v table_name_h3=gebco_2020_slopes_h3 -v aggr_func=avg -v item_name=avg_slope
+	psql -c "create index on gebco_2020_slopes_h3 (h3);"
 	touch $@
 
 data/mid/gebco_2020_geotiff/gebco_2020_merged_4326.tif: data/mid/gebco_2020_geotiff/gebco_2020_merged.vrt ## GEBCO (General Bathymetric Chart of the Oceans) bathymetry raster converted from virtual raster (EPSG-4326).
@@ -636,10 +637,14 @@ db/table/gebco_2020_elevation: data/mid/gebco_2020_geotiff/gebco_2020_merged_432
 	raster2pgsql -M -Y -s 4326 data/mid/gebco_2020_geotiff/gebco_2020_merged_4326.tif -t auto gebco_2020_elevation | psql -q
 	touch $@
 
-db/table/gebco_2020_elevation_h3: db/table/gebco_2020_elevation | db/table ## H3 hexagons table with average elevation from 1 to 8 resolution.
-	psql -f tables/gebco_values_into_h3.sql -v table_name=gebco_2020_elevation -v table_name_h3=gebco_2020_elevation_h3 -v item_name=avg_elevation
-	psql -c "call generate_overviews('gebco_2020_elevation_h3', '{avg_elevation}'::text[], '{avg}'::text[], 8);"
-	psql -c "create index on gebco_2020_elevation_h3 (h3, avg_elevation);"
+db/table/gebco_2020_elevation_h3: db/table/gebco_2020_elevation | db/table ## GEBCO (General Bathymetric Chart of the Oceans) elevation data in h3.
+	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2020_elevation -v table_name_h3=gebco_2020_elevation_h3 -v aggr_func=avg -v item_name=avg_elevation
+	touch $@
+
+db/table/gebco_2020_h3: db/table/gebco_2020_slopes_h3 db/table/gebco_2020_elevation_h3 | db/table ## H3 hexagons table with average slope and elevation values from 1 to 8 resolution
+	psql -f tables/gebco_2020_h3.sql
+	psql -c "call generate_overviews('gebco_2020_h3', '{avg_slope, avg_elevation}'::text[], '{avg, avg}'::text[], 8);"
+	psql -c "create index on gebco_2020_h3 (h3);"
 	touch $@
 
 data/mid/ndvi_2019_06_10/generate_ndvi_tifs: | data/mid/ndvi_2019_06_10 ## NDVI rasters generated from Sentinel 2 data.
@@ -1814,7 +1819,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 

@@ -382,7 +382,7 @@ create table stat_h3 as (
            a.foursquare_places_count,
            a.foursquare_visits_count,
            a.view_count_bf2402,
-           (coalesce(b.avg_slope, 0))::float as avg_slope,
+           (coalesce(g.avg_slope, 0))::float as avg_slope,
            (coalesce(g.avg_elevation, 0))::float as avg_elevation,
            (coalesce(cf.forest_area, 0))::float as forest,
            (coalesce(cf.evergreen_needle_leaved_forest, 0))::float as evergreen_needle_leaved_forest,
@@ -404,8 +404,7 @@ create table stat_h3 as (
            (coalesce(rva.vulnerability_index, 0))::float as vulnerability_index,
            hex.geom as geom
     from stat_h3_in           a
-         left join gebco_2020_slopes_h3 b on (a.h3 = b.h3)
-         left join gebco_2020_elevation_h3 g on (a.h3 = g.h3)
+         left join gebco_2020_h3 g on (a.h3 = g.h3)
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
          left join pf_maxtemp_h3 pf on (a.h3 = pf.h3)
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)

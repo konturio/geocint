@@ -906,13 +906,11 @@ data/in/wikidata_population_csv/download: | data/in/wikidata_population_csv ## D
 	cat static_data/wikidata_population/wikidata_population_ranges.txt | parallel -j1 --colsep " " 'wget "https://query.wikidata.org/sparql?query=SELECT%20%3Fcountry%20%3FcountryLabel%20%3Fpopulation%20%0AWHERE%20%7B%20%3Fcountry%20wdt%3AP1082%20%3Fpopulation.%20%0A%20%20%20%20%20%20%20FILTER({1}%20%3C%3D%20%3Fpopulation%20%26%26%20%3Fpopulation%20%3C%20{2}).%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22.%20%7D%20%7D" --retry-on-http-error=500 --header "Accept: text/csv" -O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; sleep 1'
 	touch $@
 
-db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Import wikidata population into database.
-	psql -c 'drop table if exists wikidata_population_in;'
-	psql -c 'create table wikidata_population_in(wikidata_item text, name text, population numeric);'
-	ls data/in/wikidata_population_csv/*_wiki_pop.csv | parallel 'cat {} | psql -c "copy wikidata_population_in from stdin with csv header;"'
-	psql -c 'drop table if exists wikidata_population;'
-	psql -c 'create table wikidata_population as select wikidata_item, name, max(population) max_population from wikidata_population_in group by wikidata_item, name;'
-	psql -c 'drop table if exists wikidata_population_in;'
+db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.
+	grep --include=\*_wiki_pop.csv -rnw 'data/in/wikidata_population_csv/' -e "java.util.concurrent.TimeoutException" | wc -l > $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
+	if [ $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) -lt 1 ]; then psql -c 'drop table if exists wikidata_population_in;'; psql -c 'create table wikidata_population_in(wikidata_item text, name text, population numeric);'; ls data/in/wikidata_population_csv/*_wiki_pop.csv | parallel 'cat {} | psql -c "copy wikidata_population_in from stdin with csv header;"'; psql -c 'drop table if exists wikidata_population;'; psql -c 'create table wikidata_population as select wikidata_item, name, max(population) max_population from wikidata_population_in group by wikidata_item, name;'; psql -c 'drop table if exists wikidata_population_in;'; fi
+	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) ]; then echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	rm -f $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
 	touch $@
 
 data/in/un_population.csv: | data/in ## Download United Nations population division dataset.
@@ -942,7 +940,7 @@ data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4
 	if [ $$(cat $@__KONTUR_POP_V4) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py geocint "Nightly build" x && exit 1; fi
 	if [ $$(cat $@__KONTUR_POP_V4) -lt $$(cat $@__KONTUR_POP_V3) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
-	rm $@__KONTUR_POP_V3 $@__KONTUR_POP_V4
+	rm -f $@__KONTUR_POP_V3 $@__KONTUR_POP_V4
 	touch $@
 
 data/out/reports/population_check: data/out/reports/population_check_osm.csv data/out/reports/population_check_world | data/out/reports ## Common target of population checks.

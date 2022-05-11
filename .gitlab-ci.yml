@@ -14,4 +14,4 @@ SQLLint:
   stage: sql-linter
   script:
     - python3 -m pip install sqlfluff
-    - sqlfluff lint -f ./ci/config.sqlfluff .
+    - sqlfluff lint --config ./ci/config.sqlfluff .

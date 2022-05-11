@@ -32,7 +32,6 @@ where geom is null
    
 vacuum prescale_to_osm_boundaries;
 
-
 -- Check overlap polys on the last(12) admin level
 -- Resolve all conflicts with reducing poly with less population
 do

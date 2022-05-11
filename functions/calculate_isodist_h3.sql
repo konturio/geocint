@@ -1,14 +1,14 @@
 create or replace function calculate_isodist_h3(
-    in source       geometry,
+    in source geometry,
     in max_distance double precision,
-    in resolution   integer,
-    out h3          h3index,
-    out distance    double precision,
-    out geom        geometry
+    in resolution integer,
+    out h3 h3index,
+    out distance double precision,
+    out geom geometry
 ) returns setof record
-    stable
-    cost 10000
-    language plpgsql
+stable
+cost 10000
+language plpgsql
 as
 $$
 declare

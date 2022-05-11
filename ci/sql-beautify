@@ -1,0 +1,1 @@
+sqlfluff fix --config $(realpath ./ci/config.sqlfluff) --FIX-EVEN-UNPARSABLE --force $(realpath $1)

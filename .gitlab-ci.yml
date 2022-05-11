@@ -1,10 +1,17 @@
 image: python:latest
 
 stages:
-  - lint
+  - makefile-linter
+  - sql-linter
 
 Makefile:
-  stage: lint
+  stage: makefile-linter
   script:
     - pip install git+https://github.com/konturio/make-profiler
     - profile_make_lint
+
+SQLLint:
+  stage: sql-linter
+  script:
+    - python3 -m pip install sqlfluff
+    - sqlfluff lint -f ./ci/config.sqlfluff .

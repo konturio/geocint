@@ -1,0 +1,1 @@
+sqlfluff lint --config $(realpath ./ci/config.sqlfluff) $(realpath $1)

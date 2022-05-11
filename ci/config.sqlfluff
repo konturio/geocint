@@ -1,0 +1,51 @@
+[sqlfluff]
+templater = placeholder
+dialect = postgres
+exclude_rules = L030,L031,L032
+
+[sqlfluff:templater:placeholder]
+param_style = colon
+current_level = "1"
+z = "1"
+x = "1"
+y = "1"
+arrow_upper_righ = "arrow_upper_right"   # creepy, it's just an emoji from text
+table_name_h3 = table_name_h3
+table_h3 = table_h3
+table = table
+item_name = item_name
+aggr_func = sum
+table_name = table_name
+id = "1"
+numer = "0.1"
+denom = "0.2"
+numer_text = numer_text
+denom_text = denom_text
+item_count = "1"
+morocco_buildings = morocco_buildings
+reference_buildings_table = reference_buildings_table
+benchmark_clip_table = benchmark_clip_table
+examinee_buildings_table = examinee_buildings_table
+digi = digi
+population_raster_grid_h3_r8 = population_raster_grid_h3_r8
+population_raster = population_raster
+
+[sqlfluff:rules]
+indent_unit = space
+max_line_length = 150
+tab_space_size = 4
+
+[sqlfluff:rules:L010]
+capitalisation_policy = lower
+
+[sqlfluff:rules:L011]
+aliasing = implicit
+
+[sqlfluff:rules:L012]
+aliasing = explicit
+
+[sqlfluff:rules:L019]
+comma_style = trailing
+
+[sqlfluff:rules:L063]
+extended_capitalization_policy = upper

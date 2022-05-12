@@ -49,6 +49,7 @@ tested by other team members, and will automatically produce new artifacts once 
 - [supplemental/](supplemental) - additional files (OSRM profiles)
 - [tables/](tables) - SQL that generates a table named after the script
 - [tile_generator/](tile_generator) - a service that produces vector tiles
+- [static_data] - static file-based data stored in geocint repository
 - [data/](data) - file-based input and output data
     - data/in - all input data, downloaded elsewhere
     - data/in/raster - all downloaded geotiffs

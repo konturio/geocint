@@ -1038,7 +1038,7 @@ data/in/global_fires/new_updates: | data/in ## Last updates for active fire prod
 
 data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 7 days.
 	rm -f data/in/global_fires/new_updates/*.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_7d.csv
+	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Global_7d.csv
 	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_7d.csv
 	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv
 	cp data/in/global_fires/new_updates/*.csv data/mid/global_fires/
@@ -1050,7 +1050,7 @@ db/table/global_fires: data/in/global_fires/download_new_updates data/mid/global
 	ls data/mid/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {} | psql -c 'set time zone utc; copy global_fires_in (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;'"
 	psql -c "vacuum analyze global_fires_in;"
 	psql -c "create table if not exists global_fires (like global_fires_in) tablespace evo4tb;"
-	psql -c "insert into global_fires select distinct on (n.hash) n.* from global_fires_in n left outer join global_fires gf on n.hash = gf.hash where gf.hash is null;"
+	psql -c "insert into global_fires select * from (select distinct on (n.hash) n.* from global_fires_in n left outer join global_fires gf on n.hash = gf.hash where gf.hash is null) t order by t.acq_datetime;"
 	psql -c "vacuum analyze global_fires;"
 	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
 	psql -c "drop table global_fires_in;"

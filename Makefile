@@ -1821,7 +1821,11 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 	psql -f tables/stat_h3.sql
 	touch $@
 
-db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
+db/table/stat_h3_quality: db/table/stat_h3 | db/table ## summarized statistics aggregated on H3 hexagons between resolutions.
+	psql -f tables/stat_h3_quality.sql
+	touch $@
+
+db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 db/table/stat_h3_quality | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
 	psql -f tables/bivariate_axis.sql
 	touch $@
 
@@ -1829,7 +1833,7 @@ db/table/bivariate_axis_analytics: db/table/bivariate_axis db/table/stat_h3 | db
 	psql -X -c "copy (select numerator||' '||denominator from bivariate_axis) to stdout;" | parallel --colsep ' ' "psql -f tables/bivariate_axis_analytics.sql -v numer={1} -v denom={2} -v numer_text=\"'{1}'\" -v denom_text=\"'{2}'\" "
 	touch $@
 
-db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3 | db/table ## Precalculated correlations for bivariate layers
+db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3_quality db/table/bivariate_indicators | db/table ## Precalculated correlations for bivariate layers
 	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
 

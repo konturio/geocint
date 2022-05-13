@@ -1,7 +1,3 @@
-drop function if exists axis_correlation(text, text, text, text
-);
-drop function if exists axis_correlation(text, text, text, text, text
-);
 drop function if exists correlate_bivariate_axes(text, text, text, text, text
 );
 create or replace function correlate_bivariate_axes

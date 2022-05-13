@@ -30,7 +30,7 @@ $$
                        sum(tree_cover),
                        sum(shrubland),
                        sum(cropland),
-                       sum(area_km2),
+                       ST_Area(h3_to_geo_boundary_geometry(h3_to_parent(h3))::geography) / 1000000.0,
                        (res - 1)
                 from esa_world_cover_h3_in
                 where resolution = res

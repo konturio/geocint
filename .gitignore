@@ -13,3 +13,5 @@ make_profile.db
 make.svg
 make.lock
 kothic
+
+__pycache__

@@ -38,14 +38,15 @@ res as (select h3, q.name_en, geom,
         and diff > pdiff
         and diff > 0.25 -- some small countries has very small diff
         )
-select h3,
+select
+    h3,
     name_en as "Country",
     osm_l as "OSM roads length, km",
     fb_l as "Facebook roads length, km",
     diff,
     -- Generate link for JOSM remote desktop:
-    'hrefIcon_[Edit in JOSM](http://localhost:8111/load_and_zoom?' ||
-    'left='    || ST_XMin(ST_Envelope(ST_Transform(geom, 4326))) ||
+    'hrefIcon_[Edit in JOSM](http://localhost:8111/load_and_zoom?new_layer=True' ||
+    '&left='    || ST_XMin(ST_Envelope(ST_Transform(geom, 4326))) ||
     '&right='  || ST_XMax(ST_Envelope(ST_Transform(geom, 4326))) ||
     '&top='    || ST_YMax(ST_Envelope(ST_Transform(geom, 4326))) ||
     '&bottom=' || ST_YMin(ST_Envelope(ST_Transform(geom, 4326))) || ')'    as "Place bounding box"

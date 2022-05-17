@@ -337,7 +337,7 @@ db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 res
 data/in/facebook_roads: | data/in ## make directory for downloaded data
 	mkdir -p $@
 
-data/mid/facebook_roads: | data/in ## make directory for extracted data
+data/mid/facebook_roads: | data/mid ## make directory for extracted data
 	mkdir -p $@
 
 data/in/facebook_roads/downloaded: | data/in/facebook_roads ## reference download list

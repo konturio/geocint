@@ -4,14 +4,12 @@ create table esa_world_cover_builtup_h3_in as (
     select p.val as val,
            p.geom as geom
     from esa_world_cover e, ST_PixelAsPolygons(rast) p
-    where p.val = 5;
+    where p.val = 5
 );
-
 
 -- Create geometry index in input table
 drop index if exists esa_world_cover_builtup_h3_in_idx;
 create index esa_world_cover_builtup_h3_in_idx on esa_world_cover_builtup_h3_in using gist(geom);
-
 
 -- filter pixels by the osm_roads
 drop table if exists esa_world_cover_builtup_h3_mid;

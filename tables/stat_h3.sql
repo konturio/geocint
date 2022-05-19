@@ -44,7 +44,7 @@ create table stat_h3_in as (
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
                     building_count_6_months as building_count_6_months,  null::float as total_building_count,
-                    null::float as highway_length, highway_length_6_months as highway_length_6_months, osm_users as osm_users,
+                    null::float as highway_length, null::float as highway_length_6_months, osm_users as osm_users,
                     null::float as population, null::float as residential, null::float as gdp, min_ts as min_ts, max_ts as max_ts,
                     avgmax_ts as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
@@ -334,6 +334,20 @@ create table stat_h3_in as (
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
              from osm_road_segments_h3
+             union all
+             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
+                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
+                    highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
+                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
+                    null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
+                    null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
+                    null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
+                    null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, 
+                    null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
+                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402, resolution
+             from osm_road_segments_6_months_h3
         ) z
     group by 2, 1
 );

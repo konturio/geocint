@@ -6,8 +6,6 @@ create table osm_object_count_grid_h3 as (
            count(*) filter (where last_6_months)                 as count_6_months,
            count(*) filter (where is_building)                   as building_count,
            count(*) filter (where is_building and last_6_months) as building_count_6_months,
-           sum(highway_length)                                   as highway_length,
-           sum(highway_length) filter (where last_6_months)      as highway_length_6_months,
            count(distinct z.osm_user)                            as osm_users,
            min(ts_epoch)                                         as min_ts,
            max(ts_epoch)                                         as max_ts,
@@ -21,11 +19,7 @@ create table osm_object_count_grid_h3 as (
                     osm_user               as osm_user,
                     ((tags ? 'building') and ((tags -> 'building') != '"no"')) as is_building,
                     ts > (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
-                          from osm_meta) - interval '6 months' as last_6_months,
-                    case
-                        when tags ? 'highway' then ST_Length(geog)
-                        else 0
-                        end                as highway_length
+                          from osm_meta) - interval '6 months' as last_6_months
              from osm
              order by 1
          ) z
@@ -52,8 +46,6 @@ $$
                        sum(count_6_months) as count_6_months,
                        sum(building_count) as building_count,
                        sum(building_count_6_months) as building_count_6_months,
-                       sum(highway_length) as highway_length,
-                       sum(highway_length_6_months) as highway_length_6_months,
                        min(min_ts) as min_ts,
                        max(max_ts) as max_ts,
                        avg(avgmax_ts) as avgmax_ts
@@ -61,7 +53,7 @@ $$
                 where resolution = res
                 group by 2;
 
-                insert into osm_object_count_grid_h3 (resolution, h3, osm_users,osm_users_array)
+                insert into osm_object_count_grid_h3 (resolution, h3, osm_users, osm_users_array)
                 select (res - 1) as resolution,
                        h3_to_parent(h3) as h3,
                        count(distinct osm_user) as osm_users,

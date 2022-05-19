@@ -7,6 +7,12 @@ cleanup() {
 # Terminate script after failed command execution
 set -e
 PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin"
+
+# add event-api credentials to env
+set -a
+. ~/.event-api/credentials
+set +a
+
 cd ~/geocint
 
 echo "Geocint pipeline is starting nightly build!" | python3 scripts/slack_message.py geocint "Night build" cat

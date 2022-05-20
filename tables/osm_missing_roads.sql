@@ -49,7 +49,8 @@ select
     '&left='    || ST_XMin(ST_Envelope(ST_Transform(geom, 4326))) ||
     '&right='  || ST_XMax(ST_Envelope(ST_Transform(geom, 4326))) ||
     '&top='    || ST_YMax(ST_Envelope(ST_Transform(geom, 4326))) ||
-    '&bottom=' || ST_YMin(ST_Envelope(ST_Transform(geom, 4326))) || ')'    as "Place bounding box"
+    '&bottom=' || ST_YMin(ST_Envelope(ST_Transform(geom, 4326))) || ')'    as "Place bounding box",
+    now() as debug_created_at -- for debug purposes, will be dropped after problem solved
 from res
 where rank_by_cnt < 101; --limit to 100 for each country
 

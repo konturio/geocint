@@ -38,7 +38,7 @@ $$
                 -- second one generates group by aggregation
                 -- this can be done as two inserts as the values are going to be regrouped together in stat_h3 calculation
                 insert into osm_object_count_grid_h3 (resolution, h3, count, count_6_months, building_count,
-                                                      building_count_6_months, highway_length, highway_length_6_months,
+                                                      building_count_6_months,
                                                       min_ts, max_ts, avgmax_ts)
                 select (res - 1) as resolution,
                        h3_to_parent(h3) as h3,

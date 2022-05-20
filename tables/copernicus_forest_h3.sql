@@ -74,7 +74,7 @@ $$
     begin
         columns = '{forest_area, evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest}';
         res = 8;
-        while res > 0
+        while res >= 0
             loop
                 select jsonb_object_agg(column_name, 0) from unnest(columns) "column_name" into carry;
                 for cur_row in (select to_jsonb(r) from copernicus_forest_h3_in r where resolution = res order by h3)

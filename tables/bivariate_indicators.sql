@@ -199,7 +199,7 @@ values ('pop_over_65_total', 'Population over age of 65', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('poverty_families_total', 'Families living below poverty line', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
-        '[["unimportant, good"], ["important"]]'::jsonb);
+        '[["unimportant", "good"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('pop_disability_total', 'Population with a disability', jsonb_build_array(

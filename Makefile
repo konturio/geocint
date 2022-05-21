@@ -404,7 +404,7 @@ db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months | db
 	psql -c "call generate_overviews('osm_road_segments_6_months_h3', '{highway_length_6_months}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.
+db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.
 	psql -f tables/osm_user_count_grid_h3.sql
 	touch $@
 
@@ -764,7 +764,7 @@ db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundarie
 	psql -f tables/osm_gadm_comparison.sql
 	touch $@
 
-db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries db/table/osm_reports_list | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
+db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries db/table/osm_reports_list db/table/osm_meta | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
 	psql -f tables/osm_population_inconsistencies.sql
 	touch $@
 
@@ -780,17 +780,17 @@ db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries db/ta
 	psql -f tables/osm_missing_roads.sql
 	touch $@
 
-db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 db/table/osm_reports_list | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
+db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 db/table/osm_reports_list db/table/osm_meta | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
 	psql -f tables/osm_missing_boundaries_report.sql
 	touch $@
 
-data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
+data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison db/table/osm_meta | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Admin level\", \"OSM name\", \"GADM name\" from osm_gadm_comparison order by id limit 10000) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | data/out/reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Name\", \"Admin level\", \"Population\", \"Population date\", \"Population source\", \"SUM subregions population\", \"Population difference value\", \"Population difference %\" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ';');" > $@
 
-data/out/reports/population_check_osm.csv: db/table/population_check_osm | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
+data/out/reports/population_check_osm.csv: db/table/population_check_osm db/table/osm_meta | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
 	psql -qXc "copy (select * from population_check_osm order by \"OSM-Kontur Population difference\" desc limit 1000) to stdout with (format csv, header true, delimiter ';');" > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 

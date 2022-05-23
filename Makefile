@@ -1,6 +1,8 @@
+export PGDATABASE = gis
+
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3_r8 db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3 db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated data/in/event_api_data/download ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -260,7 +262,7 @@ db/table/us_counties_boundary: data/mid/gadm/gadm36_shp_files | db/table ## USA 
 	ogr2ogr -append -f PostgreSQL PG:"dbname='gis'" data/mid/gadm/gadm36_1.shp -sql "select name_0 as name_1, name_1 as name_2, gid_1 as gid_2, hasc_1 as hasc_2 from gadm36_1 where gid_0 = 'PRI'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
 	psql -c 'drop table if exists us_counties_fips_codes;'
 	psql -c 'create table us_counties_fips_codes (state text, county text, hasc_code text, fips_code text);'
-	cat data/counties_fips_hasc.csv | psql -c "copy us_counties_fips_codes (state, county, hasc_code, fips_code) from stdin with csv header delimiter ',';"
+	cat static_data/counties_fips_hasc.csv | psql -c "copy us_counties_fips_codes (state, county, hasc_code, fips_code) from stdin with csv header delimiter ',';"
 	psql -f tables/us_counties_boundary.sql
 	touch $@
 
@@ -399,10 +401,19 @@ db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_seg
 
 db/table/osm_road_segments_h3: db/table/osm_road_segments | db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_h3.sql
-	psql -c "call generate_overviews('osm_road_segments_h3', '{road_segments_length}'::text[], '{sum}'::text[], 8);"
+	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.
+db/table/osm_road_segments_6_months: db/table/osm_roads | db/table ## osm road segments for 6 months
+	psql -f tables/osm_road_segments_6_months.sql
+	touch $@
+
+db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months | db/table ## osm road segments aggregated to h3
+	psql -f tables/osm_road_segments_6_months_h3.sql
+	psql -c "call generate_overviews('osm_road_segments_6_months_h3', '{highway_length_6_months}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.
 	psql -f tables/osm_user_count_grid_h3.sql
 	touch $@
 
@@ -586,9 +597,9 @@ db/table/esa_world_cover_h3_r8: data/mid/raster/esa_world_cover_csv/calculation 
 # 	psql -c "vacuum analyze esa_world_cover;"
 # 	touch $@
 
-# db/table/esa_world_cover_h3: db/table/esa_world_cover_h3_r8 | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
-#	psql -f tables/esa_world_cover_h3.sql
-#	touch $@
+db/table/esa_world_cover_h3: db/table/esa_world_cover_h3_r8 | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
+	psql -f tables/esa_world_cover_h3.sql
+	touch $@
 
 # db/table/esa_world_cover_builtup_h3: db/table/esa_world_cover | db/table ## Count of 'urban' pixels from ESA land cover raster into h3 hexagons on 8 resolution.
 # 	psql -f tables/esa_world_cover_builtup_h3.sql
@@ -630,10 +641,9 @@ db/table/gebco_2020_slopes: data/mid/gebco_2020_geotiff/gebco_2020_merged_4326_s
 	raster2pgsql -M -Y -s 4326 data/mid/gebco_2020_geotiff/gebco_2020_merged_4326_slope.tif -t auto gebco_2020_slopes | psql -q
 	touch $@
 
-db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table ## H3 hexagons table with average slope values from 1 to 8 resolution.
-	psql -f tables/gebco_values_into_h3.sql -v table_name=gebco_2020_slopes -v table_name_h3=gebco_2020_slopes_h3 -v item_name=avg_slope
-	psql -c "call generate_overviews('gebco_2020_slopes_h3', '{avg_slope}'::text[], '{avg}'::text[], 8);"
-	psql -c "create index on gebco_2020_slopes_h3 (h3, avg_slope);"
+db/table/gebco_2020_slopes_h3: db/table/gebco_2020_slopes | db/table ## GEBCO (General Bathymetric Chart of the Oceans) slope data in h3.
+	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2020_slopes -v table_name_h3=gebco_2020_slopes_h3 -v aggr_func=avg -v item_name=avg_slope
+	psql -c "create index on gebco_2020_slopes_h3 (h3);"
 	touch $@
 
 data/mid/gebco_2020_geotiff/gebco_2020_merged_4326.tif: data/mid/gebco_2020_geotiff/gebco_2020_merged.vrt ## GEBCO (General Bathymetric Chart of the Oceans) bathymetry raster converted from virtual raster (EPSG-4326).
@@ -645,10 +655,14 @@ db/table/gebco_2020_elevation: data/mid/gebco_2020_geotiff/gebco_2020_merged_432
 	raster2pgsql -M -Y -s 4326 data/mid/gebco_2020_geotiff/gebco_2020_merged_4326.tif -t auto gebco_2020_elevation | psql -q
 	touch $@
 
-db/table/gebco_2020_elevation_h3: db/table/gebco_2020_elevation | db/table ## H3 hexagons table with average elevation from 1 to 8 resolution.
-	psql -f tables/gebco_values_into_h3.sql -v table_name=gebco_2020_elevation -v table_name_h3=gebco_2020_elevation_h3 -v item_name=avg_elevation
-	psql -c "call generate_overviews('gebco_2020_elevation_h3', '{avg_elevation}'::text[], '{avg}'::text[], 8);"
-	psql -c "create index on gebco_2020_elevation_h3 (h3, avg_elevation);"
+db/table/gebco_2020_elevation_h3: db/table/gebco_2020_elevation | db/table ## GEBCO (General Bathymetric Chart of the Oceans) elevation data in h3.
+	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2020_elevation -v table_name_h3=gebco_2020_elevation_h3 -v aggr_func=avg -v item_name=avg_elevation
+	touch $@
+
+db/table/gebco_2020_h3: db/table/gebco_2020_slopes_h3 db/table/gebco_2020_elevation_h3 | db/table ## H3 hexagons table with average slope and elevation values from 1 to 8 resolution
+	psql -f tables/gebco_2020_h3.sql
+	psql -c "call generate_overviews('gebco_2020_h3', '{avg_slope, avg_elevation}'::text[], '{avg, avg}'::text[], 8);"
+	psql -c "create index on gebco_2020_h3 (h3);"
 	touch $@
 
 data/mid/ndvi_2019_06_10/generate_ndvi_tifs: | data/mid/ndvi_2019_06_10 ## NDVI rasters generated from Sentinel 2 data.
@@ -759,7 +773,7 @@ db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundarie
 	psql -f tables/osm_gadm_comparison.sql
 	touch $@
 
-db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries db/table/osm_reports_list | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
+db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries db/table/osm_reports_list db/table/osm_meta | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
 	psql -f tables/osm_population_inconsistencies.sql
 	touch $@
 
@@ -775,25 +789,25 @@ db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries db/ta
 	psql -f tables/osm_missing_roads.sql
 	touch $@
 
-db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 db/table/osm_reports_list | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
+db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 db/table/osm_reports_list db/table/osm_meta | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
 	psql -f tables/osm_missing_boundaries_report.sql
 	touch $@
 
-data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
+data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison db/table/osm_meta | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Admin level\", \"OSM name\", \"GADM name\" from osm_gadm_comparison order by id limit 10000) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | data/out/reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Name\", \"Admin level\", \"Population\", \"Population date\", \"Population source\", \"SUM subregions population\", \"Population difference value\", \"Population difference %\" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ';');" > $@
 
-data/out/reports/population_check_osm.csv: db/table/population_check_osm | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
-	psql -qXc "copy (select * from population_check_osm order by \"OSM-Kontur Population difference\" desc limit 50000) to stdout with (format csv, header true, delimiter ';');" > $@
+data/out/reports/population_check_osm.csv: db/table/population_check_osm db/table/osm_meta | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
+	psql -qXc "copy (select * from population_check_osm order by \"OSM-Kontur Population difference\" desc limit 1000) to stdout with (format csv, header true, delimiter ';');" > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | data/out/reports ## Export report to CSV
 	psql -qXc "copy (select population as \"Kontur population\", view_count as \"osm.org view count\", \"Place bounding box\" from osm_unmapped_places_report order by id) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_missing_roads.csv: db/table/osm_missing_roads | data/out/reports ## Export report to CSV
-	psql -qXc "copy (select \"Country\", \"OSM roads length, km\", \"Facebook roads length, km\", \"Place bounding box\" from osm_missing_roads where \"Country\" in ('Saint Lucia', 'Romania', 'Albania') and diff > 3.5 order by diff desc) to stdout with (format csv, header true, delimiter ';');" > $@
+	psql -qXc "copy (select row_number() over() as id, \"Country\", \"OSM roads length, km\", \"Facebook roads length, km\", \"Place bounding box\" from osm_missing_roads where \"Country\" in ('Saint Lucia', 'Romania', 'Albania', 'Kosovo', 'Sri Lanka') order by diff desc) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_missing_boundaries_report.csv: db/table/osm_missing_boundaries_report | data/out/reports ## Export OSM missing boundaries report to CSV with semicolon delimiter.
 	psql -qXc 'copy (select "OSM id", "Admin level", "Name", "Country" from osm_missing_boundaries_report order by id) to stdout with (format csv, header true, delimiter ";");' > $@
@@ -910,13 +924,11 @@ data/in/wikidata_population_csv/download: | data/in/wikidata_population_csv ## D
 	cat static_data/wikidata_population/wikidata_population_ranges.txt | parallel -j1 --colsep " " 'wget "https://query.wikidata.org/sparql?query=SELECT%20%3Fcountry%20%3FcountryLabel%20%3Fpopulation%20%0AWHERE%20%7B%20%3Fcountry%20wdt%3AP1082%20%3Fpopulation.%20%0A%20%20%20%20%20%20%20FILTER({1}%20%3C%3D%20%3Fpopulation%20%26%26%20%3Fpopulation%20%3C%20{2}).%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22.%20%7D%20%7D" --retry-on-http-error=500 --header "Accept: text/csv" -O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; sleep 1'
 	touch $@
 
-db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Import wikidata population into database.
-	psql -c 'drop table if exists wikidata_population_in;'
-	psql -c 'create table wikidata_population_in(wikidata_item text, name text, population numeric);'
-	ls data/in/wikidata_population_csv/*_wiki_pop.csv | parallel 'cat {} | psql -c "copy wikidata_population_in from stdin with csv header;"'
-	psql -c 'drop table if exists wikidata_population;'
-	psql -c 'create table wikidata_population as select wikidata_item, name, max(population) max_population from wikidata_population_in group by wikidata_item, name;'
-	psql -c 'drop table if exists wikidata_population_in;'
+db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.
+	grep --include=\*_wiki_pop.csv -rnw 'data/in/wikidata_population_csv/' -e "java.util.concurrent.TimeoutException" | wc -l > $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
+	if [ $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) -lt 1 ]; then psql -c 'drop table if exists wikidata_population_in;'; psql -c 'create table wikidata_population_in(wikidata_item text, name text, population numeric);'; ls data/in/wikidata_population_csv/*_wiki_pop.csv | parallel 'cat {} | psql -c "copy wikidata_population_in from stdin with csv header;"'; psql -c 'drop table if exists wikidata_population;'; psql -c 'create table wikidata_population as select wikidata_item, name, max(population) max_population from wikidata_population_in group by wikidata_item, name;'; psql -c 'drop table if exists wikidata_population_in;'; fi
+	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) ]; then echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	rm -f $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
 	touch $@
 
 data/in/un_population.csv: | data/in ## Download United Nations population division dataset.
@@ -946,7 +958,7 @@ data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4
 	if [ $$(cat $@__KONTUR_POP_V4) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py geocint "Nightly build" x && exit 1; fi
 	if [ $$(cat $@__KONTUR_POP_V4) -lt $$(cat $@__KONTUR_POP_V3) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
-	rm $@__KONTUR_POP_V3 $@__KONTUR_POP_V4
+	rm -f $@__KONTUR_POP_V3 $@__KONTUR_POP_V4
 	touch $@
 
 data/out/reports/population_check: data/out/reports/population_check_osm.csv data/out/reports/population_check_world | data/out/reports ## Common target of population checks.
@@ -1036,29 +1048,30 @@ data/in/global_fires/firms_archive.tar.gz: | data/in/global_fires ## Download ag
 	touch $@
 
 data/mid/global_fires/extract_firms_archive: data/in/global_fires/firms_archive.tar.gz | data/mid/global_fires ## Extract aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System).
-	tar -xvf $< -C data/mid/global_fires
+	tar -I pigz -xvf $< -C data/mid/global_fires
 	touch $@
 
 data/in/global_fires/new_updates: | data/in ## Last updates for active fire products from FIRMS (Fire Information for Resource Management System).
 	mkdir -p $@
 
-data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 48 hours.
+data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 7 days.
 	rm -f data/in/global_fires/new_updates/*.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_48h.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_48h.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_48h.csv
+	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Global_7d.csv
+	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_7d.csv
+	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv
 	cp data/in/global_fires/new_updates/*.csv data/mid/global_fires/
 	touch $@
 
 db/table/global_fires: data/in/global_fires/download_new_updates data/mid/global_fires/extract_firms_archive | db/table ## 20 years active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
-	psql -c "create table if not exists global_fires (id serial primary key, latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);"
-	rm -f data/mid/global_fires/*_proc.csv
-	ls data/mid/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {}"
-	ls data/mid/global_fires/*_proc.csv | parallel "cat {} | psql -c \"set time zone utc; copy global_fires (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;\" "
+	psql -c "drop table if exists global_fires_in;"
+	psql -c "create table global_fires_in(latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text) tablespace evo4tb;"
+	ls data/mid/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {} | psql -c 'set time zone utc; copy global_fires_in (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;'"
+	psql -c "vacuum analyze global_fires_in;"
+	psql -c "create table if not exists global_fires (like global_fires_in) tablespace evo4tb;"
+	psql -c "insert into global_fires select * from (select distinct on (n.hash) n.* from global_fires_in n left outer join global_fires gf on n.hash = gf.hash where gf.hash is null) t order by t.acq_datetime;"
 	psql -c "vacuum analyze global_fires;"
-	psql -c "create index if not exists global_fires_hash_idx on global_fires (hash);"
 	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
-	psql -c "delete from global_fires where id in(select id from(select id, row_number() over(partition by hash order by id) as row_num from global_fires) t where t.row_num > 1);"
+	psql -c "drop table global_fires_in;"
 	rm -f data/mid/global_fires/*.csv
 	touch $@
 
@@ -1068,7 +1081,7 @@ db/table/global_fires_stat_h3: db/table/global_fires ## Aggregate active fire da
 
 data/out/global_fires/global_fires_h3_r8_13months.csv.gz: db/table/global_fires | data/out/global_fires ## Daily export of fires for last 13 months (archived CSV).
 	rm -rf $@
-	psql -q -X -c "set timezone to utc; copy (select h3_r8, acq_datetime from global_fires where acq_datetime > (select max(acq_datetime) from global_fires) - interval '13 months' order by 1,2) to stdout with csv;" | pigz > $@
+	psql -q -X -c "set timezone to utc; copy (select h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8) as h3, acq_datetime from global_fires where acq_datetime > now() - interval '13 months' order by 1,2) to stdout with csv;" | pigz > $@
 
 deploy/geocint/global_fires_h3_r8_13months.csv.gz: data/out/global_fires/global_fires_h3_r8_13months.csv.gz | deploy/geocint  ## Copy last 13 months fires to public_html folder to make it available online.
 	cp -vp data/out/global_fires/global_fires_h3_r8_13months.csv.gz ~/public_html/global_fires_h3_r8_13months.csv.gz
@@ -1297,17 +1310,17 @@ db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population
 	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
 	touch $@
 
-db/table/morocco_buildings_manual_roofprints: data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
+db/table/morocco_buildings_manual_roofprints: static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
 	psql -c "drop table if exists morocco_buildings_manual_roofprints;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson -nln morocco_buildings_manual_roofprints
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson -nln morocco_buildings_manual_roofprints
 	psql -c "alter table morocco_buildings_manual_roofprints rename column wkb_geometry to geom;"
 	psql -c "alter table morocco_buildings_manual_roofprints alter column geom type geometry;"
 	psql -c "update morocco_buildings_manual_roofprints set geom = ST_Transform(geom, 3857);"
 	touch $@
 
-db/table/morocco_buildings_manual: data/morocco_buildings/morocco_buildings_manual_20201030.geojson  ## Morocco manually split footprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
+db/table/morocco_buildings_manual: static_data/morocco_buildings/morocco_buildings_manual_20201030.geojson  ## Morocco manually split footprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
 	psql -c "drop table if exists morocco_buildings_manual;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/morocco_buildings_manual_20201030.geojson -nln morocco_buildings_manual
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/morocco_buildings_manual_20201030.geojson -nln morocco_buildings_manual
 	psql -c "alter table morocco_buildings_manual rename column wkb_geometry to geom;"
 	psql -c "alter table morocco_buildings_manual alter column geom type geometry;"
 	psql -c "update morocco_buildings_manual set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
@@ -1328,53 +1341,53 @@ data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz: db/ta
 	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson PG:"dbname=gis" -sql "select ST_Transform(geom, 4326) as footprint, building_height, height_confidence, is_residential, imagery_vintage, height_is_valid from morocco_buildings_date" -nln morocco_buildings_footprints_phase3
 	cd data/out/morocco_buildings; pigz morocco_buildings_footprints_phase3.geojson
 
-db/table/morocco_buildings_benchmark: data/morocco_buildings/phase_3/footprints/agadir_footprints_benchmark_ph3.geojson data/morocco_buildings/phase_3/footprints/casablanca_footprints_benchmark_ph3.geojson data/morocco_buildings/phase_3/footprints/chefchaouen_footprints_benchmark_ph3.geojson data/morocco_buildings/phase_3/footprints/fes_footprints_benchmark_ph3.geojson data/morocco_buildings/phase_3/footprints/meknes_footprints_benchmark_ph3.geojson | db/table ## Detected benchmark from old satellite imagery (EPSG-3857).
+db/table/morocco_buildings_benchmark: static_data/morocco_buildings/phase_3/footprints/agadir_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/casablanca_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/chefchaouen_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/fes_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/meknes_footprints_benchmark_ph3.geojson | db/table ## Detected benchmark from old satellite imagery (EPSG-3857).
 	psql -c "drop table if exists morocco_buildings_benchmark;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/footprints/agadir_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/agadir_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
 	psql -c "alter table morocco_buildings_benchmark add column city text;"
 	psql -c "alter table morocco_buildings_benchmark alter column wkb_geometry type geometry;"
 	psql -c "update morocco_buildings_benchmark set city = 'Agadir' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/footprints/casablanca_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/casablanca_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
 	psql -c "update morocco_buildings_benchmark set city = 'Casablanca' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/footprints/chefchaouen_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/chefchaouen_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
 	psql -c "update morocco_buildings_benchmark set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/footprints/fes_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/fes_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
 	psql -c "update morocco_buildings_benchmark set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/footprints/meknes_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/meknes_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
 	psql -c "update morocco_buildings_benchmark set city = 'Meknes' where city is null;"
 	psql -f tables/morocco_buildings_benchmark.sql -v morocco_buildings=morocco_buildings_benchmark
 	touch $@
 
-db/table/morocco_buildings_benchmark_roofprints: data/morocco_buildings/phase_3/roofprints/agadir_roofptints_benchmark_ph3.geojson data/morocco_buildings/phase_3/roofprints/casablanca_roofptints_benchmark_ph3.geojson data/morocco_buildings/phase_3/roofprints/chefchaouen_roofptints_benchmark_ph3.geojson data/morocco_buildings/phase_3/roofprints/fes_roofptints_benchmark_ph3.geojson data/morocco_buildings/phase_3/roofprints/meknes_roofptints_benchmark_ph3.geojson | db/table ## Separate datasets of Morocco cities buildings roofrints combined together and imported into database (for further benchmarking automatically segmentized buildings) (EPSG-3857).
+db/table/morocco_buildings_benchmark_roofprints: static_data/morocco_buildings/phase_3/roofprints/agadir_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/casablanca_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/chefchaouen_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/fes_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/meknes_roofptints_benchmark_ph3.geojson | db/table ## Separate datasets of Morocco cities buildings roofrints combined together and imported into database (for further benchmarking automatically segmentized buildings) (EPSG-3857).
 	psql -c "drop table if exists morocco_buildings_benchmark_roofprints;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/roofprints/agadir_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/agadir_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
 	psql -c "alter table morocco_buildings_benchmark_roofprints add column city text;"
 	psql -c "alter table morocco_buildings_benchmark_roofprints alter column wkb_geometry type geometry;"
 	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Agadir' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/roofprints/casablanca_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/casablanca_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
 	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Casablanca' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/roofprints/chefchaouen_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/chefchaouen_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
 	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/roofprints/fes_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/fes_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
 	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/roofprints/meknes_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/meknes_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
 	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Meknes' where city is null;"
 	psql -f tables/morocco_buildings_benchmark.sql -v morocco_buildings=morocco_buildings_benchmark_roofprints
 	touch $@
 
-db/table/morocco_buildings_extents: data/morocco_buildings/extents/agadir_extents.geojson data/morocco_buildings/extents/casablanca_extents.geojson data/morocco_buildings/extents/chefchaouen_extents.geojson data/morocco_buildings/extents/fes_extents.geojson data/morocco_buildings/extents/meknes_extents.geojson | db/table ## Combined (for all cities) area of interest as extent mask area from Geoalert's repository (EPSG-3857).
+db/table/morocco_buildings_extents: static_data/morocco_buildings/extents/agadir_extents.geojson static_data/morocco_buildings/extents/casablanca_extents.geojson static_data/morocco_buildings/extents/chefchaouen_extents.geojson static_data/morocco_buildings/extents/fes_extents.geojson static_data/morocco_buildings/extents/meknes_extents.geojson | db/table ## Combined (for all cities) area of interest as extent mask area from Geoalert's repository (EPSG-3857).
 	psql -c "drop table if exists morocco_buildings_extents;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/agadir_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/agadir_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
 	psql -c "alter table morocco_buildings_extents add column city text;"
 	psql -c "alter table morocco_buildings_extents alter column wkb_geometry type geometry;"
 	psql -c "update morocco_buildings_extents set city = 'Agadir' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/casablanca_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/casablanca_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
 	psql -c "update morocco_buildings_extents set city = 'Casablanca' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/chefchaouen_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/chefchaouen_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
 	psql -c "update morocco_buildings_extents set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/fes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/fes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
 	psql -c "update morocco_buildings_extents set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/extents/meknes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/meknes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
 	psql -c "update morocco_buildings_extents set city = 'Meknes' where city is null;"
 	psql -c "alter table morocco_buildings_extents rename column wkb_geometry to geom; update morocco_buildings_extents set geom = ST_Transform(geom, 3857);"
 	touch $@
@@ -1385,11 +1398,11 @@ db/table/morocco_buildings_footprints_phase3_clipped: db/table/morocco_buildings
 	psql -c "update morocco_buildings_footprints_phase3_clipped set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
 	touch $@
 
-db/table/morocco_buildings_manual_roofprints_phase3: data/morocco_buildings/phase_3/fes_meknes_height_patch.geojson db/table/morocco_buildings_manual_roofprints | db/table ## Buildings roofprints from Geoalert sampled from Morocco buildings dataset for further benchmarking (EPSG-3857).
+db/table/morocco_buildings_manual_roofprints_phase3: static_data/morocco_buildings/phase_3/fes_meknes_height_patch.geojson db/table/morocco_buildings_manual_roofprints | db/table ## Buildings roofprints from Geoalert sampled from Morocco buildings dataset for further benchmarking (EPSG-3857).
 	psql -c "drop table if exists morocco_buildings_manual_roofprints_phase3;"
 	psql -c "create table morocco_buildings_manual_roofprints_phase3 as (select * from morocco_buildings_manual_roofprints);"
 	psql -c "drop table if exists fes_meknes_height_patch;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/morocco_buildings/phase_3/fes_meknes_height_patch.geojson -nln fes_meknes_height_patch
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/fes_meknes_height_patch.geojson -nln fes_meknes_height_patch
 	psql -c "alter table fes_meknes_height_patch alter column wkb_geometry type geometry;"
 	psql -c "update fes_meknes_height_patch set wkb_geometry = ST_Transform(wkb_geometry, 3857);"
 	psql -c "update morocco_buildings_manual_roofprints_phase3 a set building_height = machine_height, is_confident = true from fes_meknes_height_patch b where ST_Intersects(ST_PointOnSurface(a.geom), wkb_geometry) and better = 'robo';"
@@ -1398,17 +1411,17 @@ db/table/morocco_buildings_manual_roofprints_phase3: data/morocco_buildings/phas
 	psql -c "update morocco_buildings_manual_roofprints_phase3 set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
 	touch $@
 
-db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_extents db/table/morocco_buildings_footprints_phase3_clipped db/table/morocco_buildings_manual_roofprints_phase3 ## Calculation IoU metrics for all buildings from Morocco dateset test benchmar.k
-	rm -f data/morocco_buildings/metric_storage.csv
+db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_extents db/table/morocco_buildings_footprints_phase3_clipped db/table/morocco_buildings_manual_roofprints_phase3 | data/out/morocco_buildings ## Calculation IoU metrics for all buildings from Morocco dateset test benchmark
+	rm -f data/out/morocco_buildings/metric_storage.csv
 	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual_roofprints_phase3 -v examinee_buildings_table=morocco_buildings_benchmark_roofprints -v benchmark_clip_table=morocco_buildings_extents -v type=roof
-	echo "morocco_buildings_manual_roofprints_phase3 & morocco_buildings_benchmark_roofprints tables, type=roof" > data/morocco_buildings/metric_storage.csv
-	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/morocco_buildings/metric_storage.csv
+	echo "morocco_buildings_manual_roofprints_phase3 & morocco_buildings_benchmark_roofprints tables, type=roof" > data/out/morocco_buildings/metric_storage.csv
+	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/out/morocco_buildings/metric_storage.csv
 	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual -v examinee_buildings_table=morocco_buildings_benchmark -v benchmark_clip_table=morocco_buildings_extents -v type=foot
-	echo "morocco_buildings_manual & morocco_buildings_benchmark tables, type=foot" >> data/morocco_buildings/metric_storage.csv
-	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/morocco_buildings/metric_storage.csv
-	echo "morocco_buildings_manual & morocco_buildings_footprints_phase3_clipped tables, type=foot" >> data/morocco_buildings/metric_storage.csv
+	echo "morocco_buildings_manual & morocco_buildings_benchmark tables, type=foot" >> data/out/morocco_buildings/metric_storage.csv
+	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/out/morocco_buildings/metric_storage.csv
+	echo "morocco_buildings_manual & morocco_buildings_footprints_phase3_clipped tables, type=foot" >> data/out/morocco_buildings/metric_storage.csv
 	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual -v examinee_buildings_table=morocco_buildings_footprints_phase3_clipped -v benchmark_clip_table=morocco_buildings_extents -v type=foot
-	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/morocco_buildings/metric_storage.csv
+	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/out/morocco_buildings/metric_storage.csv
 	touch $@
 
 data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual | data/out/morocco_buildings  ## Morocco Buildings footprints from Geoalert imported into database for further benchmarking(phase 2)(EPSG-3857).
@@ -1620,7 +1633,7 @@ data/in/census_gov/data_census_download: | data/in/census_gov ## Download themat
 	touch $@
 
 data/mid/census_gov/us_census_tracts_stats.csv: data/in/census_gov/data_census_download | data/mid/census_gov ## Normalize US census tracts dataset.
-	python3 scripts/normalize_census_data.py -c data/census_data_config.json -o $@
+	python3 scripts/normalize_census_data.py -c static_data/census_data_config.json -o $@
 
 db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/mid/census_gov/us_census_tracts_stats.csv | db/table ## US census tracts statistics imported into database.
 	psql -c 'drop table if exists us_census_tracts_stats_in;'
@@ -1822,11 +1835,15 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_slopes_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/gebco_2020_elevation_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
-db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
+db/table/stat_h3_quality: db/table/stat_h3 | db/table ## summarized statistics aggregated on H3 hexagons between resolutions.
+	psql -f tables/stat_h3_quality.sql
+	touch $@
+
+db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 db/table/stat_h3_quality | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
 	psql -f tables/bivariate_axis.sql
 	touch $@
 
@@ -1834,7 +1851,7 @@ db/table/bivariate_axis_analytics: db/table/bivariate_axis db/table/stat_h3 | db
 	psql -X -c "copy (select numerator||' '||denominator from bivariate_axis) to stdout;" | parallel --colsep ' ' "psql -f tables/bivariate_axis_analytics.sql -v numer={1} -v denom={2} -v numer_text=\"'{1}'\" -v denom_text=\"'{2}'\" "
 	touch $@
 
-db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3 | db/table ## Precalculated correlations for bivariate layers
+db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3_quality db/table/bivariate_indicators | db/table ## Precalculated correlations for bivariate layers
 	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
 
@@ -2137,3 +2154,15 @@ deploy/s3/prod/kontur_events_updated: data/out/kontur_events/updated | deploy/s3
 	aws s3 cp data/out/kontur_events/kontur-events-prod.geojson "s3://event-api-locker01/kontur_events/PROD/kontur-events.geojson" --profile kontur-events
 	touch $@
 
+data/in/event_api_data: | data/in  ## download directory for events-api data
+	mkdir -p $@
+
+data/in/event_api_data/download : | data/in/event_api_data  ## download event-api data
+	parallel " \
+		python3 ./scripts/event_api_parser.py \
+			-e \
+			--work-dir data/in/event_api_data \
+			--stage prod \
+			--feed {}\
+	" ::: test-pdc-v0 test-em-dat test-firms test-gdacs kontur-public test-loss
+	touch $@

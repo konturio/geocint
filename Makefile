@@ -334,32 +334,41 @@ db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 res
 	psql -f procedures/generate_overviews.sql
 	touch $@
 
-data/in/facebook_roads: | data/in ## make directory for downloaded data
+data/in/facebook_roads: | data/in ## Directory for Facebook roads downloaded data.
 	mkdir -p $@
 
-data/mid/facebook_roads: | data/mid ## make directory for extracted data
+data/mid/facebook_roads: | data/mid ## Directory for Facebook roads extracted data.
 	mkdir -p $@
 
-data/in/facebook_roads/downloaded: | data/in/facebook_roads ## reference download list
+data/in/facebook_roads/downloaded: | data/in/facebook_roads ## Download Facebook roads.
 	wget -nc --input-file=static_data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads
 	touch $@
 
-data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/facebook_roads ## put extracted data in folder
+data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/facebook_roads ## Extract Facebook roads.
 	rm -f data/mid/facebook_roads/*.gpkg
 	ls data/in/facebook_roads/*.tar.gz | parallel 'tar -C data/mid/facebook_roads -xf {}'
 	touch $@
 
-db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## loading files into the db
+db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## Loading Facebook roads into db.
 	psql -c "drop table if exists facebook_roads_in;"
-	psql -c "create table facebook_roads_in (way_fbid text, highway_tag text, geom geometry);"
+	psql -c "create table facebook_roads_in (way_fbid text, highway_tag text, geom geometry(geometry, 4326));"
 	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_in'
+	psql -c "vacuum analyse facebook_roads_in;"
 	touch $@
 
-db/table/facebook_roads: db/table/facebook_roads_in | db/table ## filtering fb roads with osm roads
+db/table/facebook_roads_last_filtered: db/table/facebook_roads_in | db/table ## Save first timestamp for Facebook road filter.
+	psql -c "drop table if exists facebook_roads_last_filtered;"
+	psql -c "create table facebook_roads_last_filtered as (select '2019-01-01'::date::timestamp as ts);"
+	touch $@
+
+db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last_filtered db/table/osm_roads | db/table ## Filter Facebook roads.
 	psql -f tables/facebook_roads.sql
+	psql -1 -c "alter table facebook_roads rename to facebook_roads_old; alter table facebook_roads_new rename to facebook_roads;"
+	psql -c "update facebook_roads_last_filtered set ts = (select ts from osm_roads_increment limit 1);"
+	psql -c "drop table facebook_roads_old; drop table osm_roads_increment;"
 	touch $@
 
-db/table/facebook_roads_h3: db/table/facebook_roads | db/table ## Build h3 overviews for facebook roads at all levels
+db/table/facebook_roads_h3: db/table/facebook_roads | db/table ## Build h3 overviews for Facebook roads at all levels.
 	psql -f tables/facebook_roads_h3.sql
 	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 8);"
 	touch $@

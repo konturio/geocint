@@ -25,11 +25,19 @@ drop table if exists facebook_roads_new;
 create table facebook_roads_new as (
     select f.geom
     from facebook_roads f
-    left outer join lateral (
+     left outer join lateral (
         select i.geom
-        from osm_roads_increment i
+        from osm_roads_increment i,
+             ST_Length(
+                     ST_Intersection(
+                             f.geom,
+                             ST_Buffer(i.geom::geography, 10, 'endcap=flat join=bevel')::geometry
+                             -- `endcap=flat join=bevel` lessens points in buffer geom
+                         )
+                 ) intersection_length
         where ST_Intersects(f.geom, i.geom)
-    ) t
-    on true
+          and intersection_length > ST_Length(f.geom) / 2
+        ) t
+        on true
     where t.geom is null
 );

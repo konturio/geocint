@@ -1703,14 +1703,15 @@ db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table ## 
 # 	psql -f tables/hexagonify_boundaries.sql
 # 	touch $@
 
-data/kontur_boundaries.geojson.gz: db/table/kontur_boundaries ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset.
-	rm -vf data/kontur_boundaries.geojson*
-	ogr2ogr -f GeoJSON data/kontur_boundaries.geojson PG:'dbname=gis' -sql "select osm_id, osm_type, boundary, admin_level, name, tags, geom from kontur_boundaries" -nln osm_admin_boundaries
-	pigz data/kontur_boundaries.geojson
+data/out/kontur_boundaries.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in kcapi for Event-api enrichment - geocoding, DN boundary selector.
+	cp -vf $@ data/out/kontur_boundaries.geojson.gz_bak || true
+	rm -vf data/out/kontur_boundaries.geojson data/out/kontur_boundaries.geojson.gz
+	ogr2ogr -f GeoJSON data/out/kontur_boundaries.geojson PG:'dbname=gis' -sql "select osm_id, osm_type, boundary, admin_level, name, tags, geom from kontur_boundaries" -nln osm_admin_boundaries
+	pigz data/out/kontur_boundaries.geojson
 	touch $@
 
-deploy/s3/kontur_boundaries: data/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3.
-	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3.
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/out/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
 db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float db/function/parse_integer | db/table ## All the buildings (but not all the properties yet) extracted from OpenStreetMap dataset.

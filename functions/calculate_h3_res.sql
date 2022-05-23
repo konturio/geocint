@@ -22,7 +22,7 @@ begin
             select least((
                              select id
                              from h3_resolutions
-                             order by abs(40075016.6855785 / (256 * 2 ^ z) * 15 - edge_length)
+                             order by abs(40075016.6855785 / (256 * 2 ^ z) * 22 - edge_length)
                              limit 1 ),
                          8) as tile_resolution,
                    z as zoom_lvl;
@@ -34,7 +34,7 @@ begin
             select least((
                              select id
                              from h3_resolutions
-                             order by abs(40075016.6855785 / (256 * 2 ^ i) * 15 - edge_length)
+                             order by abs(40075016.6855785 / (256 * 2 ^ i) * 22 - edge_length)
                              limit 1
                          ), 8) as tile_resolution,
                    i as zoom_lvl

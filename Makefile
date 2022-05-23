@@ -2,7 +2,7 @@ export PGDATABASE = gis
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3 db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3 db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated data/in/event_api_data/download ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -404,7 +404,16 @@ db/table/osm_road_segments_h3: db/table/osm_road_segments | db/table ## osm road
 	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.
+db/table/osm_road_segments_6_months: db/table/osm_roads | db/table ## osm road segments for 6 months
+	psql -f tables/osm_road_segments_6_months.sql
+	touch $@
+
+db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months | db/table ## osm road segments aggregated to h3
+	psql -f tables/osm_road_segments_6_months_h3.sql
+	psql -c "call generate_overviews('osm_road_segments_6_months_h3', '{highway_length_6_months}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.
 	psql -f tables/osm_user_count_grid_h3.sql
 	touch $@
 
@@ -764,7 +773,7 @@ db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundarie
 	psql -f tables/osm_gadm_comparison.sql
 	touch $@
 
-db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries db/table/osm_reports_list | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
+db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries db/table/osm_reports_list db/table/osm_meta | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
 	psql -f tables/osm_population_inconsistencies.sql
 	touch $@
 
@@ -780,18 +789,18 @@ db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries db/ta
 	psql -f tables/osm_missing_roads.sql
 	touch $@
 
-db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 db/table/osm_reports_list | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
+db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 db/table/osm_reports_list db/table/osm_meta | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
 	psql -f tables/osm_missing_boundaries_report.sql
 	touch $@
 
-data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
+data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison db/table/osm_meta | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Admin level\", \"OSM name\", \"GADM name\" from osm_gadm_comparison order by id limit 10000) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | data/out/reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Name\", \"Admin level\", \"Population\", \"Population date\", \"Population source\", \"SUM subregions population\", \"Population difference value\", \"Population difference %\" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ';');" > $@
 
-data/out/reports/population_check_osm.csv: db/table/population_check_osm | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
-	psql -qXc "copy (select * from population_check_osm order by \"OSM-Kontur Population difference\" desc limit 50000) to stdout with (format csv, header true, delimiter ';');" > $@
+data/out/reports/population_check_osm.csv: db/table/population_check_osm db/table/osm_meta | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
+	psql -qXc "copy (select * from population_check_osm order by \"OSM-Kontur Population difference\" desc limit 1000) to stdout with (format csv, header true, delimiter ';');" > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | data/out/reports ## Export report to CSV
@@ -1826,7 +1835,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -2145,3 +2154,15 @@ deploy/s3/prod/kontur_events_updated: data/out/kontur_events/updated | deploy/s3
 	aws s3 cp data/out/kontur_events/kontur-events-prod.geojson "s3://event-api-locker01/kontur_events/PROD/kontur-events.geojson" --profile kontur-events
 	touch $@
 
+data/in/event_api_data: | data/in  ## download directory for events-api data
+	mkdir -p $@
+
+data/in/event_api_data/download : | data/in/event_api_data  ## download event-api data
+	parallel " \
+		python3 ./scripts/event_api_parser.py \
+			-e \
+			--work-dir data/in/event_api_data \
+			--stage prod \
+			--feed {}\
+	" ::: test-pdc-v0 test-em-dat test-firms test-gdacs kontur-public test-loss
+	touch $@

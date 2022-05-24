@@ -765,31 +765,31 @@ data/out/kontur_boundaries_per_country/export: db/table/hdx_locations db/table/k
 	cd data/out/kontur_boundaries_per_country/; pigz *.gpkg
 	touch $@
 
-db/table/osm_reports_list: | db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
+db/table/osm_reports_list: db/table/osm_meta db/table/population_check_osm db/table/osm_population_inconsistencies db/table/osm_gadm_comparison db/table/osm_unmapped_places_report db/table/osm_missing_roads db/table/osm_missing_boundaries_report | db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
 	psql -f tables/osm_reports_list.sql
 	touch $@
 
-db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundaries db/table/osm_reports_list | db/table ## Validate OSM boundaries that OSM has no less polygons than GADM.
-	psql -f tables/osm_gadm_comparison.sql
-	touch $@
-
-db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries db/table/osm_reports_list db/table/osm_meta | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
-	psql -f tables/osm_population_inconsistencies.sql
-	touch $@
-
-db/table/population_check_osm: db/table/kontur_boundaries db/table/osm_reports_list | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
+db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
 	psql -f tables/population_check_osm.sql
 	touch $@
 
-db/table/osm_unmapped_places_report: db/table/stat_h3 db/table/osm_reports_list | db/table ## Report with a list of vieved but unmapped populated places
+db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
+	psql -f tables/osm_population_inconsistencies.sql
+	touch $@
+
+db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundaries | db/table ## Validate OSM boundaries that OSM has no less polygons than GADM.
+	psql -f tables/osm_gadm_comparison.sql
+	touch $@
+
+db/table/osm_unmapped_places_report: db/table/stat_h3 | db/table ## Report with a list of vieved but unmapped populated places
 	psql -f tables/osm_unmapped_places_report.sql
 	touch $@
 
-db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries db/table/osm_reports_list | db/table ## Report with a list places where Facebook has more roads than OpenStreetMap
+db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries | db/table ## Report with a list places where Facebook has more roads than OpenStreetMap
 	psql -f tables/osm_missing_roads.sql
 	touch $@
 
-db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 db/table/osm_reports_list db/table/osm_meta | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
+db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
 	psql -f tables/osm_missing_boundaries_report.sql
 	touch $@
 

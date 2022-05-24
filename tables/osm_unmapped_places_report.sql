@@ -15,8 +15,3 @@ create table osm_unmapped_places_report as (
     order by floor(log10(population / area_km2)) desc,
              view_count desc
 );
-
--- Update timestamp in reports table (for further export to reports API JSON):
-update osm_reports_list
-set last_updated = (select meta->'data'->'timestamp'->>'last' as updated from osm_meta)
-where id = 'osm_unmapped_places_report';

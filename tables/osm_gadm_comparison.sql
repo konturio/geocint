@@ -62,8 +62,3 @@ order by l.admin_level, l.gid, g.admin_level, g.gadm_name;
 
 -- Drop temporary tables
 drop table if exists gadm_in;
-
--- Update timestamp in reports table (for further export to reports API JSON):
-update osm_reports_list
-set last_updated = (select meta->'data'->'timestamp'->>'last' as updated from osm_meta)
-where id = 'osm_gadm_comparison';

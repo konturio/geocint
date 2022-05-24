@@ -47,9 +47,3 @@ create table osm_missing_boundaries_report as (
     left join country_boundaries_subdivided_in c
         on ST_Intersects(ST_PointOnSurface(b.geom), c.geom)
 );
-
-
--- Update timestamp in reports table (for further export to reports API JSON):
-update osm_reports_list
-set last_updated = (select meta->'data'->'timestamp'->>'last' as updated from osm_meta)
-where id = 'osm_missing_boundaries_report';

@@ -56,9 +56,3 @@ where rank_by_cnt < 101; --limit to 100 for each country
 
 -- Drop temporary tables
 drop table if exists country_boundaries_subdivided_in;
-
-
--- Update timestamp in reports table (for further export to reports API JSON):
-update osm_reports_list
-set last_updated = (select meta->'data'->'timestamp'->>'last' as updated from osm_meta)
-where id = 'osm_missing_roads';

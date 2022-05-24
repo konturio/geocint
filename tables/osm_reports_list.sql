@@ -4,8 +4,8 @@
 
 -- Keep old osm_reports_list table to keep and compare previous timestamps
 drop table if exists osm_reports_list_old;
-create table if not exists osm_reports_list (id text, last_updated text);   -- Create empty table if there isn't one already
-alter table osm_reports_list rename to osm_reports_list_old;                -- Rename actual table to old
+create table if not exists osm_reports_list_old as
+select * from osm_reports_list;
 
 
 -- Create new empty table osm_reports_list:
@@ -26,75 +26,69 @@ create table osm_reports_list
 -- Populate table with reports
 -- Population tag check report:
 insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
-values ('population_tag_check',
+select 'population_tag_check',
         'Population tag check',
         '/population_check_osm.csv',
-        '',
+        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
         'Find discrepancies between [Kontur Population](https://www.kontur.io/portfolio/population-dataset/) and [OpenStreetMap](https://wiki.openstreetmap.org/wiki/Key:population) data to see potential errors in OpenStreetMap population data. [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset) is a global population dataset generated based on various public data sources including OpenStreetMap. Inconsistencies in the values between Kontur data and OpenStreetMap population key on administrative division boundaries may indicate inaccuracies in OSM data.',
         'Find discrepancies between [Kontur Population](https://www.kontur.io/portfolio/population-dataset/) and [OpenStreetMap](https://wiki.openstreetmap.org/wiki/Key:population) data to see potential errors in OpenStreetMap population data. [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset) is a global population dataset generated based on various public data sources including OpenStreetMap. Inconsistencies in the values between Kontur data and OpenStreetMap population key on administrative division boundaries may indicate inaccuracies in OSM data.',
         true,
         true
-        );
+from osm_meta;
 
 -- Population inconsistencies report:
 insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
-values ('osm_population_inconsistencies',
+select 'osm_population_inconsistencies',
         'Population inconsistencies',
         '/osm_population_inconsistencies.csv',
-        '',
+        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
         'This report indicates potential errors in OpenStreetMap population key values. [Kontur](https://www.kontur.io/) analyzes boundary objects to check if the population numbers on different levels of administrative boundaries do not conflict with each other. For example, a country’s population may not be smaller than the sum of its region’s population.',
         'This report indicates potential errors in OpenStreetMap population key values. [Kontur](https://www.kontur.io/) analyzes boundary objects to check if the population numbers on different levels of administrative boundaries do not conflict with each other. For example, a country’s population may not be smaller than the sum of its region’s population.',
         false,
         true
-        );
+from osm_meta;
 
 -- OSM-GADM comparison report:
 insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
-values ('osm_gadm_comparison',
+select 'osm_gadm_comparison',
         'OSM-GADM comparison',
         '/osm_gadm_comparison.csv',
-        '',
+        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
         'Compare [GADM](https://gadm.org/data.html) and OpenStreetMap statistics on administrative division to find potential gaps in OSM data. GADM boundary data is a global dataset with an administrative division of all countries. Its [license](https://gadm.org/license.html) forbids importing it into OpenStreetMap but this report by [Kontur](https://www.kontur.io/) allows you to analyze the hierarchy of boundaries in GADM and OpenStreetMap. The last column shows the number of subregions for every admin boundary found in GADM/OSM to make potential conclusions. GADM is not the [''ground truth''](https://wiki.openstreetmap.org/wiki/Ground_truth), but a big difference in stats is a good reason to look carefully into OSM data.',
         'Compare [GADM](https://gadm.org/data.html) and OpenStreetMap statistics on administrative division to find potential gaps in OSM data. GADM boundary data is a global dataset with an administrative division of all countries. Its [license](https://gadm.org/license.html) forbids importing it into OpenStreetMap but this report by [Kontur](https://www.kontur.io/) allows you to analyze the hierarchy of boundaries in GADM and OpenStreetMap. The last column shows the number of subregions for every admin boundary found in GADM/OSM to make potential conclusions. GADM is not the [''ground truth''](https://wiki.openstreetmap.org/wiki/Ground_truth), but a big difference in stats is a good reason to look carefully into OSM data.',
         false,
         true
-        );
+from osm_meta;
 
 insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
-values ('osm_unmapped_places',
+select 'osm_unmapped_places',
         'OSM unmapped places',
         '/osm_unmapped_places.csv',
-        '',
+        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
         'A list of viewed on [OpenStreetMap](https://www.openstreetmap.org) but unmapped places where people live according to [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset).',
         'A list of viewed on [OpenStreetMap](https://www.openstreetmap.org) but unmapped places where people live according to [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset).',
         false,
         true
-        );
+from osm_meta;
 
 insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
-values ('osm_missing_roads',
+select 'osm_missing_roads',
         'OSM missing roads',
         '/osm_missing_roads.csv',
-        '',
+        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
         'A list of places with roads missing while comparing with [Facebook](https://github.com/facebookmicrosites/Open-Mapping-At-Facebook).',
         'A list of places with roads missing while comparing with [Facebook](https://github.com/facebookmicrosites/Open-Mapping-At-Facebook).',
         true,
         true
-        );
+from osm_meta;
 
 insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, public_access)
-values ('osm_missing_boundaries_report',
+select 'osm_missing_boundaries_report',
         'OSM missing boundaries',
         '/osm_missing_boundaries_report.csv',
-        '',
+        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
         'A list of boundaries that disappeared from Kontur Boundaries dataset nightly version compared to the [last public one](https://data.humdata.org/dataset/kontur-boundaries). In most cases this means that the boundary polygon can not be extracted because relation in OpenStreetMap is broken and needs to be repaired',
         'A list of boundaries that disappeared from Kontur Boundaries dataset nightly version compared to the [last public one](https://data.humdata.org/dataset/kontur-boundaries). In most cases this means that the boundary polygon can not be extracted because relation in OpenStreetMap is broken and needs to be repaired',
         true,
         false
-        );
-
--- Populate timestamp column with previous values to keep them in case reports won't update (then old timestamp will be the valid one!)
-update osm_reports_list n
-    set last_updated = o.last_updated
-    from osm_reports_list_old o
-    where n.id = o.id;
+from osm_meta;

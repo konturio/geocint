@@ -321,7 +321,7 @@ values ('foursquare_visits_count', 'Foursquare Japan visits count', jsonb_build_
 
 update bivariate_indicators
 set is_base = true
-where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2','one');
+where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2', 'one');
 
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)

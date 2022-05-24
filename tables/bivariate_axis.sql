@@ -283,13 +283,6 @@ where
 
 update bivariate_axis
 set
-    label = 'OSM roads density (m/km²)'
-where
-      numerator = 'highway_length'
-  and denominator = 'area_km2';
-
-update bivariate_axis
-set
     label = 'Meta and OSM roads density (m/km2)'
 where
       numerator = 'total_road_length'

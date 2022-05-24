@@ -316,6 +316,13 @@ where
       numerator = 'view_count_bf2402'
   and denominator = 'area_km2';
 
+update bivariate_axis
+set
+    label = 'Total road length estimates'
+where
+      numerator = 'highway_length'
+  and denominator = 'total_road_length';
+
 -- columns for advanced analytics
 alter table bivariate_axis
     add column sum_value double precision,

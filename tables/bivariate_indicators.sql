@@ -319,11 +319,6 @@ values ('foursquare_visits_count', 'Foursquare Japan visits count', jsonb_build_
         'Sample data'),
         '[["unimportant"], ["important"]]'::jsonb);
 
-update bivariate_indicators
-set is_base = true
-where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2', 'one');
-
-
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('view_count_bf2402', 'OSM Map Views 30 days before 24.02.2022',
         jsonb_build_array('© Kontur', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
@@ -358,6 +353,11 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('vulnerability_index', 'Vulnerability PDC GRVA', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
         '[["unimportant"], ["important", "bad"]]'::jsonb);
+
+-- set indicator is_base to become denominators 
+update bivariate_indicators
+set is_base = true
+where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2', 'one', 'total_road_length');
 
 --- this is an ugly hack to enable Parallel Seq Scan on bivariate_indicators
 -- Postgres parallel seq scan works on page level, so we can't really get it to run more workers than there are

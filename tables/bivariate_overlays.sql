@@ -128,3 +128,17 @@ select 9,
        'This map shows how many times users viewed OpenStreetMap in particular region for the last 30 days in comparison to 30 days before 24.02.2022.',
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(129,127,228)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(28,26,228)"},{"id":"C2","color":"rgb(98,98,140)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 ;
+
+insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
+select 10,
+       'Kontur OpenStreetMap Road Length',
+       'highway_length',
+       'total_road_length',
+       'population',
+       'area_km2',
+       false,
+       'This map shows whether populated places have roads in OpenStreetMap to visit them or escape 
+        in time of disaster. Road completeness is calculated as the ratio of OpenStreetMap road length 
+        to total estimated road length(OpenStreetMap + Meta roads). Population data is provided by Kontur.',
+       '[{"id":"A1","color":"rgb(232,232,157)"}, {"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"}, {"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"}, {"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+;

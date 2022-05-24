@@ -1043,29 +1043,32 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-data/in/global_fires/firms_archive.tar.gz: | data/in/global_fires ## Download aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System) from AWS.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/firms_archive.tar.gz $@ --profile geocint_pipeline_sender
+data/in/global_fires/download_firms_archive: | data/in/global_fires ## Download active fire products (FIRMS - Fire Information for Resource Management System) for last 14 months from AWS.
+	# Cleanup failed downloads
+	rm -f data/in/global_fires/firms_archive_*.tar.gz.*
+	# Download files for the last 14 month
+	seq $$(date --date="14 month ago" +"%Y") $$(date +"%Y") | parallel --eta "aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/firms_archive_{}.tar.gz data/in/global_fires/ --profile geocint_pipeline_sender"
 	touch $@
 
-data/mid/global_fires/extract_firms_archive: data/in/global_fires/firms_archive.tar.gz | data/mid/global_fires ## Extract aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System).
-	tar -I pigz -xvf $< -C data/mid/global_fires
+data/mid/global_fires/extract_firms_archive: data/in/global_fires/download_firms_archive | data/mid/global_fires ## Extract aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System).
+	ls data/in/global_fires/firms_archive_*.tar.gz | xargs -I {} tar -I pigz -xvf {} -C data/mid/global_fires
 	touch $@
 
 data/in/global_fires/new_updates: | data/in ## Last updates for active fire products from FIRMS (Fire Information for Resource Management System).
 	mkdir -p $@
 
-data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 7 days.
+data/in/global_fires/new_updates/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 48 hours.
 	rm -f data/in/global_fires/new_updates/*.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Global_7d.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_7d.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv
-	cp data/in/global_fires/new_updates/*.csv data/mid/global_fires/
+	wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_7d.csv -P data/in/global_fires/new_updates/
+	wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_7d.csv -P data/in/global_fires/new_updates/
+	wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv -P data/in/global_fires/new_updates/
+	find -L data/in/global_fires/new_updates -name *.csv -type f -printf "%f\n" | parallel "python3 scripts/normalize_global_fires.py data/in/global_fires/new_updates/{} > data/mid/global_fires/{}"
 	touch $@
 
-db/table/global_fires: data/in/global_fires/download_new_updates data/mid/global_fires/extract_firms_archive | db/table ## 20 years active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
+db/table/global_fires: data/in/global_fires/new_updates/download_new_updates data/mid/global_fires/extract_firms_archive | db/table ## 20 years active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
 	psql -c "drop table if exists global_fires_in;"
 	psql -c "create table global_fires_in(latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text) tablespace evo4tb;"
-	ls data/mid/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {} | psql -c 'set time zone utc; copy global_fires_in (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;'"
+	ls data/mid/global_fires/*.csv | parallel "psql -c 'set time zone utc; copy global_fires_in (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;'"
 	psql -c "vacuum analyze global_fires_in;"
 	psql -c "create table if not exists global_fires (like global_fires_in) tablespace evo4tb;"
 	psql -c "insert into global_fires select * from (select distinct on (n.hash) n.* from global_fires_in n left outer join global_fires gf on n.hash = gf.hash where gf.hash is null) t order by t.acq_datetime;"

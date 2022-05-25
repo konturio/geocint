@@ -431,8 +431,8 @@ create table stat_h3 as (
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
          left join pf_maxtemp_h3 pf on (a.h3 = pf.h3)
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)
-         left join global_rva_h3 rva on (a.h3 = rva.h3),
-         left join disaster_event_episodes_h3 on (a.h3 = disaster_event_episodes_h3.h3)
+         left join global_rva_h3 rva on (a.h3 = rva.h3)
+         left join disaster_event_episodes_h3 on (a.h3 = disaster_event_episodes_h3.h3),
          ST_HexagonFromH3(a.h3) hex
 );
 drop table stat_h3_in;

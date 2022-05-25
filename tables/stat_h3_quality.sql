@@ -62,7 +62,14 @@ create table stat_h3_quality as (
                 avg(a.mhe_index) as agg_mhe_index,
                 avg(a.resilience_index) as agg_resilience_index,
                 avg(a.coping_capacity_index) as agg_coping_capacity_index,
-                avg(a.vulnerability_index) as agg_vulnerability_index
+                avg(a.vulnerability_index) as agg_vulnerability_index,
+                avg(a.industrial_heat_days_count) as agg_industrial_heat_days_count,
+                avg(a.drough_days_count) as agg_drough_days_count,
+                avg(a.thermal_anomaly_days_count) as agg_thermal_anomaly_days_count,
+                avg(a.cyclone_days_count) as agg_cyclone_days_count,
+                avg(a.wildfire_days_count) as agg_wildfire_days_count,
+                avg(a.volcano_days_count) as agg_volcano_days_count,
+                avg(a.flood_days_count) as agg_flood_days_count
             from
                 stat_h3 a
             where

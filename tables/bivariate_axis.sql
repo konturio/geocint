@@ -318,7 +318,7 @@ where
 
 update bivariate_axis
 set
-    label = 'OSM road length estimates',
+    label = 'OSM roads completeness',
     p75 = 0.9
 where
       numerator = 'highway_length'

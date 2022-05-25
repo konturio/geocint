@@ -152,6 +152,46 @@ values ('wildfires', 'Wildfire Days Per Year', jsonb_build_array(
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('eathquake_days_count', 'Number of days under earthquake impact', jsonb_build_array(
+'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('industrial_heat_days_count', 'Number of days under industrial heat impact', jsonb_build_array(
+'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('drough_days_count', 'Number of days under drough impact', jsonb_build_array(
+'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('thermal_anomaly_days_count', 'Number of days under thermal anomaly impact', jsonb_build_array(
+'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('cyclone_days_count', 'Number of days under cyclone impact', jsonb_build_array(
+'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('wildfire_days_count', 'Number of days under wildfire impact', jsonb_build_array(
+'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('volcano_days_count', 'Number of days under volcano impact', jsonb_build_array(
+'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('flood_days_count', 'Number of days under flood impact', jsonb_build_array(
+'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('covid19_vaccines', 'COVID19 Vaccine Acceptance', jsonb_build_array(
 '© Data from Delphi COVIDcast, covidcast.cmu.edu'),
     '[["bad"], ["neutral"]]'::jsonb);

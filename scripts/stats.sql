@@ -59,6 +59,7 @@ from
             resilience_index,
             coping_capacity_index,
             vulnerability_index,
+            hazardous_days_count,
             eathquake_days_count,
             industrial_heat_days_count,
             drough_days_count,

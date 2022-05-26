@@ -416,6 +416,7 @@ create table stat_h3 as (
            (coalesce(rva.resilience_index, 0))::float as resilience_index,
            (coalesce(rva.coping_capacity_index, 0))::float as coping_capacity_index,
            (coalesce(rva.vulnerability_index, 0))::float as vulnerability_index,
+           (coalesce(disaster_event_episodes_h3.hazardous_days_count, 0))::float as hazardous_days_count,
            (coalesce(disaster_event_episodes_h3.eathquake_days_count, 0))::float as eathquake_days_count,
            (coalesce(disaster_event_episodes_h3.wildfire_days_count, 0))::float as wildfire_days_count,
            (coalesce(disaster_event_episodes_h3.industrial_heat_days_count, 0))::float as industrial_heat_days_count,

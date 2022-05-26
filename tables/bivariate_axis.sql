@@ -157,6 +157,13 @@ where
 
 update bivariate_axis
 set
+    label = 'Number of days with any disaster occurs (n/km²)'
+where
+      numerator = 'hazardous_days_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
     label = 'Number of days under earthquake impact (n/km²)'
 where
       numerator = 'eathquake_days_count'

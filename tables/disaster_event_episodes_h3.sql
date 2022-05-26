@@ -69,6 +69,7 @@ drop table if exists disaster_event_episodes_h3;
 create table disaster_event_episodes_h3 as (
     select
         h3,
+        (select sum(upper(rng) - lower(rng)) duration from unnest(range_agg(ds.event_time_range)) rng) hazardous_days_count,
         sum(ds.duration) filter (where episode_type = 'EARTHQUAKE') as eathquake_days_count,
         sum(ds.duration) filter (where episode_type = 'WILDFIRE') as wildfire_days_count,
         sum(ds.duration) filter (where episode_type = 'INDUSTRIAL_HEAT') as industrial_heat_days_count,
@@ -81,8 +82,10 @@ create table disaster_event_episodes_h3 as (
         sum(ds.duration) filter (where episode_type = 'FLOOD') as flood_days_count
     from disaster_event_episodes_h3_multidaterange
     left join lateral (
-        select upper(r) - lower(r) duration
-        from unnest(disaster_event_episodes_h3_multidaterange.multidaterange) r
+        select
+			event_time_range,
+            upper(event_time_range) - lower(event_time_range) duration
+		from unnest(multidaterange) event_time_range
     ) ds on true
     group by h3
 );

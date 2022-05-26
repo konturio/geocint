@@ -59,7 +59,7 @@ $$
                     range_agg(r) as multidaterange
                 from disaster_event_episodes_h3_multidaterange, unnest(multidaterange) as r
                 where resolution = res
-                group by h3, episode_type;
+                group by h3_to_parent(h3), episode_type;
                 res = res - 1;
             end loop;
     end;

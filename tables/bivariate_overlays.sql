@@ -76,7 +76,7 @@ select 5,
        false,
        'Greener - stronger local community, darker - more active mapping. This map shows how active mapping in the area in last two years is. All mapping hours are shown against mapping hours we can surely attribute to an active local user. Mapper is considered active if they contributed more than 30 mapping hours during last two years. Position of active mapper is estimated by region of their highest activity. A mapping hour is a hour in which an user uploaded at least one tagged object. Last updated  ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(173,169,200)"},{"id":"A2","color":"rgb(122,113,178)"},{"id":"A3","color":"rgb(93,83,152)"},{"id":"B1","color":"rgb(157,183,181)"},{"id":"B2","color":"rgb(118,142,159)"},{"id":"B3","color":"rgb(88,118,129)"},{"id":"C1","color":"rgb(137,200,158)"},{"id":"C2","color":"rgb(113,178,135)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
@@ -89,7 +89,7 @@ select 6,
        false,
        'This map shows how old is OpenStreetMap and how many times users view in particular region of OpenStreetMap for the last 30 days. Explore to find the least edited, but the most popular areas at the same time. Last updated ' ||
         max(tile_date),
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from tile_logs;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)

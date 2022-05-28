@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-from hashlib import md5
-
-import pandas as pd
 import sys
+from hashlib import md5
+import pandas as pd
 
 COLUMNS = 'latitude', 'longitude', 'brightness', 'bright_ti4', 'scan', 'track', 'satellite', 'confidence', 'version', \
           'bright_t31', 'bright_ti5', 'frp', 'daynight', 'acq_datetime',
@@ -17,6 +16,9 @@ def main(filename):
             chunk['acq_datetime'] = pd.to_datetime(chunk['acq_date'] + ' ' + chunk['acq_time'], format='%Y-%m-%d %H%M')
             # Remove extra columns, add missing columns and reorder columns
             chunk = chunk.reindex(columns=COLUMNS, fill_value="")
+
+            # Get only the first character of "satellite" because updates contain only abbreviation
+            chunk['satellite'] = chunk['satellite'].str[0]
 
             # Calculate hash
             chunk['hash'] = chunk.apply(lambda x: md5(''.join(map(str, tuple(x))).encode("utf-8")).hexdigest(), axis=1)

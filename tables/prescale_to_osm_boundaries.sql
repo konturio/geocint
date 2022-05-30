@@ -65,7 +65,6 @@ where ST_Dimension(geom) = 2
     and tags ->> 'admin_level' is not null
 order by 1;
 
-create index on prescale_to_osm_boundaries using gist (geom);
-create index on prescale_to_osm_boundaries using gist (ST_PointOnSurface(geom));
+create index on prescale_to_osm_boundaries using gist (geom, ST_PointOnSurface(geom));
 
 drop table if exists prescale_to_osm;

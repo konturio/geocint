@@ -4,18 +4,18 @@ create table prescale_to_osm_h3_r8 as
 with sum_population as (
         select
                 b.osm_id,
-                round(sum(h.population *
-                        (case
-                                when ST_Within(h.geom, b.geom) then 1
-                                else ST_Area(ST_Intersection(h.geom, b.geom)) / ST_Area(h.geom)
-                        end) -- Calculate intersection area for each h3 cell and boundary polygon
-                )) as population
+
+                 -- Calculate intersection area for each h3 cell and boundary polygon                 
+                round(sum(h.population * (case
+                                               when ST_Within(h.geom, b.geom) then 1
+                                               else ST_Area(ST_Intersection(h.geom, b.geom)) / ST_Area(h.geom)
+                                          end))) as population
         from prescale_to_osm_boundaries b
         join kontur_population_h3 h
                 on ST_Intersects(h.geom, b.geom)
                         and h.resolution = 8
-                                and h.population > 0
-        group by b.osm_id
+                        and h.population > 0
+        group by 1
 )
 select
         b.geom,

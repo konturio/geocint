@@ -3,8 +3,8 @@ import sys
 from hashlib import md5
 import pandas as pd
 
-COLUMNS = 'latitude', 'longitude', 'brightness', 'bright_ti4', 'scan', 'track', 'satellite', 'confidence', 'version', \
-          'bright_t31', 'bright_ti5', 'frp', 'daynight', 'acq_datetime',
+COLUMNS = 'latitude', 'longitude', 'brightness', 'bright_ti4', 'scan', 'track', 'satellite', 'instrument', \
+          'confidence', 'version', 'bright_t31', 'bright_ti5', 'frp', 'daynight', 'acq_datetime',
 CHUNK_SIZE = 10000
 
 
@@ -28,4 +28,4 @@ def main(filename):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1] if len(sys.argv) > 1 else sys.stdin)

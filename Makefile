@@ -2207,7 +2207,7 @@ data/in/event_api_data/kontur_public_feed : | data/in/event_api_data ## download
 
 db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db/table ## import kontur-public feed event episodes in database
 	psql -c 'drop table if exists disaster_event_episodes;'
-	psql -c 'create table if not exists disaster_event_episodes (fid serial primary key, eventid uuid, episode_type text, episode_name text, episode_starteda timestamptz, episode_endedat timestamptz, episode_severity text, geom geometry(geometry, 4326)) tablespace evo4tb;'
+	psql -c 'create table if not exists snorin.disaster_event_episodes (fid serial primary key, eventid uuid, episode_type text, episode_severity text, episode_name text, episode_starteda timestamptz, episode_endedat timestamptz, geom geometry(geometry, 4326)) tablespace evo4tb;'
 	find data/in/event_api_data/kontur-public/ -name "*.geojson*" -type f \
 		| xargs readlink -m \
 		| parallel " \
@@ -2215,12 +2215,13 @@ db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db
 				--config PG_USE_COPY YES \
 				-append \
 				-f PostgreSQL \
-				-nln disaster_event_episodes \
+				-nln snorin.disaster_event_episodes \
 				-a_srs EPSG:4326 \
 				PG:\"dbname=gis\" \
 				\"{}\" \
 		"
-	touch $@
+	psql -c 'create index disaster_event_episodes_episode_type_episode_severity_idx on snorin.disaster_event_episodes (episode_type, episode_severity)'
+	# touch $@
 
 db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3 | db/table ## hexagonify PDC event geometries
 	psql -f tables/disaster_event_episodes_h3.sql

@@ -34,6 +34,7 @@ tested by other team members, and will automatically produce new artifacts once 
 
 ### Things to avoid:
 
+- Views and materialized views.
 - Complex python scripts should become less complex bash+sql scripts.
 - Java services are out of scope of geocint.
 
@@ -60,6 +61,7 @@ tested by other team members, and will automatically produce new artifacts once 
 ### Geocint deployment checklist:
 
 #### Organizational points:
+
 - Task and action plan is analyzed and you understand what you need to do. Remember, no code at all is always better.
 - Make sure you have source data always available. Do not store it locally on geocint - add a target to download data
   from S3 at least.
@@ -70,6 +72,7 @@ tested by other team members, and will automatically produce new artifacts once 
 - Try to run the pipeline at least once on your test branch.
 
 #### Technical details for **code review** checks:
+
 - Make sure your scripts (especially bash, ansible) are working as a part of Makefile, not only by themselves.
 - Idempotence: how will it run the first time? Second time? 100 times?
     - copying of non-existing yet files
@@ -82,6 +85,7 @@ tested by other team members, and will automatically produce new artifacts once 
 - If you replace one target with another one, make sure to delete unused one everywhere (especially dev/prod targets)
 
 #### After-Merge duties. Share them and your progress with teammates.
+
 - Cache invalidation: manual clean of currently updated but existed targets
 - Delete local/S3 (how - link to instruction) files and DB objects that you don’t need anymore
 - Сheck periodically the make.svg after launch, maybe you can find out how to make a quick fix for not losing
@@ -100,7 +104,8 @@ export SLACK_KEY=<your_key>
 
 ### User schemas
 
-User schemas can be used to separation pipeline and dev data. Run [scripts/create_geocint_user.sh](scripts/create_geocint_user.sh) to initialize the user schema.
+User schemas can be used to separation pipeline and dev data.
+Run [scripts/create_geocint_user.sh](scripts/create_geocint_user.sh) to initialize the user schema.
 
 `scripts/create_geocint_user.sh [username]`
 
@@ -108,7 +113,6 @@ Script for adding user role and schema to geocint database. If no username is pr
 are added to the geocint_users group role. You need to add the following line to pg_hba.conf.
 
 `local   gis +geocint_users  trust`
-
 
 ### How to analyse build time for tables
 
@@ -124,3 +128,9 @@ find . -type f -regex ".*/db/table/osm_admin_boundaries/log.txt" -mtime -50 -pri
 `-mtime -50` - collects every row from 50 days ago to now
 
 `-regex ".*/db/table/osm_admin_boundaries/log.txt"` - change `osm_admin_boundaries` to your {*tablename*}
+
+### Manual update of Global Fires
+
+Global Fires data is updated automatically only for the last week. If `geocint` hasn't built in a week, you need to
+manually download archives from [FIRMS website](https://firms.modaps.eosdis.nasa.gov/download/create.php) for the whole world and
+all sources in csv format and place them in the `data/in/global_fires/new_updates`.

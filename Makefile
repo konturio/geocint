@@ -1063,45 +1063,64 @@ db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta
 	psql -f tables/osm_object_count_grid_h3.sql
 	touch $@
 
-data/in/global_fires/firms_archive.tar.gz: | data/in/global_fires ## Download aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System) from AWS.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/firms_archive.tar.gz $@ --profile geocint_pipeline_sender
+data/in/global_fires/download_firms_archive: | data/in/global_fires ## Download active fire products (FIRMS - Fire Information for Resource Management System) for last 14 months from AWS.
+	# Cleanup failed downloads
+	rm -f data/in/global_fires/firms_archive_*.gz.*
+	# Download files for the last 13 month
+	seq -s " " $$(date -u -d "13 month ago" +"%Y") $$(date -u +"%Y") | sed 's/[^ ]*/--include="firms_archive_&.csv.gz"/g' | xargs -I {} sh -c 'aws s3 sync --size-only --exclude="*" {} s3://geodata-eu-central-1-kontur/private/geocint/in/global_fires/ data/in/global_fires/ --profile geocint_pipeline_sender'
 	touch $@
 
-data/mid/global_fires/extract_firms_archive: data/in/global_fires/firms_archive.tar.gz | data/mid/global_fires ## Extract aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System).
-	tar -I pigz -xvf $< -C data/mid/global_fires
+data/mid/global_fires/extract_firms_archive: data/in/global_fires/download_firms_archive | data/mid/global_fires ## Extract aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System).
+	rm -f data/in/global_fires/firms_archive_*.csv
+	pigz -dk data/in/global_fires/firms_archive_*.csv.gz
+	mv data/in/global_fires/firms_archive_*.csv data/mid/global_fires/
 	touch $@
 
 data/in/global_fires/new_updates: | data/in ## Last updates for active fire products from FIRMS (Fire Information for Resource Management System).
 	mkdir -p $@
 
-data/in/global_fires/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 7 days.
+data/in/global_fires/new_updates/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 7 days.
+	wget -O - https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_7d.csv | sed '1s/$$/,\instrument/; 2,$$s/$$/,MODIS/' > data/in/global_fires/new_updates/MODIS_C6_Global_7d.csv
+	wget -O - https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_7d.csv | sed '1s/$$/,\instrument/; 2,$$s/$$/,VIIRS/' > data/in/global_fires/new_updates/SUOMI_VIIRS_C2_Global_7d.csv
+	wget -O - https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv | sed '1s/$$/,\instrument/; 2,$$s/$$/,VIIRS/' > data/in/global_fires/new_updates/J1_VIIRS_C2_Global_7d.csv
+	find -L data/in/global_fires/new_updates -name "*.csv" -type f -printf "%f\n" | parallel "python3 scripts/normalize_global_fires.py data/in/global_fires/new_updates/{} > data/mid/global_fires/{}"
 	rm -f data/in/global_fires/new_updates/*.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/modis-c6.1/csv/MODIS_C6_1_Global_7d.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_7d.csv
-	cd data/in/global_fires/new_updates; wget https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv
-	cp data/in/global_fires/new_updates/*.csv data/mid/global_fires/
 	touch $@
 
-db/table/global_fires: data/in/global_fires/download_new_updates data/mid/global_fires/extract_firms_archive | db/table ## 20 years active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
+db/table/global_fires_in: data/in/global_fires/new_updates/download_new_updates data/mid/global_fires/extract_firms_archive | db/table ## Fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
 	psql -c "drop table if exists global_fires_in;"
 	psql -c "create table global_fires_in(latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text) tablespace evo4tb;"
-	ls data/mid/global_fires/*.csv | parallel "python3 scripts/normalize_global_fires.py {} | psql -c 'set time zone utc; copy global_fires_in (latitude, longitude, brightness, bright_ti4, scan, track, satellite, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;'"
+	ls -S data/mid/global_fires/*.csv | parallel "cat {} | psql -c 'set time zone utc; copy global_fires_in (latitude, longitude, brightness, bright_ti4, scan, track, satellite, instrument, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;'"
 	psql -c "vacuum analyze global_fires_in;"
-	psql -c "create table if not exists global_fires (like global_fires_in) tablespace evo4tb;"
-	psql -c "insert into global_fires select * from (select distinct on (n.hash) n.* from global_fires_in n left outer join global_fires gf on n.hash = gf.hash where gf.hash is null) t order by t.acq_datetime;"
-	psql -c "vacuum analyze global_fires;"
-	psql -c "create index if not exists global_fires_acq_datetime_idx on global_fires using brin (acq_datetime);"
-	psql -c "drop table global_fires_in;"
+	touch $@
+
+db/table/global_fires: db/table/global_fires_in | db/table ## Active fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
+	psql -f tables/global_fires.sql
+	psql -1 -c "alter table global_fires rename to global_fires_old; alter table global_fires_new rename to global_fires; drop table global_fires_old;"
+	psql -c "create index on global_fires using brin (acq_datetime, hash);"
 	rm -f data/mid/global_fires/*.csv
 	touch $@
 
-db/table/global_fires_stat_h3: db/table/global_fires ## Aggregate active fire data from FIRMS (Fire Information for Resource Management System) on H3 hexagon grid.
+data/out/global_fires/update: db/table/global_fires | data/out/global_fires ## Last update for active fire products.
+	rm -f data/out/global_fires/*
+	aws s3 ls s3://geodata-eu-central-1-kontur/private/geocint/in/global_fires/ --profile geocint_pipeline_sender | tail -1 | cut -d ' ' -f 1,2 | date +"%s" -f - > $@__LAST_DEPLOY_TS
+	if [ $$(cat $@__LAST_DEPLOY_TS) -lt $$(date -d "1 week ago" +"%s") ]; then echo '*Global Fires* broken. Latest data for $$(cat $@__LAST_DEPLOY_TS | xargs -I {} date -d @{} -u +"%Y-%m-%d"). See section <https://gitlab.com/kontur-private/platform/geocint/#manual-update-of-global-fires|"Manual update of Global Fires"> in README.md' | python3 scripts/slack_message.py geocint "Nightly build" x; fi
+	seq $$(cat $@__LAST_DEPLOY_TS | xargs -I {}  date -u -d @{} +"%Y") $$(date -u +"%Y") | parallel --eta "psql -qXc 'set time zone utc; copy (select * from global_fires where acq_datetime >= '\''{}-01-01'\'' and acq_datetime < '\''{}-01-01'\''::date + interval '\''1 year'\'' order by acq_datetime, hash) to stdout with csv header;' | pigz -9 > data/out/global_fires/firms_archive_{}.csv.gz"
+	rm $@__LAST_DEPLOY_TS
+	touch $@
+
+deploy/s3/global_fires: data/out/global_fires/update | deploy/s3 ## Deploy update for active fire products to S3.
+	aws s3 sync --size-only --exclude="*" --include "firms_archive_*.csv.gz" data/out/global_fires/ s3://geodata-eu-central-1-kontur/private/geocint/in/global_fires/ --profile geocint_pipeline_sender
+	mv data/out/global_fires/firms_archive_*.csv.gz data/in/global_fires/
+	touch $@
+
+db/table/global_fires_stat_h3: deploy/s3/global_fires ## Aggregate active fire data from FIRMS (Fire Information for Resource Management System) on H3 hexagon grid.
 	psql -f tables/global_fires_stat_h3.sql
 	touch $@
 
 data/out/global_fires/global_fires_h3_r8_13months.csv.gz: db/table/global_fires | data/out/global_fires ## Daily export of fires for last 13 months (archived CSV).
-	rm -rf $@
-	psql -q -X -c "set timezone to utc; copy (select h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8) as h3, acq_datetime from global_fires where acq_datetime > now() - interval '13 months' order by 1,2) to stdout with csv;" | pigz > $@
+	rm -f $@
+	psql -q -X -c "set timezone to utc; copy (select h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8) as h3, acq_datetime from global_fires order by 1,2) to stdout with csv;" | pigz > $@
 
 deploy/geocint/global_fires_h3_r8_13months.csv.gz: data/out/global_fires/global_fires_h3_r8_13months.csv.gz | deploy/geocint  ## Copy last 13 months fires to public_html folder to make it available online.
 	cp -vp data/out/global_fires/global_fires_h3_r8_13months.csv.gz ~/public_html/global_fires_h3_r8_13months.csv.gz

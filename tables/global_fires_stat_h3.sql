@@ -7,7 +7,6 @@ create table global_fires_stat_h3 as (
            array_agg(distinct date_trunc('day', acq_datetime))              as days_array,
            8                                                                as resolution
     from global_fires
-    where acq_datetime > now() - interval '13 months'
     group by 1
 );
 

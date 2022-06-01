@@ -1047,7 +1047,7 @@ data/in/global_fires/download_firms_archive: | data/in/global_fires ## Download 
 	# Cleanup failed downloads
 	rm -f data/in/global_fires/firms_archive_*.gz.*
 	# Download files for the last 13 month
-	seq -s " " $$(TZ="UTC" date --date="13 month ago" +"%Y") $$(TZ="UTC" date +"%Y") | sed 's/[^ ]*/--include="firms_archive_&.csv.gz"/g' | xargs -I {} sh -c 'aws s3 sync --size-only --exclude="*" {} s3://geodata-eu-central-1-kontur/private/geocint/in/global_fires/ data/in/global_fires/ --profile geocint_pipeline_sender'
+	seq -s " " $$(date -u -d "13 month ago" +"%Y") $$(date -u +"%Y") | sed 's/[^ ]*/--include="firms_archive_&.csv.gz"/g' | xargs -I {} sh -c 'aws s3 sync --size-only --exclude="*" {} s3://geodata-eu-central-1-kontur/private/geocint/in/global_fires/ data/in/global_fires/ --profile geocint_pipeline_sender'
 	touch $@
 
 data/mid/global_fires/extract_firms_archive: data/in/global_fires/download_firms_archive | data/mid/global_fires ## Extract aggregated 20 years active fire products (FIRMS - Fire Information for Resource Management System).
@@ -1060,7 +1060,6 @@ data/in/global_fires/new_updates: | data/in ## Last updates for active fire prod
 	mkdir -p $@
 
 data/in/global_fires/new_updates/download_new_updates: | data/in/global_fires/new_updates data/mid/global_fires ## Download active fire products from the MODIS (Moderate Resolution Imaging Spectroradiometer ) and VIIRS (Visible Infrared Imaging Radiometer Suite) for the last 7 days.
-	rm -f data/in/global_fires/new_updates/*.csv
 	wget -O - https://firms.modaps.eosdis.nasa.gov/data/active_fire/c6/csv/MODIS_C6_Global_7d.csv | sed '1s/$$/,\instrument/; 2,$$s/$$/,MODIS/' > data/in/global_fires/new_updates/MODIS_C6_Global_7d.csv
 	wget -O - https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_7d.csv | sed '1s/$$/,\instrument/; 2,$$s/$$/,VIIRS/' > data/in/global_fires/new_updates/SUOMI_VIIRS_C2_Global_7d.csv
 	wget -O - https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv | sed '1s/$$/,\instrument/; 2,$$s/$$/,VIIRS/' > data/in/global_fires/new_updates/J1_VIIRS_C2_Global_7d.csv
@@ -1084,7 +1083,8 @@ db/table/global_fires: db/table/global_fires_in | db/table ## Active fire produc
 data/out/global_fires/update: db/table/global_fires | data/out/global_fires ## Last update for active fire products.
 	rm -f data/out/global_fires/*
 	aws s3 ls s3://geodata-eu-central-1-kontur/private/geocint/in/global_fires/ --profile geocint_pipeline_sender | tail -1 | cut -d ' ' -f 1,2 | date +"%s" -f - > $@__LAST_DEPLOY_TS
-	seq $$(cat $@__LAST_DEPLOY_TS | TZ="UTC" xargs -I {}  date -d @{} +"%Y") $$(TZ="UTC" date +"%Y") | parallel --eta "psql -qXc 'set time zone utc; copy (select * from global_fires where acq_datetime >= '\''{}-01-01'\'' and acq_datetime < '\''{}-01-01'\''::date + interval '\''1 year'\'' order by acq_datetime, hash) to stdout with csv header;' | pigz -9 > data/out/global_fires/firms_archive_{}.csv.gz"
+	if [ $$(cat $@__LAST_DEPLOY_TS) -lt $$(date -d "1 week ago" +"%s") ]; then echo '*Global Fires* broken. Latest data for $$(cat $@__LAST_DEPLOY_TS | xargs -I {} date -d @{} -u +"%Y-%m-%d"). See section <https://gitlab.com/kontur-private/platform/geocint/#manual-update-of-global-fires|"Manual update of Global Fires"> in README.md' | python3 scripts/slack_message.py geocint "Nightly build" x; fi
+	seq $$(cat $@__LAST_DEPLOY_TS | xargs -I {}  date -u -d @{} +"%Y") $$(date -u +"%Y") | parallel --eta "psql -qXc 'set time zone utc; copy (select * from global_fires where acq_datetime >= '\''{}-01-01'\'' and acq_datetime < '\''{}-01-01'\''::date + interval '\''1 year'\'' order by acq_datetime, hash) to stdout with csv header;' | pigz -9 > data/out/global_fires/firms_archive_{}.csv.gz"
 	rm $@__LAST_DEPLOY_TS
 	touch $@
 

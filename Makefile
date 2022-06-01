@@ -1084,6 +1084,7 @@ data/in/global_fires/new_updates/download_new_updates: | data/in/global_fires/ne
 	wget -O - https://firms.modaps.eosdis.nasa.gov/data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_7d.csv | sed '1s/$$/,\instrument/; 2,$$s/$$/,VIIRS/' > data/in/global_fires/new_updates/SUOMI_VIIRS_C2_Global_7d.csv
 	wget -O - https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv | sed '1s/$$/,\instrument/; 2,$$s/$$/,VIIRS/' > data/in/global_fires/new_updates/J1_VIIRS_C2_Global_7d.csv
 	find -L data/in/global_fires/new_updates -name "*.csv" -type f -printf "%f\n" | parallel "python3 scripts/normalize_global_fires.py data/in/global_fires/new_updates/{} > data/mid/global_fires/{}"
+	rm -f data/in/global_fires/new_updates/*.csv
 	touch $@
 
 db/table/global_fires_in: data/in/global_fires/new_updates/download_new_updates data/mid/global_fires/extract_firms_archive | db/table ## Fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.

@@ -2,7 +2,7 @@ export PGDATABASE = gis
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3 db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated data/in/event_api_data/download ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3 db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -13,7 +13,7 @@ prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/cleanup_cache 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_population_csv/download data/in/wikidata_hasc_codes.csv data/in/kontur_events/download
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_population_csv/download data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -173,6 +173,24 @@ data/planet-check-refs: data/planet-latest-updated.osm.pbf | data ## Check if pl
 	osmium check-refs -r --no-progress data/planet-latest.osm.pbf || touch data/planet-is-broken
 	touch $@
 
+db/table/osm: data/planet-latest-updated.osm.pbf | db/table ## Daily Planet OpenStreetMap dataset.
+	psql -c "drop table if exists osm;"
+	# Pin osmium to CPU1 and disable HT on it
+	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=800 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=800 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=800 OSMIUM_MAX_WORK_QUEUE_SIZE=100 osmium export -i dense_mmap_array -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
+	psql -c "alter table osm set (parallel_workers = 32);"
+	touch $@
+
+db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table ## Metadata for daily Planet OpenStreetMap dataset.
+	psql -c "drop table if exists osm_meta;"
+	rm -f data/planet-latest-updated.osm.pbf.meta.json
+	osmium fileinfo data/planet-latest.osm.pbf -ej > data/planet-latest.osm.pbf.meta.json
+	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
+	touch $@
+
+db/index/osm_tags_idx: db/table/osm | db/index ## GIN index on planet OpenStreetMap dataset tags column.
+	psql -c "create index osm_tags_idx on osm using gin (tags);"
+	touch $@
+
 data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data ## Extract Belarus from planet-latest-updated.osm.pbf using Osmium tool.
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
 	touch $@
@@ -288,20 +306,6 @@ db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_
 	psql -c "call generate_overviews('covid19_vaccine_accept_us_counties_h3', '{vaccine_value}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm: data/planet-latest-updated.osm.pbf | db/table ## Daily Planet OpenStreetMap dataset.
-	psql -c "drop table if exists osm;"
-	# Pin osmium to CPU1 and disable HT on it
-	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=800 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=800 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=800 OSMIUM_MAX_WORK_QUEUE_SIZE=100 osmium export -i dense_mmap_array -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
-	psql -c "alter table osm set (parallel_workers = 32);"
-	touch $@
-
-db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table ## Metadata for daily Planet OpenStreetMap dataset.
-	psql -c "drop table if exists osm_meta;"
-	rm -f data/planet-latest-updated.osm.pbf.meta.json
-	osmium fileinfo data/planet-latest.osm.pbf -ej > data/planet-latest.osm.pbf.meta.json
-	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
-	touch $@
-
 data/belarus_boundary.geojson: db/table/osm db/index/osm_tags_idx ## Belarus boundary extracted from OpenStreetMap daily import.
 	psql -q -X -c "\copy (select ST_AsGeoJSON(belarus) from (select geog::geometry as polygon from osm where osm_type = 'relation' and osm_id = 59065 and tags @> '{\"boundary\":\"administrative\"}') belarus) to stdout" | jq -c . > data/belarus_boundary.geojson
 	touch $@
@@ -351,7 +355,7 @@ data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/
 
 db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## Loading Facebook roads into db.
 	psql -c "drop table if exists facebook_roads_in;"
-	psql -c "create table facebook_roads_in (way_fbid text, highway_tag text, geom geometry(geometry, 4326));"
+	psql -c "create table facebook_roads_in (way_fbid text, highway_tag text, geom geometry(geometry, 4326)) tablespace evo4tb;"
 	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_in'
 	psql -c "vacuum analyse facebook_roads_in;"
 	touch $@
@@ -379,10 +383,6 @@ db/table/osm_roads: db/table/osm db/index/osm_tags_idx | db/table ## Roads from 
 
 db/table/osm_road_segments_new: db/function/osm_way_nodes_to_segments db/table/osm_roads | db/table  ## Segmentized road graph with calculated walk and drive times from daily OpenStreetMap roads extract to use for routing within City Split Tool.
 	psql -f tables/osm_road_segments.sql
-	touch $@
-
-db/index/osm_tags_idx: db/table/osm | db/index ## GIN index on planet OpenStreetMap dataset tags column.
-	psql -c "create index osm_tags_idx on osm using gin (tags);"
 	touch $@
 
 db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments_new | db/index ## Composite index on osm_road_segments_new table.
@@ -765,31 +765,31 @@ data/out/kontur_boundaries_per_country/export: db/table/hdx_locations db/table/k
 	cd data/out/kontur_boundaries_per_country/; pigz *.gpkg
 	touch $@
 
-db/table/osm_reports_list: | db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
+db/table/osm_reports_list: db/table/osm_meta db/table/population_check_osm db/table/osm_population_inconsistencies db/table/osm_gadm_comparison db/table/osm_unmapped_places_report db/table/osm_missing_roads db/table/osm_missing_boundaries_report | db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
 	psql -f tables/osm_reports_list.sql
 	touch $@
 
-db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundaries db/table/osm_reports_list | db/table ## Validate OSM boundaries that OSM has no less polygons than GADM.
-	psql -f tables/osm_gadm_comparison.sql
-	touch $@
-
-db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries db/table/osm_reports_list db/table/osm_meta | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
-	psql -f tables/osm_population_inconsistencies.sql
-	touch $@
-
-db/table/population_check_osm: db/table/kontur_boundaries db/table/osm_reports_list | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
+db/table/population_check_osm: db/table/kontur_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
 	psql -f tables/population_check_osm.sql
 	touch $@
 
-db/table/osm_unmapped_places_report: db/table/stat_h3 db/table/osm_reports_list | db/table ## Report with a list of vieved but unmapped populated places
+db/table/osm_population_inconsistencies: db/table/osm_admin_boundaries | db/table ## Validate OpenStreetMap population inconsistencies (one admin level can have a sum of population that is higher than the level above it, leading to negative population in admin regions).
+	psql -f tables/osm_population_inconsistencies.sql
+	touch $@
+
+db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundaries | db/table ## Validate OSM boundaries that OSM has no less polygons than GADM.
+	psql -f tables/osm_gadm_comparison.sql
+	touch $@
+
+db/table/osm_unmapped_places_report: db/table/stat_h3 | db/table ## Report with a list of vieved but unmapped populated places
 	psql -f tables/osm_unmapped_places_report.sql
 	touch $@
 
-db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries db/table/osm_reports_list | db/table ## Report with a list places where Facebook has more roads than OpenStreetMap
+db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries | db/table ## Report with a list places where Facebook has more roads than OpenStreetMap
 	psql -f tables/osm_missing_roads.sql
 	touch $@
 
-db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 db/table/osm_reports_list db/table/osm_meta | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
+db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
 	psql -f tables/osm_missing_boundaries_report.sql
 	touch $@
 
@@ -1020,6 +1020,26 @@ db/table/osm_water_polygons_in_subdivided: db/index/osm_tags_idx | db/table ## S
 
 db/table/osm_water_polygons: db/table/osm_water_polygons_in_subdivided db/table/water_polygons_vector db/table/osm_water_lines_buffers_subdivided | db/table ## Subdivided OpenStreetMap water polygons combined from 3 datasets (linestring objects buffered out with 1m in EPSG-3857, seas and oceans subdivided and other polygonal water objects subdivided)(EPSG-3857).
 	psql -f tables/osm_water_polygons.sql
+	touch $@
+
+data/in/daylight_coastlines.tgz: | data/in ## daylightmap.org/coastlines.html
+	wget https://daylight-map-distribution.s3.us-west-1.amazonaws.com/release/v1.6/coastlines-v1.6.tgz -O $@
+
+data/mid/daylight_coastlines: | data/mid ## Directory for unpacked Daylight Coastlines shapefiles
+	mkdir -p $@
+
+data/mid/daylight_coastlines/land_polygons.shp: data/in/daylight_coastlines.tgz | data/mid/daylight_coastlines ## Unpack Daylight Coastlines
+	tar zxvf data/in/daylight_coastlines.tgz -C data/mid/daylight_coastlines
+	touch $@
+
+db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | db/table ## Import land vector polygons from Daylight Coastlines in database
+	psql -c "drop table if exists land_polygons_vector;"
+	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" -a_srs EPSG:4326 data/mid/daylight_coastlines/land_polygons.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -nln land_polygons_vector
+	touch $@
+
+db/table/land_polygons_h3: db/table/land_polygons_vector | db/table ## land h3
+	psql -c "drop table if exists land_polygons_h3_r8;"
+	psql -c "create table land_polygons_h3_r8 as (select distinct on (h3) h3, hex.geom from land_polygons_vector, h3_polyfill(geom, 8) h3, ST_HexagonFromH3(h3) hex);"
 	touch $@
 
 db/procedure/insert_projection_54009: | db/procedure ## Add ESRI-54009 projection into spatial_ref_sys for further use.
@@ -1854,7 +1874,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -2173,15 +2193,34 @@ deploy/s3/prod/kontur_events_updated: data/out/kontur_events/updated | deploy/s3
 	aws s3 cp data/out/kontur_events/kontur-events-prod.geojson "s3://event-api-locker01/kontur_events/PROD/kontur-events.geojson" --profile kontur-events
 	touch $@
 
-data/in/event_api_data: | data/in  ## download directory for events-api data
+data/in/event_api_data: | data/in ## download directory for events-api data
 	mkdir -p $@
 
-data/in/event_api_data/download : | data/in/event_api_data  ## download event-api data
-	parallel " \
-		python3 ./scripts/event_api_parser.py \
-			-e \
-			--work-dir data/in/event_api_data \
-			--stage prod \
-			--feed {}\
-	" ::: test-pdc-v0 test-em-dat test-firms test-gdacs kontur-public test-loss
+data/in/event_api_data/kontur_public_feed : | data/in/event_api_data ## download event-api data (only kontur-public feed at the moment)
+	python3 ./scripts/event_api_parser.py \
+		-e \
+		--work-dir ./data/in/event_api_data \
+		--stage prod \
+		--feed kontur-public
+	touch $@
+
+db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db/table ## import kontur-public feed event episodes in database
+	psql -c 'drop table if exists disaster_event_episodes;'
+	psql -c 'create table if not exists disaster_event_episodes (fid serial primary key, eventid uuid, episode_type text, episode_name text, episode_starteda timestamptz, episode_endedat timestamptz, episode_severity text, geom geometry(geometry, 4326)) tablespace evo4tb;'
+	find data/in/event_api_data/kontur-public/ -name "*.geojson*" -type f \
+		| xargs readlink -m \
+		| parallel " \
+			ogr2ogr \
+				--config PG_USE_COPY YES \
+				-append \
+				-f PostgreSQL \
+				-nln disaster_event_episodes \
+				-a_srs EPSG:4326 \
+				PG:\"dbname=gis\" \
+				\"{}\" \
+		"
+	touch $@
+
+db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3 | db/table ## hexagonify PDC event geometries
+	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@

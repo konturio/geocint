@@ -59,6 +59,15 @@ from
             resilience_index,
             coping_capacity_index,
             vulnerability_index,
+            hazardous_days_count,
+            eathquake_days_count,
+            industrial_heat_days_count,
+            drough_days_count,
+            thermal_anomaly_days_count,
+            cyclone_days_count,
+            wildfire_days_count,
+            volcano_days_count,
+            flood_days_count,
             ST_AsMVTGeom(geom, ST_TileEnvelope($1, $2, $3), 8192, 64, true) as geom
         from stat_h3
         where zoom = $1

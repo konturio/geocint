@@ -157,6 +157,69 @@ where
 
 update bivariate_axis
 set
+    label = 'Number of days with any disaster occurs (n/km²)'
+where
+      numerator = 'hazardous_days_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'Number of days under earthquake impact (n/km²)'
+where
+      numerator = 'eathquake_days_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'Number of days under industrial heat impact (n/km²)'
+where
+      numerator = 'industrial_heat_days_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'Number of days under drough impact (n/km²)'
+where
+      numerator = 'drough_days_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'Number of days under thermal anomaly impact (n/km²)'
+where
+      numerator = 'thermal_anomaly_days_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'Number of days under cyclone impact (n/km²)'
+where
+      numerator = 'cyclone_days_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'Number of days under wildfire impact (n/km²)'
+where
+      numerator = 'wildfire_days_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'Number of days under volcano impact (n/km²)'
+where
+      numerator = 'volcano_days_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'Number of days under flood impact (n/km²)'
+where
+      numerator = 'flood_days_count'
+  and denominator = 'area_km2';
+
+update bivariate_axis
+set
     label = 'Forest Landcover Area (km²/km²)'
 where
       numerator = 'forest'
@@ -227,13 +290,6 @@ where
 
 update bivariate_axis
 set
-    label = 'OSM roads density (m/km²)'
-where
-      numerator = 'highway_length'
-  and denominator = 'area_km2';
-
-update bivariate_axis
-set
     label = 'Meta and OSM roads density (m/km2)'
 where
       numerator = 'total_road_length'
@@ -266,6 +322,15 @@ set
 where
       numerator = 'view_count_bf2402'
   and denominator = 'area_km2';
+
+update bivariate_axis
+set
+    label = 'OSM roads completeness',
+    p75 = 0.9,
+    max = 1.01
+where
+      numerator = 'highway_length'
+  and denominator = 'total_road_length';
 
 -- columns for advanced analytics
 alter table bivariate_axis

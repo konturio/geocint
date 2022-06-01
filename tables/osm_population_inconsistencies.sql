@@ -116,9 +116,3 @@ from step1;
 drop table if exists osm_admin_boundaries_in;
 drop table if exists osm_admin_subdivided;
 drop table if exists osm_admin_hierarchy;
-
-
--- Update timestamp in reports table (for further export to reports API JSON):
-update osm_reports_list
-set last_updated = (select meta->'data'->'timestamp'->>'last' as updated from osm_meta)
-where id = 'osm_population_inconsistencies';

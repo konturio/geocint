@@ -23,7 +23,7 @@ select 1,
        true,
        'This map shows relative distribution of OpenStreetMap objects and Population. Last updated ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
@@ -36,7 +36,7 @@ select 2,
        false,
        'This map shows whether all populated houses are mapped in OpenStreetMap. Last updated  ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
@@ -49,22 +49,22 @@ select 3,
        false,
        'This map shows whether populated places have roads to visit them or escape in time of disaster. Last updated  ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 4,
-       'Kontur OpenStreetMap Road Length Beta',
+       'Kontur OpenStreetMap Road Estimates',
        'highway_length',
-       'area_km2',
        'total_road_length',
+       'population',
        'area_km2',
        false,
-       'This map shows possible gaps in OpenStreetMap roads data. It shows the ratio of road density in OpenStreetMap to road density according to Meta and OpenStreetMap data. Last updated  ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
-from osm_meta;
-
+       'This map shows whether populated places have roads in OpenStreetMap to visit them or escape 
+        in time of disaster. Road completeness is calculated as the ratio of OpenStreetMap road length 
+        to total estimated road length(OpenStreetMap + Meta roads). Population data is provided by Kontur Population.',
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 5,
@@ -89,7 +89,7 @@ select 6,
        false,
        'This map shows how old is OpenStreetMap and how many times users view in particular region of OpenStreetMap for the last 30 days. Explore to find the least edited, but the most popular areas at the same time. Last updated ' ||
         max(tile_date),
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(173,228,191)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(77,175,74)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from tile_logs;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
@@ -126,5 +126,5 @@ select 9,
        'area_km2',
        false,
        'This map shows how many times users viewed OpenStreetMap in particular region for the last 30 days in comparison to 30 days before 24.02.2022.',
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(228,127,129)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(129,127,228)"},{"id":"B2","color":"rgb(173,173,108)"},{"id":"B3","color":"rgb(140,98,98)"},{"id":"C1","color":"rgb(28,26,228)"},{"id":"C2","color":"rgb(98,98,140)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+       '[{"id":"A1","color":"rgb(204,204,204)"},{"id":"A2","color":"rgb(206,154,151)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(136,135,222)"},{"id":"B2","color":"rgb(166,166,166)"},{"id":"B3","color":"rgb(180,80,75)"},{"id":"C1","color":"rgb(28,26,228)"},{"id":"C2","color":"rgb(78,77,178)"},{"id":"C3","color":"rgb(128,128,128)"}]'
 ;

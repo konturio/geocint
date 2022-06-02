@@ -1,3 +1,13 @@
+-- Transform to 3857
+drop table if exists prescale_to_osm_boundaries_3857;
+create table prescale_to_osm_boundaries_3857 as 
+        select ST_Transform(geom, 3857) as geom,
+               osm_id,
+               population
+        from prescale_to_osm_boundaries;
+
+drop table if exists prescale_to_osm_boundaries;
+
 -- Calculate Kontur population for each boundary
 drop table if exists prescale_to_osm_h3_r8;
 create table prescale_to_osm_h3_r8 as
@@ -10,7 +20,7 @@ with sum_population as (
                                                when ST_Within(h.geom, b.geom) then 1
                                                else ST_Area(ST_Intersection(h.geom, b.geom)) / ST_Area(h.geom)
                                           end))) as population
-        from prescale_to_osm_boundaries b
+        from prescale_to_osm_boundaries_3857 b
         join kontur_population_h3 h
                 on ST_Intersects(h.geom, b.geom)
                         and h.resolution = 8
@@ -26,9 +36,9 @@ select
              else 1::float
         end)                as coefficient,
         b.admin_level
-from prescale_to_osm_boundaries b
+from prescale_to_osm_boundaries_3857 b
 left join sum_population p using(osm_id);
 
 create index on prescale_to_osm_h3_r8 using gist(geom);
 
-drop table if exists prescale_to_osm_boundaries;
+drop table if exists prescale_to_osm_boundaries_3857;

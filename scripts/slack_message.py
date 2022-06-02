@@ -1,20 +1,25 @@
+#!/usr/bin/python3
+
+import json
 import logging
-
-logging.basicConfig(level=logging.DEBUG)
-
 import os
 import sys
-import json
+
 # sudo pip3 install slackclient
 from slack import WebClient
 from slack.errors import SlackApiError
+
+logging.basicConfig(level=logging.DEBUG)
 
 slack_token = os.environ["SLACK_KEY"]
 client = WebClient(token=slack_token)
 
 if len(sys.argv) < 2:
     print(
-        'usage: cat message.txt | SLACK_KEY=integration_key python slack_message.py [channel] [sender_name] [icon_emoji]')
+        'usage: cat message.txt | '
+        'SLACK_KEY=integration_key python slack_message.py '
+        '[channel] [sender_name] [icon_emoji]'
+    )
 
 channel = sys.argv[1]
 username = sys.argv[2]

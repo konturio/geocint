@@ -8,3 +8,10 @@ Makefile:
   script:
     - pip install git+https://github.com/konturio/make-profiler
     - profile_make_lint
+
+pylint:
+  stage: lint
+  script:
+    - python3 -m pip install flake8 pylint
+    - python3 -m flake8 .
+    - python3 -m pylint .

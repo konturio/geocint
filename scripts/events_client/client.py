@@ -1,24 +1,17 @@
-import requests
-
 from typing import Dict, List, Optional
 
+import requests
+
 from events_client.servers import STAGES
-from events_client.types import (
-    BBoxT, 
-    EpisodeFilterT,
-    EventSeverityT,
-    EventTypeT,
-    PageLimitT,
-    StageT,
-    SortOrderT,
-)
+from events_client.types import (BBoxT, EpisodeFilterT, EventSeverityT,
+                                 EventTypeT, PageLimitT, SortOrderT, StageT)
 
 
 class BadResponseCode(Exception):
     pass
 
 
-class EventAPIClient(object):
+class EventAPIClient:
     def __init__(
             self,
             token: str,
@@ -27,13 +20,13 @@ class EventAPIClient(object):
         self._stage = STAGES[stage]
         self._client = self._get_session(token)
 
+    @staticmethod
     def _get_session(
-            self,
             token: str,
     ) -> requests.Session:
         auth_header = {
             'accept': 'application/json',
-            'Authorization': 'Bearer {}'.format(token),
+            'Authorization': f'Bearer {token}',
         }
         session = requests.Session()
         session.headers.update(auth_header)
@@ -47,38 +40,29 @@ class EventAPIClient(object):
         )
         if not 200 <= response.status_code < 300:
             raise BadResponseCode(
-                'code: {c}\nurl: {u}\ntext: {t}'.format(
-                    c=response.status_code,
-                    u=response.url,
-                    t=getattr(response, 'text'),
-                )
+                f'code: {response.status_code}\n'
+                f'url: {response.url}\n'
+                f'text: {getattr(response, "text")}'
             )
         return response
 
     def user_feeds(self) -> List[Dict[str, str]]:
-        url = '{}/user_feeds'.format(
-            self._stage.api
-        )
+        url = f'{self._stage.api}/user_feeds'
         response = self._get(url)
         if response.status_code == 200:
             return response.json()
-        else:
-            raise BadResponseCode(response.status_code)
+        raise BadResponseCode(response.status_code)
 
     def observations(
-            self, 
+            self,
             observation_id: str,
     ) -> str:
-        url = '{}/observations/{}'.format(
-            self._stage.api,
-            observation_id,
-        )
+        url = f'{self._stage.api}/observations/{observation_id}'
         response = self._get(url)
         if response.status_code == 200:
             return response.json()
-        else:
-            raise BadResponseCode(response.status_code)
-    
+        raise BadResponseCode(response.status_code)
+
     def geojson_events(
             self,
             feed: str,
@@ -91,9 +75,7 @@ class EventAPIClient(object):
             sort_order: SortOrderT = 'ASC',
             episode_filter_type: EpisodeFilterT = 'ANY',
     ):
-        url = '{}/geojson/events'.format(
-            self._stage.api
-        )
+        url = f'{self._stage.api}/geojson/events'
         params = {
             'feed': feed,
             'types': types,
@@ -108,10 +90,9 @@ class EventAPIClient(object):
         response = self._get(url, params=params)
         if response.status_code == 200:
             return response.json()
-        elif response.status_code == 204:
+        if response.status_code == 204:
             return {}
-        else:
-            raise BadResponseCode(response.status_code)
+        raise BadResponseCode(response.status_code)
 
     def event(
             self,
@@ -119,9 +100,7 @@ class EventAPIClient(object):
             event_id: str,
             version: Optional[int] = None,
     ):
-        url = '{}/event'.format(
-            self._stage.api
-        )
+        url = f'{self._stage.api}/event'
         params = {
             'feed': feed,
             'version': version,
@@ -130,8 +109,7 @@ class EventAPIClient(object):
         response = self._get(url, params=params)
         if response.status_code == 200:
             return response.json()
-        else:
-            raise BadResponseCode(response.status_code)
+        raise BadResponseCode(response.status_code)
 
     def v1(
             self,
@@ -145,9 +123,7 @@ class EventAPIClient(object):
             sort_order: Optional[SortOrderT] = None,
             episode_filter_type: EpisodeFilterT = 'ANY',
     ):
-        url = '{}/'.format(
-            self._stage.api
-        )
+        url = f'{self._stage.api}/'
         params = {
             'feed': feed,
             'types': types,
@@ -162,7 +138,6 @@ class EventAPIClient(object):
         response = self._get(url, params=params)
         if response.status_code == 200:
             return response.json()
-        elif response.status_code == 204:
+        if response.status_code == 204:
             return {}
-        else:
-            raise BadResponseCode(response.status_code)
+        raise BadResponseCode(response.status_code)

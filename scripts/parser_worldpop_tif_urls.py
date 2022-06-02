@@ -1,5 +1,8 @@
-import requests
+#!/usr/bin/python3
+
 import re
+
+import requests
 
 IDS_URL = 'https://www.worldpop.org/ajax/geolisting/category?id=29&_=1621603565247'
 PAGE_URL = 'https://www.worldpop.org/geodata/summary?id='
@@ -17,20 +20,25 @@ def get_ids():
 
 def get_urls(ids):
     image_urls = []
-    for i, id_ in enumerate(ids):
+    for id_ in ids:
         url = PAGE_URL + id_
         a_html = requests.get(url).text
         for line in a_html.split('\n'):
             if SITE in line:
-                found_urls = re.findall('href="(.*\.tif)', line)
-                assert len(
-                    found_urls) == 1, f"HTML parsing error: expected len(found_urls)=1, found {len(found_urls)} for id={id_}"
+                found_urls = re.findall(r'href="(.*\.tif)', line)
+                assert len(found_urls) == 1, \
+                    f"HTML parsing error: expected len(found_urls)=1, " \
+                    f"found {len(found_urls)} for id={id_}"
                 image_urls.append(found_urls[0])
 
     return image_urls
 
 
-if __name__ == "__main__":
+def main():
     ids = get_ids()
     urls = get_urls(ids)
     print("\n".join(urls))
+
+
+if __name__ == "__main__":
+    main()

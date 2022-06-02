@@ -1,9 +1,12 @@
-import sys
+#!/usr/bin/python3
+# pylint: disable=broad-except
+
 import json
+import sys
 from copy import deepcopy
 
-f = open(sys.argv[1])
-style = json.load(f)
+with open(sys.argv[1], 'r', encoding='utf-8') as f:
+    style = json.load(f)
 
 try:
     land_style = deepcopy(
@@ -12,7 +15,10 @@ try:
             for layer in style["layers"]
             if layer["type"] == "fill"
             and layer.get("filter") is not None
-            and layer["filter"] == ["all", ["==", ["get", "natural"], "coastline"]]
+            and layer["filter"] == [
+                "all",
+                ["==", ["get", "natural"], "coastline"]
+            ]
         )
     )
     land_style["layout"]["visibility"] = "none"
@@ -24,8 +30,9 @@ try:
     land_style["filter"] = ["boolean", False]
     style["layers"].append(land_style)
 except Exception:
-    sys.stderr.write("optional coastline fill style is not presented in the style")
-    pass
+    sys.stderr.write(
+        "optional coastline fill style is not presented in the style"
+    )
 
 try:
     coastline_style = deepcopy(
@@ -34,7 +41,10 @@ try:
             for layer in style["layers"]
             if layer["type"] == "line"
             and layer.get("filter") is not None
-            and layer["filter"] == ["all", ["==", ["get", "natural"], "coastline"]]
+            and layer["filter"] == [
+                "all",
+                ["==", ["get", "natural"], "coastline"]
+            ]
         )
     )
     coastline_style["layout"]["visibility"] = "none"
@@ -43,7 +53,6 @@ try:
     style["layers"].append(coastline_style)
 except Exception:
     sys.stderr.write("optional coastline style is not presented in the style")
-    pass
 
 country_label_style = deepcopy(
     next(

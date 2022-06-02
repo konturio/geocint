@@ -1,5 +1,7 @@
-import sys
+#!/usr/bin/python3
+
 import json
+import sys
 
 style = json.loads(sys.stdin.read())
 

@@ -1,16 +1,27 @@
-import os
-import json
+#!/usr/bin/python3
+
 import argparse
+import json
+import os
 
 import pandas as pd
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config_path", required=True,
-                        help="Configuration JSON with header mapping data and selected headers from files.",
-                        type=str),
-    parser.add_argument("-o", "--out_path", required=True, help="Output path where file will be saved.", type=str)
+    parser.add_argument(
+        "-c", "--config_path",
+        required=True,
+        help="Configuration JSON with header mapping "
+             "data and selected headers from files.",
+        type=str,
+    )
+    parser.add_argument(
+        "-o", "--out_path",
+        required=True,
+        help="Output path where file will be saved.",
+        type=str,
+    )
     return parser.parse_args()
 
 
@@ -27,19 +38,23 @@ def merge_dataframes(config_data: dict):
     for filepath, header in config_data["header_code"].items():
         if not os.path.exists(filepath):
             raise ValueError(f"Filepath {filepath} does not exist!")
+
+        cropped_df = pd.read_csv(
+            filepath,
+            usecols=header,
+            low_memory=False,
+        )
+        if df is None:
+            df = cropped_df
         else:
-            cropped_df = pd.read_csv(filepath, usecols=header, low_memory=False)
-            if df is None:
-                df = cropped_df
-            else:
-                df = df.merge(cropped_df, on=["GEO_ID", "NAME"])
+            df = df.merge(cropped_df, on=["GEO_ID", "NAME"])
 
     return process_dataframe(df, config_data["header_map"])
 
 
-if __name__ == "__main__":
+def main():
     args = parse_args()
-    with open(args.config_path, "r") as f:
+    with open(args.config_path, "r", encoding="utf-8") as f:
         config_data = json.load(f)
 
     if args.config_path:
@@ -50,3 +65,7 @@ if __name__ == "__main__":
 
     if args.out_path:
         print(f"Output file is saved: {args.out_path}")
+
+
+if __name__ == "__main__":
+    main()

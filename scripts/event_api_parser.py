@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import argparse
 import copy
 import datetime
@@ -9,7 +11,8 @@ import sys
 
 from typing import Any, Dict
 
-from events_client.auth import Credentials, EVENTAPI_USERNAME_VAR, EVENTAPI_PASSWORD_VAR, get_token_from_credentials
+from events_client.auth import EVENTAPI_USERNAME_VAR, EVENTAPI_PASSWORD_VAR, \
+    Credentials, get_token_from_credentials
 from events_client.client import EventAPIClient
 from events_client.servers import STAGES
 
@@ -18,6 +21,7 @@ DEFAULT_WORK_DIR = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
     'data',
 )
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -29,15 +33,14 @@ def parse_args() -> argparse.Namespace:
                     'left it blank and provide user/pass later'
     )
     auth_group.add_argument(
-        '-e', '--env', 
-        action='store_true', 
-        help='Take credentials from environment variables: {} and {}'.format(
-            EVENTAPI_USERNAME_VAR, EVENTAPI_PASSWORD_VAR
-        ),
+        '-e', '--env',
+        action='store_true',
+        help=f'Take credentials from environment variables: '
+             f'{EVENTAPI_USERNAME_VAR} and {EVENTAPI_PASSWORD_VAR}',
     )
     auth_group.add_argument(
-        '-u', 
-        required='-p' in sys.argv, 
+        '-u',
+        required='-p' in sys.argv,
         help='Username',
         dest='username',
     )
@@ -47,7 +50,7 @@ def parse_args() -> argparse.Namespace:
         help='Password',
         dest='password',
     )
-    
+
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         '--feed',
@@ -107,7 +110,7 @@ def parse_datetime_from_iso8601(datetime_string: str) -> datetime.datetime:
         return datetime.datetime.strptime(datetime_string, '%Y-%m-%dT%H:%M:%SZ')
 
 
-class FeedParser(object):
+class FeedParser:
     logger = setup_logger()
 
     def __init__(
@@ -129,24 +132,22 @@ class FeedParser(object):
 
     def run(self):
         feeds_json = self._request_feeds()
-        pretty_result = '\n'.join(
-            '{f[feed]}\t{f[description]}'.format(f=feed_dict)
+        pretty_result = '\n' + '\n'.join(
+            f'{feed_dict["feed"]}\t{feed_dict["description"]}'
             for feed_dict in feeds_json
         )
-        self.logger.info(
-            '\n{}'.format(pretty_result)
-        )
+        self.logger.info(pretty_result)
 
         filepath = os.path.join(self._work_dir, 'feeds')
-        self.logger.debug('Dumping data to: {}'.format(filepath))
+        self.logger.debug('Dumping data to: %s', filepath)
         tempfile = os.path.join(self._work_dir, '.tmp-events-feeds')
 
-        with open(tempfile, 'w') as f:
+        with open(tempfile, 'w', encoding='utf-8') as f:
             json.dump(feeds_json, f, indent=2)
         os.rename(tempfile, filepath)
 
 
-class EventParser(object):
+class EventParser:
     PARAMS = {
         'feed': None,
         'types': None,
@@ -184,7 +185,7 @@ class EventParser(object):
 
         if existing_geojsons_names:
             self._after = max(existing_geojsons_names, key=parse_datetime_from_iso8601)
-            self.logger.info('Starting from: {}'.format(self._after))
+            self.logger.info('Starting from: %s', self._after)
 
         try:
             os.remove(self._artifact)
@@ -209,21 +210,19 @@ class EventParser(object):
         if data:
             self.logger.debug('Parsing request')
             self._after = data['pageMetadata']['nextAfterValue']
-            self.logger.debug('Next to be parsed is: {}'.format(self._after))
+            self.logger.debug('Next to be parsed is: %s', self._after)
         return data
 
     def _dump_events(
-            self, 
+            self,
             events: Dict[str, Any],
     ):
-        filename = '{}.geojson'.format(
-            events['pageMetadata']['nextAfterValue']
-        )
+        filename = f'{events["pageMetadata"]["nextAfterValue"]}.geojson'
         filepath = os.path.join(self._work_dir, filename)
-        self.logger.debug('Dumping data to: {}'.format(filepath))
+        self.logger.debug('Dumping data to: %s', filepath)
         tempfile = os.path.join(self._work_dir, '.tmp-events')
 
-        with open(tempfile, 'w') as f:
+        with open(tempfile, 'w', encoding='utf-8') as f:
             json.dump(events, f)
         os.rename(tempfile, filepath)
 
@@ -234,11 +233,11 @@ class EventParser(object):
             events = self._request_events()
             if events:
                 output_file = self._dump_events(events)
-                self.logger.info('Data dumped to: {}'.format(output_file))
+                self.logger.info('Data dumped to: %s', output_file)
 
             if not events or len(events['features']) < self._limit:
                 self.logger.info('No more events until now. Done')
-                with open(self._artifact, 'w') as _:
+                with open(self._artifact, 'w', encoding='utf-8') as _:
                     pass
                 break
 
@@ -249,41 +248,38 @@ def parse_feeds(
         work_dir: str,
 ):
     parser = FeedParser(
-        credentials=credentials, 
+        credentials=credentials,
         stage=stage,
         work_dir=work_dir,
     )
     parser.run()
-    return
 
 
 def parse_events(
-        credentials: Credentials, 
+        credentials: Credentials,
         feed: str,
         stage: str,
         work_dir: str,
 ):
     parser = EventParser(
-        credentials=credentials, 
-        feed=feed, 
+        credentials=credentials,
+        feed=feed,
         stage=stage,
         work_dir=work_dir,
     )
     parser.run()
-    return
 
 
 def main():
     args = parse_args()
     credentials = get_credentials(args)
-    
+
     if args.list_feeds:
         parse_feeds(
             credentials=credentials,
             stage=args.stage,
             work_dir=args.work_dir,
         )
-        return
     else:
         parse_events(
             credentials=credentials,
@@ -291,7 +287,6 @@ def main():
             stage=args.stage,
             work_dir=args.work_dir,
         )
-        return
 
 
 if __name__ == '__main__':

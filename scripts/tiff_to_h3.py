@@ -1,18 +1,27 @@
-#!/usr/bin/python
+#!/usr/bin/python3
+# pylint: disable=no-member
 
 import sys
-from osgeo import osr, ogr
-from shapely import wkt, geometry
-import h3
+
 import geopandas as gpd
-import rasterio
-from rasterio.mask import mask
-from shapely.geometry import mapping
+import h3
 import numpy as np
+import rasterio
+
+from osgeo import ogr, osr
+from rasterio.mask import mask
+from shapely import geometry, wkt
+from shapely.geometry import mapping
 
 # Call Example
-# python3 tiff_to_h3.py '/home/frolui/code/test/esa_data/raster1.tif' '/home/frolui/code/test/esa_data/raster_info.csv' 8 'True'
+#
+# python3 tiff_to_h3.py \
+#   '/home/frolui/code/test/esa_data/raster1.tif' \
+#   '/home/frolui/code/test/esa_data/raster_info.csv' \
+#   8 'True'
+#
 # use "True" to import wkt geometry of hexagons in csv, and ahother value to drop it
+
 
 # Workflow body function
 def Pipeline(rasterfile, out_csv, h3_level, geom_flag):
@@ -24,7 +33,8 @@ def Pipeline(rasterfile, out_csv, h3_level, geom_flag):
     # Set h3 level for hexagons, which will be create
     h3_level = int(h3_level)
 
-    # Create buffer polygon from input raster bounding box, buffer width - average inradios of hexagon on actual h3_level
+    # Create buffer polygon from input raster bounding box,
+    # buffer width - average inradios of hexagon on actual h3_level
     buffer = GetHulfHexBuffer(CreatePoly(rast, source_srs), h3_level, source_srs)
     # Create shapely Polygon from buffer
     shapely_polygon_fig = wkt.loads(buffer.ExportToWkt())
@@ -88,9 +98,10 @@ def GetHulfHexBuffer(geom, h3_level, source_srs):
 # Prepare geodataframe
 def PrepareGeoDataFrame(hexs, source_srs):
     # Create shapely Polygon geometry from h3 index
-    polygonise = lambda hex_id: geometry.Polygon(
-        h3.h3_to_geo_boundary(hex_id, geo_json=True)
-    )
+    def polygonise(hex_id):
+        return geometry.Polygon(
+            h3.h3_to_geo_boundary(hex_id, geo_json=True)
+        )
     # Load h3 index and polygons from list into geopandas.GeoSeries
     polys = gpd.GeoSeries(
         list(map(polygonise, hexs)), index=hexs, crs="EPSG:" + str(source_srs)
@@ -125,7 +136,7 @@ def CountPixels(geodataframe, rast):
 
     for index in geodataframe.index:
         # extract the raster values values within the polygon
-        out_image, out_transform = mask(
+        out_image, _out_transform = mask(
             rast, [mapping(geodataframe.loc[index, "geom"])], crop=True
         )
 

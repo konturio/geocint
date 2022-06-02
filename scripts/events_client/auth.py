@@ -1,6 +1,7 @@
 import configparser
 import dataclasses
 import os
+
 import requests
 
 from events_client.servers import STAGES
@@ -46,10 +47,11 @@ def get_token_from_env(
         stage: StageT
 ) -> str:
     assert EVENTAPI_USERNAME_VAR in os.environ, \
-        'Missing {} in environment'.format(EVENTAPI_USERNAME_VAR)
+        f'Missing {EVENTAPI_USERNAME_VAR} in environment'
     assert EVENTAPI_PASSWORD_VAR in os.environ, \
-        'Missing {} in environment'.format(EVENTAPI_PASSWORD_VAR)
-    username, password = os.environ[EVENTAPI_USERNAME_VAR], os.environ[EVENTAPI_PASSWORD_VAR]
+        f'Missing {EVENTAPI_PASSWORD_VAR} in environment'
+    username, password = \
+        os.environ[EVENTAPI_USERNAME_VAR], os.environ[EVENTAPI_PASSWORD_VAR]
     return get_token_from_credentials(
         Credentials(username, password), stage,
     )
@@ -59,7 +61,8 @@ def get_token_from_file(
         filepath: str,
         stage: StageT,
 ) -> str:
-    assert os.path.exists(filepath), 'Missing auth-config file: {}'.format(filepath)
+    assert os.path.exists(filepath), \
+        f'Missing auth-config file: {filepath}'
     config = configparser.ConfigParser()
     config.read(filepath)
     assert 'username' in config

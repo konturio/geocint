@@ -1,4 +1,4 @@
--- Transform to 3857
+-- Transform prescale_to_osm_boundaries table to 3857
 drop table if exists prescale_to_osm_boundaries_3857;
 create table prescale_to_osm_boundaries_3857 as 
         select ST_Transform(geom, 3857) as geom,
@@ -9,6 +9,7 @@ create table prescale_to_osm_boundaries_3857 as
 drop table if exists prescale_to_osm_boundaries;
 
 -- Calculate Kontur population for each boundary
+-- Also calculate scaled coefficient for population
 drop table if exists prescale_to_osm_h3_r8;
 create table prescale_to_osm_h3_r8 as
 with sum_population as (

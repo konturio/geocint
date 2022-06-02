@@ -1,3 +1,4 @@
+-- Decimate borders to make non overlaping borders with right population
 update prescale_to_osm_boundaries r
 set admin_level      = admin_level + 1,
     geom             = coalesce(
@@ -6,10 +7,8 @@ set admin_level      = admin_level + 1,
                     (
                         select ST_Union(geom)
                         from prescale_to_osm_boundaries d
-                        where
-                          -- TODO: partial overlaps
-                            ST_Intersects(r.geom, ST_PointOnSurface(d.geom))
-                          and d.admin_level = r.admin_level + 1
+                        where ST_Intersects(r.geom, ST_PointOnSurface(d.geom))
+                              and d.admin_level = r.admin_level + 1
                     )
                 ),
             geom
@@ -25,11 +24,13 @@ set admin_level      = admin_level + 1,
         )
 where admin_level = :current_level;
 
+-- Remove degenerated borders
 delete
 from prescale_to_osm_boundaries
 where geom is null
    or ST_IsEmpty(geom);
 
+-- Mark borders, which will be degenerated in the next iteration
 update prescale_to_osm_boundaries p
         set isdeg = true
         where
@@ -42,7 +43,9 @@ update prescale_to_osm_boundaries p
                                     where ST_Intersects(p.geom, ST_PointOnSurface(d.geom))
                                     and d.admin_level = p.admin_level + 1)), geom));
 
--- Calculate scale coefficient
+-- Calculate scale coefficient, to keep population of degenerated borders
+-- We need for this to make sure, that we have right population and population distribution
+-- Bcs for general case sum(population on under level) not equal to general population
 with cte as (
     select sum(o.population) as population,
            p.osm_id          as osm_id
@@ -57,7 +60,7 @@ set pop_ulevel = p.population / c.population
 from cte c
 where p.osm_id = c.osm_id;
 
--- Scale population 
+-- Scale population to prevent losing population
 update prescale_to_osm_boundaries p
     set population = p.population * o.pop_ulevel 
 

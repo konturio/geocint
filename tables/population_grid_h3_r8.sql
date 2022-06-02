@@ -60,8 +60,6 @@ update population_grid_h3_r8 p
 -- IMPORTANT: worldpop removed from coalesce
 set population = coalesce(hrsl_pop, ghs_pop);
 
-drop table if exists prescale_to_osm_h3_r8;
-
 vacuum full analyze population_grid_h3_r8;
 create index on population_grid_h3_r8 using gist (geom, population);
 

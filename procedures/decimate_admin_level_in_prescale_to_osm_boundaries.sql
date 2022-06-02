@@ -29,41 +29,39 @@ delete
 from prescale_to_osm_boundaries
 where geom is null
    or ST_IsEmpty(geom);
-   
-vacuum prescale_to_osm_boundaries;
 
--- Check overlap polys on the last(12) admin level
--- Resolve all conflicts with reducing poly with less population
-do
-$$
-    begin 
-        if :current_level = 11 then
-            -- Create CTE with unique pairs of overlap polygons
-            with prep as (
-                select distinct on (ST_Area(ST_Intersection(o.geom, p.geom))) 
-                    (case 
-                        when o.population >= p.population 
-                            then p.osm_id
-                            else o.osm_id
-                        end) as prep_id,
-                    (case
-                        when o.population >= p.population 
-                            then p.geom
-                            else o.geom
-                        end) as f_geom,
-                    (case
-                        when o.population >= p.population 
-                            then o.geom
-                            else p.geom
-                        end) as s_geom                                    
-                from prescale_to_osm_boundaries o, prescale_to_osm_boundaries p 
-                where ST_Overlaps(o.geom, p.geom) and o.id_0 <> p.id_0)
+update prescale_to_osm_boundaries p
+        set isdeg = true
+        where
+        coalesce(ST_Difference(p.geom, (select ST_Union(d.geom)
+                                    from prescale_to_osm_boundaries d
+                                    where ST_Intersects(p.geom, ST_PointOnSurface(d.geom))
+                                    and d.admin_level = p.admin_level + 1)), geom) is null 
+        or ST_IsEmpty(coalesce(ST_Difference(p.geom, (select ST_Union(d.geom)
+                                    from prescale_to_osm_boundaries d
+                                    where ST_Intersects(p.geom, ST_PointOnSurface(d.geom))
+                                    and d.admin_level = p.admin_level + 1)), geom));
 
-                -- Resolve overlap conflicts with reducing less population polygons
-                update prescale_to_osm_boundaries 
-                    set geom = ST_Difference(f_geom, s_geom)
-                    from prep 
-                    where osm_id = prep_id;
-        end if;
-    end;
-$$;
+-- Calculate scale coefficient
+with cte as (
+    select sum(o.population) as population,
+           p.osm_id          as osm_id
+    from prescale_to_osm_boundaries o,
+         prescale_to_osm_boundaries p
+    where ST_Intersects(p.geom, ST_PointOnSurface(o.geom))
+          and o.admin_level = p.admin_level + 1
+    group by p.osm_id
+)
+update prescale_to_osm_boundaries p
+set pop_ulevel = p.population / c.population
+from cte c
+where p.osm_id = c.osm_id;
+
+-- Scale population 
+update prescale_to_osm_boundaries p
+    set population = p.population * o.pop_ulevel 
+
+    from prescale_to_osm_boundaries o
+    where ST_Intersects(o.geom, ST_PointOnSurface(p.geom))
+          and p.admin_level = o.admin_level + 1
+          and o.isdeg = true;

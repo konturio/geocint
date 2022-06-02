@@ -67,3 +67,6 @@ order by 1;
 create index on prescale_to_osm_boundaries using gist (geom, ST_PointOnSurface(geom));
 
 drop table if exists prescale_to_osm;
+
+alter table prescale_to_osm_boundaries add column isdeg boolean,
+                                       add column pop_ulevel real;

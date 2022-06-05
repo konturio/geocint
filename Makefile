@@ -1111,7 +1111,6 @@ data/out/global_fires/update: db/table/global_fires | data/out/global_fires ## L
 
 deploy/s3/global_fires: data/out/global_fires/update | deploy/s3 ## Deploy update for active fire products to S3.
 	aws s3 sync --size-only --exclude="*" --include "firms_archive_*.csv.gz" data/out/global_fires/ s3://geodata-eu-central-1-kontur/private/geocint/in/global_fires/ --profile geocint_pipeline_sender
-	mv data/out/global_fires/firms_archive_*.csv.gz data/in/global_fires/
 	touch $@
 
 db/table/global_fires_stat_h3: deploy/s3/global_fires ## Aggregate active fire data from FIRMS (Fire Information for Resource Management System) on H3 hexagon grid.

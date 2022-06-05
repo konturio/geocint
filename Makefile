@@ -1102,11 +1102,11 @@ db/table/global_fires: db/table/global_fires_in | db/table ## Active fire produc
 	touch $@
 
 data/out/global_fires/update: db/table/global_fires | data/out/global_fires ## Last update for active fire products.
-	rm -f data/out/global_fires/*
+	rm -f data/out/global_fires/firms_archive_*.csv.gz
 	aws s3 ls s3://geodata-eu-central-1-kontur/private/geocint/in/global_fires/ --profile geocint_pipeline_sender | tail -1 | cut -d ' ' -f 1,2 | date +"%s" -f - > $@__LAST_DEPLOY_TS
 	if [ $$(cat $@__LAST_DEPLOY_TS) -lt $$(date -d "1 week ago" +"%s") ]; then echo '*Global Fires* broken. Latest data for $$(cat $@__LAST_DEPLOY_TS | xargs -I {} date -d @{} -u +"%Y-%m-%d"). See section <https://gitlab.com/kontur-private/platform/geocint/#manual-update-of-global-fires|"Manual update of Global Fires"> in README.md' | python3 scripts/slack_message.py geocint "Nightly build" x; fi
 	seq $$(cat $@__LAST_DEPLOY_TS | xargs -I {}  date -u -d @{} +"%Y") $$(date -u +"%Y") | parallel --eta "psql -qXc 'set time zone utc; copy (select * from global_fires where acq_datetime >= '\''{}-01-01'\'' and acq_datetime < '\''{}-01-01'\''::date + interval '\''1 year'\'' order by acq_datetime, hash) to stdout with csv header;' | pigz -9 > data/out/global_fires/firms_archive_{}.csv.gz"
-	rm $@__LAST_DEPLOY_TS
+	rm -f $@__LAST_DEPLOY_TS
 	touch $@
 
 deploy/s3/global_fires: data/out/global_fires/update | deploy/s3 ## Deploy update for active fire products to S3.

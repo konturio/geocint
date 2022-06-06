@@ -1,7 +1,10 @@
 drop table if exists population_check_osm;
 create table population_check_osm as (
     select
-           osm_id as osm_id,
+           osm_id                                                                                        as osm_id,
+           name                                                                                          as name_boundaries,
+           coalesce(tags ->> 'name:en', tags ->> 'int_name')                                             as name_en,
+
            -- Generate link to object properties on osm.org:
            'href_[' || osm_id || '](https://www.openstreetmap.org/' || osm_type || '/' || osm_id || ')'  as "OSM id",
 

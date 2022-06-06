@@ -377,7 +377,7 @@ db/table/facebook_roads_h3: db/table/facebook_roads | db/table ## Build h3 overv
 	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_roads: db/table/osm db/index/osm_tags_idx | db/table ## Roads from OpenStreetMap.
+db/table/osm_roads: db/table/osm | db/table ## Roads from OpenStreetMap.
 	psql -f tables/osm_roads.sql
 	touch $@
 
@@ -1761,7 +1761,7 @@ deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 #
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/out/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
-db/table/osm_buildings: db/index/osm_tags_idx db/function/parse_float db/function/parse_integer | db/table ## All the buildings (but not all the properties yet) extracted from OpenStreetMap dataset.
+db/table/osm_buildings: db/table/osm db/function/parse_float db/function/parse_integer | db/table ## All the buildings (but not all the properties yet) extracted from OpenStreetMap dataset.
 	psql -f tables/osm_buildings.sql
 	touch $@
 

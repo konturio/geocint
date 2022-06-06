@@ -6,7 +6,7 @@ with sections as (
                                    'type', 'mrkdwn',
                                    'text',
                                    '<https://www.openstreetmap.org/relation/' || osm_id || '|' ||
-                                   coalesce(name_en, name) ||
+                                   coalesce(name_en, name_boundaries) ||
                                    '>'
                                )
                        ),
@@ -29,7 +29,7 @@ with sections as (
                                                    'type', 'plain_text',
                                                    'text', 'Open in Google'
                                                ),
-                                           'url', 'https://google.com/search?q=' || urlencode(coalesce(name_en, name))
+                                           'url', 'https://google.com/search?q=' || urlencode(coalesce(name_en, name_boundaries))
                                        )
                                )
                        ),
@@ -43,7 +43,7 @@ with sections as (
                                    }'::jsonb,
                                    jsonb_build_object(
                                            'type', 'plain_text',
-                                           'text', to_char(kontur_pop, '99G999G999G999')
+                                           'text', to_char("Kontur population", '99G999G999G999')
                                        ),
                                    '{
                                      "type": "plain_text",
@@ -51,7 +51,7 @@ with sections as (
                                    }'::jsonb,
                                    jsonb_build_object(
                                            'type', 'plain_text',
-                                           'text', to_char(osm_pop, '99G999G999G999')
+                                           'text', to_char("OSM population", '99G999G999G999')
                                        ),
                                    '{
                                      "type": "plain_text",
@@ -59,7 +59,7 @@ with sections as (
                                    }'::jsonb,
                                    jsonb_build_object(
                                            'type', 'plain_text',
-                                           'text', to_char(diff_pop, '99G999G999G999')
+                                           'text', to_char("OSM-Kontur Population difference", '99G999G999G999')
                                        )
                                )
                        ),

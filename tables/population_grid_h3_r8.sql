@@ -65,11 +65,6 @@ create index on population_grid_h3_r8 using gist (geom, population);
 
 -- Prescale population to osm using coefficient
 update population_grid_h3_r8 p
-set population = p.population * case
-                                   -- Check if hex is fully covered by area of prescale boundary
-                                   when ST_Within(p.geom, b.geom) then b.coefficient
-                                   -- Modify coefficien to scale population with considering partially overlaping
-                                   else (ST_Area(ST_Intersection(h.geom, b.geom)) / ST_Area(h.geom)) * (b.coefficient - 1) + 1
-                                end
+set population = p.population * b.coefficient
 from prescale_to_osm_h3_r8 b
 where ST_Intersects(b.geom, ST_PointOnSurface(p.geom));

@@ -1148,90 +1148,14 @@ data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset 
 	mkdir -p $@
 
 data/in/microsoft_buildings/download: | data/in/microsoft_buildings ## Download Microsoft Building Footprints dataset.
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/tanzania-uganda-buildings/Uganda_2019-09-16.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/tanzania-uganda-buildings/Tanzania_2019-09-16.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Alberta.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/BritishColumbia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Manitoba.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NewBrunswick.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NewfoundlandAndLabrador.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NorthwestTerritories.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NovaScotia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Nunavut.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Ontario.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/PrinceEdwardIsland.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Quebec.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Saskatchewan.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/YukonTerritory.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Alabama.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Alaska.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Arizona.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Arkansas.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/California.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Colorado.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Connecticut.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Delaware.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/DistrictofColumbia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Florida.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Georgia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Hawaii.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Idaho.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Illinois.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Indiana.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Iowa.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Kansas.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Kentucky.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Louisiana.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Maine.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Maryland.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Massachusetts.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Michigan.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Minnesota.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Mississippi.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Missouri.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Montana.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Nebraska.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Nevada.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewHampshire.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewJersey.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewMexico.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewYork.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NorthCarolina.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NorthDakota.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Ohio.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Oklahoma.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Oregon.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Pennsylvania.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/RhodeIsland.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/SouthCarolina.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/SouthDakota.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Tennessee.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Texas.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Utah.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Vermont.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Virginia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Washington.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/WestVirginia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wisconsin.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wyoming.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/australia-buildings/Australia_2020-06-21.geojson.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://minedbuildings.blob.core.windows.net/southeast-asia/indonesia.geojsonl.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://minedbuildings.blob.core.windows.net/southeast-asia/philippines.geojsonl.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://minedbuildings.blob.core.windows.net/southeast-asia/malaysia.geojsonl.zip
+	grep -h -v '^#' static_data/microsoft_buildings/*.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_buildings {}'
 	touch $@
 
-data/mid/microsoft_buildings: | data/mid  ## Microsoft Building Footprints dataset (intermediate).
-	mkdir -p $@
-
-data/mid/microsoft_buildings/unzip: data/in/microsoft_buildings/download | data/mid/microsoft_buildings  ## Unzip Microsoft Building Footprints dataset.
-	ls data/in/microsoft_buildings/*.zip | parallel "unzip -o {} -d data/mid/microsoft_buildings/"
-	touch $@
-
-db/table/microsoft_buildings: data/mid/microsoft_buildings/unzip | db/table  ## Microsoft Building Footprints dataset imported into database.
-	psql -c "drop table if exists microsoft_buildings;"
-	psql -c "create table microsoft_buildings (ogc_fid serial not null, geom geometry(polygon,4326));"
-	find data/mid/microsoft_buildings/ -name "*.geojson*" -type f | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom -a_srs EPSG:4326'
-	psql -c "create index on microsoft_buildings using gist(geom);"
+db/table/microsoft_buildings: data/in/microsoft_buildings/download | db/table  ## Microsoft Building Footprints dataset imported into database.
+	psql -c "drop table if exists microsoft_buildings";
+	psql -c "create table microsoft_buildings(filename text, geom geometry(Geometry,4326)) tablespace evo4tb;"
+	find data/in/microsoft_buildings/* -type f -name "*.zip" -printf '%s\t%p\n' | sort -r -n | cut -f2- | sed -r 's/(.*\/(.*)\.(.*)$)/ogr2ogr -append -f PostgreSQL --config PG_USE_COPY YES PG:"dbname=gis" "\/vsizip\/\1" -sql "select '\''\2'\'' as filename, * from \\"\2\\"" -nln microsoft_buildings -a_srs EPSG:4326/' | parallel --eta '{}'
+	psql -c "vacuum analyze microsoft_buildings;"
 	touch $@
 
 db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Count amount of Microsoft Buildings at hexagons.

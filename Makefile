@@ -1148,7 +1148,7 @@ data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset 
 	mkdir -p $@
 
 data/in/microsoft_buildings/download: | data/in/microsoft_buildings ## Download Microsoft Building Footprints dataset.
-	cat static_data/microsoft_buildings/*.txt | parallel --eta 'wget -c -nc -P data/in/microsoft_buildings {}'
+	grep -h -v '^#' static_data/microsoft_buildings/*.txt | parallel --eta 'wget -c -nc -P data/in/microsoft_buildings {}'
 	touch $@
 
 db/table/microsoft_buildings: data/in/microsoft_buildings/download | db/table  ## Microsoft Building Footprints dataset imported into database.

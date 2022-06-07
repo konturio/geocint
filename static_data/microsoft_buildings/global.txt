@@ -1,3 +1,6 @@
+# Exclude Uganda and Tanzania from the global dataset (countries are in uganda_tanzania.txt)
+#https://minedbuildings.blob.core.windows.net/global-buildings/2022-05-02/Uganda.zip
+#https://minedbuildings.blob.core.windows.net/global-buildings/2022-05-02/Tanzania.zip
 https://minedbuildings.blob.core.windows.net/global-buildings/2022-05-02/Abyei.zip
 https://minedbuildings.blob.core.windows.net/global-buildings/2022-05-02/Afghanistan.zip
 https://minedbuildings.blob.core.windows.net/global-buildings/2022-05-02/Africa.zip

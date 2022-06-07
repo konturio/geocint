@@ -1,72 +1,51 @@
+with statistics as (
+    select zoom  as r,
+           jsonb_build_object(
+                   'sum', sum(z.m),
+                   'min', min(z.m),
+                   'max', max(z.m),
+                   'mean', avg(z.m),
+                   'stddev', stddev(z.m),
+                   'median', percentile_cont(0.5) within group (order by z.m)
+               ) as stats
+    from stat_h3,
+         lateral (select :numerator / nullif(:denominator, 0) as m) z
+    group by r
+    order by r
+),
+     quality as (
+         select key,
+                avg(value) filter (where r = 8) as value,
+                case
+                    when avg(value) filter (where r = 8) is null
+                        then null
+                    when (nullif(max(value), 0) / nullif(min(value), 0)) > 0
+                        then coalesce(log10(nullif(max(value), 0) / nullif(min(value), 0)), 0)
+                    else coalesce(log10((nullif(max(value), 0) - nullif(min(value), 0)) /
+                        least(abs(nullif(min(value), 0)), abs(nullif(max(value), 0)))), 0)
+                end                                quality
+         from statistics x,
+              jsonb_object_keys(stats) key,
+              lateral (values ((stats -> key)::double precision)) as v(value)
+         group by key
+     ),
+     upd as (
+         select jsonb_object_agg(key, array [value, quality]) j
+         from quality
+     )
 update bivariate_axis
-set sum_value      = a.sum_value,
-    sum_quality    = a.sum_quality,
-    min_value      = a.min_value,
-    min_quality    = a.min_quality,
-    max_value      = a.max_value,
-    max_quality    = a.max_quality,
-    stddev_value   = a.stddev_value,
-    stddev_quality = a.stddev_quality,
-    median_value   = a.median_value,
-    median_quality = a.median_quality,
-    mean_value     = a.mean_value,
-    mean_quality   = a.mean_quality
-from (
-         select avg(sum_m) filter (where r = 8)    as sum_value,
-                case
-                    when (nullif(max(sum_m), 0) / nullif(min(sum_m), 0)) > 0
-                        then log10(nullif(max(sum_m), 0) / nullif(min(sum_m), 0))
-                    else log10((nullif(max(sum_m), 0) - nullif(min(sum_m), 0)) /
-                               least(abs(nullif(min(sum_m), 0)), abs(nullif(max(sum_m), 0))))
-                    end                            as sum_quality,
-                avg(min_m) filter (where r = 8)    as min_value,
-                case
-                    when (nullif(max(min_m), 0) / nullif(min(min_m), 0)) > 0
-                        then log10(nullif(max(min_m), 0) / nullif(min(min_m), 0))
-                    else log10((nullif(max(min_m), 0) - nullif(min(min_m), 0)) /
-                               least(abs(nullif(min(min_m), 0)), abs(nullif(max(min_m), 0))))
-                    end                            as min_quality,
-
-                avg(max_m) filter (where r = 8)    as max_value,
-                case
-                    when (nullif(max(max_m), 0) / nullif(min(max_m), 0)) > 0
-                        then log10(nullif(max(max_m), 0) / nullif(min(max_m), 0))
-                    else log10((nullif(max(max_m), 0) - nullif(min(max_m), 0)) /
-                               least(abs(nullif(min(max_m), 0)), abs(nullif(max(max_m), 0))))
-                    end                            as max_quality,
-                avg(mean_m) filter (where r = 8)   as mean_value,
-                case
-                    when (nullif(max(mean_m), 0) / nullif(min(mean_m), 0)) > 0
-                        then log10(nullif(max(mean_m), 0) / nullif(min(mean_m), 0))
-                    else log10((nullif(max(mean_m), 0) - nullif(min(mean_m), 0)) /
-                               least(abs(nullif(min(mean_m), 0)), abs(nullif(max(mean_m), 0))))
-                    end                            as mean_quality,
-                avg(stddev_m) filter (where r = 8) as stddev_value,
-                case
-                    when (nullif(max(stddev_m), 0) / nullif(min(stddev_m), 0)) > 0
-                        then log10(nullif(max(stddev_m), 0) / nullif(min(stddev_m), 0))
-                    else log10((nullif(max(stddev_m), 0) - nullif(min(stddev_m), 0)) /
-                               least(abs(nullif(min(stddev_m), 0)), abs(nullif(max(stddev_m), 0))))
-                    end                            as stddev_quality,
-                avg(median_m) filter (where r = 8) as median_value,
-                case
-                    when (nullif(max(median_m), 0) / nullif(min(median_m), 0)) > 0
-                        then log10(nullif(max(median_m), 0) / nullif(min(median_m), 0))
-                    else log10((nullif(max(median_m), 0) - nullif(min(median_m), 0)) /
-                               least(abs(nullif(min(median_m), 0)), abs(nullif(max(median_m), 0))))
-                    end                            as median_quality
-
-         from (select r,
-                      sum(z.m)                                         as sum_m,
-                      min(z.m)                                         as min_m,
-                      max(z.m)                                         as max_m,
-                      avg(z.m)                                         as mean_m,
-                      stddev(z.m)                                      as stddev_m,
-                      percentile_cont(0.5) within group (order by z.m) as median_m
-               from (select (:numer / nullif(:denom, 0)) as m, zoom as r from stat_h3) z
-               group by r
-               order by r
-              ) x
-     ) a
-where numerator = :numer_text
-  and denominator = :denom_text;
+set sum_value      = (j -> 'sum' -> 0)::double precision,
+    sum_quality    = (j -> 'sum' -> 1)::double precision,
+    min_value      = (j -> 'min' -> 0)::double precision,
+    min_quality    = (j -> 'min' -> 1)::double precision,
+    max_value      = (j -> 'max' -> 0)::double precision,
+    max_quality    = (j -> 'max' -> 1)::double precision,
+    stddev_value   = (j -> 'stddev' -> 0)::double precision,
+    stddev_quality = (j -> 'stddev' -> 1)::double precision,
+    median_value   = (j -> 'median' -> 0)::double precision,
+    median_quality = (j -> 'median' -> 1)::double precision,
+    mean_value     = (j -> 'mean' -> 0)::double precision,
+    mean_quality   = (j -> 'mean' -> 1)::double precision
+from upd
+where numerator = :'numerator'
+  and denominator = :'denominator';

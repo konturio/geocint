@@ -1884,10 +1884,15 @@ db/table/stat_h3_quality: db/table/stat_h3 | db/table ## summarized statistics a
 
 db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 db/table/stat_h3_quality | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
 	psql -f tables/bivariate_axis.sql
+	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' 'psql -f tables/bivariate_axis_stops.sql -v numerator={1} -v denominator={2}'
+	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' 'psql -f tables/bivariate_axis_quality_estimate.sql -v numerator={1} -v denominator={2}'
+	psql -f tables/bivariate_axis_updates.sql
+	psql -c "vacuum analyze bivariate_axis;"
 	touch $@
 
 db/table/bivariate_axis_analytics: db/table/bivariate_axis db/table/stat_h3 | db/table ## Precalculated axis parameters for the whole world.
-	psql -X -c "copy (select numerator||' '||denominator from bivariate_axis) to stdout;" | parallel --colsep ' ' "psql -f tables/bivariate_axis_analytics.sql -v numer={1} -v denom={2} -v numer_text=\"'{1}'\" -v denom_text=\"'{2}'\" "
+	psql -X -c "copy (select numerator, denominator from bivariate_axis) to stdout;" | parallel --colsep ',' "psql -f tables/bivariate_axis_analytics.sql -v numerator={1} -v denominator={2}"
+	psql -c "vacuum analyze bivariate_axis;"
 	touch $@
 
 db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3_quality db/table/bivariate_indicators | db/table ## Precalculated correlations for bivariate layers

@@ -20,9 +20,9 @@ with statistics as (
                     when avg(value) filter (where r = 8) is null
                         then null
                     when (nullif(max(value), 0) / nullif(min(value), 0)) > 0
-                        then coalesce(log10(nullif(max(value), 0) / nullif(min(value), 0)), 0)
-                    else coalesce(log10((nullif(max(value), 0) - nullif(min(value), 0)) /
-                        least(abs(nullif(min(value), 0)), abs(nullif(max(value), 0)))), 0)
+                        then log10(nullif(max(value), 0) / nullif(min(value), 0))
+                    else log10((nullif(max(value), 0) - nullif(min(value), 0)) /
+                        least(abs(nullif(min(value), 0)), abs(nullif(max(value), 0))))
                 end                                quality
          from statistics x,
               jsonb_object_keys(stats) key,

@@ -1,12 +1,12 @@
 with statistics as (
     select zoom  as r,
            jsonb_build_object(
-                   'sum', sum(z.m),
-                   'min', min(z.m),
-                   'max', max(z.m),
-                   'mean', avg(z.m),
-                   'stddev', stddev(z.m),
-                   'median', percentile_cont(0.5) within group (order by z.m)
+                   'sum', nullif(sum(z.m), 0),
+                   'min', min(z.m) filter (where z.m != 0),
+                   'max', max(z.m) filter (where z.m != 0),
+                   'mean', nullif(avg(z.m), 0),
+                   'stddev', nullif(stddev(z.m), 0),
+                   'median', nullif(percentile_cont(0.5) within group (order by z.m), 0)
                ) as stats
     from stat_h3,
          lateral (select :numerator / nullif(:denominator, 0) as m) z

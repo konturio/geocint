@@ -16,10 +16,10 @@ create table population_check_osm as (
            tags ->> 'population:date'                                                                    as "OSM population date",
            round(osm_pop)                                                                                as "OSM population",
            round(b.population)                                                                           as "Kontur population",
-           b.max_wiki_population                                                                         as "Max Wikidata population",
+           b.wiki_population                                                                             as "Wikidata population",
            round(osm_pop - b.population)                                                                 as "OSM-Kontur Population difference",
            -- if wiki_population is null return null
-           round(b.max_wiki_population - b.population)                                                   as "Max Wikidata-Kontur Population difference"
+           round(b.wiki_population - b.population)                                                       as "Wikidata-Kontur Population difference"
     from kontur_boundaries b,
          parse_float(tags ->> 'population') osm_pop,
          ST_Area(geom::geography) "area"

@@ -854,7 +854,13 @@ data/in/wikidata_population_csv: | data/in ## Wikidata population csv (input).
 
 data/in/wikidata_population_csv/download: | data/in/wikidata_population_csv ## Download Wikidata population.
 	rm -f data/in/wikidata_population_csv/*_wiki_pop.csv
-	cat static_data/wikidata_population/wikidata_population_ranges.txt | parallel -j1 --colsep " " 'wget "https://query.wikidata.org/sparql?query=SELECT%20%3Fcountry%20%3FcountryLabel%20%3Fpopulation%20%0AWHERE%20%7B%20%3Fcountry%20wdt%3AP1082%20%3Fpopulation.%20%0A%20%20%20%20%20%20%20FILTER({1}%20%3C%3D%20%3Fpopulation%20%26%26%20%3Fpopulation%20%3C%20{2}).%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22.%20%7D%20%7D" --retry-on-http-error=500 --header "Accept: text/csv" -O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; sleep 1'
+	cat static_data/wikidata_population/wikidata_population_ranges.txt \
+		| parallel -j1 --colsep " " \
+			"wget 'https://query.wikidata.org/sparql?query=SELECT ?country ?countryLabel (SAMPLE(?population) as ?population) ?census_date WHERE { ?country wdt:P1082 ?population . OPTIONAL { ?country p:P1082/pq:P585 ?census_date . } FILTER({1} <= ?population %26%26 ?population < {2}). FILTER NOT EXISTS { ?country p:P1082/pq:P585 ?date_ . FILTER (?date_ > ?census_date) } SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } } GROUP BY ?country ?countryLabel ?census_date ORDER BY ASC (?population)' \
+				--retry-on-http-error=500 \
+				--header 'Accept: text/csv' \
+				-O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; \
+			sleep 1"
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.

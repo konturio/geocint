@@ -2,7 +2,7 @@ export PGDATABASE = gis
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3 db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -47,9 +47,6 @@ data/in/raster: | data/in ## Directory for all the mega-terabyte geotiffs!
 	mkdir -p $@
 
 data/mid: | data ## Intermediate data (retiles, unpacks, reprojections, …) that can be removed daily.
-	mkdir -p $@
-
-data/mid/raster: | data/mid ## Intermediate for mega-terabyte geotiffs
 	mkdir -p $@
 
 data/out: | data ## Generated final data (tiles, dumps, etc).
@@ -540,70 +537,6 @@ db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table 
 db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table ## Forest area in km2 by types from land cover raster into h3 hexagons on 8 resolution.
 	psql -f tables/copernicus_forest_h3.sql
 	touch $@
-
-data/in/raster/esa_world_cover: | data/in/raster ## ESA Cover World rasters (input).
-	mkdir -p $@
-
-data/mid/raster/esa_world_cover: | data/mid/raster ## ESA Cover World rasters (intermediate)
-	mkdir -p $@
-
-data/mid/raster/esa_world_cover_csv: | data/mid/raster ## ESA Cover World csv representation (intermediate)
-	mkdir -p $@
-
-data/in/raster/esa_world_cover/download: | data/in/raster/esa_world_cover ## Download ESA World Cover data.
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30W180.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30W120.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30W060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30E000.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30E060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30E120.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30W180.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30W120.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30W060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30E000.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30E060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30E120.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90W180.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90W120.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90W060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90E000.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90E060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90E120.zip
-	touch $@
-
-data/mid/raster/esa_world_cover/selection: data/in/raster/esa_world_cover/download | data/mid/raster/esa_world_cover ## Transform 11 class tiffs to 4 class tiffs
-	find data/in/raster/esa_world_cover -name "*.zip" -type f | parallel 'gdalinfo /vsizip/{}'| grep .tif$ | cut -c8- | xargs -n1 -I % echo %" "% | sed -r 's/^(.{0})(.{96})/data\/mid\/raster\/esa_world_cover\//g' | parallel --colsep " " 'gdal_calc.py -A {2} --outfile={1} --calc="A/10*logical_or(logical_or(A==10,A==20),logical_or(A==40,A==50))" --NoDataValue=0 --co=NBITS=3 --co=COMPRESS=DEFLATE --co=TILED=YES --co=BLOCKXSIZE=1024 --co=BLOCKYSIZE=1024 --overwrite --quiet'
-	touch $@
-
-data/mid/raster/esa_world_cover_csv/calculation: data/mid/raster/esa_world_cover/selection | data/mid/raster/esa_world_cover_csv ## Precalculate the number of pixels for each hexagon by classes
-	cd data/mid/raster/esa_world_cover ; ls *.tif | xargs -n1 -I % echo %" "% | rev | cut -c5- | rev | sed 's/.*/&.csv/' | parallel --colsep " " "python3 scripts/tiff_to_h3.py {1} 'data/mid/raster/esa_world_cover_csv/'{2} 8 False"
-	touch $@
-
-db/table/esa_world_cover_h3_r8: data/mid/raster/esa_world_cover_csv/calculation | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
-	psql -c "drop table if exists esa_world_cover_h3_r8_in;"
-	psql -c "create table esa_world_cover_h3_r8_in (h3 h3index, class_1 int, class_2 int, class_4 int, class_5 int, class_0 int, class_all int, area numeric);"
-	ls data/mid/raster/esa_world_cover_csv/*_proc.csv | parallel "cat {} | psql -c \"copy esa_world_cover_h3_r8_in from stdin with csv header;\" "
-	psql -c "delete from esa_world_cover_h3_r8_in where class_1 = 0 and class_2 = 0 and class_4 = 0 and class_5 = 0;"
-	psql -c "drop table if exists esa_world_cover_h3_r8;"
-	psql -c "select h3, sum(class_1) as class_1, sum(class_2) as class_2, sum(class_4) as class_4, sum(class_5) as class_5, sum(class_all) as class_all, avg(area) as area into esa_world_cover_h3_r8 from esa_world_cover_h3_r8_in group by h3;"
-	psql -c "drop table if exists esa_world_cover_h3_r8_in;"
-	touch $@
-
-# db/table/esa_world_cover: data/mid/raster/esa_world_cover/selection | db/table ## Prepare table for raster data. Import 4 class tiffs and load into database.
-# 	psql -c "drop table if exists esa_world_cover;"
-# 	raster2pgsql -p -Y -s 4326 data/mid/raster/esa_world_cover/*.tif -t auto esa_world_cover | psql -q
-# 	psql -c 'alter table esa_world_cover drop CONSTRAINT esa_world_cover_pkey;'
-# 	find data/mid/raster/esa_world_cover -name "*.tif" -type f | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto esa_world_cover | psql -q'
-# 	psql -c "vacuum analyze esa_world_cover;"
-# 	touch $@
-
-db/table/esa_world_cover_h3: db/table/esa_world_cover_h3_r8 | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
-	psql -f tables/esa_world_cover_h3.sql
-	touch $@
-
-# db/table/esa_world_cover_builtup_h3: db/table/esa_world_cover | db/table ## Count of 'urban' pixels from ESA land cover raster into h3 hexagons on 8 resolution.
-# 	psql -f tables/esa_world_cover_builtup_h3.sql
-# 	touch $@
 
 db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
 	psql -f tables/osm_residential_landuse.sql

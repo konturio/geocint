@@ -3,8 +3,7 @@ drop table if exists prescale_to_osm_boundaries_3857;
 create table prescale_to_osm_boundaries_3857 as 
         select ST_Transform(geom, 3857) as geom,
                osm_id,
-               population,
-               admin_level
+               population
         from prescale_to_osm_boundaries;
 
 drop table if exists prescale_to_osm_boundaries;
@@ -33,8 +32,7 @@ with sum_population as (
 select
         b.geom,
         b.osm_id,
-        b.population::float / p.population::float as coefficient,
-        b.admin_level
+        b.population::float / p.population::float as coefficient
 from prescale_to_osm_boundaries_3857 b
 left join sum_population p using(osm_id);
 

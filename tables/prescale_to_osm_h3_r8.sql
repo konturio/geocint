@@ -3,7 +3,8 @@ drop table if exists prescale_to_osm_boundaries_3857;
 create table prescale_to_osm_boundaries_3857 as 
         select ST_Transform(geom, 3857) as geom,
                osm_id,
-               population
+               population,
+               admin_level
         from prescale_to_osm_boundaries;
 
 drop table if exists prescale_to_osm_boundaries;

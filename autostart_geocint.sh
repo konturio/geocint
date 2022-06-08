@@ -34,10 +34,6 @@ test $(date +'%w') "=" 0 && git checkout -f master
 sudo pip3 install slackclient
 sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
 sudo pip3 install pandas
-sudo pip3 install geopandas
-sudo pip3 install rasterio
-sudo pip3 install shapely
-sudo pip3 install h3
 
 # Pull and stash uncommitted changes from Git
 git pull --rebase --autostash || { git stash && git pull && echo 'git rebase autostash failed, stash and pull executed' | python3 scripts/slack_message.py geocint "Nightly build" cat; }

@@ -1750,10 +1750,6 @@ db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 db/table
 	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' 'psql -f tables/bivariate_axis_stops.sql -v numerator={1} -v denominator={2}'
 	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' 'psql -f tables/bivariate_axis_quality_estimate.sql -v numerator={1} -v denominator={2}'
 	psql -f tables/bivariate_axis_updates.sql
-	psql -c "vacuum analyze bivariate_axis;"
-	touch $@
-
-db/table/bivariate_axis_analytics: db/table/bivariate_axis db/table/stat_h3 | db/table ## Precalculated axis parameters for the whole world.
 	psql -X -c "copy (select numerator, denominator from bivariate_axis) to stdout;" | parallel --colsep ',' "psql -f tables/bivariate_axis_analytics.sql -v numerator={1} -v denominator={2}"
 	psql -c "vacuum analyze bivariate_axis;"
 	touch $@

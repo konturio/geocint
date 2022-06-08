@@ -2,7 +2,7 @@ export PGDATABASE = gis
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone db/table/esa_world_cover deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/esa_world_cover_h3 db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -47,9 +47,6 @@ data/in/raster: | data/in ## Directory for all the mega-terabyte geotiffs!
 	mkdir -p $@
 
 data/mid: | data ## Intermediate data (retiles, unpacks, reprojections, …) that can be removed daily.
-	mkdir -p $@
-
-data/mid/raster: | data/mid ## Intermediate for mega-terabyte geotiffs
 	mkdir -p $@
 
 data/out: | data ## Generated final data (tiles, dumps, etc).
@@ -541,70 +538,6 @@ db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table #
 	psql -f tables/copernicus_forest_h3.sql
 	touch $@
 
-data/in/raster/esa_world_cover: | data/in/raster ## ESA Cover World rasters (input).
-	mkdir -p $@
-
-data/mid/raster/esa_world_cover: | data/mid/raster ## ESA Cover World rasters (intermediate)
-	mkdir -p $@
-
-data/mid/raster/esa_world_cover_csv: | data/mid/raster ## ESA Cover World csv representation (intermediate)
-	mkdir -p $@
-
-data/in/raster/esa_world_cover/download: | data/in/raster/esa_world_cover ## Download ESA World Cover data.
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30W180.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30W120.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30W060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30E000.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30E060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_N30E120.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30W180.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30W120.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30W060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30E000.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30E060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S30E120.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90W180.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90W120.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90W060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90E000.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90E060.zip
-	cd data/in/raster/esa_world_cover; wget -c -nc https://worldcover2020.esa.int/data/archive/ESA_WorldCover_10m_2020_v100_60deg_macrotile_S90E120.zip
-	touch $@
-
-data/mid/raster/esa_world_cover/selection: data/in/raster/esa_world_cover/download | data/mid/raster/esa_world_cover ## Transform 11 class tiffs to 4 class tiffs
-	find data/in/raster/esa_world_cover -name "*.zip" -type f | parallel 'gdalinfo /vsizip/{}'| grep .tif$ | cut -c8- | xargs -n1 -I % echo %" "% | sed -r 's/^(.{0})(.{96})/data\/mid\/raster\/esa_world_cover\//g' | parallel --colsep " " 'gdal_calc.py -A {2} --outfile={1} --calc="A/10*logical_or(logical_or(A==10,A==20),logical_or(A==40,A==50))" --NoDataValue=0 --co=NBITS=3 --co=COMPRESS=DEFLATE --co=TILED=YES --co=BLOCKXSIZE=1024 --co=BLOCKYSIZE=1024 --overwrite --quiet'
-	touch $@
-
-data/mid/raster/esa_world_cover_csv/calculation: data/mid/raster/esa_world_cover/selection | data/mid/raster/esa_world_cover_csv ## Precalculate the number of pixels for each hexagon by classes
-	cd data/mid/raster/esa_world_cover ; ls *.tif | xargs -n1 -I % echo %" "% | rev | cut -c5- | rev | sed 's/.*/&.csv/' | parallel --colsep " " "python3 scripts/tiff_to_h3.py {1} 'data/mid/raster/esa_world_cover_csv/'{2} 8 False"
-	touch $@
-
-db/table/esa_world_cover_h3_r8: data/mid/raster/esa_world_cover_csv/calculation | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
-	psql -c "drop table if exists esa_world_cover_h3_r8_in;"
-	psql -c "create table esa_world_cover_h3_r8_in (h3 h3index, class_1 int, class_2 int, class_4 int, class_5 int, class_0 int, class_all int, area numeric);"
-	ls data/mid/raster/esa_world_cover_csv/*_proc.csv | parallel "cat {} | psql -c \"copy esa_world_cover_h3_r8_in from stdin with csv header;\" "
-	psql -c "delete from esa_world_cover_h3_r8_in where class_1 = 0 and class_2 = 0 and class_4 = 0 and class_5 = 0;"
-	psql -c "drop table if exists esa_world_cover_h3_r8;"
-	psql -c "select h3, sum(class_1) as class_1, sum(class_2) as class_2, sum(class_4) as class_4, sum(class_5) as class_5, sum(class_all) as class_all, avg(area) as area into esa_world_cover_h3_r8 from esa_world_cover_h3_r8_in group by h3;"
-	psql -c "drop table if exists esa_world_cover_h3_r8_in;"
-	touch $@
-
-# db/table/esa_world_cover: data/mid/raster/esa_world_cover/selection | db/table ## Prepare table for raster data. Import 4 class tiffs and load into database.
-# 	psql -c "drop table if exists esa_world_cover;"
-# 	raster2pgsql -p -Y -s 4326 data/mid/raster/esa_world_cover/*.tif -t auto esa_world_cover | psql -q
-# 	psql -c 'alter table esa_world_cover drop CONSTRAINT esa_world_cover_pkey;'
-# 	find data/mid/raster/esa_world_cover -name "*.tif" -type f | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto esa_world_cover | psql -q'
-# 	psql -c "vacuum analyze esa_world_cover;"
-# 	touch $@
-
-db/table/esa_world_cover_h3: db/table/esa_world_cover_h3_r8 | db/table ## Classes (forest, shrubs, cropland) area in km2 by types from ESA World Cover raster into h3 hexagons on 8 resolution.
-	psql -f tables/esa_world_cover_h3.sql
-	touch $@
-
-# db/table/esa_world_cover_builtup_h3: db/table/esa_world_cover | db/table ## Count of 'urban' pixels from ESA land cover raster into h3 hexagons on 8 resolution.
-# 	psql -f tables/esa_world_cover_builtup_h3.sql
-# 	touch $@
-
 db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
 	psql -f tables/osm_residential_landuse.sql
 	touch $@
@@ -921,7 +854,13 @@ data/in/wikidata_population_csv: | data/in ## Wikidata population csv (input).
 
 data/in/wikidata_population_csv/download: | data/in/wikidata_population_csv ## Download Wikidata population.
 	rm -f data/in/wikidata_population_csv/*_wiki_pop.csv
-	cat static_data/wikidata_population/wikidata_population_ranges.txt | parallel -j1 --colsep " " 'wget "https://query.wikidata.org/sparql?query=SELECT%20%3Fcountry%20%3FcountryLabel%20%3Fpopulation%20%0AWHERE%20%7B%20%3Fcountry%20wdt%3AP1082%20%3Fpopulation.%20%0A%20%20%20%20%20%20%20FILTER({1}%20%3C%3D%20%3Fpopulation%20%26%26%20%3Fpopulation%20%3C%20{2}).%20SERVICE%20wikibase%3Alabel%20%7B%20bd%3AserviceParam%20wikibase%3Alanguage%20%22en%22.%20%7D%20%7D" --retry-on-http-error=500 --header "Accept: text/csv" -O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; sleep 1'
+	cat static_data/wikidata_population/wikidata_population_ranges.txt \
+		| parallel -j1 --colsep " " \
+			"wget 'https://query.wikidata.org/sparql?query=SELECT ?country ?countryLabel (SAMPLE(?population) as ?population) ?census_date WHERE { ?country wdt:P1082 ?population . OPTIONAL { ?country p:P1082/pq:P585 ?census_date . } FILTER({1} <= ?population %26%26 ?population < {2}). FILTER NOT EXISTS { ?country p:P1082/pq:P585 ?date_ . FILTER (?date_ > ?census_date) } SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } } GROUP BY ?country ?countryLabel ?census_date ORDER BY ASC (?population)' \
+				--retry-on-http-error=500 \
+				--header 'Accept: text/csv' \
+				-O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; \
+			sleep 1"
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.
@@ -1148,90 +1087,14 @@ data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset 
 	mkdir -p $@
 
 data/in/microsoft_buildings/download: | data/in/microsoft_buildings ## Download Microsoft Building Footprints dataset.
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/tanzania-uganda-buildings/Uganda_2019-09-16.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/tanzania-uganda-buildings/Tanzania_2019-09-16.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Alberta.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/BritishColumbia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Manitoba.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NewBrunswick.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NewfoundlandAndLabrador.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NorthwestTerritories.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NovaScotia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Nunavut.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Ontario.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/PrinceEdwardIsland.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Quebec.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Saskatchewan.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/YukonTerritory.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Alabama.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Alaska.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Arizona.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Arkansas.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/California.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Colorado.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Connecticut.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Delaware.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/DistrictofColumbia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Florida.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Georgia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Hawaii.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Idaho.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Illinois.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Indiana.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Iowa.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Kansas.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Kentucky.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Louisiana.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Maine.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Maryland.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Massachusetts.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Michigan.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Minnesota.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Mississippi.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Missouri.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Montana.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Nebraska.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Nevada.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewHampshire.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewJersey.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewMexico.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NewYork.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NorthCarolina.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/NorthDakota.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Ohio.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Oklahoma.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Oregon.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Pennsylvania.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/RhodeIsland.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/SouthCarolina.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/SouthDakota.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Tennessee.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Texas.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Utah.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Vermont.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Virginia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Washington.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/WestVirginia.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wisconsin.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/usbuildings-v1-1/Wyoming.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://usbuildingdata.blob.core.windows.net/australia-buildings/Australia_2020-06-21.geojson.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://minedbuildings.blob.core.windows.net/southeast-asia/indonesia.geojsonl.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://minedbuildings.blob.core.windows.net/southeast-asia/philippines.geojsonl.zip
-	cd data/in/microsoft_buildings; wget -c -nc https://minedbuildings.blob.core.windows.net/southeast-asia/malaysia.geojsonl.zip
+	grep -h -v '^#' static_data/microsoft_buildings/*.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_buildings {}'
 	touch $@
 
-data/mid/microsoft_buildings: | data/mid  ## Microsoft Building Footprints dataset (intermediate).
-	mkdir -p $@
-
-data/mid/microsoft_buildings/unzip: data/in/microsoft_buildings/download | data/mid/microsoft_buildings  ## Unzip Microsoft Building Footprints dataset.
-	ls data/in/microsoft_buildings/*.zip | parallel "unzip -o {} -d data/mid/microsoft_buildings/"
-	touch $@
-
-db/table/microsoft_buildings: data/mid/microsoft_buildings/unzip | db/table  ## Microsoft Building Footprints dataset imported into database.
-	psql -c "drop table if exists microsoft_buildings;"
-	psql -c "create table microsoft_buildings (ogc_fid serial not null, geom geometry(polygon,4326));"
-	find data/mid/microsoft_buildings/ -name "*.geojson*" -type f | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln microsoft_buildings -lco GEOMETRY_NAME=geom -a_srs EPSG:4326'
-	psql -c "create index on microsoft_buildings using gist(geom);"
+db/table/microsoft_buildings: data/in/microsoft_buildings/download | db/table  ## Microsoft Building Footprints dataset imported into database.
+	psql -c "drop table if exists microsoft_buildings";
+	psql -c "create table microsoft_buildings(filename text, geom geometry(Geometry,4326)) tablespace evo4tb;"
+	find data/in/microsoft_buildings/* -type f -name "*.zip" -printf '%s\t%p\n' | sort -r -n | cut -f2- | sed -r 's/(.*\/(.*)\.(.*)$)/ogr2ogr -append -f PostgreSQL --config PG_USE_COPY YES PG:"dbname=gis" "\/vsizip\/\1" -sql "select '\''\2'\'' as filename, * from \\"\2\\"" -nln microsoft_buildings -a_srs EPSG:4326/' | parallel --eta '{}'
+	psql -c "vacuum analyze microsoft_buildings;"
 	touch $@
 
 db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Count amount of Microsoft Buildings at hexagons.

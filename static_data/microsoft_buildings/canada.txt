@@ -1,0 +1,13 @@
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Alberta.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/BritishColumbia.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Manitoba.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NewBrunswick.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NewfoundlandAndLabrador.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NorthwestTerritories.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/NovaScotia.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Nunavut.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Ontario.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/PrinceEdwardIsland.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Quebec.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/Saskatchewan.zip
+https://usbuildingdata.blob.core.windows.net/canadian-buildings-v2/YukonTerritory.zip

@@ -1,0 +1,2 @@
+https://minedbuildings.blob.core.windows.net/africa/nigeria.geojsonl.zip
+https://minedbuildings.blob.core.windows.net/africa/kenya.geojsonl.zip

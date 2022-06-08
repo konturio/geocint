@@ -856,7 +856,7 @@ data/in/wikidata_population_csv/download: | data/in/wikidata_population_csv ## D
 	rm -f data/in/wikidata_population_csv/*_wiki_pop.csv
 	cat static_data/wikidata_population/wikidata_population_ranges.txt \
 		| parallel -j1 --colsep " " \
-			"wget 'https://query.wikidata.org/sparql?query=SELECT ?country ?countryLabel (SAMPLE(?population) as ?population) ?census_date WHERE { ?country wdt:P1082 ?population . OPTIONAL { ?country p:P1082/pq:P585 ?census_date . } FILTER({1} <= ?population %26%26 ?population < {2}). FILTER NOT EXISTS { ?country p:P1082/pq:P585 ?date_ . FILTER (?date_ > ?census_date) } SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } } GROUP BY ?country ?countryLabel ?census_date ORDER BY ASC (?population)' \
+			"wget -q 'https://query.wikidata.org/sparql?query=SELECT ?country ?countryLabel (SAMPLE(?population) as ?population) ?census_date WHERE { ?country wdt:P1082 ?population . OPTIONAL { ?country p:P1082/pq:P585 ?census_date . } FILTER({1} <= ?population %26%26 ?population < {2}). FILTER NOT EXISTS { ?country p:P1082/pq:P585 ?date_ . FILTER (?date_ > ?census_date) } SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } } GROUP BY ?country ?countryLabel ?census_date ORDER BY ASC (?population)' \
 				--retry-on-http-error=500 \
 				--header 'Accept: text/csv' \
 				-O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; \
@@ -865,8 +865,16 @@ data/in/wikidata_population_csv/download: | data/in/wikidata_population_csv ## D
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.
 	grep --include=\*_wiki_pop.csv -rnw 'data/in/wikidata_population_csv/' -e "java.util.concurrent.TimeoutException" | wc -l > $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
-	if [ $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) -lt 1 ]; then psql -c 'drop table if exists wikidata_population_in;'; psql -c 'create table wikidata_population_in(wikidata_item text, name text, population numeric);'; ls data/in/wikidata_population_csv/*_wiki_pop.csv | parallel 'cat {} | psql -c "copy wikidata_population_in from stdin with csv header;"'; psql -c 'drop table if exists wikidata_population;'; psql -c 'create table wikidata_population as select wikidata_item, name, max(population) max_population from wikidata_population_in group by wikidata_item, name;'; psql -c 'drop table if exists wikidata_population_in;'; fi
-	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) ]; then echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	if [ $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) -lt 1 ]; then \
+		psql -c 'drop table if exists wikidata_population;'; \
+		psql -c 'create table wikidata_population(wikidata_item text, name text, population numeric, census_date text);'; \
+		ls data/in/wikidata_population_csv/*_wiki_pop.csv \
+			| parallel 'cat {} | psql -c "copy wikidata_population from stdin with csv header;"'; \
+	fi
+	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) ]; then \
+		echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one." \
+			| python3 scripts/slack_message.py geocint "Nightly build" question; \
+	fi
 	rm -f $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
 	touch $@
 

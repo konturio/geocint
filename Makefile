@@ -905,7 +905,7 @@ db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm | db/table ## Chec
 	psql -f tables/prescale_to_osm_boundaries.sql
 	touch $@
 
-db/table/prescale_to_osm/check_changes: db/table/prescale_to_osm_boundaries | db/table ## Check the number of object with nonactual osm population
+db/table/prescale_to_osm_check_changes: db/table/prescale_to_osm_boundaries | db/table ## Check the number of object with nonactual osm population
 	psql -q -X -t -c 'select count(*) from changed_population where geom is null;' > $@__WRONG_GEOM
 	psql -q -X -t -c 'select count(*) from changed_population where right_population <> actual_osm_pop;' > $@__CHANG_POP
 	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" question; fi

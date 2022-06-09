@@ -141,7 +141,7 @@ drop table if exists kontur_boundaries;
 create table kontur_boundaries as
 select k.*, 
        w.hasc                    as hasc_wiki,
-       round(p.max_population)   as wiki_population
+       round(p.population)       as wiki_population
 from kontur_boundaries_in k
 left join wikidata_hasc_codes w
         on replace(w.wikidata_item, 'http://www.wikidata.org/entity/', '') = k.tags ->> 'wikidata'

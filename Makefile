@@ -1099,7 +1099,7 @@ data/in/microsoft_buildings/download: | data/in/microsoft_buildings ## Download 
 	touch $@
 
 db/table/microsoft_buildings: data/in/microsoft_buildings/download | db/table  ## Microsoft Building Footprints dataset imported into database.
-	psql -c "drop table if exists microsoft_buildings";
+	psql -c "drop table if exists microsoft_buildings;"
 	psql -c "create table microsoft_buildings(filename text, geom geometry(Geometry,4326)) tablespace evo4tb;"
 	find data/in/microsoft_buildings/* -type f -name "*.zip" -printf '%s\t%p\n' | sort -r -n | cut -f2- | sed -r 's/(.*\/(.*)\.(.*)$)/ogr2ogr -append -f PostgreSQL --config PG_USE_COPY YES PG:"dbname=gis" "\/vsizip\/\1" -sql "select '\''\2'\'' as filename, * from \\"\2\\"" -nln microsoft_buildings -a_srs EPSG:4326/' | parallel --eta '{}'
 	psql -c "vacuum analyze microsoft_buildings;"
@@ -1636,7 +1636,7 @@ db/table/osm_buildings: db/table/osm db/function/parse_float db/function/parse_i
 	psql -f tables/osm_buildings.sql
 	touch $@
 
-db/table/osm_buildings_use: db/table/osm_buildings db/table/osm_landuse ## Set use in buildings table from landuse table.
+db/table/osm_buildings_use: db/index/osm_tags_idx db/table/osm_buildings db/table/osm_landuse ## Set use in buildings table from landuse table.
 	psql -f tables/osm_buildings_use.sql
 	touch $@
 

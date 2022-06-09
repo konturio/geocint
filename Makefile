@@ -854,7 +854,13 @@ data/in/wikidata_population_csv: | data/in ## Wikidata population csv (input).
 
 data/in/wikidata_population_csv/download: | data/in/wikidata_population_csv ## Download Wikidata population.
 	rm -f data/in/wikidata_population_csv/*_wiki_pop.csv
-	cat static_data/wikidata_population/wikidata_population_ranges.txt | parallel -j1 --colsep " " 'wget -q "https://query.wikidata.org/sparql?query=SELECT ?country ?countryLabel (SAMPLE(?population) as ?population) ?census_date WHERE { ?country wdt:P1082 ?population . OPTIONAL { ?country p:P1082/pq:P585 ?census_date . } FILTER({1} <= ?population %26%26 ?population < {2}). FILTER NOT EXISTS { ?country p:P1082/pq:P585 ?date_ . FILTER (?date_ > ?census_date) } SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } } GROUP BY ?country ?countryLabel ?census_date ORDER BY ASC (?population)" --retry-on-http-error=500 --header "Accept: text/csv" -O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; sleep 1'
+	cat static_data/wikidata_population/wikidata_population_ranges.txt \
+		| parallel -j1 --colsep " " \
+			"wget -q 'https://query.wikidata.org/sparql?query=SELECT ?country ?countryLabel (SAMPLE(?population) as ?population) ?census_date WHERE { ?country wdt:P1082 ?population . OPTIONAL { ?country p:P1082/pq:P585 ?census_date . } FILTER({1} <= ?population %26%26 ?population < {2}). FILTER NOT EXISTS { ?country p:P1082/pq:P585 ?date_ . FILTER (?date_ > ?census_date) } SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". } } GROUP BY ?country ?countryLabel ?census_date ORDER BY ASC (?population)' \
+				--retry-on-http-error=500 \
+				--header 'Accept: text/csv' \
+				-O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; \
+			sleep 1"
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.
@@ -871,6 +877,7 @@ db/table/wikidata_population: data/in/wikidata_population_csv/download | db/tabl
 	fi
 	rm -f $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
 	touch $@
+
 
 data/in/un_population.csv: | data/in ## Download United Nations population division dataset.
 	wget 'https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv' -O $@

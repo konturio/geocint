@@ -68,7 +68,7 @@ with sections as (
                    }'::jsonb
                ) j
     from population_check_osm
-    order by diff_pop desc
+    order by "OSM-Kontur Population difference" desc
     limit 5
 )
 select '[

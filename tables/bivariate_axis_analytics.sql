@@ -26,7 +26,7 @@ with statistics as (
                 end                                quality
          from statistics x,
               jsonb_object_keys(stats) key,
-              lateral (values ((stats -> key)::double precision)) as v(value)
+              lateral (values ((stats ->> key)::double precision)) as v(value)
          group by key
      ),
      upd as (
@@ -34,18 +34,18 @@ with statistics as (
          from quality
      )
 update bivariate_axis
-set sum_value      = (j -> 'sum' -> 0)::double precision,
-    sum_quality    = (j -> 'sum' -> 1)::double precision,
-    min_value      = (j -> 'min' -> 0)::double precision,
-    min_quality    = (j -> 'min' -> 1)::double precision,
-    max_value      = (j -> 'max' -> 0)::double precision,
-    max_quality    = (j -> 'max' -> 1)::double precision,
-    stddev_value   = (j -> 'stddev' -> 0)::double precision,
-    stddev_quality = (j -> 'stddev' -> 1)::double precision,
-    median_value   = (j -> 'median' -> 0)::double precision,
-    median_quality = (j -> 'median' -> 1)::double precision,
-    mean_value     = (j -> 'mean' -> 0)::double precision,
-    mean_quality   = (j -> 'mean' -> 1)::double precision
+set sum_value      = (j -> 'sum' ->> 0)::double precision,
+    sum_quality    = (j -> 'sum' ->> 1)::double precision,
+    min_value      = (j -> 'min' ->> 0)::double precision,
+    min_quality    = (j -> 'min' ->> 1)::double precision,
+    max_value      = (j -> 'max' ->> 0)::double precision,
+    max_quality    = (j -> 'max' ->> 1)::double precision,
+    stddev_value   = (j -> 'stddev' ->> 0)::double precision,
+    stddev_quality = (j -> 'stddev' ->> 1)::double precision,
+    median_value   = (j -> 'median' ->> 0)::double precision,
+    median_quality = (j -> 'median' ->> 1)::double precision,
+    mean_value     = (j -> 'mean' ->> 0)::double precision,
+    mean_quality   = (j -> 'mean' ->> 1)::double precision
 from upd
 where numerator = :'numerator'
   and denominator = :'denominator';

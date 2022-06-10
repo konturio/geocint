@@ -15,3 +15,5 @@ make.lock
 kothic
 
 __pycache__
+
+log.txt

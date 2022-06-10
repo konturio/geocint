@@ -872,7 +872,6 @@ db/table/wikidata_population: data/in/wikidata_population_csv/download | db/tabl
 	rm -f $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
 	touch $@
 
-
 data/in/un_population.csv: | data/in ## Download United Nations population division dataset.
 	wget 'https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv' -O $@
 

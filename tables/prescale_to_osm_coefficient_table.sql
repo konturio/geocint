@@ -10,8 +10,8 @@ drop table if exists prescale_to_osm_boundaries;
 
 -- Calculate Kontur population for each boundary
 -- Also calculate scaled coefficient for population
-drop table if exists prescale_to_osm_coefficient_table;
-create table prescale_to_osm_coefficient_table as
+drop table if exists prescale_to_osm_coefficient_table_in;
+create table prescale_to_osm_coefficient_table_in as
 with sum_population as (
         select
                 b.osm_id,
@@ -36,6 +36,15 @@ select
 from prescale_to_osm_boundaries_3857 b
 left join sum_population p using(osm_id);
 
-create index on prescale_to_osm_coefficient_table using gist(geom);
-
 drop table if exists prescale_to_osm_boundaries_3857;
+
+-- Transform prescale_to_osm_coefficient_table_in table to 4326
+drop table if exists prescale_to_osm_coefficient_table;
+create table prescale_to_osm_coefficient_table as
+        select ST_Transform(geom, 4326) as geom,
+               osm_id,
+               coefficient
+        from prescale_to_osm_coefficient_table_in;
+
+drop table if exists prescale_to_osm_coefficient_table_in;
+create index on prescale_to_osm_coefficient_table using gist(geom);

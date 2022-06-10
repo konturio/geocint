@@ -922,8 +922,8 @@ db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/presca
 	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=11
 	touch $@
 
-db/table/prescale_to_coefficient_table: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table ## Create h3 r8 table with hexs with population
-	psql -f tables/prescale_to_coefficient_table.sql
+db/table/prescale_to_osm_coefficient_table: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table ## Create h3 r8 table with hexs with population
+	psql -f tables/prescale_to_osm_coefficient_table.sql
 	touch $@
 
 #db/table/population_check_un: db/table/un_population db/table/iso_codes | db/table
@@ -1027,7 +1027,7 @@ db/procedure/insert_projection_54009: | db/procedure ## Add ESRI-54009 projectio
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/prescale_to_coefficient_table | db/table ## General table for population data at hexagons.
+db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 db/table/prescale_to_osm_coefficient_table | db/table ## General table for population data at hexagons.
 	# IMPORTANT: removed WorldPop dependencies - db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@

@@ -66,5 +66,5 @@ create index on population_grid_h3_r8 using gist (geom, population);
 -- Prescale population to osm using coefficient
 update population_grid_h3_r8 p
 set population = p.population * b.coefficient
-from prescale_to_osm_h3_r8 b
+from prescale_to_coefficient_table b
 where ST_Intersects(b.geom, ST_PointOnSurface(p.geom));

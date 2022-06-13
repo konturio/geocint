@@ -13,7 +13,7 @@ prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/cleanup_cache 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_population_csv/download data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -978,9 +978,8 @@ db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | 
 	ogr2ogr --config PG_USE_COPY YES -overwrite -f PostgreSQL PG:"dbname=gis" -a_srs EPSG:4326 data/mid/daylight_coastlines/land_polygons.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -nln land_polygons_vector
 	touch $@
 
-db/table/land_polygons_h3: db/table/land_polygons_vector | db/table ## land h3
-	psql -c "drop table if exists land_polygons_h3_r8;"
-	psql -c "create table land_polygons_h3_r8 as (select distinct on (h3) h3, hex.geom from land_polygons_vector, h3_polyfill(geom, 8) h3, ST_HexagonFromH3(h3) hex);"
+db/table/land_polygons_h3_r8: db/table/land_polygons_vector | db/table ## land h3
+	psql -f tables/land_polygons_h3_r8.sql
 	touch $@
 
 db/procedure/insert_projection_54009: | db/procedure ## Add ESRI-54009 projection into spatial_ref_sys for further use.
@@ -2070,7 +2069,7 @@ data/in/event_api_data/kontur_public_feed : | data/in/event_api_data ## download
 		--feed kontur-public
 	touch $@
 
-db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db/table ## import kontur-public feed event episodes in database
+db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db/table  ## import kontur-public feed event episodes in database
 	psql -c 'drop table if exists disaster_event_episodes;'
 	psql -c 'create table if not exists disaster_event_episodes (fid serial primary key, eventid uuid, episode_type text, episode_severity text, episode_name text, episode_starteda timestamptz, episode_endedat timestamptz, geom geometry(geometry, 4326)) tablespace evo4tb;'
 	find data/in/event_api_data/kontur-public/ -name "*.geojson*" -type f \
@@ -2088,6 +2087,6 @@ db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db
 	psql -c 'create index disaster_event_episodes_episode_type_episode_endedat_idx on disaster_event_episodes (episode_type, episode_endedat)'
 	touch $@
 
-db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3 | db/table ## hexagonify PDC event geometries
+db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3_r8 | db/table  ## hexagonify kontur-public event geometries
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@

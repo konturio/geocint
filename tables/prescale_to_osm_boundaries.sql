@@ -1,8 +1,8 @@
 -- Update prescale_to osm with actual population data
 update prescale_to_osm
     set actual_osm_pop = cast(o.tags ->> 'population' as bigint),
-        geom = o.geom
-    from osm_admin_boundaries o
+        geom = ST_Normalize(o.geog::geometry)
+    from osm o
     where prescale_to_osm.osm_id = o.osm_id;
 
 -- Create table for storing cases with population that is different with last osm dump

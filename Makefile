@@ -1732,11 +1732,13 @@ db/table/update_isochrone_destinations: db/table/update_isochrone_destinations_h
 
 db/table/isodist_fire_stations_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## H3 hexagons from fire stations.
 	psql -f tables/isodist_fire_stations_h3.sql
-	psql -c "call generate_overviews('isodist_fire_stations_h3', '{man_distance}'::text[], '{max}'::text[], 8);"
+	psql -f tables/isodist_fire_stations_h3_overview.sql -v seq_res=8
+	psql -c "drop table isodist_fire_stations_h3_distinct;"
 	touch $@
 
 db/table/isodist_hospitals_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## H3 hexagons from hospitals.
 	psql -f tables/isodist_hospitals_h3.sql
+	psql -f tables/isodist_hospitals_h3_overview.sql
 	psql -c "call generate_overviews('isodist_hospitals_h3', '{man_distance}'::text[], '{max}'::text[], 8);"
 	touch $@
 

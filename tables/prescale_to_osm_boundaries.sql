@@ -12,11 +12,10 @@ drop table if exists changed_population;
 
 create table changed_population as 
     with changes as (
-        delete 
+        select * 
             from prescale_to_osm 
             where right_population <> actual_osm_pop
             or geom is null
-            returning osm_type, osm_id, name, right_population, change_date, actual_osm_pop, geom
     )
     select * from changes;
 
@@ -33,7 +32,8 @@ with prep as (select p.geom,
                      o.tags
                   from osm_admin_boundaries as o
                   join prescale_to_osm  as p
-                  on o.osm_id = p.osm_id),
+                  on o.osm_id = p.osm_id
+                  where geom is not null),
 -- Create CTE which include all boundaries from prep and low-level boundaries that them include
 prep_mid as (select o.geom,
                     o.osm_id, 

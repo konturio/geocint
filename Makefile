@@ -1209,7 +1209,7 @@ db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table #
 	psql -f tables/count_items_in_h3.sql -v table=geoalert_urban_mapping -v table_h3=geoalert_urban_mapping_h3 -v item_count=building_count
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx | db/table  ## Kontur Population (most recent).
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/table/prescale_to_osm_coefficient_table | db/table  ## Kontur Population (most recent).
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 

@@ -33,7 +33,7 @@ with prep as (select p.geom,
                   from osm_admin_boundaries as o
                   join prescale_to_osm  as p
                   on o.osm_id = p.osm_id
-                  where geom is not null),
+                  where p.geom is not null),
 -- Create CTE which include all boundaries from prep and low-level boundaries that them include
 prep_mid as (select o.geom,
                     o.osm_id, 

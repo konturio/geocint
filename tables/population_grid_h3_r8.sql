@@ -62,9 +62,3 @@ set population = coalesce(hrsl_pop, ghs_pop);
 
 vacuum full analyze population_grid_h3_r8;
 create index on population_grid_h3_r8 using gist (geom, population);
-
--- Prescale population to osm using coefficient
-update population_grid_h3_r8 p
-set population = p.population * b.coefficient
-from prescale_to_osm_coefficient_table b
-where ST_Intersects(b.geom, p.geom);

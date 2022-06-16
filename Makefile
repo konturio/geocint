@@ -2,7 +2,7 @@ export PGDATABASE = gis
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -920,6 +920,45 @@ db/table/un_population: data/in/un_population.csv | db/table ## UN (United Natio
 #	psql -c 'copy (select * from population_check_un order by diff_pop) to stdout with csv header;' > $@
 #	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
 
+data/in/prescale_to_osm.csv: | data/in ## Download master table with right population values from osm
+	wget -c -nc "https://docs.google.com/spreadsheets/d/1-XuFA8c3sweMhCi52tdfhepGXavimUWA7vPc3BoQb1c/export?format=csv&gid=0" -O $@
+
+db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescale_to_osm data to the table
+	psql -c 'drop table if exists prescale_to_osm;'
+	psql -c 'create table prescale_to_osm (osm_type text, osm_id bigint, name text, right_population bigint, actual_osm_pop bigint, change_date date, geom geometry);'
+	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm(osm_type, osm_id, name, right_population, change_date) from stdin with csv header delimiter ',';"
+	touch $@
+
+db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm | db/table/osm ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
+	psql -f tables/prescale_to_osm_boundaries.sql
+	touch $@
+
+db/table/prescale_to_osm_check_changes: db/table/prescale_to_osm_boundaries | db/table ## Check the number of object with nonactual osm population
+	psql -q -X -t -c 'select count(*) from changed_population where geom is null;' > $@__WRONG_GEOM
+	psql -q -X -t -c 'select count(*) from changed_population where right_population <> actual_osm_pop;' > $@__CHANG_POP
+	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	if [ 0 -lt $$(cat $@__CHANG_POP) ]; then echo "Some population values in OSM was changed. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	if [ 0 -lt $$(cat $@__WRONG_GEOM) ]; then echo "Some geometry values is null. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	rm $@__CHANG_POP $@__WRONG_GEOM
+	touch $@
+
+db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/prescale_to_osm_boundaries | db/procedure ## Transform admin boundaries with raw population values into solid continuous coverage with calculated population for every feature.
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=2
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=3
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=4
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=5
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=6
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=7
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=8
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=9
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=10
+	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=11
+	touch $@
+
+db/table/prescale_to_osm_coefficient_table: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries db/table/population_grid_h3_r8 | db/table ## Create h3 r8 table with hexs with population
+	psql -f tables/prescale_to_osm_coefficient_table.sql
+	touch $@
+
 data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
 	psql -q -X -t -c 'select sum(population) from kontur_population_v3_h3 where resolution = 0' > $@__KONTUR_POP_V3
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4
@@ -1170,7 +1209,7 @@ db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table #
 	psql -f tables/count_items_in_h3.sql -v table=geoalert_urban_mapping -v table_h3=geoalert_urban_mapping_h3 -v item_count=building_count
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx | db/table  ## Kontur Population (most recent).
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/table/prescale_to_osm_coefficient_table | db/table  ## Kontur Population (most recent).
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 

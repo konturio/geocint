@@ -10,7 +10,7 @@ create index on isodist_hospitals_h3_distinct using gist (geom);
 
 drop table if exists isodist_hospitals_h3;
 create table isodist_hospitals_h3 as (
-    select p.h3, 8 as resolution, (p.population * distance / 1000) as man_distance
+    select p.h3, 8 as resolution, d.distance, (p.population * distance / 1000) as man_distance
     from kontur_population_h3 p
          cross join lateral (
         select (s.distance + ST_Distance(p.h3::geography, s.h3::geography)) as distance
@@ -21,4 +21,3 @@ create table isodist_hospitals_h3 as (
     where p.resolution = 8
 );
 
-drop table isodist_hospitals_h3_distinct;

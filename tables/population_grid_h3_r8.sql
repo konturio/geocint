@@ -6,19 +6,19 @@ create table population_grid_h3_r8_in as (
            8                         as resolution,
            null::float               as population,
            coalesce(sum(ghs_pop), 0) as ghs_pop,
-           sum(hrsl_pop)             as hrsl_pop,
-           sum(worldpop)             as worldpop
+           sum(hrsl_pop)             as hrsl_pop
+           --sum(worldpop)             as worldpop,
     from (
              select h3,
                     population  as ghs_pop,
-                    null::float as hrsl_pop,
-                    null::float as worldpop
+                    null::float as hrsl_pop
+                    --null::float as worldpop
              from ghs_globe_population_grid_h3_r8
              union all
              select h3,
                     null::float as ghs_pop,
-                    population  as hrsl_pop,
-                    null::float as worldpop
+                    population  as hrsl_pop
+                    --null::float as worldpop
              from hrsl_population_grid_h3_r8
 --              union all
 --              select h3,
@@ -30,7 +30,7 @@ create table population_grid_h3_r8_in as (
     group by 1
 );
 
-create index on population_grid_h3_r8_in using gist (geom, hrsl_pop, worldpop);
+create index on population_grid_h3_r8_in using gist (geom, hrsl_pop); --, worldpop);
 
 drop table if exists population_grid_h3_r8;
 create table population_grid_h3_r8 as (
@@ -39,8 +39,8 @@ create table population_grid_h3_r8 as (
            resolution,
            population,
            ghs_pop,
-           case when b.geom is not null then coalesce(p.hrsl_pop, 0) end as hrsl_pop,
-           worldpop
+           case when b.geom is not null then coalesce(p.hrsl_pop, 0) end as hrsl_pop
+           --worldpop
     from population_grid_h3_r8_in p
              left outer join
          hrsl_population_boundary b
@@ -62,3 +62,9 @@ set population = coalesce(hrsl_pop, ghs_pop);
 
 vacuum full analyze population_grid_h3_r8;
 create index on population_grid_h3_r8 using gist (geom, population);
+
+-- Prescale population to osm using coefficient
+update population_grid_h3_r8 p
+set population = p.population * b.coefficient
+from prescale_to_osm_coefficient_table b
+where ST_Intersects(b.geom, p.geom);

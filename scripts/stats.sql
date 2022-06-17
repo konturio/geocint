@@ -60,7 +60,7 @@ from
             coping_capacity_index,
             vulnerability_index,
             hazardous_days_count,
-            eathquake_days_count,
+            earthquake_days_count,
             drought_days_count,
             cyclone_days_count,
             wildfire_days_count,

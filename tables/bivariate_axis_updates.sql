@@ -86,14 +86,14 @@ update bivariate_axis
 set
     label = 'Number of days under earthquake impact, last year (n/km²)'
 where
-      numerator = 'eathquake_days_count'
+      numerator = 'earthquake_days_count'
   and denominator = 'area_km2';
 
 update bivariate_axis
 set
     label = 'Number of days under earthquake impact, last year (n)'
 where
-      numerator = 'eathquake_days_count'
+      numerator = 'earthquake_days_count'
   and denominator = 'one';
 
 update bivariate_axis

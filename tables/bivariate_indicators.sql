@@ -157,7 +157,7 @@ values ('hazardous_days_count', 'Number of days with any disaster occurs, last y
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('eathquake_days_count', 'Number of days under earthquake impact, last year', jsonb_build_array(
+values ('earthquake_days_count', 'Number of days under earthquake impact, last year', jsonb_build_array(
 'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
 

@@ -64,7 +64,7 @@ create table stat_h3_quality as (
                 avg(a.coping_capacity_index) as agg_coping_capacity_index,
                 avg(a.vulnerability_index) as agg_vulnerability_index,
                 avg(a.hazardous_days_count) as agg_hazardous_days_count,
-                avg(a.eathquake_days_count) as agg_eathquake_days_count,
+                avg(a.earthquake_days_count) as agg_earthquake_days_count,
                 avg(a.drought_days_count) as agg_drought_days_count,
                 avg(a.cyclone_days_count) as agg_cyclone_days_count,
                 avg(a.wildfire_days_count) as agg_wildfire_days_count,

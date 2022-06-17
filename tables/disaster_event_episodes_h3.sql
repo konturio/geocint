@@ -123,13 +123,18 @@ $$
                 insert into disaster_event_episodes_h3_multidaterange(
                     h3, resolution, episode_type, multidaterange
                 )
-                select h3_to_parent(h3) as h3,
+                select
+                    h3_to_parent(h3) as h3,
                     (res - 1) as resolution,
                     episode_type,
                     range_agg(r) as multidaterange
-                from disaster_event_episodes_h3_multidaterange, unnest(multidaterange) as r
-                where resolution = res
-                group by h3_to_parent(h3), episode_type;
+                from
+                    disaster_event_episodes_h3_multidaterange,
+                    unnest(multidaterange) as r
+                where
+                    resolution = res
+                group by
+                    1, episode_type;
 
                 res = res - 1;
             end loop;
@@ -140,13 +145,13 @@ drop table if exists disaster_event_episodes_h3;
 create table disaster_event_episodes_h3 as (
     select
         h3,
-        sum(event_daterange_duration(multidaterange)) as hazardous_days_count,
-        sum(ds.duration) filter (where episode_type = 'CYCLONE') as cyclone_days_count,
-        sum(ds.duration) filter (where episode_type = 'DROUGHT') as drought_days_count,
-        sum(ds.duration) filter (where episode_type = 'EARTHQUAKE') as eathquake_days_count,
-        sum(ds.duration) filter (where episode_type = 'FLOOD') as flood_days_count,
-        sum(ds.duration) filter (where episode_type = 'VOLCANO') as volcano_days_count,
-        sum(ds.duration) filter (where episode_type = 'WILDFIRE') as wildfire_days_count
+        event_daterange_duration(range_agg(event_time_range))::int as hazardous_days_count,
+        sum(ds.duration) filter (where episode_type = 'CYCLONE')::int as cyclone_days_count,
+        sum(ds.duration) filter (where episode_type = 'DROUGHT')::int as drought_days_count,
+        sum(ds.duration) filter (where episode_type = 'EARTHQUAKE')::int as earthquake_days_count,
+        sum(ds.duration) filter (where episode_type = 'FLOOD')::int as flood_days_count,
+        sum(ds.duration) filter (where episode_type = 'VOLCANO')::int as volcano_days_count,
+        sum(ds.duration) filter (where episode_type = 'WILDFIRE')::int as wildfire_days_count
         -- -- enable it when we get the data
         -- sum(ds.duration) filter (where episode_type = 'STORM') as storm_days_count,
         -- sum(ds.duration) filter (where episode_type = 'TORNADO') as tornado_days_count,
@@ -162,5 +167,5 @@ create table disaster_event_episodes_h3 as (
     group by h3
 );
 
-drop table if exists disaster_event_episodes_validated_subdivided;
-drop table if exists disaster_event_episodes_h3_multidaterange;
+-- drop table if exists disaster_event_episodes_validated_subdivided;
+-- drop table if exists disaster_event_episodes_h3_multidaterange;

@@ -1217,6 +1217,9 @@ db/table/kontur_population_h3_part_2: db/table/osm_residential_landuse db/table/
 	psql -f tables/kontur_population_h3_part_2.sql
 	touch $@
 
+db/table/kontur_population_h3: db/table/kontur_population_h3_part_2 | db/table ## Final checkpoint of kontur_population calculating
+	touch $@
+
 data/out/kontur_population.gpkg.gz: db/table/kontur_population_h3 | data/out  ## Kontur Population (most recent) geopackage archive.
 	rm -f $@
 	rm -f data/out/kontur_population.gpkg

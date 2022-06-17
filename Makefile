@@ -1265,16 +1265,7 @@ db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table ## Ad
 	touch $@
 
 db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population_raw | db/procedure ## Transform admin boundaries with raw population values into solid continuous coverage with calculated population for every feature.
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=2
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=3
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=4
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=5
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=6
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=7
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=8
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=9
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=10
-	psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level=11
+	seq 2 1 11 | xargs -I {} psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level={}
 	touch $@
 
 db/table/morocco_buildings_manual_roofprints: static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
@@ -1730,14 +1721,16 @@ db/table/update_isochrone_destinations: db/table/update_isochrone_destinations_h
 	psql -1 -c "drop table if exists isochrone_destinations; alter table isochrone_destinations_new rename to isochrone_destinations;"
 	touch $@
 
-db/table/isodist_fire_stations_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## H3 hexagons from fire stations.
+db/table/isodist_fire_stations_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 | db/table ## H3 hexagons from fire stations.
 	psql -f tables/isodist_fire_stations_h3.sql
-	psql -c "call generate_overviews('isodist_fire_stations_h3', '{man_distance}'::text[], '{max}'::text[], 8);"
+	seq 8 -1 1 | xargs -I {} psql -f tables/isodist_fire_stations_h3_overview.sql -v seq_res={}
+	psql -c "drop table isodist_fire_stations_h3_distinct;"
 	touch $@
 
-db/table/isodist_hospitals_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## H3 hexagons from hospitals.
+db/table/isodist_hospitals_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 | db/table ## H3 hexagons from hospitals.
 	psql -f tables/isodist_hospitals_h3.sql
-	psql -c "call generate_overviews('isodist_hospitals_h3', '{man_distance}'::text[], '{max}'::text[], 8);"
+	seq 8 -1 1 | xargs -I {} psql -f tables/isodist_hospitals_h3_overview.sql -v seq_res={}
+	psql -c "drop table isodist_hospitals_h3_distinct;"
 	touch $@
 
 db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manager

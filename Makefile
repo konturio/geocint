@@ -955,7 +955,7 @@ db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/presca
 	psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level=11
 	touch $@
 
-db/table/prescale_to_osm_coefficient_table: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries db/table/population_grid_h3_r8 | db/table ## Create h3 r8 table with hexs with population
+db/table/prescale_to_osm_coefficient_table: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries db/table/kontur_population_h3_part_1 | db/table ## Create h3 r8 table with hexs with population
 	psql -f tables/prescale_to_osm_coefficient_table.sql
 	touch $@
 
@@ -1209,8 +1209,12 @@ db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table #
 	psql -f tables/count_items_in_h3.sql -v table=geoalert_urban_mapping -v table_h3=geoalert_urban_mapping_h3 -v item_count=building_count
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/table/prescale_to_osm_coefficient_table | db/table  ## Kontur Population (most recent).
-	psql -f tables/kontur_population_h3.sql
+db/table/kontur_population_h3_part_1: db/table/population_grid_h3_r8 db/table/building_count_grid_h3 | db/table  ## Kontur Population (most recent).
+	psql -f tables/kontur_population_h3_part_1.sql
+	touch $@
+
+db/table/kontur_population_h3_part_2: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/table/prescale_to_osm_coefficient_table db/table/kontur_population_h3_part_1| db/table  ## Kontur Population (most recent).
+	psql -f tables/kontur_population_h3_part_2.sql
 	touch $@
 
 data/out/kontur_population.gpkg.gz: db/table/kontur_population_h3 | data/out  ## Kontur Population (most recent) geopackage archive.

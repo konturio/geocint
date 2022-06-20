@@ -28,7 +28,7 @@ res as (select h3, q.name_en, geom,
         rank() over(partition by q.name_en order by round(diff::numeric, 1) desc, population desc) as rank_by_cnt,
         osm_l, fb_l, diff
     from q, (select name_en,
-                percentile_cont(0.5) within group (order by population) as pcont,
+                percentile_cont(0.75) within group (order by population) as pcont,
                 percentile_cont(0.5) within group (order by diff) as pdiff
             from q
             group by name_en) as pop_percentile

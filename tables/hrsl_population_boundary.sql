@@ -8,7 +8,7 @@ create table gadm_boundaries_4326_in as (
     from gadm_countries_boundary,
          ST_Transform(geom, 4326) "geom_4326"
          -- remove countries with HRSL population worse than GHS
-    where gid_0 not in ('BGR', 'COL', 'DOM', 'ERI', 'GRC', 'IRL', 'MDG', 'NPL', 'ZWE')
+    where gid_0 not in ('BGR', 'COL', 'DOM', 'ERI', 'GRC', 'IRL', 'MDG', 'NPL', 'ZWE', 'CHL')
 );
 
 create index on gadm_boundaries_4326_in using gist (geom);

@@ -9,7 +9,7 @@ create table population_check_osm as (
            'href_[' || osm_id || '](https://www.openstreetmap.org/' || osm_type || '/' || osm_id || ')'  as "OSM id",
 
            -- Generate link for JOSM remote desktop:
-           'hrefIcon_[' || coalesce(tags ->> 'name:en', tags ->> 'int_name', name) ||
+           'hrefIcon_[' || translate(coalesce(tags ->> 'name:en', tags ->> 'int_name', name), '"', '') ||
            '](http://localhost:8111/load_object?new_layer=false&objects=' ||
            left(osm_type, 1) || osm_id || '&relation_members=true)'                                      as "Name",
 

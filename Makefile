@@ -1171,8 +1171,15 @@ db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/populat
 data/out/kontur_population.gpkg.gz: db/table/kontur_population_h3 | data/out  ## Kontur Population (most recent) geopackage archive.
 	rm -f $@
 	rm -f data/out/kontur_population.gpkg
-	ogr2ogr -f GPKG data/out/kontur_population.gpkg PG:'dbname=gis' -sql "select geom, population from kontur_population_h3 where population>0 and resolution=8 order by h3" -lco "SPATIAL_INDEX=NO" -nln kontur_population
-	cd data/out/; pigz kontur_population.gpkg
+	ogr2ogr \
+		-f GPKG \
+		-sql "select h3, geom, population from kontur_population_h3 where population > 0 and resolution = 8 order by h3" \
+		-lco "SPATIAL_INDEX=NO" \
+		-nln kontur_population \
+		-gt 65536 \
+		data/out/kontur_population.gpkg \
+		PG:'dbname=gis'
+	pigz data/out/kontur_population.gpkg
 
 data/in/kontur_population_v3: | data/in ## Kontur Population v3 (input).
 	mkdir -p $@

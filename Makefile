@@ -648,7 +648,9 @@ db/table/hdx_locations: db/table/wikidata_hasc_codes | db/table ## Create table 
 	touch $@
 
 data/out/kontur_boundaries_per_country/gpkg_export_commands.txt: | data/out/kontur_boundaries_per_country ## Create file with per country extraction commands
-	cat static_data/kontur_boundaries/hdx_locations.csv | parallel --colsep ';' 'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}".gpkg PG:*dbname=gis* -sql *select admin_level, name, name_en, population, hasc, geom from boundary_export where location = %"{3}"% order by admin_level;* -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
+	cat static_data/kontur_boundaries/hdx_locations.csv | \
+		parallel --colsep ';' \
+			'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}".gpkg PG:*dbname=gis* -sql *select admin_level, name, name_en, population, hasc, geom from boundary_export where location = %"{3}"% order by admin_level;* -nln boundaries -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
 	sed -i '1d' $@
 
 data/out/kontur_boundaries_per_country/export: db/table/hdx_locations db/table/kontur_boundaries data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | data/out/kontur_boundaries_per_country ## Extraction boundaries data per country, drop temporary table and zipping gpkg
@@ -657,7 +659,7 @@ data/out/kontur_boundaries_per_country/export: db/table/hdx_locations db/table/k
 	cat data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | parallel '{}'
 	psql -c "drop table if exists boundary_export;"
 	# We cannot delete them before, bcs it is administrative units of Netherlandsand  we want to have it in Netherlands extraction
-	ogrinfo -dialect SQLite -sql "delete from sql_statement where name='Uithuizen' or name='Delfzijl'" data/out/kontur_boundaries_per_country/kontur_boundaries_DE.gpkg
+	ogrinfo -dialect SQLite -sql "delete from boundaries where name='Uithuizen' or name='Delfzijl'" data/out/kontur_boundaries_per_country/kontur_boundaries_DE.gpkg
 	cd data/out/kontur_boundaries_per_country/; pigz *.gpkg
 	touch $@
 

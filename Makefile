@@ -2,7 +2,7 @@ export PGDATABASE = gis
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz db/table/population_grid_h3_r8_osm_scaled data/out/morocco data/planet-check-refs db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -416,43 +416,6 @@ db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta #
 
 db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_active_users ## Select most active user per H3 hexagon cell.
 	psql -f tables/osm_users_hex.sql
-	touch $@
-
-data/in/raster/worldpop: | data/in/raster ## Directory for World Pop tifs.
-	mkdir -p $@
-
-data/in/raster/worldpop/download: | data/in/raster/worldpop ## Download World Pop tifs from worldpop.org.
-	python3 scripts/parser_worldpop_tif_urls.py | parallel -j10 wget -nc -c -P data/in/raster/worldpop -i -
-	touch $@
-
-data/mid/worldpop: | data/mid ## Temporary worldpop dir for tiled tifs
-	mkdir -p $@
-
-data/mid/worldpop/tiled_rasters: data/in/raster/worldpop/download | data/mid/worldpop ## Tile raw stripped TIFs.
-	rm -f data/mid/worldpop/tiled_*.tif
-	find data/in/raster/worldpop/*.tif -type f | sort -r | parallel -j10 --eta 'gdal_translate -a_srs EPSG:4326 -co COMPRESS=LZW -co BIGTIFF=IF_SAFER -of COG {} data/mid/worldpop/tiled_{/}'
-	touch $@
-
-db/table/worldpop_population_raster: data/mid/worldpop/tiled_rasters | db/table ## Import raster data and create table with tiled data.
-	psql -c "drop table if exists worldpop_population_raster;"
-	raster2pgsql -p -Y -s 4326 data/mid/worldpop/tiled_*.tif -t auto worldpop_population_raster | psql -q
-	psql -c 'alter table worldpop_population_raster drop CONSTRAINT worldpop_population_raster_pkey;'
-	ls -Sr data/mid/worldpop/tiled_*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 raster2pgsql -a -Y -s 4326 {} -t auto worldpop_population_raster | psql -q'
-	psql -c "vacuum analyze worldpop_population_raster;"
-	touch $@
-
-db/table/worldpop_population_grid_h3_r8: db/table/worldpop_population_raster ## Count sum sum of World Pop raster values at h3 hexagons.
-	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=worldpop_population_raster -v population_raster_grid_h3_r8=worldpop_population_raster_grid_h3_r8
-	touch $@
-
-db/table/worldpop_country_codes: data/in/raster/worldpop/download | db/table ## Generate table with countries for WorldPop rasters.
-	psql -c "drop table if exists worldpop_country_codes;"
-	psql -c "create table worldpop_country_codes (code varchar(3) not null, primary key (code));"
-	ls data/in/raster/worldpop/*.tif | parallel --eta psql -c "\"insert into worldpop_country_codes(code) select upper(substr('{/.}', 1, 3)) where not exists (select code from worldpop_country_codes where code = upper(substr('{/.}', 1, 3)));\""
-	touch $@
-
-db/table/worldpop_population_boundary: db/table/gadm_countries_boundary db/table/worldpop_country_codes | db/table ## Generate table with boundaries for WorldPop data.
-	psql -f tables/worldpop_population_boundary.sql
 	touch $@
 
 data/in/raster/hrsl_cogs: | data/in/raster ## Directory for HRSL raster data.
@@ -1043,7 +1006,6 @@ db/procedure/insert_projection_54009: | db/procedure ## Add ESRI-54009 projectio
 	touch $@
 
 db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 | db/table ## General table for population data at hexagons.
-	# IMPORTANT: removed WorldPop dependencies - db/table/worldpop_population_grid_h3_r8 db/table/worldpop_population_boundary
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 
@@ -1249,14 +1211,6 @@ db/table/kontur_population_v3: data/mid/kontur_population_v3/kontur_population_2
 db/table/kontur_population_v3_h3: db/table/kontur_population_v3 | db/table ## Generate h3 hexagon for population v3.
 	psql -f tables/kontur_population_v3_h3.sql
 	psql -c "call generate_overviews('kontur_population_v3_h3', '{population}'::text[], '{sum}'::text[], 8);"
-	touch $@
-
-db/table/osm_population_raw: db/table/osm db/index/osm_tags_idx | db/table ## Admin boundaries polygons with raw population values extracted from OpenStreetMap dataset.
-	psql -f tables/osm_population_raw.sql
-	touch $@
-
-db/procedure/decimate_admin_level_in_osm_population_raw: db/table/osm_population_raw | db/procedure ## Transform admin boundaries with raw population values into solid continuous coverage with calculated population for every feature.
-	seq 2 1 11 | xargs -I {} psql -f procedures/decimate_admin_level_in_osm_population_raw.sql -v current_level={}
 	touch $@
 
 db/table/morocco_buildings_manual_roofprints: static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
@@ -1513,14 +1467,6 @@ db/function/calculate_osrm_eta: deploy/geocint/docker_osrm_backend | db/function
 
 db/function/build_isochrone: db/function/calculate_osrm_eta db/table/osm_road_segments | db/function ## Isochrone construction function.
 	psql -f functions/build_isochrone.sql
-	touch $@
-
-db/table/osm_population_raw_idx: db/table/osm_population_raw ## Geometry index on osm_population_raw table.
-	psql -c "create index on osm_population_raw using gist(geom)"
-	touch $@
-
-db/table/population_grid_h3_r8_osm_scaled: db/table/population_grid_h3_r8 db/procedure/decimate_admin_level_in_osm_population_raw db/table/osm_population_raw_idx ## population_grid_h3_r8 dataset revised using continuous population layer (from OpenStreetMap admin boundaries dataset).
-	psql -f tables/population_grid_h3_r8_osm_scaled.sql
 	touch $@
 
 db/table/osm_landuse: db/table/osm db/index/osm_tags_idx | db/table ## Landuse polygons extracted from OpenStreetMap.

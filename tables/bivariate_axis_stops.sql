@@ -14,6 +14,7 @@ from (
          where :numerator != 0
            and :denominator != 0
            and population > 0
+
      ) s
 where a.numerator = :'numerator'
   and a.denominator = :'denominator';

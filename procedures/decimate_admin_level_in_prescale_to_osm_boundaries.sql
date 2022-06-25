@@ -58,7 +58,8 @@ with cte as (
 update prescale_to_osm_boundaries p
 set pop_ulevel = p.population / c.population
 from cte c
-where p.osm_id = c.osm_id;
+where p.osm_id = c.osm_id
+      and c.population > 0;
 
 -- Scale population to prevent losing population
 update prescale_to_osm_boundaries p

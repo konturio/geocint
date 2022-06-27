@@ -39,10 +39,19 @@ drop table if exists prescale_to_osm_boundaries_subdivide;
 
 create index on prescale_to_osm_coefficient_table using gist(geom);
 
--- Prescale population to osm using coefficient
-update population_grid_h3_r8 p
-set population = p.population * (b.boundary_population::float / b.grid_population::float)
-from prescale_to_osm_coefficient_table b
-where ST_Intersects(b.geom, p.geom);
+drop table if exists population_grid_h3_r8_osm_scaled;
+create table population_grid_h3_r8_osm_scaled as (
+        select p.h3,
+               p.geom,
+               p.resolution,
+               p.ghs_pop,
+               p.hrsl_pop,
+               p.population * (b.boundary_population::float / b.grid_population::float) as population
+        from population_grid_h3_r8 p,
+             prescale_to_osm_coefficient_table b
+        where ST_Intersects(b.geom, p.geom)
+);
 
+vacuum full analyze population_grid_h3_r8_osm_scaled;
+create index on population_grid_h3_r8_osm_scaled using gist (geom, population);
 drop table if exists prescale_to_osm_coefficient_table;

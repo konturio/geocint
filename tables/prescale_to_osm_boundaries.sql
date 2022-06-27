@@ -7,7 +7,7 @@ create table water_polygons_vector_4326 as (
 
 create index on water_polygons_vector_4326 using gist(geom);
 
--- Crea te temporary table with geometry and population from osm
+-- Create temporary table with geometry and population from osm
 drop table if exists prescale_to_osm_geom_in;
 create table prescale_to_osm_geom_in as (
     select p.osm_id                                as osm_id, 
@@ -40,7 +40,7 @@ create table prescale_to_osm_boundaries_in as (
     from prescale_to_osm_geom_in g,
          prescale_to_osm p,
          water_area_4326 w
-    where g.osm_id = p.osm_id and g.osm_id = w.osm_id           
+    where g.osm_id = p.osm_id and g.osm_type = w.osm_type          
 );
 
 drop table if exists prescale_to_osm_geom_in;
@@ -83,7 +83,7 @@ create table prescale_to_osm_boundaries as (
             on o.osm_id = p.osm_id
             where p.geom is not null
     )
-    select  o.geom                                                                    as geom,
+    select  ST_Intersection(o.geom, p.geom)                                           as geom,
             o.osm_id                                                                  as osm_id, 
             (case
                 when (tags ->> 'population') ~ E'^[[:digit:]]+([.][[:digit:]]+)?$'

@@ -85,7 +85,7 @@ create table prescale_to_osm_boundaries_pre_decimate as (
             on o.osm_id = p.osm_id
             where p.geom is not null
     )
-    select  ST_Intersection(o.geom, p.geom)                                           as geom,
+    select  o.geom                                                                    as geom,
             o.osm_id                                                                  as osm_id, 
             (case
                 when (tags ->> 'population') ~ E'^[[:digit:]]+([.][[:digit:]]+)?$'

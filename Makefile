@@ -907,7 +907,7 @@ db/table/prescale_to_osm_check_changes: db/table/prescale_to_osm_boundaries_pre_
 	rm $@__CHANG_POP $@__WRONG_GEOM
 	touch $@
 
-db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/prescale_to_osm_boundaries_pre_decimate | db/procedure ## Transform admin boundaries with raw population values into solid continuous coverage with calculated population for every feature.
+db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/prescale_to_osm_boundaries_pre_decimate | db/procedure ## Create prescale_to_osm_boundaries and transform admin boundaries with raw population values into solid continuous coverage with calculated population for every feature.
 	psql -c 'drop table if exists prescale_to_osm_boundaries;'
 	psql -c 'create table prescale_to_osm_boundaries as (select * from prescale_to_osm_boundaries_pre_decimate);'
 	psql -c 'create index on prescale_to_osm_boundaries using gist (geom, ST_PointOnSurface(geom));'

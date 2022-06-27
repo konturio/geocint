@@ -11,6 +11,7 @@ create index on water_polygons_vector_4326 using gist(geom);
 drop table if exists prescale_to_osm_geom_in;
 create table prescale_to_osm_geom_in as (
     select p.osm_id                                as osm_id, 
+           o.osm_type                              as osm_type,
            cast(o.tags ->> 'population' as bigint) as actual_osm_pop,
            ST_Normalize(o.geog::geometry)          as geom
     from osm o,
@@ -31,16 +32,17 @@ create table water_area_4326 as (
 
 drop table if exists prescale_to_osm_boundaries_in;
 create table prescale_to_osm_boundaries_in as (
-    select p.osm_type                              as osm_type,
-           p.osm_id                                as osm_id, 
-           p.name                                  as name,
-           p.right_population                      as right_population,
-           ST_Multi(ST_Difference(g.geom, w.geom)) as geom,
-           g.actual_osm_pop                        as actual_osm_pop
+    select p.osm_type                                                as osm_type,
+           p.osm_id                                                  as osm_id, 
+           p.name                                                    as name,
+           p.right_population                                        as right_population,
+           coalesce(ST_Multi(ST_Difference(g.geom, w.geom)), g.geom) as geom,
+           g.actual_osm_pop                                          as actual_osm_pop
     from prescale_to_osm_geom_in g,
          prescale_to_osm p,
          water_area_4326 w
-    where g.osm_id = p.osm_id and g.osm_type = w.osm_type          
+    where g.osm_id = p.osm_id 
+          and g.osm_type = w.osm_type          
 );
 
 drop table if exists prescale_to_osm_geom_in;

@@ -16,7 +16,7 @@ create table kontur_population_in as (
              select h3,
                     null::float as building_count,
                     (case 
-                        when s.population is not null then s.population,
+                        when s.population is not null then s.population
                         else p.population  
                     end) as population
              from population_grid_h3_r8_osm_scaled s,

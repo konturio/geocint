@@ -2,11 +2,11 @@ export PGDATABASE = gis
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -771,6 +771,22 @@ deploy/s3/prod/reports/reports.tar.gz: deploy/geocint/reports/prod/reports.tar.g
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz.bak --profile geocint_pipeline_sender || true
 	aws s3 cp ~/public_html/reports/prod_reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz --profile geocint_pipeline_sender
 	touch $@
+
+deploy/s3/test/reports/test_reports_public: deploy/geocint/reports/test/reports.tar.gz | deploy/s3/test/reports ## Putting reports to AWS test reports folder in public bucket (DEV, TEST).
+	rm -rf ~/public_html/reports/test_reports_public/
+	mkdir -p ~/public_html/reports/test_reports_public/
+	tar -xzf ~/public_html/reports/test_reports.tar.gz -C ~/public_html/reports/test_reports_public/
+	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/dev/ --profile geocint_pipeline_sender --acl public-read
+	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/test/ --profile geocint_pipeline_sender --acl public-read
+	touch $@
+
+deploy/s3/prod/reports/prod_reports_public: deploy/geocint/reports/prod/reports.tar.gz | deploy/s3/prod/reports ## Putting reports to AWS prod reports folder in public bucket (PROD).
+	rm -rf ~/public_html/reports/prod_reports_public/
+	mkdir -p ~/public_html/reports/prod_reports_public/
+	tar -xzf ~/public_html/reports/prod_reports.tar.gz -C ~/public_html/reports/prod_reports_public/
+	aws s3 sync ~/public_html/reports/prod_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/prod/ --profile geocint_pipeline_sender --acl public-read
+	touch $@
+
 
 deploy/dev/reports: deploy/s3/test/reports/reports.tar.gz | deploy/dev ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Dev server.
 	ansible zigzag_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'

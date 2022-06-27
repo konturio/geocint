@@ -42,7 +42,7 @@ create table prescale_to_osm_boundaries_in as (
          prescale_to_osm p,
          water_area_4326 w
     where g.osm_id = p.osm_id 
-          and g.osm_type = w.osm_type          
+          and g.osm_type = p.osm_type          
 );
 
 drop table if exists prescale_to_osm_geom_in;

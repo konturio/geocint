@@ -67,8 +67,8 @@ create index on prescale_to_osm_boundaries_in using gist(geom);
 
 -- Create table with boundaries of polygons from prescale to osm
 -- Get boundaries with admin_level for objects from prescale_to_osm
-drop table if exists prescale_to_osm_boundaries;
-create table prescale_to_osm_boundaries as (
+drop table if exists prescale_to_osm_boundaries_pre_decimate;
+create table prescale_to_osm_boundaries_pre_decimate as (
     with prep as (
         select  p.geom                                                                    as geom,
                 p.osm_id                                                                  as osm_id, 
@@ -104,5 +104,3 @@ create table prescale_to_osm_boundaries as (
     union all
     select * from prep
 );
-
-create index on prescale_to_osm_boundaries using gist (geom, ST_PointOnSurface(geom));

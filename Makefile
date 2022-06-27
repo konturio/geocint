@@ -894,11 +894,11 @@ db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescal
 	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm(osm_type, osm_id, name, right_population, change_date) from stdin with csv header delimiter ',';"
 	touch $@
 
-db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm db/table/water_polygons_vector | db/table ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
-	psql -f tables/prescale_to_osm_boundaries.sql
+db/table/prescale_to_osm_boundaries_pre_decimate: db/table/prescale_to_osm db/table/osm db/table/water_polygons_vector | db/table ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
+	psql -f tables/prescale_to_osm_boundaries_pre_decimate.sql
 	touch $@
 
-db/table/prescale_to_osm_check_changes: db/table/prescale_to_osm_boundaries | db/table ## Check the number of object with nonactual osm population
+db/table/prescale_to_osm_check_changes: db/table/prescale_to_osm_boundaries_pre_decimate | db/table ## Check the number of object with nonactual osm population
 	psql -q -X -t -c 'select count(*) from changed_population where geom is null;' > $@__WRONG_GEOM
 	psql -q -X -t -c 'select count(*) from changed_population where right_population <> actual_osm_pop;' > $@__CHANG_POP
 	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
@@ -907,7 +907,10 @@ db/table/prescale_to_osm_check_changes: db/table/prescale_to_osm_boundaries | db
 	rm $@__CHANG_POP $@__WRONG_GEOM
 	touch $@
 
-db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/prescale_to_osm_boundaries | db/procedure ## Transform admin boundaries with raw population values into solid continuous coverage with calculated population for every feature.
+db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/prescale_to_osm_boundaries_pre_decimate | db/procedure ## Transform admin boundaries with raw population values into solid continuous coverage with calculated population for every feature.
+	psql -c 'drop table if exists prescale_to_osm_boundaries;'
+	psql -c 'create table prescale_to_osm_boundaries as (select * from prescale_to_osm_boundaries_pre_decimate);'
+	psql -c 'create index on prescale_to_osm_boundaries using gist (geom, ST_PointOnSurface(geom));'
 	seq 2 1 26 | xargs -I {} psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level={}
 	touch $@
 

@@ -1747,9 +1747,9 @@ db/table/update_isochrone_destinations: db/table/update_isochrone_destinations_h
 	touch $@
 
 db/table/isodist_fire_stations_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 | db/table ## H3 hexagons from fire stations.
-	## psql -f tables/isodist_fire_stations_h3.sql
+	psql -f tables/isodist_fire_stations_h3.sql
 	seq 8 -1 1 | xargs -I {} psql -f tables/isodist_fire_stations_h3_overview.sql -v seq_res={}
-	## psql -c "drop table isodist_fire_stations_h3_distinct;"
+	psql -c "drop table isodist_fire_stations_h3_distinct;vacuum analyze isodist_fire_stations_h3;"
 	touch $@
 
 db/table/isodist_hospitals_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 | db/table ## H3 hexagons from hospitals.

@@ -9,7 +9,9 @@ create table isodist_fire_stations_h3_distinct as (
 create index on isodist_fire_stations_h3_distinct using gist (geom);
 
 drop table if exists isodist_fire_stations_h3;
-create table isodist_fire_stations_h3 as (
+create table isodist_fire_stations_h3
+    with (autovacuum_vacuum_insert_threshold = -1)
+    as (
     select p.h3, 8 as resolution, d.distance, (p.population * d.distance / 1000) as man_distance
     from kontur_population_h3 p
              cross join lateral (
@@ -19,4 +21,5 @@ create table isodist_fire_stations_h3 as (
         limit 1
         ) d
     where p.resolution = 8
-);
+)
+;

@@ -33,15 +33,10 @@ where geom is null
 -- Mark borders, which will be degenerated in the next iteration
 update prescale_to_osm_boundaries p
         set isdeg = true
-        where
-        coalesce(ST_Difference(p.geom, (select ST_Union(d.geom)
-                                    from prescale_to_osm_boundaries d
-                                    where ST_Intersects(p.geom, ST_PointOnSurface(d.geom))
-                                    and d.admin_level = p.admin_level + 1)), geom) is null 
-        or ST_IsEmpty(coalesce(ST_Difference(p.geom, (select ST_Union(d.geom)
-                                    from prescale_to_osm_boundaries d
-                                    where ST_Intersects(p.geom, ST_PointOnSurface(d.geom))
-                                    and d.admin_level = p.admin_level + 1)), geom));
+        where ST_IsEmpty(ST_Difference(p.geom, (select ST_Union(d.geom)
+                        from prescale_to_osm_boundaries d
+                        where ST_Intersects(p.geom, d.geom)
+                        and d.admin_level = p.admin_level + 1)));
 
 -- Calculate scale coefficient, to keep population of degenerated borders
 -- We need for this to make sure, that we have right population and population distribution

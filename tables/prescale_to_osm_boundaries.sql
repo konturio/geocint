@@ -31,17 +31,21 @@ create table water_area_4326 as (
 
 drop table if exists prescale_to_osm_boundaries_in;
 create table prescale_to_osm_boundaries_in as (
-    select p.osm_type                              as osm_type,
-           p.osm_id                                as osm_id, 
-           p.name                                  as name,
-           p.right_population                      as right_population,
-           ST_Multi(ST_Difference(g.geom, w.geom)) as geom,
-           g.actual_osm_pop                        as actual_osm_pop
+    select p.osm_type                                                as osm_type,
+           p.osm_id                                                  as osm_id, 
+           p.name                                                    as name,
+           p.right_population                                        as right_population,
+           g.geom                                                    as geom,
+           g.actual_osm_pop                                          as actual_osm_pop
     from prescale_to_osm_geom_in g,
-         prescale_to_osm p,
-         water_area_4326 w
-    where g.osm_id = p.osm_id and g.osm_id = w.osm_id           
+         prescale_to_osm p
+    where g.osm_id = p.osm_id           
 );
+
+update prescale_to_osm_boundaries_in g
+    set geom = ST_Multi(ST_Difference(g.geom, w.geom))
+    from water_area_4326 w
+    where g.osm_id = w.osm_id;  
 
 drop table if exists prescale_to_osm_geom_in;
 drop table if exists water_area_4326;

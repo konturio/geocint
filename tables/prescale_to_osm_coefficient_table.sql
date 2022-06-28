@@ -37,12 +37,41 @@ create table prescale_to_osm_coefficient_table as (
 
 drop table if exists prescale_to_osm_boundaries_subdivide;
 
-create index on prescale_to_osm_coefficient_table using gist(geom);
+drop table if exists prescale_to_osm_coefficient_table_subdivide;
+create table prescale_to_osm_coefficient_table_subdivide as (
+        select ST_Subdivide(geom, 100) as geom,
+               osm_id,
+               boundary_population::float / grid_population::float as coefficient
+        from prescale_to_osm_coefficient_table
+);
 
--- Prescale population to osm using coefficient
-update population_grid_h3_r8 p
-set population = p.population * (b.boundary_population::float / b.grid_population::float)
-from prescale_to_osm_coefficient_table b
-where ST_Intersects(b.geom, p.geom);
+create index on prescale_to_osm_coefficient_table_subdivide using gist(geom);
 
-drop table if exists prescale_to_osm_coefficient_table;
+-- Create subdivide coefficient table
+drop table if exists population_grid_h3_r8_osm_scaled_in;
+create table population_grid_h3_r8_osm_scaled_in as (
+        select p.h3,
+               p.geom,
+               p.resolution,
+               p.population * b.coefficient as population,
+               p.ghs_pop,
+               p.hrsl_pop               
+        from population_grid_h3_r8 p,
+             prescale_to_osm_coefficient_table_subdivide b
+        where ST_Intersects(b.geom, p.geom)
+);
+
+drop table if exists prescale_to_osm_coefficient_table_subdivide;
+create index on population_grid_h3_r8_osm_scaled_in using btree (h3);
+
+drop table if exists population_grid_h3_r8_osm_scaled;
+create table population_grid_h3_r8_osm_scaled as (
+        select *
+        from population_grid_h3_r8
+        where h3 not in (select h3 from population_grid_h3_r8_osm_scaled_in)
+        union all
+        select distinct *
+        from population_grid_h3_r8_osm_scaled_in p
+);
+
+create index on population_grid_h3_r8_osm_scaled using gist (geom, population);

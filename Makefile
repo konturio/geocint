@@ -1,8 +1,9 @@
 export PGDATABASE = gis
+current_date:=$(shell date '+%Y%m%d')
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -636,31 +637,33 @@ deploy/s3/topology_boundaries: data/out/topology_boundaries.geojson.gz | deploy/
 	aws s3 cp data/out/topology_boundaries.geojson.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/topology_boundaries.geojson.gz --profile geocint_pipeline_sender --acl public-read
 	touch $@
 
+db/table/hdx_locations_with_wikicodes: db/table/wikidata_hasc_codes | db/table ## Create table with HDX locations with hasc codes
+	psql -c "drop table if exists hdx_locations;"
+	psql -c "create table hdx_locations (href text, code text, hasc text, name text);"
+	psql -c "\copy hdx_locations (href, code, hasc, name) from 'static_data/kontur_boundaries/hdx_locations.csv' with csv header delimiter ';';"
+	psql -f tables/hdx_locations_with_wikicodes.sql
+	psql -c "drop table if exists hdx_locations;"
+	touch $@
+
+db/table/hdx_boundaries: db/table/hdx_locations_with_wikicodes db/table/kontur_boundaries | db/table ## Create table with HDX locations with hasc codes
+	psql -f tables/hdx_boundaries.sql
+	touch $@
+
 data/out/kontur_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_boundaries
 	mkdir -p $@
-
-db/table/hdx_locations: db/table/wikidata_hasc_codes | db/table ## Create table with HDX locations with hasc codes
-	psql -c "drop table if exists location;"
-	psql -c "create table location (href text, code text, hasc text, name text);"
-	psql -c "\copy location (href, code, hasc, name) from 'static_data/kontur_boundaries/hdx_locations.csv' with csv header delimiter ';';"
-	psql -c "drop table if exists hasc_location;"
-	psql -c "create table hasc_location as select distinct on (hasc) l.*, replace(h.wikidata_item, 'http://www.wikidata.org/entity/', '') as wikicode from location l left join wikidata_hasc_codes h using(hasc);"
-	touch $@
 
 data/out/kontur_boundaries_per_country/gpkg_export_commands.txt: | data/out/kontur_boundaries_per_country ## Create file with per country extraction commands
 	cat static_data/kontur_boundaries/hdx_locations.csv | \
 		parallel --colsep ';' \
-			'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}".gpkg PG:*dbname=gis* -sql *select admin_level, name, name_en, population, hasc, geom from boundary_export where location = %"{3}"% order by admin_level;* -nln boundaries -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
+			'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}"_$(current_date).gpkg PG:*dbname=gis* -sql *select admin_level, name, name_en, population, hasc, geom from boundary_export where location = %"{3}"% order by admin_level;* -nln boundaries -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
+
 	sed -i '1d' $@
 
-data/out/kontur_boundaries_per_country/export: db/table/hdx_locations db/table/kontur_boundaries data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | data/out/kontur_boundaries_per_country ## Extraction boundaries data per country, drop temporary table and zipping gpkg
-	psql -f tables/boundary_export.sql
-	rm -f data/out/kontur_boundaries_per_country/*.gpkg.gz
+data/out/kontur_boundaries_per_country/export: db/table/hdx_boundaries data/out/kontur_boundaries_per_country/gpkg_export_commands.txt db/table/kontur_boundaries | data/out/kontur_boundaries_per_country ## Extraction boundaries data per country
+	psql -f tables/kontur_boundaries_export.sql
+	rm -f data/out/kontur_boundaries_per_country/*.gpkg*
 	cat data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | parallel '{}'
-	psql -c "drop table if exists boundary_export;"
-	# We cannot delete them before, bcs it is administrative units of Netherlandsand  we want to have it in Netherlands extraction
-	ogrinfo -dialect SQLite -sql "delete from boundaries where name='Uithuizen' or name='Delfzijl'" data/out/kontur_boundaries_per_country/kontur_boundaries_DE.gpkg
-	cd data/out/kontur_boundaries_per_country/; pigz *.gpkg
+	psql -c "drop table if exists kontur_boundaries_export;"
 	touch $@
 
 db/table/osm_reports_list: db/table/osm_meta db/table/population_check_osm db/table/osm_population_inconsistencies db/table/osm_gadm_comparison db/table/osm_unmapped_places_report db/table/osm_missing_roads db/table/osm_missing_boundaries_report | db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
@@ -1189,13 +1192,39 @@ data/out/kontur_population.gpkg.gz: db/table/kontur_population_h3 | data/out  ##
 	rm -f data/out/kontur_population.gpkg
 	ogr2ogr \
 		-f GPKG \
-		-sql "select h3, geom, population from kontur_population_h3 where population > 0 and resolution = 8 order by h3" \
+		-sql "select h3, population, geom from kontur_population_h3 where population > 0 and resolution = 8 order by h3" \
 		-lco "SPATIAL_INDEX=NO" \
-		-nln kontur_population \
+		-nln population \
 		-gt 65536 \
 		data/out/kontur_population.gpkg \
 		PG:'dbname=gis'
 	pigz data/out/kontur_population.gpkg
+
+data/out/kontur_population_per_country: | data/out ## Directory for per country extraction from kontur_boundaries
+	mkdir -p $@
+
+data/out/kontur_population_per_country/gpkg_export_commands.txt: | data/out/kontur_population_per_country ## Create file with per country extraction commands
+	cat static_data/kontur_boundaries/hdx_locations.csv | \
+		parallel --colsep ';' \
+			'echo "\
+				ogr2ogr \
+					-f GPKG \
+					-overwrite \
+					-sql *select h3, population, geom from kontur_population_export where location = %"{3}"%;* \
+					-lco *SPATIAL_INDEX=NO* \
+					-nln population \
+					-gt 65536 \
+					data/out/kontur_population_per_country/kontur_population_"{3}"_$(current_date).gpkg \
+					PG:*dbname=gis*"' \
+				| sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
+	sed -i '1d' $@
+
+data/out/kontur_population_per_country/export: data/out/kontur_population_per_country/gpkg_export_commands.txt db/table/hdx_boundaries db/table/kontur_population_h3 | data/out/kontur_population_per_country ## Per country H3 r8 extraction with population
+	psql -f tables/kontur_population_export.sql
+	rm -f data/out/kontur_population_per_country/*.gpkg*
+	cat data/out/kontur_population_per_country/gpkg_export_commands.txt | parallel '{}'
+	psql -c "drop table if exists kontur_population_export;"
+	touch $@
 
 data/in/kontur_population_v3: | data/in ## Kontur Population v3 (input).
 	mkdir -p $@

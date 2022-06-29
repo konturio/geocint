@@ -70,98 +70,112 @@ where
 
 update bivariate_axis
 set
-    label = 'Number of days with any disaster occurs, last year (n/km²)'
+    label = 'Number of days with any disaster occurs, last year (n/km²)',
+    min = 0
 where
       numerator = 'hazardous_days_count'
   and denominator = 'area_km2';
 
 update bivariate_axis
 set
-    label = 'Number of days with any disaster occurs, last year (n)'
+    label = 'Number of days with any disaster occurs, last year (n)',
+    min = 0
 where
       numerator = 'hazardous_days_count'
   and denominator = 'one';
 
 update bivariate_axis
 set
-    label = 'Number of days under earthquake impact, last year (n/km²)'
+    label = 'Number of days under earthquake impact, last year (n/km²)',
+    min = 0
 where
       numerator = 'earthquake_days_count'
   and denominator = 'area_km2';
 
 update bivariate_axis
 set
-    label = 'Number of days under earthquake impact, last year (n)'
+    label = 'Number of days under earthquake impact, last year (n)',
+    min = 0
 where
       numerator = 'earthquake_days_count'
   and denominator = 'one';
 
 update bivariate_axis
 set
-    label = 'Number of days under drought impact, last year (n/km²)'
+    label = 'Number of days under drought impact, last year (n/km²)',
+    min = 0
 where
       numerator = 'drought_days_count'
   and denominator = 'area_km2';
 
 update bivariate_axis
 set
-    label = 'Number of days under drought impact, last year (n)'
+    label = 'Number of days under drought impact, last year (n)',
+    min = 0
 where
       numerator = 'drought_days_count'
   and denominator = 'one';
 
 update bivariate_axis
 set
-    label = 'Number of days under cyclone impact, last year (n/km²)'
+    label = 'Number of days under cyclone impact, last year (n/km²)',
+    min = 0
 where
       numerator = 'cyclone_days_count'
   and denominator = 'area_km2';
 
 update bivariate_axis
 set
-    label = 'Number of days under cyclone impact, last year (n)'
+    label = 'Number of days under cyclone impact, last year (n)',
+    min = 0
 where
       numerator = 'cyclone_days_count'
   and denominator = 'one';
 
 update bivariate_axis
 set
-    label = 'Number of days under wildfire impact, last year (n/km²)'
+    label = 'Number of days under wildfire impact, last year (n/km²)',
+    min = 0
 where
       numerator = 'wildfire_days_count'
   and denominator = 'area_km2';
 
 update bivariate_axis
 set
-    label = 'Number of days under wildfire impact, last year (n)'
+    label = 'Number of days under wildfire impact, last year (n)',
+    min = 0
 where
       numerator = 'wildfire_days_count'
   and denominator = 'one';
 
 update bivariate_axis
 set
-    label = 'Number of days under volcano impact, last year (n/km²)'
+    label = 'Number of days under volcano impact, last year (n/km²)',
+    min = 0
 where
       numerator = 'volcano_days_count'
   and denominator = 'area_km2';
 
 update bivariate_axis
 set
-    label = 'Number of days under volcano impact, last year (n)'
+    label = 'Number of days under volcano impact, last year (n)',
+    min = 0
 where
       numerator = 'volcano_days_count'
   and denominator = 'one';
 
 update bivariate_axis
 set
-    label = 'Number of days under flood impact, last year (n/km²)'
+    label = 'Number of days under flood impact, last year (n/km²)',
+    min = 0
 where
       numerator = 'flood_days_count'
   and denominator = 'area_km2';
 
 update bivariate_axis
 set
-    label = 'Number of days under flood impact, last year (n)'
+    label = 'Number of days under flood impact, last year (n)',
+    min = 0
 where
       numerator = 'flood_days_count'
   and denominator = 'one';

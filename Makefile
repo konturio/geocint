@@ -655,7 +655,7 @@ data/out/kontur_boundaries_per_country: | data/out ## Directory for per country 
 data/out/kontur_boundaries_per_country/gpkg_export_commands.txt: | data/out/kontur_boundaries_per_country ## Create file with per country extraction commands
 	cat static_data/kontur_boundaries/hdx_locations.csv | \
 		parallel --colsep ';' \
-			'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}"_$(current_date).gpkg PG:*dbname=gis* -sql *select admin_level, name, name_en, population, hasc, geom from boundary_export where location = %"{3}"% order by admin_level;* -nln boundaries -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
+			'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}"_$(current_date).gpkg PG:*dbname=gis* -sql *select admin_level, name, name_en, population, hasc, geom from kontur_boundaries_export where location = %"{3}"% order by admin_level;* -nln boundaries -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
 
 	sed -i '1d' $@
 

@@ -1,6 +1,6 @@
 set enable_hashagg = off;
 drop table if exists stat_h3_in;
-create table stat_h3_in as (
+create table stat_h3_in tablespace evo4tb as (
     select h3,
            resolution,
            resolution as zoom,
@@ -354,7 +354,7 @@ create table stat_h3_in as (
 
 
 drop table if exists stat_h3;
-create table stat_h3 as (
+create table stat_h3 tablespace evo4tb as (
     select a.h3,
            hex.area / 1000000.0 as area_km2,
            a.populated_area_km2,

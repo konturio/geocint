@@ -708,7 +708,7 @@ data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | 
 	psql -qXc "copy (select population as \"Kontur population\", view_count as \"osm.org view count\", \"Place bounding box\" from osm_unmapped_places_report order by id) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_missing_roads.csv: db/table/osm_missing_roads | data/out/reports ## Export report to CSV
-	psql -qXc "copy (select row_number() over() as id, \"Country\", \"OSM roads length, km\", \"Facebook roads length, km\", \"Place bounding box\" from osm_missing_roads order by diff desc limit 2000) to stdout with (format csv, header true, delimiter ';');" > $@
+	psql -qXc "copy (select row_number() over() as id, h3 as \"H3 index\", \"Country\", \"OSM roads length, km\", \"Facebook roads length, km\", \"Place bounding box\" from osm_missing_roads order by diff desc limit 2000) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_missing_boundaries_report.csv: db/table/osm_missing_boundaries_report | data/out/reports ## Export OSM missing boundaries report to CSV with semicolon delimiter.
 	psql -qXc 'copy (select "OSM id", "Admin level", "Name", "Country" from osm_missing_boundaries_report order by id) to stdout with (format csv, header true, delimiter ";");' > $@

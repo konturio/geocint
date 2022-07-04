@@ -701,7 +701,7 @@ data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inc
 	psql -qXc "copy (select \"OSM id\", \"Name\", \"Admin level\", \"Population\", \"Population date\", \"Population source\", \"SUM subregions population\", \"Population difference value\", \"Population difference %\" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/population_check_osm.csv: db/table/population_check_osm db/table/osm_meta | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
-	psql -qXc "copy (select \"OSM id\", \"Name\", \"OSM population date\", \"OSM population\", \"Kontur population\", \"Wikidata population\", \"OSM-Kontur Population difference\", \"Wikidata-Kontur Population difference\" from population_check_osm order by \"OSM-Kontur Population difference\" desc limit 1000) to stdout with (format csv, header true, delimiter ';');" > $@
+	psql -qXc "copy (select \"OSM id\", \"Name\", \"OSM population date\", \"OSM population\", \"Kontur population\", \"Wikidata population\", \"OSM-Kontur Population difference\", \"Wikidata-Kontur Population difference\" from population_check_osm order by abs(\"OSM-Kontur Population difference\") desc limit 1000) to stdout with (format csv, header true, delimiter ';');" > $@
 	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
 
 data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | data/out/reports ## Export report to CSV

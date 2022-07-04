@@ -1,0 +1,130 @@
+name: "kontur-population-{country_name_lower}"
+title: "{country_name_capitalized}: Population Density for 400m H3 Hexagons"
+archived: False
+dataset_source: "kontur"
+dataset_contributor: "kontur"
+isopen: True
+license_id: "cc-by"
+license_title: "Creative Commons Attribution International"
+license_url: "http://www.opendefinition.org/licenses/cc-by"
+notes: "{country_name_capitalized} population density for 400m H3 hexagons. Built from
+[Kontur Population: Global Population Density for 400m H3 Hexagons](https://data.humdata.org/dataset/kontur-population-dataset)
+Vector H3 hexagons with population counts at 400m resolution.
+Fixed up fusion of [GHSL](https://ghsl.jrc.ec.europa.eu),
+[Facebook](https://research.facebook.com/downloads/high-resolution-settlement-layer-hrsl),
+[Microsoft Buildings](https://www.microsoft.com/en-us/maps/building-footprints),
+[Copernicus Global Land Service Land Cover](https://land.copernicus.eu/global/products/lc),
+Land Information New Zealand ([LINZ Data Service](https://data.linz.govt.nz)) NZ Building Outlines
+and [OpenStreetMap](https://www.openstreetmap.org) data.
+
+
+Gobal version of population dataset:
+[Kontur Population: Global Population Density for 400m H3 Hexagons](https://data.humdata.org/dataset/kontur-population-dataset)"
+methodology: "Other"
+methodology_other: "
+Kontur Population dataset was built based on [H3: Hexagonal Hierarchical Spatial Index](https://h3geo.org).
+
+
+Calculating population is based on overlapping Global Human Settlement Layer ([GHSL](https://ghsl.jrc.ec.europa.eu))
+with Facebook High Resolution Settlement Layer
+([HRSL](https://research.facebook.com/downloads/high-resolution-settlement-layer-hrsl))
+population data where available.
+
+
+Known artifacts of both datasets are constrained using OpenStreetMap data as a hint.
+Quarries and big roads are marked unpopulated, as they are often falsely detected as populated in GHSL.
+Lakes, rivers, glaciers, sands, forests, and other similar areas are also marked as unpopulated.
+
+
+We use Microsoft Building Footprint data, Land Information New Zealand and
+Copernicus Global Land Service: Land Cover 100m to improve the accuracy of population distribution.
+
+
+Building presence, or otherwise built-up area, implies there’s someone on the ground,
+which is often missed in HRSL data for Africa.
+
+
+We use scale coefficient taking into account the nesting of levels of administrative
+division in cases when the total population of the administrative area significantly
+differs from the official population data in OpenStreetMap.
+
+
+Overly hot pixels like \"half a million people in a quarter of square kilometer\"
+are spread out to more realistic surroundings.
+The population is shifted to neighboring cells to satisfy constraints.
+
+
+Non-integer populations are fixed up by \"gluing people back together\" to keep realistic human beings."
+caveats: "
+Dataset is primarily designed to support visualization behind https://disaster.ninja
+project and may not be suitable for your specific needs.
+
+Please contact us if you need custom processing or higher resolution version of this dataset.
+
+
+**Dataset codebook**:
+
+
+**fid** [integer]: record order in data upload
+
+
+**h3** [h3index/text]: H3 index of hexagon
+
+
+**population** [double]: total population inside hexagon
+
+
+**geom** [geometry]: Polygon, EPSG:3857
+
+
+**Global version of Kontur Population** is available at
+[https://data.humdata.org/organization/kontur](https://data.humdata.org/organization/kontur).
+
+
+Facebook High Resolution Settlement data: Facebook Connectivity
+Lab and Center for International Earth Science Information Network -
+CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL).
+Source imagery for HRSL © 2016 DigitalGlobe.
+Licence - Creative Commons Attribution International
+
+
+Global Human Settlement Layer:
+Dataset: Schiavina, Marcello; Freire, Sergio; MacManus, Kytt (2019):
+GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A.
+European Commission, Joint Research Centre (JRC)
+DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218
+PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f
+Concept & Methodology: Freire, Sergio; MacManus, Kytt; Pesaresi, Martino;
+Doxsey-Whitfield, Erin; Mills, Jane (2016):
+Development of new open and free multi-temporal global population
+grids at 250 m resolution. Geospatial Data in a Changing World;
+Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016.
+
+
+Copernicus Global Land Service:
+Land Cover 100m:
+Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo,
+Myroslava Lesiv, Nandin-Erdene Tsendbazar, Martin Herold, Steffen Fritz. (2020).
+Copernicus Global Land Service: Land Cover 100m:
+collection 3: epoch 2019: Globe (Version V3.0.1) [Data set].
+Zenodo. http://doi.org/10.5281/zenodo.3939050
+
+
+Microsoft Buildings: This data is licensed by
+Microsoft under the [Open Data Commons Open Database License](https://opendatacommons.org/licenses/odbl) (ODbL).
+
+
+Land Information New Zealand (LINZ) NZ Building Outlines:
+sourced from the sourced from the [LINZ Data Service](https://data.linz.govt.nz)
+licensed for reuse under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0).
+
+
+OpenStreetMap: Some data (c) OpenStreetMap.org Contributors
+[Open Data Commons Open Database License](https://opendatacommons.org/licenses/odbl) (ODbL)"
+private: False
+url: None
+state: "active"
+tags:
+  - name: "baseline population"
+  - name: "distributions"
+  - name: "geodata"

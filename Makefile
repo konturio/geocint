@@ -122,10 +122,16 @@ deploy/s3: | deploy ## Target-created directory for deployments on S3.
 deploy/s3/test: | deploy/s3 ## Target-created directory for deployments on S3 test division.
 	mkdir -p $@
 
+deploy/s3/dev: | deploy/s3 ## Target-created directory for deployments on S3 dev division.
+	mkdir -p $@
+
 deploy/s3/prod: | deploy/s3 ## Target-created directory for deployments on S3 prod division.
 	mkdir -p $@
 
 deploy/s3/test/reports: | deploy/s3/test ## Target-created directory for OpenStreetMap quality reports test deployments on S3.
+	mkdir -p $@
+
+deploy/s3/dev/reports: | deploy/s3/dev ## Target-created directory for OpenStreetMap quality reports dev deployments on S3.
 	mkdir -p $@
 
 deploy/s3/prod/reports: | deploy/s3/prod ## Target-created directory for OpenStreetMap quality reports production deployments on S3.
@@ -714,11 +720,15 @@ data/out/reports/osm_missing_boundaries_report.csv: db/table/osm_missing_boundar
 	psql -qXc 'copy (select "OSM id", "Admin level", "Name", "Country" from osm_missing_boundaries_report order by id) to stdout with (format csv, header true, delimiter ";");' > $@
 
 data/out/reports/osm_reports_list_test.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (development version)
-	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' > $@
+	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' | sed 's/\@\@\@\@\@/\/test/g' > $@
+	touch $@
+
+data/out/reports/osm_reports_list_dev.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (development version)
+	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' | sed 's/\@\@\@\@\@/\/dev/g' > $@
 	touch $@
 
 data/out/reports/osm_reports_list_prod.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (production version)
-	psql -qXc 'copy (select jsonb_agg(row) from (select * from osm_reports_list) row where public_access is true) to stdout;' > $@
+	psql -qXc 'copy (select jsonb_agg(row) from (select * from osm_reports_list) row where public_access is true) to stdout;' | sed 's/\@\@\@\@\@//' > $@
 	touch $@
 
 deploy/geocint/reports/osm_gadm_comparison.csv: data/out/reports/osm_gadm_comparison.csv | deploy/geocint/reports ## Copy OSM-GADM comparison report to public_html folder to make it available online.
@@ -749,6 +759,10 @@ deploy/geocint/reports/osm_reports_list_test.json: data/out/reports/osm_reports_
 	mkdir -p ~/public_html/reports && cp data/out/reports/osm_reports_list_test.json ~/public_html/reports/osm_reports_list_test.json
 	touch $@
 
+deploy/geocint/reports/osm_reports_list_dev.json: data/out/reports/osm_reports_list_dev.json | deploy/geocint/reports ## Copy reports JSON file to public_html folder to make it available online.
+	mkdir -p ~/public_html/reports && cp data/out/reports/osm_reports_list_dev.json ~/public_html/reports/osm_reports_list_dev.json
+	touch $@
+
 deploy/geocint/reports/osm_reports_list_prod.json: data/out/reports/osm_reports_list_prod.json | deploy/geocint/reports ## Copy reports JSON file to public_html folder to make it available online.
 	mkdir -p ~/public_html/reports && cp data/out/reports/osm_reports_list_prod.json ~/public_html/reports/osm_reports_list_prod.json
 	touch $@
@@ -756,6 +770,11 @@ deploy/geocint/reports/osm_reports_list_prod.json: data/out/reports/osm_reports_
 deploy/geocint/reports/test/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/osm_reports_list_test.json | deploy/geocint/reports/test  ## OSM quality reports (most recent) testing archive.
 	rm -f ~/public_html/test/reports.tar.gz
 	cd ~/public_html/reports; tar --transform='flags=r;s|list_test|list|' -cf test_reports.tar.gz -I pigz osm_reports_list_test.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv
+	touch $@
+
+deploy/geocint/reports/dev/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/osm_reports_list_dev.json | deploy/geocint/reports/dev  ## OSM quality reports (most recent) dev archive.
+	rm -f ~/public_html/dev/reports.tar.gz
+	cd ~/public_html/reports; tar --transform='flags=r;s|list_dev|list|' -cf dev_reports.tar.gz -I pigz osm_reports_list_dev.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv
 	touch $@
 
 deploy/geocint/reports/prod/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/osm_reports_list_prod.json | deploy/geocint/reports/prod  ## OSM quality reports (most recent) production archive.
@@ -769,31 +788,45 @@ deploy/s3/test/reports/reports.tar.gz: deploy/geocint/reports/test/reports.tar.g
 	aws s3 cp ~/public_html/reports/test_reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/test/reports/reports.tar.gz --profile geocint_pipeline_sender
 	touch $@
 
+deploy/s3/dev/reports/reports.tar.gz: deploy/geocint/reports/dev/reports.tar.gz | deploy/s3/dev/reports ## Putting reports archive to AWS dev reports folder in private bucket. Before it we backup the previous reports archive.
+	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/dev/reports/reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/dev/reports/reports.tar.gz.bak --profile geocint_pipeline_sender || true
+	aws s3 cp ~/public_html/reports/dev_reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/dev/reports/reports.tar.gz --profile geocint_pipeline_sender
+	touch $@
+
 deploy/s3/prod/reports/reports.tar.gz: deploy/geocint/reports/prod/reports.tar.gz | deploy/s3/prod/reports ## Putting reports archive to AWS production reports folder in private bucket. Before it we backup the previous reports archive.
 	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz.bak --profile geocint_pipeline_sender || true
 	aws s3 cp ~/public_html/reports/prod_reports.tar.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/reports/reports.tar.gz --profile geocint_pipeline_sender
 	touch $@
 
-deploy/s3/test/reports/test_reports_public: deploy/geocint/reports/test/reports.tar.gz | deploy/s3/test/reports ## Putting reports to AWS test reports folder in public bucket (DEV, TEST).
+deploy/s3/test/reports/test_reports_public: deploy/geocint/reports/test/reports.tar.gz | deploy/s3/test/reports ## Putting reports to AWS test reports folder in public bucket (TEST).
 	rm -rf ~/public_html/reports/test_reports_public/
 	mkdir -p ~/public_html/reports/test_reports_public/
 	tar -xzf ~/public_html/reports/test_reports.tar.gz -C ~/public_html/reports/test_reports_public/
-	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/dev/ --profile geocint_pipeline_sender --acl public-read
-	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/test/ --profile geocint_pipeline_sender --acl public-read
+	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/test/ --exclude '*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender --acl public-read
+	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/test/ --exclude='*' --include='*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender
+	touch $@
+
+deploy/s3/test/reports/test_reports_public: deploy/geocint/reports/test/reports.tar.gz | deploy/s3/test/reports ## Putting reports to AWS test reports folder in public bucket (DEV).
+	rm -rf ~/public_html/reports/dev_reports_public/
+	mkdir -p ~/public_html/reports/dev_reports_public/
+	tar -xzf ~/public_html/reports/dev_reports.tar.gz -C ~/public_html/reports/dev_reports_public/
+	aws s3 sync ~/public_html/reports/dev_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/dev/ --exclude '*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender --acl public-read
+	aws s3 sync ~/public_html/reports/dev_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/dev/ --exclude='*' --include='*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender
 	touch $@
 
 deploy/s3/prod/reports/prod_reports_public: deploy/geocint/reports/prod/reports.tar.gz | deploy/s3/prod/reports ## Putting reports to AWS prod reports folder in public bucket (PROD).
 	rm -rf ~/public_html/reports/prod_reports_public/
 	mkdir -p ~/public_html/reports/prod_reports_public/
 	tar -xzf ~/public_html/reports/prod_reports.tar.gz -C ~/public_html/reports/prod_reports_public/
-	aws s3 sync ~/public_html/reports/prod_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/prod/ --profile geocint_pipeline_sender --acl public-read
+	aws s3 sync ~/public_html/reports/prod_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/ --exclude '*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender --acl public-read
+	aws s3 sync ~/public_html/reports/prod_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/ --exclude='*' --include='*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender
 	touch $@
 
-
-deploy/dev/reports: deploy/s3/test/reports/reports.tar.gz | deploy/dev ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Dev server.
+deploy/dev/reports: deploy/s3/dev/reports/reports.tar.gz | deploy/dev ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Dev server.
 	ansible zigzag_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'
-	ansible zigzag_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
+	ansible zigzag_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/dev/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
 	ansible zigzag_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
 	ansible zigzag_disaster_ninja -m file -a 'path=$$HOME/reports/reports.tar.gz state=absent'
 	touch $@

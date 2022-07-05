@@ -1991,12 +1991,12 @@ deploy/prod/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/prod ## Deploy 
 	touch $@
 
 data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## Crafting production friendly SQL dump for stat_h3 table
-	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') scripts/population_api_dump_footer.sql | pigz" > $@__TMP
+	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner --no-tablespaces -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') scripts/population_api_dump_footer.sql | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@
 
 data/out/population/bivariate_tables.sqld.gz: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## Crafting bivariate tables SQL dump
-	bash -c "pg_dump --clean --if-exists --no-owner -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | pigz" > $@__TMP
+	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@
 
@@ -2016,8 +2016,8 @@ deploy/dev/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/biv
 	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
 	ansible zigzag_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
 	ansible zigzag_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
-	ansible zigzag_insights_api -m postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/stat_h3.sqld.gz'
-	ansible zigzag_insights_api -m postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz'
+	ansible zigzag_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/stat_h3.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
+	ansible zigzag_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
 	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
 	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@

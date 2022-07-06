@@ -728,7 +728,7 @@ data/out/reports/osm_reports_list_dev.json: db/table/osm_reports_list | data/out
 	touch $@
 
 data/out/reports/osm_reports_list_prod.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (production version)
-	psql -qXc 'copy (select jsonb_agg(row) from (select * from osm_reports_list) row where public_access is true) to stdout;' | sed 's/\@\@\@\@\@//' > $@
+	psql -qXc 'copy (select jsonb_agg(row) from (select * from osm_reports_list) row where public_access is true) to stdout;' | sed 's/\@\@\@\@\@//g' > $@
 	touch $@
 
 deploy/geocint/reports/osm_gadm_comparison.csv: data/out/reports/osm_gadm_comparison.csv | deploy/geocint/reports ## Copy OSM-GADM comparison report to public_html folder to make it available online.

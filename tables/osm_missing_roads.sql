@@ -28,7 +28,7 @@ create table building_count_for_missing_roads_grid_h3 as (
              select h3, building_count
              from abu_dhabi_buildings_h3
          ) z
-    where building_count > 5
+    where building_count > 1
     group by 1
 );
 
@@ -45,9 +45,9 @@ with q as (select distinct on (s.h3, b.name_en) s.h3 as h3, -- on h3 can interse
     left join country_boundaries_subdivided_in b
         on ST_Intersects(s.h3::geometry, b.geom)
     where s.total_road_length > 0   -- fb roads
-        and population > 100 -- take only places with population more than 100
+        and population > 20 -- take only places with population more than 20
         and s.resolution = 8
-        and s.h3 in (select h3 from building_count_for_missing_roads_grid_h3)),-- take only places with building_count more than 5
+        and s.h3 in (select h3 from building_count_for_missing_roads_grid_h3)),-- take only places with building_count more than 1
 res as (select h3, q.name_en, geom,
         -- doing this to take only N biggest diffs, N=100
         -- and biggest rounded to .1 diff within country and h3 w/ highest population 

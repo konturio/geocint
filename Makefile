@@ -2176,5 +2176,5 @@ db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/l
 /mnt/evo4tb/oam_images: ## Directory for storing oam-images
 	mkdir -p $@
 
-data/in/oam_images_download: /mnt/evo4tb/oam_images ## Download images from OAM
+data/in/oam_images_download: | /mnt/evo4tb/oam_images ## Download images from OAM
 	bash scripts/oam_images_download.sh /mnt/evo4tb/oam_images

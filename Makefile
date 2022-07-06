@@ -2172,3 +2172,9 @@ db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db
 db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3_r8 | db/table  ## hexagonify kontur-public event geometries
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
+
+mnt/evo4tb/oam_images: ## Directory for storing oam-images
+	mkdir -p $@
+
+data/in/oam_images_download: mnt/evo4tb/oam_images ## Download images from OAM
+	bash scripts/oam_images_download.sh /mnt/evo4tb/oam_images

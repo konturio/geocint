@@ -155,7 +155,6 @@ create table osm_users_hex as (
 );
 
 create index on osm_users_hex using gist (resolution, geom);
-
 create index on osm_users_hex using btree (osm_user);
 
 update osm_users_hex ouh

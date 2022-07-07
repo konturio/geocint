@@ -2173,8 +2173,14 @@ db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/l
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
 
-/mnt/evo4tb/oam_images: ## Directory for storing oam-images
-	mkdir -p $@
+data/in/oam_images: | data/in ## Directory for storing oam-images, symlink to dir
+	ln -sf /mnt/evo4tb/oam_images $@
 
-data/in/oam_images_download: | /mnt/evo4tb/oam_images ## Download images from OAM
-	bash scripts/oam_images_download.sh /mnt/evo4tb/oam_images
+data/in/oam_images_download: | data/in/oam_images ## Download images from OAM
+	curl https://api.openaerialmap.org/meta | jq '.meta.found' | \
+		awk '{print int($0/100)+1}' | xargs -I {} seq {} | \
+		xargs -I {} curl https://api.openaerialmap.org/meta?page={} | jq -c '.results' > data/in/oam_images/oam_meta.json
+
+	cat data/in/oam_images/oam_meta.json | jq -r '.[].uuid' | \
+		parallel --progress -j 16 wget -nc -q -P oam-images {}
+	touch $@

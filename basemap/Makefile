@@ -182,7 +182,7 @@ data/basemap/glyphs_all: | data/basemap/glyphs ## Target that generates glyphs (
 	touch $@
 
 data/basemap/sprite_all: | data/basemap/sprite ## Build sprites currently fetched from Mapbox.
-	cp -r basemap/sprite/. data/basemap/sprite
+	cp -r sprite/. data/basemap/sprite
 	touch $@
 
 data/basemap/metadata/zigzag/style_night_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server.
@@ -401,58 +401,19 @@ deploy/s3/basemap.mbtiles: data/basemap.mbtiles | deploy/s3 ## deploy basemap.mb
 	touch $@
 
 deploy/zigzag/basemap: deploy/zigzag/basemap.mbtiles data/basemap/zigzag.tar.bz2 | deploy/zigzag ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST DVLP server.
-	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible zigzag_live_dashboard -m copy -a 'src=data/basemap/zigzag.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
-	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		mkdir -p "$$HOME/public_html/tiles/basemap"; \
-		tar -cjf "$$HOME/tmp/basemap_prev.tar.bz2" -C "$$HOME/public_html/tiles/basemap" . ; \
-		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
-		function on_exit { rm -rf "$$TMPDIR"; }; \
-		trap on_exit EXIT; \
-		tar -xf "$$HOME/tmp/basemap.tar.bz2" -C "$$TMPDIR"; \
-		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
-		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
-		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/basemap"; \
-		rm -f "$$HOME/tmp/basemap.tar.bz2"; \
-	'
+	aws s3 cp --recursive data/basemap/metadata/zigzag s3://basemap-locker01/DEV/styles
+	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/DEV/glyphs
+	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/DEV/sprite
 	touch $@
 
 deploy/sonic/basemap: deploy/sonic/basemap.mbtiles data/basemap/sonic.tar.bz2 | deploy/sonic ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST QA server.
-	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible sonic_live_dashboard -m copy -a 'src=data/basemap/sonic.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
-	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		mkdir -p "$$HOME/public_html/tiles/basemap"; \
-		tar -cjf "$$HOME/tmp/basemap_prev.tar.bz2" -C "$$HOME/public_html/tiles/basemap" . ; \
-		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
-		function on_exit { rm -rf "$$TMPDIR"; }; \
-		trap on_exit EXIT; \
-		tar -xf "$$HOME/tmp/basemap.tar.bz2" -C "$$TMPDIR"; \
-		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
-		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
-		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/basemap"; \
-		rm -f "$$HOME/tmp/basemap.tar.bz2"; \
-	'
+	aws s3 cp --recursive data/basemap/metadata/sonic s3://basemap-locker01/TEST/styles
+	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/TEST/glyphs
+	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/TEST/sprite
 	touch $@
 
 deploy/lima/basemap: deploy/lima/basemap.mbtiles data/basemap/lima.tar.bz2 | deploy/lima ## Transfer and deploy tar archive with tiles, glyphs and styles on PROD server.
-	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible lima_live_dashboard -m copy -a 'src=data/basemap/lima.tar.bz2 dest=$$HOME/tmp/basemap.tar.bz2'
-	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		mkdir -p "$$HOME/public_html/tiles/basemap"; \
-		tar -cjf "$$HOME/tmp/basemap_prev.tar.bz2" -C "$$HOME/public_html/tiles/basemap" . ; \
-		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
-		function on_exit { rm -rf "$$TMPDIR"; }; \
-		trap on_exit EXIT; \
-		tar -xf "$$HOME/tmp/basemap.tar.bz2" -C "$$TMPDIR"; \
-		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
-		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
-		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/basemap"; \
-		rm -f "$$HOME/tmp/basemap.tar.bz2"; \
-	'
+	aws s3 cp --recursive data/basemap/metadata/lima s3://basemap-locker01/PROD/styles
+	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/PROD/glyphs
+	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/PROD/sprite
 	touch $@

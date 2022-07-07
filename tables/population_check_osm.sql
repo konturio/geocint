@@ -6,7 +6,7 @@ create table population_check_osm_in as (
            coalesce(name_en, name)                                                                       as name_en,
            null::text                                                                                    as country,
            null::text                                                                                    as hasc_wiki,       
-
+           
            -- Generate link to object properties on osm.org:
            'href_[' || osm_id || '](https://www.openstreetmap.org/' || osm_type || '/' || osm_id || ')'  as report_osm_id,
 

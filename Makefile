@@ -804,24 +804,22 @@ deploy/s3/test/reports/test_reports_public: deploy/geocint/reports/test/reports.
 	rm -rf ~/public_html/reports/test_reports_public/
 	mkdir -p ~/public_html/reports/test_reports_public/
 	tar -xzf ~/public_html/reports/test_reports.tar.gz -C ~/public_html/reports/test_reports_public/
-	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/test/ --exclude '*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender --acl public-read
-	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/test/ --exclude='*' --include='*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender
+	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/test/ --profile geocint_pipeline_sender --acl public-read
 	touch $@
 
 deploy/s3/dev/reports/dev_reports_public: deploy/geocint/reports/dev/reports.tar.gz | deploy/s3/dev/reports ## Putting reports to AWS test reports folder in public bucket (DEV).
 	rm -rf ~/public_html/reports/dev_reports_public/
 	mkdir -p ~/public_html/reports/dev_reports_public/
 	tar -xzf ~/public_html/reports/dev_reports.tar.gz -C ~/public_html/reports/dev_reports_public/
-	aws s3 sync ~/public_html/reports/dev_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/dev/ --exclude '*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender --acl public-read
-	aws s3 sync ~/public_html/reports/dev_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/dev/ --exclude='*' --include='*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender
+	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/dev/ --profile geocint_pipeline_sender --acl public-read
 	touch $@
 
 deploy/s3/prod/reports/prod_reports_public: deploy/geocint/reports/prod/reports.tar.gz | deploy/s3/prod/reports ## Putting reports to AWS prod reports folder in public bucket (PROD).
 	rm -rf ~/public_html/reports/prod_reports_public/
 	mkdir -p ~/public_html/reports/prod_reports_public/
 	tar -xzf ~/public_html/reports/prod_reports.tar.gz -C ~/public_html/reports/prod_reports_public/
-	aws s3 sync ~/public_html/reports/prod_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/ --exclude '*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender --acl public-read
-	aws s3 sync ~/public_html/reports/prod_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/ --exclude='*' --include='*/osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender
+	aws s3 sync ~/public_html/reports/prod_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/ --exclude 'osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender --acl public-read
+	aws s3 sync ~/public_html/reports/prod_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/ --exclude='*' --include='osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender
 	touch $@
 
 deploy/dev/reports: deploy/s3/dev/reports/reports.tar.gz | deploy/dev ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Dev server.

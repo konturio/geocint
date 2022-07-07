@@ -3,11 +3,11 @@ current_date:=$(shell date '+%Y%m%d')
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/geocint/osm_users_hex deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
-prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/stats_tiles deploy/prod/users_tiles deploy/geocint/osm_users_hex deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1950,6 +1950,15 @@ deploy/prod/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/prod ## Deploy 
 		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/stats"; \
 		rm -f "$$HOME/tmp/stats_tiles.tar.bz2"; \
 	'
+	touch $@
+
+deploy/geocint/osm_users_hex: db/table/osm_users_hex | deploy/geocint  ## Select most active user per H3 hexagon cell.
+	rm -f data/out/osm_users_hex.sql.gz data/out/osm_users_hex.sql data/out/osm_users_hex_update_time
+	pg_dump -d gis --data-only --no-owner -t osm_users_hex -f data/out/osm_users_hex.sql
+	pigz --best data/out/osm_users_hex.sql
+	aws s3 cp data/out/osm_users_hex.sql.gz s3://geodata-eu-central-1-kontur/private/geocint/test/data/out/osm_users_hex.sql.gz --profile geocint_pipeline_sender
+	echo $$(date '+%Y-%m-%d %H:%M:%S') > data/out/osm_users_hex_update_time
+	aws s3 cp data/out/osm_users_hex_update_time s3://geodata-eu-central-1-kontur/private/geocint/test/data/out/osm_users_hex_update_time --profile geocint_pipeline_sender
 	touch $@
 
 data/tiles/users_tiles.tar.bz2: tile_generator/tile_generator db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res | data/tiles ## Generate vector tiles from osm_users_hex table (most active user per H3 hexagon cell) and archive it for further deploy to QA and production servers.

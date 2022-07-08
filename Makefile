@@ -150,6 +150,9 @@ deploy/geocint/reports: | deploy/geocint ## Directory for storing deploy ready O
 deploy/geocint/reports/test: | deploy/geocint ## Directory for storing deploy ready OpenStreetMap quality report files (testing).
 	mkdir -p $@
 
+deploy/geocint/reports/dev: | deploy/geocint ## Directory for storing deploy ready OpenStreetMap quality report files (developing).
+	mkdir -p $@
+
 deploy/geocint/reports/prod: | deploy/geocint ## Directory for storing deploy ready OpenStreetMap quality report files (production).
 	mkdir -p $@
 
@@ -811,7 +814,7 @@ deploy/s3/dev/reports/dev_reports_public: deploy/geocint/reports/dev/reports.tar
 	rm -rf ~/public_html/reports/dev_reports_public/
 	mkdir -p ~/public_html/reports/dev_reports_public/
 	tar -xzf ~/public_html/reports/dev_reports.tar.gz -C ~/public_html/reports/dev_reports_public/
-	aws s3 sync ~/public_html/reports/test_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/dev/ --profile geocint_pipeline_sender --acl public-read
+	aws s3 sync ~/public_html/reports/dev_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/dev/ --profile geocint_pipeline_sender --acl public-read
 	touch $@
 
 deploy/s3/prod/reports/prod_reports_public: deploy/geocint/reports/prod/reports.tar.gz | deploy/s3/prod/reports ## Putting reports to AWS prod reports folder in public bucket (PROD).

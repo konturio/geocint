@@ -2174,6 +2174,7 @@ db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/l
 	touch $@
 
 data/in/oam_images: | data/in ## Directory for storing oam-images, symlink to dir
+	unlink $@
 	ln -sf /mnt/evo4tb/oam_images $@
 
 data/in/oam_images_download: | data/in/oam_images ## Download images from OAM only not existing

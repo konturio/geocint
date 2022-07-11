@@ -878,7 +878,7 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 	# So we run wget twice because for the second time it uses cached query.
 
 	cat static_data/wikidata_population/wikidata_population_ranges.txt \
-		| parallel -j2 --colsep " " \
+		| parallel -j1 --colsep " " \
 			'seq 2 | xargs -I JUSTAPLACEHOLDER wget \
 				-nv \
 				"https://query.wikidata.org/sparql?query=SELECT \

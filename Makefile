@@ -3,7 +3,7 @@ current_date:=$(shell date '+%Y%m%d')
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/stats_tiles deploy/geocint/users_tiles deploy/s3/test/osm_users_hex_dump deploy/dev/stats_tiles deploy/dev/users_tiles deploy/test/stats_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/users_tiles deploy/s3/test/osm_users_hex_dump deploy/dev/users_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1880,79 +1880,6 @@ db/table/tile_logs_bf2402: | data/tile_logs/tiles-2022-02-23.txt.xz db/table ## 
 	psql -f tables/tile_stats_bf2402.sql
 	psql -f tables/tile_logs_bf2402_h3.sql
 	psql -c "call generate_overviews('tile_logs_bf2402_h3', '{view_count_bf2402}'::text[], '{sum}'::text[], 8);"
-	touch $@
-
-data/tiles/stats_tiles.tar.bz2: tile_generator/tile_generator db/table/bivariate_axis db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors db/table/stat_h3 db/table/osm_meta | data/tiles ## Generate vector tiles from stat_h3 table (main table with summarized statistics aggregated on H3 hexagons grid) and archive it for further deploy to QA and production servers.
-	# Generate vector tiles from stat_h3 table:
-	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/stats.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/stats
-	# Generate JSON style file for vector tiles from stat_h3:
-	psql -q -X -f scripts/export_osm_bivariate_map_axis.sql | sed s#\\\\\\\\#\\\\#g > data/tiles/stats/stat.json
-	# Archive vector tiles and style for further forvarding to QA and production servers.
-	cd data/tiles/stats/; tar cvf ../stats_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
-
-deploy/geocint/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/geocint ## Copy vector tiles from stat_h3 table to public_html folder to make them available online.
-	sudo mkdir -p /var/www/tiles; sudo chmod 777 /var/www/tiles
-	rm -rf /var/www/tiles/stats_new; mkdir -p /var/www/tiles/stats_new
-	cp -a data/tiles/stats/. /var/www/tiles/stats_new/
-	rm -rf /var/www/tiles/stats_old
-	mv /var/www/tiles/stats /var/www/tiles/stats_old; mv /var/www/tiles/stats_new /var/www/tiles/stats
-	touch $@
-
-deploy/dev/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/dev ## Deploy vector tiles from stat_h3 table to DEV server.
-	ansible zigzag_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible zigzag_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
-	ansible zigzag_live_dashboard -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		mkdir -p "$$HOME/public_html/tiles/stats"; \
-		tar -cjf "$$HOME/tmp/stats_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/stats" . ; \
-		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
-		function on_exit { rm -rf "$$TMPDIR"; }; \
-		trap on_exit EXIT; \
-		tar -xf "$$HOME/tmp/stats_tiles.tar.bz2" -C "$$TMPDIR"; \
-		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
-		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
-		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/stats"; \
-		rm -f "$$HOME/tmp/stats_tiles.tar.bz2"; \
-	'
-	touch $@
-
-deploy/test/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/test ## Deploy vector tiles from stat_h3 table to TEST QA server.
-	ansible sonic_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible sonic_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
-	ansible sonic_live_dashboard -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		mkdir -p "$$HOME/public_html/tiles/stats"; \
-		tar -cjf "$$HOME/tmp/stats_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/stats" . ; \
-		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
-		function on_exit { rm -rf "$$TMPDIR"; }; \
-		trap on_exit EXIT; \
-		tar -xf "$$HOME/tmp/stats_tiles.tar.bz2" -C "$$TMPDIR"; \
-		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
-		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
-		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/stats"; \
-		rm -f "$$HOME/tmp/stats_tiles.tar.bz2"; \
-	'
-	touch $@
-
-deploy/prod/stats_tiles: data/tiles/stats_tiles.tar.bz2 | deploy/prod ## Deploy vector tiles from stat_h3 table to PROD server.
-	ansible lima_live_dashboard -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible lima_live_dashboard -m copy -a 'src=data/tiles/stats_tiles.tar.bz2 dest=$$HOME/tmp/stats_tiles.tar.bz2'
-	ansible lima_live_dashboard -m shell -a 'warn:false' -a ' \
-		set -e; \
-		set -o pipefail; \
-		mkdir -p "$$HOME/public_html/tiles/stats"; \
-		tar -cjf "$$HOME/tmp/stats_tiles_prev.tar.bz2" -C "$$HOME/public_html/tiles/stats" . ; \
-		TMPDIR=$$(mktemp -d -p "$$HOME/tmp"); \
-		function on_exit { rm -rf "$$TMPDIR"; }; \
-		trap on_exit EXIT; \
-		tar -xf "$$HOME/tmp/stats_tiles.tar.bz2" -C "$$TMPDIR"; \
-		find "$$TMPDIR" -type d -exec chmod 0775 "{}" "+"; \
-		find "$$TMPDIR" -type f -exec chmod 0664 "{}" "+"; \
-		renameat2 -e "$$TMPDIR" "$$HOME/public_html/tiles/stats"; \
-		rm -f "$$HOME/tmp/stats_tiles.tar.bz2"; \
-	'
 	touch $@
 
 data/out/osm_users_hex.sql.gz: db/table/osm_users_hex | data/out  ## Select most active user per H3 hexagon cell dump.

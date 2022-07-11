@@ -704,10 +704,10 @@ db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/k
 	touch $@
 
 data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison db/table/osm_meta | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
-	psql -qXc "copy (select \"OSM id\", \"Admin level\", \"OSM name\", \"GADM name\" from osm_gadm_comparison order by id limit 10000) to stdout with (format csv, header true, delimiter ';');" > $@
+	psql -qXc "copy (select \"OSM id\", \"Admin level\", \"OSM name\", \"GADM name\" from osm_gadm_comparison order by id limit 10000) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g'  > $@
 
 data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | data/out/reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
-	psql -qXc "copy (select \"OSM id\", \"Name\", \"Admin level\", \"Population\", \"Population date\", \"Population source\", \"SUM subregions population\", \"Population difference value\", \"Population difference %\" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ';');" > $@
+	psql -qXc "copy (select \"OSM id\", \"Name\", \"Admin level\", \"Population\", \"Population date\", \"Population source\", \"SUM subregions population\", \"Population difference value\", \"Population difference %\" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
 
 data/out/reports/population_check_osm.csv: db/table/population_check_osm db/table/osm_meta | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
 	psql -qXc "copy (select \"OSM id\", \"Country\", \"Name\", \"OSM population date\", \"OSM population\", \"Kontur population\", \"Wikidata population\", \"OSM-Kontur Population difference\", \"Wikidata-Kontur Population difference\" from population_check_osm order by abs(\"OSM-Kontur Population difference\") desc limit 1000) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
@@ -720,7 +720,7 @@ data/out/reports/osm_missing_roads.csv: db/table/osm_missing_roads | data/out/re
 	psql -qXc "copy (select row_number() over() as id, h3 as \"H3 index\", \"Country\", \"OSM roads length, km\", \"Facebook roads length, km\", \"Place bounding box\" from osm_missing_roads order by diff desc limit 5000) to stdout with (format csv, header true, delimiter ';');" > $@
 
 data/out/reports/osm_missing_boundaries_report.csv: db/table/osm_missing_boundaries_report | data/out/reports ## Export OSM missing boundaries report to CSV with semicolon delimiter.
-	psql -qXc 'copy (select "OSM id", "Admin level", "Name", "Country" from osm_missing_boundaries_report order by id) to stdout with (format csv, header true, delimiter ";");' > $@
+	psql -qXc 'copy (select "OSM id", "Admin level", "Name", "Country" from osm_missing_boundaries_report order by id) to stdout with (format csv, header true, delimiter ";");' | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
 
 data/out/reports/osm_reports_list_test.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (development version)
 	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' | sed 's/\@\@\@\@\@/\/test/g' > $@

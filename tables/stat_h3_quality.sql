@@ -69,7 +69,8 @@ create table stat_h3_quality as (
                 avg(a.cyclone_days_count) as agg_cyclone_days_count,
                 avg(a.wildfire_days_count) as agg_wildfire_days_count,
                 avg(a.volcano_days_count) as agg_volcano_days_count,
-                avg(a.flood_days_count) as agg_flood_days_count
+                avg(a.flood_days_count) as agg_flood_days_count,
+                avg(a.powerlines::float) as agg_powerlines
             from
                 stat_h3 a
             where

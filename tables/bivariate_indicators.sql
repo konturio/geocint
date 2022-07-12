@@ -319,6 +319,11 @@ values ('view_count_bf2402', 'OSM Map Views 30 days before 24.02.2022',
         jsonb_build_array('© Kontur', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('powerlines', 'Medium voltage powerlines distribution', jsonb_build_array(
+        '©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps'),
+        '[["bad"], ["good"]]'::jsonb);
+
 -- We use unimportant - important+bad for Multi-hazard risk, Multi-hazard exposure and Vulnerability 
 -- because PDC does something only about regions that are under disasters
 -- Also for this reason we use important+bad - good for Coping capacity and Resilience

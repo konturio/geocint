@@ -345,6 +345,29 @@ db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 res
 	psql -f procedures/generate_overviews.sql
 	touch $@
 
+data/in/facebook: | data/in  ## Directory for Facebook data
+	mkdir -p $@
+
+data/in/facebook/medium_voltage_distribution: | data/in/facebook  ## Directory for Facebook Medium Voltage Distribution csvs
+	mkdir -p $@
+
+data/in/facebook/medium_voltage_distribution/downloaded: | data/in/facebook/medium_voltage_distribution  ## Download Facebook Medium Voltage Distribution csvs
+	cat static_data/facebook/medium-voltage-distribution-sources.txt | xargs -P 8 -I {} wget -nv -nc {} --directory-prefix=data/in/facebook/medium_voltage_distribution
+	wget -nc -nv --input-file=static_data/facebook/medium-voltage-distribution-sources.txt --directory-prefix=data/in/facebook/medium_voltage_distribution
+	touch $@
+
+db/table/facebook_medium_voltage_distribution_in: data/in/facebook/medium_voltage_distribution/downloaded | db/table  ## Load CSVs
+	psql -c "drop table if exists facebook_medium_voltage_distribution_in;"
+	psql -c "create table facebook_medium_voltage_distribution_in (lat float, lon float, value int);"
+	ls data/in/facebook/medium_voltage_distribution/*.csv | \
+		parallel \
+			"psql -c \"\copy facebook_medium_voltage_distribution_in (lat, lon, value) from '{}' with csv header delimiter ',';\""
+	touch $@
+
+db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/table  ## Put Facebook Medium Voltage Distribution on H3
+	psql -f tables/facebook_medium_voltage_distribution_h3.sql
+	touch $@
+
 data/in/facebook_roads: | data/in ## Directory for Facebook roads downloaded data.
 	mkdir -p $@
 
@@ -1821,7 +1844,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 

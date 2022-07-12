@@ -1,0 +1,6 @@
+https://energydata.info/dataset/a517e25c-8ae3-44eb-817c-d843ec74d2f7/resource/bba60922-5189-4722-8398-c51ae9206d84/download/electrical_grid_cote_divoire_15.csv
+https://energydata.info/dataset/a517e25c-8ae3-44eb-817c-d843ec74d2f7/resource/88d9632a-1488-400a-a245-e6c5f90f67df/download/electrical_grid_democratic_republic_of_congo_15.csv
+https://energydata.info/dataset/a517e25c-8ae3-44eb-817c-d843ec74d2f7/resource/e12592a3-73d4-4192-898e-4fbdd8f4b12a/download/electrical_grid_malawi_15.csv
+https://energydata.info/dataset/a517e25c-8ae3-44eb-817c-d843ec74d2f7/resource/78264b52-5388-4253-918d-d8358d8d66b1/download/electrical_grid_nigeria_15.csv
+https://energydata.info/dataset/a517e25c-8ae3-44eb-817c-d843ec74d2f7/resource/c6b51d1c-da33-4227-9f5b-f69ab340056e/download/electrical_grid_uganda_15.csv
+https://energydata.info/dataset/a517e25c-8ae3-44eb-817c-d843ec74d2f7/resource/46d8dc9d-a2f7-406c-ad73-a2668282f678/download/electrical_grid_zambia_15.csv

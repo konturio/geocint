@@ -287,6 +287,13 @@ where
 
 update bivariate_axis
 set
+    label = 'Medium voltage powerlines distribution',
+where
+      numerator = 'powerlines'
+  and denominator = 'one';
+
+update bivariate_axis
+set
     label = 'OSM roads completeness',
     p75 = 0.9,
     max = 1.01

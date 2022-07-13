@@ -364,7 +364,7 @@ db/table/facebook_medium_voltage_distribution_in: data/in/facebook/medium_voltag
 			"psql -c \"\copy facebook_medium_voltage_distribution_in (lat, lon, value) from '{}' with csv header delimiter ',';\""
 	touch $@
 
-db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/table  ## Put Facebook Medium Voltage Distribution on H3. 
+db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/table  ## Put Facebook Medium Voltage Distribution on H3
 	psql -f tables/facebook_medium_voltage_distribution_h3.sql
 	touch $@
 

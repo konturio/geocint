@@ -287,7 +287,7 @@ where
 
 update bivariate_axis
 set
-    label = 'Medium voltage powerlines distribution',
+    label = 'Medium voltage powerlines distribution'
 where
       numerator = 'powerlines'
   and denominator = 'one';

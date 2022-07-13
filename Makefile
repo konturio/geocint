@@ -351,7 +351,7 @@ data/in/facebook: | data/in  ## Directory for Facebook data
 data/in/facebook/medium_voltage_distribution: | data/in/facebook  ## Directory for Facebook Medium Voltage Distribution csvs
 	mkdir -p $@
 
-data/in/facebook/medium_voltage_distribution/downloaded: | data/in/facebook/medium_voltage_distribution  ## Download Facebook Medium Voltage Distribution csvs
+data/in/facebook/medium_voltage_distribution/downloaded: | data/in/facebook/medium_voltage_distribution  ## Download Facebook Medium Voltage Distribution csvs.
 	cat static_data/facebook/medium-voltage-distribution-sources.txt | xargs -P 8 -I {} wget -nv -nc {} --directory-prefix=data/in/facebook/medium_voltage_distribution
 	wget -nc -nv --input-file=static_data/facebook/medium-voltage-distribution-sources.txt --directory-prefix=data/in/facebook/medium_voltage_distribution
 	touch $@
@@ -364,7 +364,7 @@ db/table/facebook_medium_voltage_distribution_in: data/in/facebook/medium_voltag
 			"psql -c \"\copy facebook_medium_voltage_distribution_in (lat, lon, value) from '{}' with csv header delimiter ',';\""
 	touch $@
 
-db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/table  ## Put Facebook Medium Voltage Distribution on H3
+db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/table  ## Put Facebook Medium Voltage Distribution on H3. 
 	psql -f tables/facebook_medium_voltage_distribution_h3.sql
 	touch $@
 

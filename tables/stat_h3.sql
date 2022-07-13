@@ -423,7 +423,7 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(disaster_event_episodes_h3.cyclone_days_count, 0))::float as cyclone_days_count,
            (coalesce(disaster_event_episodes_h3.volcano_days_count, 0))::float as volcano_days_count,
            (coalesce(disaster_event_episodes_h3.flood_days_count, 0))::float as flood_days_count,
-           (coalesce(facebook_medium_voltage_distribution_h3.powerlines, 0)) as powerlines,
+           (coalesce(facebook_medium_voltage_distribution_h3.powerlines, 0))::float as powerlines,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2020_h3 g on (a.h3 = g.h3)
@@ -431,7 +431,7 @@ create table stat_h3 tablespace evo4tb as (
          left join pf_maxtemp_h3 pf on (a.h3 = pf.h3)
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)
          left join global_rva_h3 rva on (a.h3 = rva.h3)
-         left join disaster_event_episodes_h3 on (a.h3 = disaster_event_episodes_h3.h3),
+         left join disaster_event_episodes_h3 on (a.h3 = disaster_event_episodes_h3.h3)
          left join facebook_medium_voltage_distribution_h3 on (a.h3 = facebook_medium_voltage_distribution_h3.h3),
          ST_HexagonFromH3(a.h3) hex
 );

@@ -2146,3 +2146,15 @@ db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db
 db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3_r8 | db/table  ## hexagonify kontur-public event geometries
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
+
+data/in/nightlights: | data/in
+	mkdir -p $@
+
+data/in/nightlights/download: | data/in/nightlights  ## download, tile, pack and upload nightlights rasters
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/nightlights/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz data/in/nightlights/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz --profile geocint_pipeline_sender
+	gzip -dk data/in/nightlights/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz
+	mkdir data/in/nightlights/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked
+	gdal_retile.py -ps 1024 1024 -targetDir data/in/nightlights/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked data/in/nightlights/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif
+	gdalbuildvrt data/in/nightlights/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.vrt VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked/*.tif
+	tar cf data/in/nightlights/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.tar.bz2 --use-compress-prog=pbzip2 data/in/nightlights/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked
+	aws s3 cp data/in/nightlights/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.tar.bz2 s3://geodata-eu-central-1-kontur/private/geocint/data/in/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.tar.bz2 --profile geocint_pipeline_sender

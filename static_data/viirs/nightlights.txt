@@ -1,0 +1,1 @@
+https://eogdata.mines.edu/nighttime_light/annual/v21/2021/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz

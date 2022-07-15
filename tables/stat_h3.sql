@@ -22,7 +22,7 @@ create table stat_h3_in tablespace evo4tb as (
            coalesce(sum(total_hours), 0) as total_hours,
            coalesce(sum(view_count), 0) as view_count,
            coalesce(sum(wildfires), 0) as wildfires,
-		   coalesce(sum(covid19_vaccines), 0) as covid19_vaccines,
+           coalesce(sum(covid19_vaccines), 0) as covid19_vaccines,
            coalesce(sum(covid19_confirmed), 0) as covid19_confirmed,
            coalesce(sum(population_prev), 0) as population_prev,
            coalesce(sum(industrial_area), 0) as industrial_area,
@@ -424,6 +424,7 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(disaster_event_episodes_h3.volcano_days_count, 0))::float as volcano_days_count,
            (coalesce(disaster_event_episodes_h3.flood_days_count, 0))::float as flood_days_count,
            (coalesce(facebook_medium_voltage_distribution_h3.powerlines, 0))::float as powerlines,
+           (coalesce(nl.intensity, 0))::float as night_lights_intensity,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2020_h3 g on (a.h3 = g.h3)
@@ -432,7 +433,8 @@ create table stat_h3 tablespace evo4tb as (
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)
          left join global_rva_h3 rva on (a.h3 = rva.h3)
          left join disaster_event_episodes_h3 on (a.h3 = disaster_event_episodes_h3.h3)
-         left join facebook_medium_voltage_distribution_h3 on (a.h3 = facebook_medium_voltage_distribution_h3.h3),
+         left join facebook_medium_voltage_distribution_h3 on (a.h3 = facebook_medium_voltage_distribution_h3.h3)
+         left join night_lights_h3 nl on (a.h3 = nl.h3),
          ST_HexagonFromH3(a.h3) hex
 );
 drop table stat_h3_in;
@@ -446,7 +448,7 @@ create index stat_h3_brin_pt1 on stat_h3 using brin (
                                                      evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest,
                                                      min_ts, residential, view_count, count_6_months, total_road_length,
                                                      view_count_bf2402, mhr_index, mhe_index, resilience_index, 
-                                                     coping_capacity_index, vulnerability_index
+                                                     coping_capacity_index, vulnerability_index, night_lights_intensity
     );
 create index stat_h3_brin_pt2 on stat_h3 using brin (
                                                      gdp, highway_length_6_months, wildfires, avg_elevation, avg_ndvi,

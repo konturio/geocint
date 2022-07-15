@@ -66,6 +66,7 @@ from
             wildfire_days_count,
             volcano_days_count,
             flood_days_count,
+            night_lights_intensity,
             ST_AsMVTGeom(geom, ST_TileEnvelope($1, $2, $3), 8192, 64, true) as geom
         from stat_h3
         where zoom = $1

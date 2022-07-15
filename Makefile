@@ -95,6 +95,12 @@ data/mid/foursquare: | data/mid ## Directory for storing unzipped foursquare dat
 data/mid/wb/gdp: | data/mid ## Intermediate GDP (Gross domestic product) World Bank data.
 	mkdir -p $@
 
+data/in/raster/VNL_v21_npp_2021_global: | data/in/raster ## Directory for Night Lights data (Harmonized_DN_NTL_2021_simVIIRS).
+	mkdir -p $@
+
+data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked: | data/mid ## Directory for storing unzipped Night Lights data.
+	mkdir -p $@
+
 data/in/raster/gebco_2020_geotiff: | data/in/raster ## Directory for GEBCO (General Bathymetric Chart of the Oceans) dataset.
 	mkdir -p $@
 
@@ -536,6 +542,30 @@ db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table #
 
 db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
 	psql -f tables/osm_residential_landuse.sql
+	touch $@
+
+data/in/raster/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz: | data/in/raster/VNL_v21_npp_2021_global  ## download, tile, pack and upload nightlights rasters
+	## this archive was downloaded manually from eogdata.mines.edu
+	## link is stored in static-data/viirs/nightlights.txt but you might want to download a newer one.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/raster/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz $@ --profile geocint_pipeline_sender
+	touch $@
+
+data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked_cut_into_tiles: data/in/raster/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz | data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked ## Unzip and cut to tiles
+	rm -f data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked/*
+	gzip -dfk data/in/raster/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz
+	gdal_retile.py -ps 1024 1024 -targetDir data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked data/in/raster/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif
+	gdalbuildvrt data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.vrt data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked/*.tif
+	touch $@
+
+db/table/night_lights_raster: data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked_cut_into_tiles | db/table ## Loading night lights raster to dartabase
+	psql -c "drop table if exists night_lights_raster"
+	raster2pgsql -p -Y -s data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked/*.tif -t auto night_lights_raster | psql -q
+	ls data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked/*.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto night_lights_raster | psql -q'
+	touch $@
+
+db/table/night_lights_h3: db/table/night_lights_raster | db/table ## Count intensity of night lights into h3 hexagons and generate overviews.
+	psql -f tables/night_lights_h3.sql
+	psql -c "call generate_overviews('night_lights_h3', '{intensity}'::text[], '{avg}'::text[], 8);"
 	touch $@
 
 data/in/raster/gebco_2020_geotiff/gebco_2020_geotiff.zip: | data/in/raster/gebco_2020_geotiff ## Download GEBCO (General Bathymetric Chart of the Oceans) bathymetry zipped raster dataset.
@@ -1844,7 +1874,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 

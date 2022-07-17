@@ -1,4 +1,5 @@
 drop table if exists night_lights_h3;
+set h3.strict = 'off';
 create table night_lights_h3 as (
     select h3,
            8          as resolution,

@@ -300,3 +300,10 @@ set
 where
       numerator = 'highway_length'
   and denominator = 'total_road_length';
+
+update bivariate_axis
+set
+    label = 'VIIRS Nighttime lights intensity'
+where
+      numerator = 'night_lights_intensity'
+  and denominator = 'one';

@@ -7,31 +7,6 @@ select coalesce(tags ->> 'name:en', tags ->> 'int_name', name) as name_en,
 from osm_admin_boundaries where admin_level = '2';
 create index on country_boundaries_subdivided_in using gist(geom);
 
--- Count buildings without using osm buildings where
-drop table if exists building_count_for_missing_roads_grid_h3;
-create table building_count_for_missing_roads_grid_h3 as (
-    select h3,
-           max(building_count) as building_count
-    from (
-             select h3, building_count
-             from morocco_buildings_h3
-             union all
-             select h3, building_count
-             from microsoft_buildings_h3
-             union all
-             select h3, building_count
-             from geoalert_urban_mapping_h3
-             union all
-             select h3, building_count
-             from new_zealand_buildings_h3
-             union all
-             select h3, building_count
-             from abu_dhabi_buildings_h3
-         ) z
-    where building_count > 1
-    group by 1
-);
-
 -- Missing roads table based on difference between OpenStreetMap and Facebook datasets
 drop table if exists osm_missing_roads;
 create table osm_missing_roads as
@@ -45,9 +20,9 @@ with q as (select distinct on (s.h3, b.name_en) s.h3 as h3, -- on h3 can interse
     left join country_boundaries_subdivided_in b
         on ST_Intersects(s.h3::geometry, b.geom)
     where s.total_road_length > 0   -- fb roads
-        and population > 20 -- take only places with population more than 20
+        and population > 2 -- take only places with population more than 2
         and s.resolution = 8
-        and s.h3 in (select h3 from building_count_for_missing_roads_grid_h3)),-- take only places with building_count more than 1
+        and s.total_building_count > 1),-- take only places with building_count more than 1
 res as (select h3, q.name_en, geom,
         -- doing this to take only N biggest diffs, N=100
         -- and biggest rounded to .1 diff within country and h3 w/ highest population 
@@ -81,5 +56,4 @@ from res
 where rank_by_cnt < 101; --limit to 100 for each country
 
 -- Drop temporary tables
-drop table if exists building_count_for_missing_roads_grid_h3;
 drop table if exists country_boundaries_subdivided_in;

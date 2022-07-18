@@ -39,6 +39,7 @@ sudo pip3 install pandas
 git pull --rebase --autostash || { git stash && git pull && echo 'git rebase autostash failed, stash and pull executed' | python3 scripts/slack_message.py geocint "Nightly build" cat; }
 
 profile_make clean
+echo ?$
 
 # Check name of current git branch
 branch="$(git rev-parse --abbrev-ref HEAD)"

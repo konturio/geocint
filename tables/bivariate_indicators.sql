@@ -361,7 +361,17 @@ values ('night_lights_intensity', 'VIIRS Nighttime lights', jsonb_build_array(
         'C. D. Elvidge, M. Zhizhin, T. Ghosh, F-C. Hsu, "Annual time series of global VIIRS nighttime lights derived from monthly averages: 2012 to 2019", Remote Sensing (In press)'),
         '[["unimportant"], ["important"]]'::jsonb);
 
--- set indicator is_base to become denominators 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('eatery_count', 'Number of OSM eatery places', jsonb_build_array(
+        '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        '[["unimportant"], ["important"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('food_shops_count', 'Number of OSM food shops', jsonb_build_array(
+        '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        '[["unimportant"], ["important"]]'::jsonb);
+
+-- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true
 where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2', 'one', 'total_road_length');

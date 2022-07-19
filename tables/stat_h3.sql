@@ -375,7 +375,7 @@ create table stat_h3_in tablespace evo4tb as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
@@ -390,7 +390,7 @@ create table stat_h3_in tablespace evo4tb as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,

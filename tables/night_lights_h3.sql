@@ -1,4 +1,5 @@
 drop table if exists night_lights_h3;
+-- Set strict mode of h3 library to avoid error with longitude which is slightly more than 180 deg (180.000003)
 set h3.strict = 'off';
 create table night_lights_h3 as (
     select h3,

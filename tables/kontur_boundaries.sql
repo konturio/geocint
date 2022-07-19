@@ -186,3 +186,7 @@ delete from kontur_boundaries
 
 -- Add index for join with using hasc
 create index on kontur_boundaries using btree(hasc_wiki);
+
+-- Add index for gridfinder
+create index idx_kontur_boundaries_kontur_admin_level on kontur_boundaries (kontur_admin_level);
+create index idx_kontur_boundaries_geom_geography on kontur_boundaries using gis(geom::geography);

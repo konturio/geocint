@@ -13,4 +13,5 @@ create table hdx_boundaries as (
         on hdx.wikicode = kbnd.tags ->> 'wikidata'
 );
 
-create index on hdx_boundaries using gist(geom);
+create index idx_hdx_boundaries_geom on hdx_boundaries using gist(geom);
+create index idx_hdx_boundaries_geom_geography on hdx_boundaries using gist(geom::geography);

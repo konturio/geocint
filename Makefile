@@ -646,15 +646,15 @@ data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt: data/mid/gebco_2022_geotiff/g
 
 data/mid/gebco_2022_geotiff/gebco_2022_merged.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt ## GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry raster (2022) converted from virtual raster (EPSG-4087).
 	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -t_srs epsg:4087 -r bilinear -of COG data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -t_srs epsg:4087 -co "BIGTIFF=YES" -r bilinear -of COG data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt $@
 
 data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.tif ## Slope raster calculated from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4087).
 	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdaldem slope -of COG data/mid/gebco_2022_geotiff/gebco_2022_merged.tif $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdaldem slope -of COG -co "BIGTIFF=YES" data/mid/gebco_2022_geotiff/gebco_2022_merged.tif $@
 
 data/mid/gebco_2022_geotiff/gebco_2022_merged_4326_slope.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif ## Slope raster calculated from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4326).
 	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -t_srs EPSG:4326 -of COG -multi data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -t_srs EPSG:4326 -of COG -co "BIGTIFF=YES" -multi data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif $@
 
 db/table/gebco_2022_slopes: data/mid/gebco_2022_geotiff/gebco_2022_merged_4326_slope.tif | db/table ## GEBCO 2022 (General Bathymetric Chart of the Oceans) slope raster data imported into database.
 	psql -c "drop table if exists gebco_2022_slopes;"

@@ -104,6 +104,9 @@ data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.
 data/in/raster/gebco_2020_geotiff: | data/in/raster ## Directory for GEBCO (General Bathymetric Chart of the Oceans) dataset.
 	mkdir -p $@
 
+data/in/raster/gebco_2022_geotiff: | data/in/raster ## Directory for GEBCO 2022 (General Bathymetric Chart of the Oceans) dataset.
+	mkdir -p $@
+
 data/mid/ndvi_2019_06_10: | data/mid ## Directory for NDVI rasters.
 	mkdir -p $@
 
@@ -622,6 +625,64 @@ db/table/gebco_2020_h3: db/table/gebco_2020_slopes_h3 db/table/gebco_2020_elevat
 	psql -f tables/gebco_2020_h3.sql
 	psql -c "call generate_overviews('gebco_2020_h3', '{avg_slope, avg_elevation}'::text[], '{avg, avg}'::text[], 8);"
 	psql -c "create index on gebco_2020_h3 (h3);"
+	touch $@
+
+data/in/raster/gebco_2022_geotiff/gebco_2022_geotiff.zip: | data/in/raster/gebco_2022_geotiff ## Download GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry zipped raster dataset.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/gebco_2022_geotiff/gebco_2022_geotiff.zip $@ --profile geocint_pipeline_sender
+	touch $@
+
+data/mid/gebco_2022_geotif: | data/mid ## Create folder for unzipping GEBCO 2022 rasters
+	mkdir -p $@
+
+data/mid/gebco_2022_geotiff/gebco_2022_geotiffs_unzip: data/in/raster/gebco_2022_geotiff/gebco_2022_geotiff.zip | data/mid/gebco_2022_geotif ## Unzip GEBCO 2022 (General Bathymetric Chart of the Oceans) rasters.
+	rm -f data/mid/gebco_2022_geotiff/*.tif
+	unzip -o data/in/raster/gebco_2022_geotiff/gebco_2022_geotiff.zip -d data/mid/gebco_2022_geotiff/
+	rm -f data/mid/gebco_2022_geotiff/*.pdf
+	touch $@
+
+data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt: data/mid/gebco_2022_geotiff/gebco_2022_geotiffs_unzip ## Virtual raster from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset.
+	rm -f data/mid/gebco_2022_geotiff/*.vrt
+	gdalbuildvrt $@ data/mid/gebco_2022_geotiff/gebco_2022_n*.tif
+
+data/mid/gebco_2022_geotiff/gebco_2022_merged.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt ## GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry raster (2022) converted from virtual raster (EPSG-4087).
+	rm -f $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -t_srs epsg:4087 -r bilinear -of COG data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt $@
+
+data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.tif ## Slope raster calculated from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4087).
+	rm -f $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdaldem slope -of COG data/mid/gebco_2022_geotiff/gebco_2022_merged.tif $@
+
+data/mid/gebco_2022_geotiff/gebco_2022_merged_4326_slope.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif ## Slope raster calculated from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4326).
+	rm -f $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -t_srs EPSG:4326 -of COG -multi data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif $@
+
+db/table/gebco_2022_slopes: data/mid/gebco_2022_geotiff/gebco_2022_merged_4326_slope.tif | db/table ## GEBCO 2022 (General Bathymetric Chart of the Oceans) slope raster data imported into database.
+	psql -c "drop table if exists gebco_2022_slopes;"
+	raster2pgsql -M -Y -s 4326 data/mid/gebco_2022_geotiff/gebco_2022_merged_4326_slope.tif -t auto gebco_2022_slopes | psql -q
+	touch $@
+
+db/table/gebco_2022_slopes_h3: db/table/gebco_2022_slopes | db/table ## GEBCO 2022 (General Bathymetric Chart of the Oceans) slope data in h3.
+	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2022_slopes -v table_name_h3=gebco_2022_slopes_h3 -v aggr_func=avg -v item_name=avg_slope_gebco_2022
+	psql -c "create index on gebco_2022_slopes_h3 (h3);"
+	touch $@
+
+data/mid/gebco_2022_geotiff/gebco_2022_merged_4326.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt ## GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry raster converted from virtual raster (EPSG-4326).
+	rm -f $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdal_translate -r bilinear -of COG -co "BIGTIFF=YES" data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt $@
+
+db/table/gebco_2022_elevation: data/mid/gebco_2022_geotiff/gebco_2022_merged_4326.tif | db/table ## GEBCO 2022 (General Bathymetric Chart of the Oceans) elevation raster data imported into database.
+	psql -c "drop table if exists gebco_2022_elevation;"
+	raster2pgsql -M -Y -s 4326 data/mid/gebco_2022_geotiff/gebco_2022_merged_4326.tif -t auto gebco_2022_elevation | psql -q
+	touch $@
+
+db/table/gebco_2022_elevation_h3: db/table/gebco_2022_elevation | db/table ## GEBCO 2022 (General Bathymetric Chart of the Oceans) elevation data in h3.
+	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2022_elevation -v table_name_h3=gebco_2022_elevation_h3 -v aggr_func=avg -v item_name=avg_elevation_gebco_2022
+	touch $@
+
+db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 | db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
+	psql -f tables/gebco_2022_h3.sql
+	psql -c "call generate_overviews('gebco_2022_h3', '{avg_slope_gebco_2022, avg_elevation_gebco_2022}'::text[], '{avg, avg}'::text[], 8);"
+	psql -c "create index on gebco_2022_h3 (h3);"
 	touch $@
 
 data/mid/ndvi_2019_06_10/generate_ndvi_tifs: | data/mid/ndvi_2019_06_10 ## NDVI rasters generated from Sentinel 2 data.
@@ -1891,7 +1952,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 

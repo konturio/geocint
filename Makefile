@@ -3,7 +3,7 @@ current_date:=$(shell date '+%Y%m%d')
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/users_tiles deploy/s3/test/osm_users_hex_dump deploy/dev/users_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/users_tiles deploy/s3/test/osm_users_hex_dump deploy/dev/users_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes data/mid/mapswipe/mapswipe_s3_data_update ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -14,7 +14,7 @@ prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/clea
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -86,7 +86,16 @@ data/mid/gadm: | data/mid ## Unzipped GADM (Database of Global Administrative Ar
 data/in/wb/gdp: | data/in ## Directory for storing downloaded GDP (Gross domestic product) World Bank datasets.
 	mkdir -p $@
 
-data/in/foursquare: | data/in ## Directory for storing foursquare places and visits data
+data/in/mapswipe: | data/in ## Directory for storing downloaded mapswipe data.
+	mkdir -p $@
+
+data/mid/mapswipe: | data/in ## Directory for storing temporary mapswipe data.
+	mkdir -p $@
+
+data/mid/mapswipe/ym_files: | data/mid/mapswipe ## Directory for storing yes-maybe mapswipe files.
+	mkdir -p $@
+
+data/in/foursquare: | data/in ## Directory for storing foursquare places and visits data.
 	mkdir -p $@
 
 data/mid/foursquare: | data/mid ## Directory for storing unzipped foursquare data
@@ -545,6 +554,67 @@ db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table #
 
 db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
 	psql -f tables/osm_residential_landuse.sql
+	touch $@
+
+data/in/mapswipe/mapswipe.zip: | data/in/mapswipe ## Download zip with files
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/mapswipe.zip $@ --profile geocint_pipeline_sender
+	touch $@
+
+data/mid/mapswipe/ym_files/unzip: data/in/mapswipe/mapswipe.zip | data/mid/mapswipe/ym_files ## unzip mapswipe yes-maybe data
+	rm -f data/mid/mapswipe/ym_files/*.geojson
+	unzip -qq data/in/mapswipe/mapswipe.zip -d data/mid/mapswipe/ym_files/
+	touch $@
+	
+data/in/mapswipe/projects_new.csv: | data/in/mapswipe ## Dowload actual overview of mapswipe projects.
+	rm -f data/in/mapswipe/projects_new.csv
+	wget https://apps.mapswipe.org/api/projects/projects.csv -O $@
+
+data/in/mapswipe/projects_old.csv: | data/in/mapswipe ## Dowload previous overview of mapswipe projects.
+	rm -f data/in/mapswipe/projects_old.csv
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/projects_old.csv $@ --profile geocint_pipeline_sender
+	touch $@
+
+data/in/mapswipe/projects_old_update: data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv | data/in/mapswipe ## update previous mapswipe projects overview on s3.
+	aws s3 cp data/in/mapswipe/projects_old.csv s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/projects_old.csv --profile geocint_pipeline_sender
+	touch $@
+
+db/table/mapswipe_projects_new: data/in/mapswipe/projects_new.csv | db/table ## Loading new mapswipe overview data to database.
+	psql -c "drop table if exists mapswipe_projects_new;"
+	psql -c "create table mapswipe_projects_new (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
+	cat data/in/mapswipe/projects_new.csv | psql -c "copy mapswipe_projects_new from stdin with csv header;"
+	touch $@
+
+db/table/mapswipe_projects_old: data/in/mapswipe/projects_old.csv | db/table ## Loading new mapswipe overview data to database.
+	psql -c "drop table if exists mapswipe_projects_old;"
+	psql -c "create table mapswipe_projects_old (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
+	cat data/in/mapswipe/projects_old.csv | psql -c "copy mapswipe_projects_old from stdin with csv header;"
+	touch $@
+
+data/mid/mapswipe/mapswipe_delta.csv: db/table/mapswipe_projects_new db/table/mapswipe_projects_old | data/mid/mapswipe ## Check mapswipe data to find differences.
+	psql -f tables/mapswipe_delta.sql
+	psql -qXc "copy (select * from mapswipe_delta) to stdout with (format csv, header false, delimiter ';');" > $@
+
+data/mid/mapswipe/ym_files/update: data/mid/mapswipe/ym_files/unzip data/mid/mapswipe/mapswipe_delta.csv | data/mid/mapswipe/ym_files ## update mapswipe data with fresh files
+	cat data/mid/mapswipe/mapswipe_delta.csv | xargs -I {} rm -f data/mid/mapswipe/ym_files/yes_maybe_{}.geojson
+	## we need for || true to avoid crushing this target through of 404 not found error
+	cat data/mid/mapswipe/mapswipe_delta.csv | xargs -I {} echo 'https://apps.mapswipe.org/api/yes_maybe/yes_maybe_{}.geojson'| parallel -j5 'wget -O -q -P data/mid/mapswipe/ym_files/ {1}' || true
+	touch $@
+
+data/mid/mapswipe/mapswipe_s3_data_update: data/in/mapswipe/projects_old_update data/mid/mapswipe/ym_files/update | data/mid/mapswipe ## Zip updated geojsonl and load to s3
+	rm -f data/mid/mapswipe/mapswipe.zip
+	cd data/mid/mapswipe/ym_files/ ; zip ~/geocint/data/mid/mapswipe/mapswipe.zip *.geojson
+	aws s3 cp data/mid/mapswipe/mapswipe.zip s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/mapswipe.zip --profile geocint_pipeline_sender
+	touch $@
+
+db/table/mapswipe_hot_tasking_data: data/mid/mapswipe/ym_files/update | db/table ## Loading mapswipe hot tasking geojsons to database
+	psql -c "drop table if exists mapswipe_hot_tasking_data;"
+	psql -c "create table mapswipe_hot_tasking_data (id integer, geom geometry(POLYGON,4326));"
+	ls -S data/mid/mapswipe/ym_files/*.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln mapswipe_hot_tasking_data -nlt POLYGON --config PG_USE_COPY YES'
+	touch $@
+
+db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 db/procedure/generate_overviews | db/table ## Create h3 table with mapswipe data
+	psql -f tables/mapswipe_hot_tasking_data_h3.sql
+	psql -c "call generate_overviews('mapswipe_hot_tasking_data_h3', '{mapswipe_area}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 data/in/raster/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz: | data/in/raster/VNL_v21_npp_2021_global  ## download, tile, pack and upload nightlights rasters
@@ -1952,7 +2022,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/covid19_vaccine_accept_us_counties_h3 db/table/copernicus_forest_h3 db/table/gebco_2020_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 

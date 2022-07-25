@@ -381,6 +381,11 @@ values ('food_shops_count', 'Number of OSM food shops', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["unimportant"], ["important"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('mapswipe_area', 'MapSwipe populated area', jsonb_build_array(
+        'Copyright © 2022 MapSwipe https://mapswipe.org/en/privacy.html'),
+        '[["unimportant"], ["important"]]'::jsonb);
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

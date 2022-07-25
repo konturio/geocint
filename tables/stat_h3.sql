@@ -42,6 +42,7 @@ create table stat_h3_in tablespace evo4tb as (
            coalesce(sum(view_count_bf2402), 0) as view_count_bf2402,
            coalesce(sum(volcanos_count), 0) as eatery_count,
            coalesce(sum(volcanos_count), 0) as food_shops_count,
+           coalesce(sum(mapswipe_area), 0) as mapswipe_area,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
@@ -56,7 +57,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_object_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -71,7 +72,7 @@ create table stat_h3_in tablespace evo4tb as (
                     populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from kontur_population_h3
              union all
              select h3, null::float as count, null::float as count_6_months,null::float as building_count,
@@ -86,7 +87,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from gdp_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -101,7 +102,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, h3_get_resolution(h3) as resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, h3_get_resolution(h3) as resolution
              from user_hours_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -116,7 +117,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, h3_get_resolution(h3) as resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, h3_get_resolution(h3) as resolution
              from residential_pop_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -131,7 +132,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from tile_logs_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -146,7 +147,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from building_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -161,7 +162,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from global_fires_stat_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -176,7 +177,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from covid19_vaccine_accept_us_counties_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -191,7 +192,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from covid19_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -206,7 +207,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from kontur_population_v3_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -221,7 +222,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_landuse_industrial_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -236,7 +237,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_volcanos_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -250,7 +251,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from us_census_tracts_stats_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -265,7 +266,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, man_distance as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from isodist_fire_stations_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -280,7 +281,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, man_distance as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from isodist_hospitals_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -295,7 +296,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     fb_roads_length as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from facebook_roads_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -310,7 +311,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from foursquare_places_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -325,7 +326,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from foursquare_visits_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -340,7 +341,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from tile_logs_bf2402_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -355,7 +356,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_road_segments_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -370,7 +371,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, resolution
+                    null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_road_segments_6_months_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -385,7 +386,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    eatery_count, null::float as food_shops_count, resolution
+                    eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_places_eatery_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -400,9 +401,23 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as fb_roads_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, food_shops_count, resolution
+                    null::float as eatery_count, food_shops_count, null::float as mapswipe_area,resolution
              from osm_places_food_shops_h3
-
+             union all
+             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
+                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
+                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
+                    null::float as wildfires, null::float as covid19_vaccines, null::float as covid19_confirmed,
+                    null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
+                    null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
+                    null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area,
+                    null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
+                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as eatery_count, null::float as food_shops_count, mapswipe_area, resolution
+             from mapswipe_hot_tasking_data_h3
         ) z
     group by 2, 1
 );
@@ -453,6 +468,7 @@ create table stat_h3 tablespace evo4tb as (
            a.view_count_bf2402,
            a.eatery_count,
            a.food_shops_count,
+           a.mapswipe_area,
            (coalesce(g.avg_slope, 0))::float as avg_slope,
            (coalesce(g.avg_elevation, 0))::float as avg_elevation,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
@@ -528,5 +544,5 @@ create index stat_h3_brin_pt2 on stat_h3 using brin (
 
 create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      eatery_count, food_shops_count, avg_elevation_gebco_2022,
-                                                     avg_slope_gebco_2022
+                                                     avg_slope_gebco_2022, mapswipe_area
     );

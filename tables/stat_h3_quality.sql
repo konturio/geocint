@@ -27,8 +27,6 @@ create table stat_h3_quality as (
                 avg(a.total_building_count) as agg_total_building_count,
                 avg(a.wildfires) as agg_wildfires,
                 avg(a.covid19_vaccines) as agg_covid19_vaccines,
-                avg(a.avg_slope) as agg_avg_slope,
-                avg(a.avg_elevation) as agg_avg_elevation,
                 avg(a.avg_slope_gebco_2022) as agg_avg_slope_gebco_2022,
                 avg(a.avg_elevation_gebco_2022) as agg_avg_elevation_gebco_2022,
                 avg(a.forest) as agg_forest,

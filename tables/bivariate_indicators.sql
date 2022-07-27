@@ -197,17 +197,7 @@ values ('covid19_confirmed', 'COVID19 Confirmed Cases', jsonb_build_array(
    '[["good"], ["bad"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('avg_slope', 'Average slope', jsonb_build_array(
-'© Data from General Bathymatric Chart of the Oceans, www.gebco.net'),
-    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('avg_slope_gebco_2022', 'Average slope (GEBCO 2022)', jsonb_build_array(
-'© Data from General Bathymatric Chart of the Oceans, www.gebco.net'),
-    '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('avg_elevation', 'Average elevation', jsonb_build_array(
 '© Data from General Bathymatric Chart of the Oceans, www.gebco.net'),
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
 

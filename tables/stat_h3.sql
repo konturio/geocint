@@ -469,8 +469,6 @@ create table stat_h3 tablespace evo4tb as (
            a.eatery_count,
            a.food_shops_count,
            a.mapswipe_area,
-           (coalesce(g.avg_slope, 0))::float as avg_slope,
-           (coalesce(g.avg_elevation, 0))::float as avg_elevation,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
            (coalesce(gbc.avg_elevation_gebco_2022, 0))::float as avg_elevation_gebco_2022,
            (coalesce(cf.forest_area, 0))::float as forest,
@@ -505,7 +503,6 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(gsa.gsa_pvout, 0))::float as gsa_pvout,
            hex.geom as geom
     from stat_h3_in           a
-         left join gebco_2020_h3 g on (a.h3 = g.h3)
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
          left join pf_maxtemp_h3 pf on (a.h3 = pf.h3)
@@ -532,15 +529,14 @@ create index stat_h3_brin_pt1 on stat_h3 using brin (
     );
 
 create index stat_h3_brin_pt2 on stat_h3 using brin (
-                                                     gdp, highway_length_6_months, wildfires, avg_elevation,
-                                                     avg_ndvi,building_count_6_months,
+                                                     gdp, highway_length_6_months, wildfires, avg_ndvi,building_count_6_months,
                                                      local_hours, osm_users, covid19_confirmed, population_prev,
                                                      industrial_area, volcanos_count, pop_under_5_total,
                                                      pop_over_65_total, poverty_families_total, pop_disability_total,
                                                      pop_not_well_eng_speak, pop_without_car, mandays_maxtemp_over_32c_1c,
                                                      days_maxtemp_over_32c_1c, days_maxtemp_over_32c_2c,
                                                      days_mintemp_above_25c_1c, days_mintemp_above_25c_2c,
-                                                     days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c, avg_slope,
+                                                     days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c,
                                                      man_distance_to_fire_brigade, man_distance_to_hospital,
                                                      foursquare_visits_count, foursquare_places_count, flood_days_count,
                                                      powerlines

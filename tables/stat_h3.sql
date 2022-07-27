@@ -40,8 +40,8 @@ create table stat_h3_in tablespace evo4tb as (
            coalesce(sum(foursquare_places_count), 0) as foursquare_places_count,
            coalesce(sum(foursquare_visits_count), 0) as foursquare_visits_count,
            coalesce(sum(view_count_bf2402), 0) as view_count_bf2402,
-           coalesce(sum(volcanos_count), 0) as eatery_count,
-           coalesce(sum(volcanos_count), 0) as food_shops_count,
+           coalesce(sum(eatery_count), 0) as eatery_count,
+           coalesce(sum(food_shops_count), 0) as food_shops_count,
            coalesce(sum(mapswipe_area), 0) as mapswipe_area,
            1::float as one
     from (

@@ -500,6 +500,9 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(disaster_event_episodes_h3.flood_days_count, 0))::float as flood_days_count,
            (coalesce(facebook_medium_voltage_distribution_h3.powerlines, 0))::float as powerlines,
            (coalesce(nl.intensity, 0))::float as night_lights_intensity,
+           (coalesce(gsa.gsa_ghi, 0))::float as gsa_ghi,
+           (coalesce(gsa.gsa_gti, 0))::float as gsa_gti,
+           (coalesce(gsa.gsa_pvout, 0))::float as gsa_pvout,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2020_h3 g on (a.h3 = g.h3)
@@ -510,7 +513,8 @@ create table stat_h3 tablespace evo4tb as (
          left join global_rva_h3 rva on (a.h3 = rva.h3)
          left join disaster_event_episodes_h3 on (a.h3 = disaster_event_episodes_h3.h3)
          left join facebook_medium_voltage_distribution_h3 on (a.h3 = facebook_medium_voltage_distribution_h3.h3)
-         left join night_lights_h3 nl on (a.h3 = nl.h3),
+         left join night_lights_h3 nl on (a.h3 = nl.h3)
+         left join global_solar_atlas_h3 gsa on (a.h3 = gsa.h3),
          ST_HexagonFromH3(a.h3) hex
 );
 drop table stat_h3_in;
@@ -544,5 +548,5 @@ create index stat_h3_brin_pt2 on stat_h3 using brin (
 
 create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      eatery_count, food_shops_count, avg_elevation_gebco_2022,
-                                                     avg_slope_gebco_2022, mapswipe_area
+                                                     avg_slope_gebco_2022, mapswipe_area, gsa_ghi, gsa_gti, gsa_pvout
     );

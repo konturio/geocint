@@ -36,7 +36,7 @@ create table stat_h3_in tablespace evo4tb as (
            coalesce(sum(populated_area) / 1000000.0, 0) as populated_area_km2,
            coalesce(sum(man_distance_to_fire_brigade), 0) as man_distance_to_fire_brigade,
            coalesce(sum(man_distance_to_hospital), 0) as man_distance_to_hospital,
-           sum(coalesce(fb_roads_length, 0) + coalesce(highway_length, 0)) as total_road_length,
+           coalesce(sum(total_road_length), 0) as total_road_length,
            coalesce(sum(foursquare_places_count), 0) as foursquare_places_count,
            coalesce(sum(foursquare_visits_count), 0) as foursquare_visits_count,
            coalesce(sum(view_count_bf2402), 0) as view_count_bf2402,
@@ -55,7 +55,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_object_count_grid_h3
@@ -70,7 +70,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from kontur_population_h3
@@ -85,7 +85,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from gdp_h3
@@ -100,7 +100,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, h3_get_resolution(h3) as resolution
              from user_hours_h3
@@ -115,7 +115,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, h3_get_resolution(h3) as resolution
              from residential_pop_h3
@@ -130,7 +130,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from tile_logs_h3
@@ -145,7 +145,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from building_count_grid_h3
@@ -160,7 +160,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from global_fires_stat_h3
@@ -175,7 +175,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from covid19_vaccine_accept_us_counties_h3
@@ -190,7 +190,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from covid19_h3
@@ -205,7 +205,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from kontur_population_v3_h3
@@ -220,7 +220,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_landuse_industrial_h3
@@ -235,7 +235,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_volcanos_h3
@@ -249,7 +249,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as population_prev, null::float as industrial_area, null::float as volcanos_count, pop_under_5_total,
                     pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from us_census_tracts_stats_h3
@@ -264,7 +264,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, man_distance as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from isodist_fire_stations_h3
@@ -279,7 +279,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, man_distance as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from isodist_hospitals_h3
@@ -294,10 +294,10 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    fb_roads_length as fb_roads_length, null::float as foursquare_places_count,
+                    total_road_length as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
-             from facebook_roads_h3
+             from total_road_length_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
@@ -309,7 +309,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, foursquare_places_count,
+                    null::float as total_road_length, foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from foursquare_places_h3
@@ -324,7 +324,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from foursquare_visits_h3
@@ -339,7 +339,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, 
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from tile_logs_bf2402_h3
@@ -354,7 +354,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, 
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_road_segments_h3
@@ -369,7 +369,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, 
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_road_segments_6_months_h3
@@ -384,7 +384,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area,
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     eatery_count, null::float as food_shops_count, null::float as mapswipe_area, resolution
              from osm_places_eatery_h3
@@ -399,7 +399,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area,
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, food_shops_count, null::float as mapswipe_area,resolution
              from osm_places_food_shops_h3
@@ -414,7 +414,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area,
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as fb_roads_length, null::float as foursquare_places_count,
+                    null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, mapswipe_area, resolution
              from mapswipe_hot_tasking_data_h3

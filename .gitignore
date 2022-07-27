@@ -4,7 +4,7 @@
 /Makefile.*
 .DS_Store
 .idea
-
+.idea/*
 data/*
 
 db

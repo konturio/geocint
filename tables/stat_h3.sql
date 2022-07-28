@@ -42,7 +42,7 @@ create table stat_h3_in tablespace evo4tb as (
            coalesce(sum(view_count_bf2402), 0) as view_count_bf2402,
            coalesce(sum(eatery_count), 0) as eatery_count,
            coalesce(sum(food_shops_count), 0) as food_shops_count,
-           coalesce(sum(mapswipe_area), 0) as mapswipe_area,
+           coalesce(sum(mapswipe_area) / 1000000.0, 0) as mapswipe_area_km2,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
@@ -468,7 +468,7 @@ create table stat_h3 tablespace evo4tb as (
            a.view_count_bf2402,
            a.eatery_count,
            a.food_shops_count,
-           a.mapswipe_area,
+           a.mapswipe_area_km2,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
            (coalesce(gbc.avg_elevation_gebco_2022, 0))::float as avg_elevation_gebco_2022,
            (coalesce(cf.forest_area, 0))::float as forest,
@@ -544,5 +544,5 @@ create index stat_h3_brin_pt2 on stat_h3 using brin (
 
 create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      eatery_count, food_shops_count, avg_elevation_gebco_2022,
-                                                     avg_slope_gebco_2022, mapswipe_area, gsa_ghi, gsa_gti, gsa_pvout
+                                                     avg_slope_gebco_2022, mapswipe_area_km2, gsa_ghi, gsa_gti, gsa_pvout
     );

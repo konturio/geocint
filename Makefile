@@ -381,6 +381,7 @@ db/table/facebook_medium_voltage_distribution_in: data/in/facebook/medium_voltag
 
 db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/table  ## Put Facebook Medium Voltage Distribution on H3
 	psql -f tables/facebook_medium_voltage_distribution_h3.sql
+	psql -c "call generate_overviews('facebook_medium_voltage_distribution_h3', '{powerlines}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 data/in/facebook_roads: | data/in ## Directory for Facebook roads downloaded data.

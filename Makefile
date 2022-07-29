@@ -2122,7 +2122,12 @@ data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## C
 	mv $@__TMP $@
 	touch $@
 
-data/out/population/bivariate_tables.sqld.gz: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## Crafting bivariate tables SQL dump
+data/out/population/bivariate_tables_checks: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## series of bivariate tables quality checks
+	psql -AXt -c "select count(*) from bivariate_axis where quality = 'NaN' or quality is NULL;" |  xargs -I {} bash scripts/check_items_count.sh {} 0
+	psql -AXt -c "select count(*) from bivariate_axis_correlation where quality = 'NaN' or correlation = 'NaN' or quality is NULL or correlation is NULL;" |  xargs -I {} bash scripts/check_items_count.sh {} 0
+	touch $@
+
+data/out/population/bivariate_tables.sqld.gz: data/out/population/bivariate_tables_checks | data/out/population ## Crafting bivariate tables SQL dump
 	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@
@@ -2280,14 +2285,14 @@ data/in/raster/global_solar_atlas: | data/in/raster ## Directory for Global Sola
 data/mid/global_solar_atlas: | data/mid ## Create folder for global solar atlas datasets
 	mkdir -p $@
 
-data/mid/global_solar_atlas/GTI: | data/mid/global_solar_atlas ## Create folder for GTI  (global solar atlas dataset)
-	mkdir -p $@
-
 data/mid/global_solar_atlas/GHI: | data/mid/global_solar_atlas ## Create folder for GHI  (global solar atlas dataset)
 	mkdir -p $@
 
-data/mid/global_solar_atlas/PVOUT: | data/mid/global_solar_atlas ## Create folder for PVOUT (global solar atlas dataset)
-	mkdir -p $@
+#data/mid/global_solar_atlas/GTI: | data/mid/global_solar_atlas ## Create folder for GTI  (global solar atlas dataset)
+#	mkdir -p $@
+
+#data/mid/global_solar_atlas/PVOUT: | data/mid/global_solar_atlas ## Create folder for PVOUT (global solar atlas dataset)
+#	mkdir -p $@
 
 ## Global solar atlas - dowload zip files
 
@@ -2295,13 +2300,13 @@ data/in/raster/global_solar_atlas/World_GHI_GISdata_LTAy_AvgDailyTotals_GlobalSo
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/global_solar_atlas/World_GHI_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip $@ --profile geocint_pipeline_sender
 	touch $@
 
-data/in/raster/global_solar_atlas/World_GTI_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip: | data/in/raster/global_solar_atlas ## Download Global Solar Atlas GTI dataset from S3
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/global_solar_atlas/World_GTI_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip $@ --profile geocint_pipeline_sender
-	touch $@
-
-data/in/raster/global_solar_atlas/World_PVOUT_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip: | data/in/raster/global_solar_atlas ## Download Global Solar Atlas PVOUT dataset from S3
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/global_solar_atlas/World_PVOUT_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip $@ --profile geocint_pipeline_sender
-	touch $@
+#data/in/raster/global_solar_atlas/World_GTI_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip: | data/in/raster/global_solar_atlas ## Download Global Solar Atlas GTI dataset from S3
+#	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/global_solar_atlas/World_GTI_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip $@ --profile geocint_pipeline_sender
+#	touch $@
+#
+#data/in/raster/global_solar_atlas/World_PVOUT_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip: | data/in/raster/global_solar_atlas ## Download Global Solar Atlas PVOUT dataset from S3
+#	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/global_solar_atlas/World_PVOUT_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip $@ --profile geocint_pipeline_sender
+#	touch $@
 
 ## Global solar atlas - unzip
 
@@ -2311,22 +2316,22 @@ data/mid/global_solar_atlas/GHI/unzip: data/in/raster/global_solar_atlas/World_G
 	rm -f data/mid/global_solar_atlas/GTI/*.pdf
 	touch $@
 
-data/mid/global_solar_atlas/GTI/unzip: data/in/raster/global_solar_atlas/World_GTI_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip | data/mid/global_solar_atlas/GTI ## Unzip Global Solar Atlas GTI dataset
-	rm -f data/mid/global_solar_atlas/GTI/*.tif
-	unzip -j -o data/in/raster/global_solar_atlas/World_GTI_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip -d data/mid/global_solar_atlas/GTI/
-	rm -f data/mid/global_solar_atlas/GTI/*.pdf
-	touch $@
-
-data/mid/global_solar_atlas/PVOUT/unzip: data/in/raster/global_solar_atlas/World_PVOUT_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip | data/mid/global_solar_atlas/PVOUT ## Unzip Global Solar Atlas PVOUT dataset
-	rm -f data/mid/global_solar_atlas/PVOUT/*.tif
-	unzip -j -o data/in/raster/global_solar_atlas/World_PVOUT_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip -d data/mid/global_solar_atlas/PVOUT/
-	rm -f data/mid/global_solar_atlas/PVOUT/*.pdf
-	touch $@
+#data/mid/global_solar_atlas/GTI/unzip: data/in/raster/global_solar_atlas/World_GTI_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip | data/mid/global_solar_atlas/GTI ## Unzip Global Solar Atlas GTI dataset
+#	rm -f data/mid/global_solar_atlas/GTI/*.tif
+#	unzip -j -o data/in/raster/global_solar_atlas/World_GTI_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip -d data/mid/global_solar_atlas/GTI/
+#	rm -f data/mid/global_solar_atlas/GTI/*.pdf
+#	touch $@
+#
+#data/mid/global_solar_atlas/PVOUT/unzip: data/in/raster/global_solar_atlas/World_PVOUT_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip | data/mid/global_solar_atlas/PVOUT ## Unzip Global Solar Atlas PVOUT dataset
+#	rm -f data/mid/global_solar_atlas/PVOUT/*.tif
+#	unzip -j -o data/in/raster/global_solar_atlas/World_PVOUT_GISdata_LTAy_AvgDailyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip -d data/mid/global_solar_atlas/PVOUT/
+#	rm -f data/mid/global_solar_atlas/PVOUT/*.pdf
+#	touch $@
 
 ## Global solar atlas - prepare
-data/mid/global_solar_atlas/PVOUT/PVOUT_scaled.tif: data/mid/global_solar_atlas/PVOUT/unzip ## rescale PVOUT raster for keeping all 8-resolution hexes filled
-	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -ts 86400 28800 -multi -co "BIGTIFF=YES" -r bilinear -of COG data/mid/global_solar_atlas/PVOUT/PVOUT.tif $@
+#data/mid/global_solar_atlas/PVOUT/PVOUT_scaled.tif: data/mid/global_solar_atlas/PVOUT/unzip ## rescale PVOUT raster for keeping all 8-resolution hexes filled
+#	rm -f $@
+#	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -ts 86400 28800 -multi -co "BIGTIFF=YES" -r bilinear -of COG data/mid/global_solar_atlas/PVOUT/PVOUT.tif $@
 
 ## Global solar atlas - download rasters to database
 
@@ -2335,15 +2340,15 @@ db/table/global_solar_atlas_ghi: data/mid/global_solar_atlas/GHI/unzip | db/tabl
 	raster2pgsql -M -Y -s 4326 data/mid/global_solar_atlas/GHI/GHI.tif -t auto global_solar_atlas_ghi | psql -q
 	touch $@
 
-db/table/global_solar_atlas_gti: data/mid/global_solar_atlas/GTI/unzip | db/table ## Load global solar atlas GTI dataset to database
-	psql -c "drop table if exists global_solar_atlas_gti;"
-	raster2pgsql -M -Y -s 4326 data/mid/global_solar_atlas/GTI/GTI.tif -t auto global_solar_atlas_gti | psql -q
-	touch $@
-
-db/table/global_solar_atlas_pvout: data/mid/global_solar_atlas/PVOUT/PVOUT_scaled.tif | db/table ## Load global solar atlas PVOUT dataset to database
-	psql -c "drop table if exists global_solar_atlas_pvout;"
-	raster2pgsql -M -Y -s 4326 data/mid/global_solar_atlas/PVOUT/PVOUT_scaled.tif -t auto global_solar_atlas_pvout | psql -q
-	touch $@
+#db/table/global_solar_atlas_gti: data/mid/global_solar_atlas/GTI/unzip | db/table ## Load global solar atlas GTI dataset to database
+#	psql -c "drop table if exists global_solar_atlas_gti;"
+#	raster2pgsql -M -Y -s 4326 data/mid/global_solar_atlas/GTI/GTI.tif -t auto global_solar_atlas_gti | psql -q
+#	touch $@
+#
+#db/table/global_solar_atlas_pvout: data/mid/global_solar_atlas/PVOUT/PVOUT_scaled.tif | db/table ## Load global solar atlas PVOUT dataset to database
+#	psql -c "drop table if exists global_solar_atlas_pvout;"
+#	raster2pgsql -M -Y -s 4326 data/mid/global_solar_atlas/PVOUT/PVOUT_scaled.tif -t auto global_solar_atlas_pvout | psql -q
+#	touch $@
 
 ## Global solar atlas - convert raster tables to h3
 
@@ -2351,19 +2356,19 @@ db/table/global_solar_atlas_ghi_h3_r8: db/table/global_solar_atlas_ghi | db/tabl
 	psql -f scripts/raster_values_into_h3.sql -v table_name=global_solar_atlas_ghi -v table_name_h3=global_solar_atlas_ghi_h3_r8 -v aggr_func=avg -v item_name=gsa_ghi
 	touch $@
 
-db/table/global_solar_atlas_gti_h3_r8: db/table/global_solar_atlas_gti | db/table ## Convert global solar atlas GTI dataset to H3 in database
-	psql -f scripts/raster_values_into_h3.sql -v table_name=global_solar_atlas_gti -v table_name_h3=global_solar_atlas_gti_h3_r8 -v aggr_func=avg -v item_name=gsa_gti
-	touch $@
-
-db/table/global_solar_atlas_pvout_h3_r8: db/table/global_solar_atlas_pvout | db/table ## Convert global solar atlas GTI dataset to H3 in database
-	psql -f scripts/raster_values_into_h3.sql -v table_name=global_solar_atlas_pvout -v table_name_h3=global_solar_atlas_pvout_h3_r8 -v aggr_func=avg -v item_name=gsa_pvout
-	touch $@
+#db/table/global_solar_atlas_gti_h3_r8: db/table/global_solar_atlas_gti | db/table ## Convert global solar atlas GTI dataset to H3 in database
+#	psql -f scripts/raster_values_into_h3.sql -v table_name=global_solar_atlas_gti -v table_name_h3=global_solar_atlas_gti_h3_r8 -v aggr_func=avg -v item_name=gsa_gti
+#	touch $@
+#
+#db/table/global_solar_atlas_pvout_h3_r8: db/table/global_solar_atlas_pvout | db/table ## Convert global solar atlas GTI dataset to H3 in database
+#	psql -f scripts/raster_values_into_h3.sql -v table_name=global_solar_atlas_pvout -v table_name_h3=global_solar_atlas_pvout_h3_r8 -v aggr_func=avg -v item_name=gsa_pvout
+#	touch $@
 
 ## Global solar atlas - unite and generate overviews for ghi, gti, pvout
 
-db/table/global_solar_atlas_h3: db/table/global_solar_atlas_ghi_h3_r8 db/table/global_solar_atlas_gti_h3_r8 db/table/global_solar_atlas_pvout_h3_r8 db/procedure/generate_overviews | db/table ## Global solar atlas - H3 hexagons table with average GTI, GHI, PVOUT values from 1 to 8 resolution
+db/table/global_solar_atlas_h3: db/table/global_solar_atlas_ghi_h3_r8 db/procedure/generate_overviews | db/table ## Global solar atlas - H3 hexagons table with average GTI, GHI, PVOUT values from 1 to 8 resolution
 	psql -f tables/global_solar_atlas_h3.sql
-	psql -c "call generate_overviews('global_solar_atlas_h3', '{gsa_ghi, gsa_gti, gsa_pvout}'::text[], '{avg, avg, avg}'::text[], 8);"
+	psql -c "call generate_overviews('global_solar_atlas_h3', '{gsa_ghi}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on global_solar_atlas_h3 (h3);"
 	touch $@
 ### END Global solar atlas ###

@@ -643,28 +643,28 @@ data/in/raster/gebco_2022_geotiff/gebco_2022_geotiff.zip: | data/in/raster/gebco
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/gebco_2022_geotiff/gebco_2022_geotiff.zip $@ --profile geocint_pipeline_sender
 	touch $@
 
-data/mid/gebco_2022_geotif: | data/mid ## Create folder for unzipping GEBCO 2022 rasters
+data/mid/gebco_2022_geotiff: | data/mid ## Create folder for unzipping GEBCO 2022 rasters
 	mkdir -p $@
 
-data/mid/gebco_2022_geotiff/gebco_2022_geotiffs_unzip: data/in/raster/gebco_2022_geotiff/gebco_2022_geotiff.zip | data/mid/gebco_2022_geotif ## Unzip GEBCO 2022 (General Bathymetric Chart of the Oceans) rasters.
+data/mid/gebco_2022_geotiff/gebco_2022_geotiffs_unzip: data/in/raster/gebco_2022_geotiff/gebco_2022_geotiff.zip | data/mid/gebco_2022_geotiff ## Unzip GEBCO 2022 (General Bathymetric Chart of the Oceans) rasters.
 	rm -f data/mid/gebco_2022_geotiff/*.tif
 	unzip -o data/in/raster/gebco_2022_geotiff/gebco_2022_geotiff.zip -d data/mid/gebco_2022_geotiff/
 	rm -f data/mid/gebco_2022_geotiff/*.pdf
 	touch $@
 
-data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt: data/mid/gebco_2022_geotiff/gebco_2022_geotiffs_unzip ## Virtual raster from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset.
+data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt: data/mid/gebco_2022_geotiff/gebco_2022_geotiffs_unzip | data/mid/gebco_2022_geotiff ## Virtual raster from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset.
 	rm -f data/mid/gebco_2022_geotiff/*.vrt
 	gdalbuildvrt $@ data/mid/gebco_2022_geotiff/gebco_2022_n*.tif
 
-data/mid/gebco_2022_geotiff/gebco_2022_merged.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt ## GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry raster (2022) converted from virtual raster (EPSG-4087).
+data/mid/gebco_2022_geotiff/gebco_2022_merged.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt | data/mid/gebco_2022_geotiff ## GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry raster (2022) converted from virtual raster (EPSG-4087).
 	rm -f $@
 	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -t_srs epsg:4087 -co "BIGTIFF=YES" -r bilinear -of COG data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt $@
 
-data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.tif ## Slope raster calculated from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4087).
+data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.tif | data/mid/gebco_2022_geotiff ## Slope raster calculated from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4087).
 	rm -f $@
 	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdaldem slope -of COG -co "BIGTIFF=YES" data/mid/gebco_2022_geotiff/gebco_2022_merged.tif $@
 
-data/mid/gebco_2022_geotiff/gebco_2022_merged_4326_slope.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif ## Slope raster calculated from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4326).
+data/mid/gebco_2022_geotiff/gebco_2022_merged_4326_slope.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif | data/mid/gebco_2022_geotiff ## Slope raster calculated from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4326).
 	rm -f $@
 	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -t_srs EPSG:4326 -of COG -co "BIGTIFF=YES" -multi data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif $@
 
@@ -678,7 +678,7 @@ db/table/gebco_2022_slopes_h3: db/table/gebco_2022_slopes | db/table ## GEBCO 20
 	psql -c "create index on gebco_2022_slopes_h3 (h3);"
 	touch $@
 
-data/mid/gebco_2022_geotiff/gebco_2022_merged_4326.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt ## GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry raster converted from virtual raster (EPSG-4326).
+data/mid/gebco_2022_geotiff/gebco_2022_merged_4326.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt | data/mid/gebco_2022_geotiff ## GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry raster converted from virtual raster (EPSG-4326).
 	rm -f $@
 	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdal_translate -r bilinear -of COG -co "BIGTIFF=YES" data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt $@
 

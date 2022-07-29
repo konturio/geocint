@@ -30,7 +30,6 @@ create table osm_roads as (
             when
                     tags @> '{"foot":"no"}' or
                     tags @> '{"access":"no"}' or
-                    tags @> '{"highway":"proposed"}' or
                     tags @> '{"highway":"motorway"}' or
                     tags @> '{"highway":"motorway_link"}' or
                     tags @> '{"highway":"trunk"}' or
@@ -61,6 +60,9 @@ create table osm_roads as (
           tags ? 'highway'
       and osm_type = 'way'
       and ST_GeometryType(geog::geometry) = 'ST_LineString'
+      and not tags @> '{"highway":"proposed"}' -- count only existed roads
+      and not tags @> '{"highway":"dummy"}' -- special case
+      and ST_Y(ST_StartPoint(geog::geometry)) > -60   -- do not count roads in Antarctic
     order by ts
 );
 

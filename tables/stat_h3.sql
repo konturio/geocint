@@ -499,8 +499,8 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(facebook_medium_voltage_distribution_h3.powerlines, 0))::float as powerlines,
            (coalesce(nl.intensity, 0))::float as night_lights_intensity,
            (coalesce(gsa.gsa_ghi, 0))::float as gsa_ghi,
-           (coalesce(gsa.gsa_gti, 0))::float as gsa_gti,
-           (coalesce(gsa.gsa_pvout, 0))::float as gsa_pvout,
+           --(coalesce(gsa.gsa_gti, 0))::float as gsa_gti,
+           --(coalesce(gsa.gsa_pvout, 0))::float as gsa_pvout,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
@@ -544,5 +544,5 @@ create index stat_h3_brin_pt2 on stat_h3 using brin (
 
 create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      eatery_count, food_shops_count, avg_elevation_gebco_2022,
-                                                     avg_slope_gebco_2022, mapswipe_area_km2, gsa_ghi, gsa_gti, gsa_pvout
+                                                     avg_slope_gebco_2022, mapswipe_area_km2, gsa_ghi
     );

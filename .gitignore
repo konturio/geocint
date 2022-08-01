@@ -11,6 +11,7 @@ db
 deploy
 make_profile.db
 make.svg
+make_last.svg
 make.lock
 kothic
 

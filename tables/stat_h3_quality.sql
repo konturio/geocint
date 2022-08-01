@@ -76,8 +76,6 @@ create table stat_h3_quality as (
                 avg(a.food_shops_count::float) as agg_food_shops_count,
                 avg(a.mapswipe_area_km2::float) as agg_mapswipe_area_km2,
                 avg(a.gsa_ghi::float) as agg_gsa_ghi
-                --avg(a.gsa_gti::float) as agg_gsa_gti,
-                --avg(a.gsa_pvout::float) as agg_gsa_pvout
             from
                 stat_h3 a
             where

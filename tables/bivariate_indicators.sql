@@ -381,16 +381,6 @@ values ('gsa_ghi', 'GSA Global horizontal irradiation', jsonb_build_array(
         'Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use'),
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
 
---insert into bivariate_indicators (param_id, param_label, copyrights, direction)
---values ('gsa_gti', 'GSA Global irradiation for optimally tilted surface', jsonb_build_array(
---        'Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use'),
---        '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
---
---insert into bivariate_indicators (param_id, param_label, copyrights, direction)
---values ('gsa_pvout', 'GSA Photovoltaic power potential', jsonb_build_array(
---        'Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use'),
---        '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
-
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

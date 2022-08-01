@@ -185,11 +185,11 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('flood_days_count', 'Number of days under flood impact, last year', jsonb_build_array(
 'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb);
-
+/*
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('covid19_vaccines', 'COVID19 Vaccine Acceptance', jsonb_build_array(
 '© Data from Delphi COVIDcast, covidcast.cmu.edu'),
-    '[["bad"], ["neutral"]]'::jsonb);
+    '[["bad"], ["neutral"]]'::jsonb);*/
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('covid19_confirmed', 'COVID19 Confirmed Cases', jsonb_build_array(

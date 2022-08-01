@@ -5,7 +5,7 @@ from (
          select (1.0::float - avg(
              -- if we zoom in one step, will current zoom values be the same as next zoom values?
                  abs((:numerator / nullif(:denominator, 0)) - (agg_:numerator / nullif(agg_:denominator, 0))) / nullif(
-                         (:numerator / nullif(:denominator, 0)) + (agg_:numerator / nullif(agg_:denominator, 0)), 0)))
+                         abs(:numerator / nullif(:denominator, 0)) + abs(agg_:numerator / nullif(agg_:denominator, 0)), 0)))
                     -- does the denominator cover all of the cells where numerator is present?
                         * ((count(*) filter (where :numerator != 0 and :denominator != 0))::float
                      / (count(*) filter (where :numerator != 0))) as quality

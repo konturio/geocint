@@ -1750,8 +1750,13 @@ data/mid/census_gov/cb_2019_us_tract_500k.shp: data/in/census_gov/cb_2019_us_tra
 	unzip -o data/in/census_gov/cb_2019_us_tract_500k.zip -d data/mid/census_gov/
 	touch $@
 
-db/table/us_census_tract_boundaries: data/mid/census_gov/cb_2019_us_tract_500k.shp | db/table ## Import all US census tract boundaries into database
+db/table/us_census_tract_boundaries_subdivide: data/mid/census_gov/cb_2019_us_tract_500k.shp | db/table ## Import all US census tract boundaries into database and create table with subdivided geometry
 	ogr2ogr --config PG_USE_COPY YES -overwrite -s_srs EPSG:4269 -t_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/mid/census_gov/cb_2019_us_tract_500k.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -nln us_census_tract_boundaries
+	psql -f us_census_tract_boundaries_subdivide.sql
+	touch $@
+
+db/tables/us_census_tracts_population_h3_r8: db/table/us_census_tract_boundaries_subdivide | db/table ## Extract hex with population on 8 resolution for US from kontur_population_h3
+	psql -f us_census_tracts_population_h3_r8.sql
 	touch $@
 
 data/in/census_gov/data_census_download: | data/in/census_gov ## Download thematic census tracts Zealand's buildings from AWS S3 bucket.
@@ -1761,14 +1766,14 @@ data/in/census_gov/data_census_download: | data/in/census_gov ## Download themat
 data/mid/census_gov/us_census_tracts_stats.csv: data/in/census_gov/data_census_download | data/mid/census_gov ## Normalize US census tracts dataset.
 	python3 scripts/normalize_census_data.py -c static_data/census_data_config.json -o $@
 
-db/table/us_census_tract_stats: db/table/us_census_tract_boundaries data/mid/census_gov/us_census_tracts_stats.csv | db/table ## US census tracts statistics imported into database.
+db/table/us_census_tract_stats: db/tables/us_census_tracts_population_h3_r8 db/table/us_census_tract_boundaries_subdivide data/mid/census_gov/us_census_tracts_stats.csv | db/table ## US census tracts statistics imported into database.
 	psql -c 'drop table if exists us_census_tracts_stats_in;'
 	psql -c 'create table us_census_tracts_stats_in (id_tract text, tract_name text, pop_under_5_total float, pop_over_65_total float, families_total float, families_poverty_percent float, poverty_families_total float generated always as (families_total * families_poverty_percent / 100) stored, pop_disability_total float, pop_not_well_eng_speak float, pop_working_total float, pop_with_cars_percent float, pop_without_car float generated always as (pop_working_total - (pop_working_total * pop_with_cars_percent) / 100) stored);'
 	cat data/mid/census_gov/us_census_tracts_stats.csv | psql -c "copy us_census_tracts_stats_in (id_tract, tract_name, pop_under_5_total, pop_over_65_total, families_total, families_poverty_percent, pop_disability_total, pop_not_well_eng_speak, pop_working_total, pop_with_cars_percent) from stdin with csv header delimiter ';';"
 	psql -f tables/us_census_tracts_stats.sql
 	touch $@
 
-db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/procedure/generate_overviews | db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
+db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/procedure/generate_overviews db/tables/us_census_tracts_population_h3_r8 | db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
 	psql -f tables/us_census_tracts_stats_h3.sql
 	psql -c "call generate_overviews('us_census_tracts_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@

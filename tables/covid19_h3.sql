@@ -102,7 +102,7 @@ create table covid19_h3 (
     like covid19_hex
 );
 
---dithering
+--dithering (comments was added by Andrei Valasiuk 26.07.2022)
 do
 $$
     declare
@@ -114,16 +114,30 @@ $$
         out_dead      float;
         row           record;
     begin
-        err_confirmed = 0;
-        err_recovered = 0;
-        err_dead = 0;
+        err_confirmed = 0; -- sum confirmed
+        err_recovered = 0; -- sum recovered
+        err_dead = 0;      -- sum dead
+
+        --Sort by date and h3 from old to new and read row per row
         for row in ( select * from covid19_hex order by date, h3 ) loop
+
+            -- Increase confirmed sum with new confirmed cases
             err_confirmed = err_confirmed + coalesce(row.confirmed, 0);
+            -- Increase recovered sum with new recovered cases
             err_recovered = err_recovered + coalesce(row.recovered, 0);
+            -- Increase dead sum with new dead cases
             err_dead = err_dead + coalesce(row.dead, 0);
+
+            --Check if in this hex we actually have confirmed cases
             if err_confirmed > 1 then
+                -- floor - rounded up any positive or negative decimal value as smaller than the argument
+                -- e.g. make a number of confirmed cases integer
                 out_confirmed = floor(err_confirmed);
+                -- if number of recovered less then number of confirmed - get number of recovered
+                -- if number of recovered more then number of confirmed - get number of confirmed as the number of recovered
                 out_recovered = least(floor(err_recovered), out_confirmed);
+                -- see comments for previous line
+                -- Number of dead always less or equal the number of confirmed
                 out_dead = least(floor(err_dead), out_confirmed);
                 insert into
                     covid19_h3 (geom, h3, date, population, admin_id, total_population, resolution,
@@ -139,8 +153,14 @@ $$
                  out_confirmed,
                  out_recovered,
                  out_dead);
+
+                -- If there is some part of confirmed people, which we don't use because of floor rounding
+                -- move this part to next hex to make sure if the number of peoples in hex is integer
+                -- f.ex. floor(31.5) - we will use 31 as out_confirmed and move 0.5 to next hex 
                 err_confirmed = err_confirmed - out_confirmed;
+                -- If there is more recovered than we need, move difference to next hex
                 err_recovered = err_recovered - out_recovered;
+                -- see previous comment
                 err_dead = err_dead - out_dead;
                 --raise warning '% % % % % %', out_dead,out_recovered,out_confirmed,err_dead,err_recovered,err_confirmed;
             end if;

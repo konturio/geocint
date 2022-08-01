@@ -501,8 +501,6 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(facebook_medium_voltage_distribution_h3.powerlines, 0))::float as powerlines,
            (coalesce(nl.intensity, 0))::float as night_lights_intensity,
            (coalesce(gsa.gsa_ghi, 0))::float as gsa_ghi,
-           --(coalesce(gsa.gsa_gti, 0))::float as gsa_gti,
-           --(coalesce(gsa.gsa_pvout, 0))::float as gsa_pvout,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)

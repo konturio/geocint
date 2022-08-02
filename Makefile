@@ -1752,11 +1752,11 @@ data/mid/census_gov/cb_2019_us_tract_500k.shp: data/in/census_gov/cb_2019_us_tra
 
 db/table/us_census_tract_boundaries_subdivide: data/mid/census_gov/cb_2019_us_tract_500k.shp | db/table ## Import all US census tract boundaries into database and create table with subdivided geometry
 	ogr2ogr --config PG_USE_COPY YES -overwrite -s_srs EPSG:4269 -t_srs EPSG:4326 -f PostgreSQL PG:"dbname=gis" data/mid/census_gov/cb_2019_us_tract_500k.shp -nlt GEOMETRY -lco GEOMETRY_NAME=geom -nln us_census_tract_boundaries
-	psql -f us_census_tract_boundaries_subdivide.sql
+	psql -f tables/us_census_tract_boundaries_subdivide.sql
 	touch $@
 
 db/tables/us_census_tracts_population_h3_r8: db/table/us_census_tract_boundaries_subdivide | db/table ## Extract hex with population on 8 resolution for US from kontur_population_h3
-	psql -f us_census_tracts_population_h3_r8.sql
+	psql -f tables/us_census_tracts_population_h3_r8.sql
 	touch $@
 
 data/in/census_gov/data_census_download: | data/in/census_gov ## Download thematic census tracts Zealand's buildings from AWS S3 bucket.

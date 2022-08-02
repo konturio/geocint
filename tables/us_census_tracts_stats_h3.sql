@@ -59,12 +59,11 @@ $$
             temp_pop_without_car = temp_pop_without_car + coalesce(row.pop_without_car, 0);
 
             --Check if this hex is actually populated
-            if row.hex_population > 0 then
-                           
-                
+            if row.hex_population > 0 then                           
+            
                 -- Check case when sum old and young population more than total population which is 1
                 if temp_pop_over_65_total > 0 
-                   and temp_pop_under_5_total > 0 
+                   and temp_pop_under_5_total > 0
                    and temp_pop_over_65_total + temp_pop_under_5_total > row.hex_population  
                    and row.hex_population = 1 
                 then
@@ -79,11 +78,10 @@ $$
                        out_pop_over_65_total = 0;
                    end if;
 
-
-                
+            
                 -- Check case when sum old and young population more than total population which more than 1
-                elsif temp_pop_over_65_total > 0 
-                   and temp_pop_under_5_total > 0 
+                elsif temp_pop_over_65_total > 0
+                   and temp_pop_under_5_total > 0
                    and temp_pop_over_65_total + temp_pop_under_5_total > row.hex_population  
                    and row.hex_population > 1 
                 then
@@ -93,8 +91,8 @@ $$
                    -- we need this and next check to avoid negative number of peoples in hexs
                    out_pop_under_5_total = least(floor(temp_pop_under_5_total), floor(0.5 * row.hex_population));
 
-                   -- also check if diff between hex_population and out_pop_under_5_total no more than actual temp_pop_over65_total 
-                   out_pop_over_65_total = least(floor(temp_pop_over_65_total),floor(row.hex_population - out_pop_under_5_total));  
+                   -- also check if diff between hex_population and out_pop_under_5_total no more than actual temp_pop_over65_total
+                   out_pop_over_65_total = least(floor(temp_pop_over_65_total),floor(row.hex_population - out_pop_under_5_total));
 
                 else
                    -- For this and some next cases: if under 5 sum less then hexagon population - get under 5 sum
@@ -138,7 +136,7 @@ $$
                 then
                     -- temp_pop_without_car should be more than 1 or equal to move fractional part to 1
                     -- we use hex_population - 1 because total number peoples without car couldn't be more than total population
-                    if (temp_pop_without_car - row.pop_without_car) >= 1 
+                    if (temp_pop_without_car - row.pop_without_car) >= 1
                     -- and temp_pop_without_car < (row.hex_population - 1)
                     then
                         out_pop_without_car = 1 + least(floor(temp_pop_without_car), floor(row.pop_without_car));
@@ -158,8 +156,8 @@ $$
                                                            pop_under_5_total, 
                                                            pop_over_65_total,
                                                            poverty_families_total, 
-                                                           pop_disability_total, 
-                                                           pop_not_well_eng_speak, 
+                                                           pop_disability_total,
+                                                           pop_not_well_eng_speak,
                                                            pop_without_car)
 
                 values (row.h3,
@@ -203,6 +201,7 @@ create table us_census_tracts_stats_h3 as (
            resolution 
     from us_census_tracts_stats_h3_mid
 );
+
 
 -- Remove temporary tables
 drop table if exists us_census_tracts_stats_h3_in;

@@ -307,3 +307,19 @@ set
 where
       numerator = 'night_lights_intensity'
   and denominator = 'one';
+
+update bivariate_axis
+set
+    label = 'Number of OSM eateries',
+    min = 0
+where
+      numerator = 'eatery_count'
+  and denominator = 'one';
+
+update bivariate_axis
+set
+    label = 'Number of OSM food shops',
+    min = 0
+where
+      numerator = 'food_shops_count'
+  and denominator = 'one';

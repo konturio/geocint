@@ -59,7 +59,7 @@ $$
             temp_pop_without_car = temp_pop_without_car + coalesce(row.pop_without_car, 0);
 
             --Check if this hex is actually populated
-            if row.hex_population > 0 then                           
+            if row.hex_population > 0 then
             
                 -- Check case when sum old and young population more than total population which is 1
                 if temp_pop_over_65_total > 0 
@@ -78,7 +78,6 @@ $$
                        out_pop_over_65_total = 0;
                    end if;
 
-            
                 -- Check case when sum old and young population more than total population which more than 1
                 elsif temp_pop_over_65_total > 0
                    and temp_pop_under_5_total > 0
@@ -101,51 +100,45 @@ $$
                    out_pop_over_65_total = least(floor(temp_pop_over_65_total), floor(row.pop_over_65_total));
 
                 end if;
-                
+
                 if row.pop_disability_total is not null
                 then
                     -- temp_pop_disability_total should be more than 1 or equal to move fractional part to 1
-                    -- we use hex_population - 2 because all peoples in hex couldn't be disability
-                    if (temp_pop_disability_total - row.pop_disability_total) >= 1 
-                       --and temp_pop_disability_total < (row.hex_population - 2)
+                    if (temp_pop_disability_total - row.pop_disability_total) >= 1
                     then
-                        out_pop_disability_total = 1 + least(floor(temp_pop_disability_total), floor(row.pop_disability_total));
+                        out_pop_disability_total = least(1 + floor(row.pop_disability_total), row.hex_population - 1);
                     else
-                        out_pop_disability_total = least(floor(temp_pop_disability_total), floor(row.pop_disability_total));
+                        out_pop_disability_total = least(floor(temp_pop_disability_total),least(floor(row.pop_disability_total), row.hex_population));
                     end if;
                 else
-                    out_pop_disability_total = least(floor(temp_pop_disability_total), floor(row.pop_disability_total));
+                    out_pop_disability_total = least(floor(temp_pop_disability_total),least(floor(row.pop_disability_total), row.hex_population));
                 end if;
 
                 if row.pop_not_well_eng_speak is not null
                 then
                     -- temp_pop_not_well_eng_speak should be more than 1 or equal to move fractional part to 1
-                    -- we use hex_population - 1 because total number not_well_speak peoples couldn't be more than total population
-                    if (temp_pop_not_well_eng_speak - row.pop_not_well_eng_speak) >= 1 
-                       --and temp_pop_not_well_eng_speak < (row.hex_population - 1)
+                    if (temp_pop_not_well_eng_speak - row.pop_not_well_eng_speak) >= 1
                     then
-                        out_pop_not_well_eng_speak = 1 + least(floor(temp_pop_not_well_eng_speak), floor(row.pop_not_well_eng_speak));
+                        out_pop_not_well_eng_speak = least(1 + floor(row.pop_not_well_eng_speak), row.hex_population - 1);
                     else
-                        out_pop_not_well_eng_speak = least(floor(temp_pop_not_well_eng_speak), floor(row.pop_not_well_eng_speak));
+                        out_pop_not_well_eng_speak = least(floor(temp_pop_not_well_eng_speak), least(floor(row.pop_not_well_eng_speak), row.hex_population));
                     end if;
                 else
-                    out_pop_not_well_eng_speak = least(floor(temp_pop_not_well_eng_speak), floor(row.pop_not_well_eng_speak));
+                    out_pop_not_well_eng_speak = least(floor(temp_pop_not_well_eng_speak), least(floor(row.pop_not_well_eng_speak), row.hex_population));
                 end if;
 
                 if row.pop_without_car is not null
                 then
                     -- temp_pop_without_car should be more than 1 or equal to move fractional part to 1
-                    -- we use hex_population - 1 because total number peoples without car couldn't be more than total population
-                    if (temp_pop_without_car - row.pop_without_car) >= 1
-                    -- and temp_pop_without_car < (row.hex_population - 1)
+                    if (temp_pop_without_car - row.pop_without_car) >= 1 
                     then
-                        out_pop_without_car = 1 + least(floor(temp_pop_without_car), floor(row.pop_without_car));
+                        out_pop_without_car = least(1 + floor(row.pop_without_car), row.hex_population);
                     else
-                        out_pop_without_car = least(floor(temp_pop_without_car), floor(row.pop_without_car));
+                        out_pop_without_car = least(floor(temp_pop_without_car), least(floor(row.pop_without_car), row.hex_population));
                     end if;
                 else
-                    out_pop_without_car = least(floor(temp_pop_without_car), floor(row.pop_without_car));
-                end if;    
+                    out_pop_without_car = least(floor(temp_pop_without_car), floor(row.hex_population));
+                end if;
 
                 -- divide by average 2020 USA family size
                 out_poverty_families_total = least(floor(temp_poverty_families_total), floor(row.hex_population / 2.58));
@@ -155,11 +148,10 @@ $$
                                                            hex_population,
                                                            pop_under_5_total, 
                                                            pop_over_65_total,
-                                                           poverty_families_total, 
+                                                           poverty_families_total,
                                                            pop_disability_total,
                                                            pop_not_well_eng_speak,
                                                            pop_without_car)
-
                 values (row.h3,
                         row.resolution,
                         row.hex_population,
@@ -170,8 +162,6 @@ $$
                         out_pop_not_well_eng_speak,
                         out_pop_without_car);
                 
-                --raise info 'Insert checkpoint %' counter::text;
-
                 -- For this and some next cases: If there is more population than we need, move difference to next hex
                 temp_pop_under_5_total = temp_pop_under_5_total - out_pop_under_5_total;
                 temp_pop_over_65_total = temp_pop_over_65_total - out_pop_over_65_total;                
@@ -201,7 +191,6 @@ create table us_census_tracts_stats_h3 as (
            resolution 
     from us_census_tracts_stats_h3_mid
 );
-
 
 -- Remove temporary tables
 drop table if exists us_census_tracts_stats_h3_in;

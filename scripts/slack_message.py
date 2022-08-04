@@ -25,6 +25,17 @@ channel = sys.argv[1]
 username = sys.argv[2]
 icon_emoji = sys.argv[3].strip(':')
 
+# Get hostname to check
+myhost = os.uname()[1].split('.')[0]
+
+if myhost != 'geocint':
+    if myhost == 'mustang':
+        username = 'Mustang night build'
+        icon_emoji = 'racehorse'
+    else:
+        username = f'{myhost} host'
+        icon_emoji = 'raccoon'
+
 text = sys.stdin.read()
 blocks = None
 try:

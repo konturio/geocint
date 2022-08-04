@@ -1969,7 +1969,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -2323,3 +2323,95 @@ db/table/global_solar_atlas_h3: db/table/global_solar_atlas_ghi db/procedure/gen
 	touch $@
 
 ### END Global solar atlas ###
+
+
+### WorldClim temperatures ###
+## Worldclim temperatures - create dirs
+
+data/in/raster/worldclim: | data/in/raster ## Directory for Worldclim datasets.
+	mkdir -p $@
+
+data/mid/worldclim: | data/mid ## Create mid folder for worldclim datasets
+	mkdir -p $@
+
+data/mid/worldclim/avg_temp: | data/mid/worldclim ## Create mid folder average temperatures (Worldclim)
+	mkdir -p $@
+
+data/mid/worldclim/min_temp: | data/mid/worldclim ## Create mid folder min temperatures (Worldclim)
+	mkdir -p $@
+
+data/mid/worldclim/max_temp: | data/mid/worldclim ## Create mid folder max temperatures (Worldclim)
+	mkdir -p $@
+
+## WorldClim temperatures - dowload zip files
+
+data/in/raster/worldclim/wc2.1_30s_tavg.zip: | data/in/raster/worldclim ## Download Worldclim avg temperatures from S3
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/worldclim/wc2.1_30s_tavg.zip $@ --profile geocint_pipeline_sender
+	touch $@
+
+data/in/raster/worldclim/wc2.1_30s_tmin.zip: | data/in/raster/worldclim ## Download Worldclim min temperatures from S3
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/worldclim/wc2.1_30s_tmin.zip $@ --profile geocint_pipeline_sender
+	touch $@
+
+data/in/raster/worldclim/wc2.1_30s_tmax.zip: | data/in/raster/worldclim ## Download Worldclim max temperatures from S3
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/worldclim/wc2.1_30s_tmax.zip $@ --profile geocint_pipeline_sender
+	touch $@
+
+## Worldclim temperatures - unzip
+
+data/mid/worldclim/avg_temp/unzip: data/in/raster/worldclim/wc2.1_30s_tavg.zip | data/mid/worldclim/avg_temp ## Unzip Worldclim average temperatures
+	rm -f data/mid/worldclim/avg_temp/*.tif
+	unzip -j -o data/in/raster/worldclim/wc2.1_30s_tavg.zip -d data/mid/worldclim/avg_temp/
+	touch $@
+
+data/mid/worldclim/min_temp/unzip: data/in/raster/worldclim/wc2.1_30s_tmin.zip | data/mid/worldclim/avg_temp ## Unzip Worldclim min temperatures
+	rm -f data/mid/worldclim/min_temp/*.tif
+	unzip -j -o data/in/raster/worldclim/wc2.1_30s_tmin.zip -d data/mid/worldclim/min_temp/
+	touch $@
+
+data/mid/worldclim/max_temp/unzip: data/in/raster/worldclim/wc2.1_30s_tmax.zip | data/mid/worldclim/max_temp ## Unzip Worldclim max temperatures
+	rm -f data/mid/worldclim/max_temp/*.tif
+	unzip -j -o data/in/raster/worldclim/wc2.1_30s_tmax.zip -d data/mid/worldclim/max_temp/
+	touch $@
+
+## Worldclim temperatures - prepare datasets
+## Worldclim temperatures - Calculate mean from averages
+data/mid/worldclim/avg_temp/average_temperatures.tif: data/mid/worldclim/avg_temp/unzip | data/mid/worldclim/avg_temp ## Calculate average yearly temperature from Worldclim montly means
+	rm -f data/mid/worldclim/avg_temp/average_temperatures.tif
+	gdal_calc.py -A data/mid/worldclim/avg_temp/wc2.1_30s_tavg_01.tif -B data/mid/worldclim/avg_temp/wc2.1_30s_tavg_02.tif -C data/mid/worldclim/avg_temp/wc2.1_30s_tavg_03.tif -D data/mid/worldclim/avg_temp/wc2.1_30s_tavg_04.tif -E data/mid/worldclim/avg_temp/wc2.1_30s_tavg_05.tif -F data/mid/worldclim/avg_temp/wc2.1_30s_tavg_06.tif -G data/mid/worldclim/avg_temp/wc2.1_30s_tavg_07.tif -H data/mid/worldclim/avg_temp/wc2.1_30s_tavg_08.tif -I data/mid/worldclim/avg_temp/wc2.1_30s_tavg_09.tif -J data/mid/worldclim/avg_temp/wc2.1_30s_tavg_10.tif -K data/mid/worldclim/avg_temp/wc2.1_30s_tavg_11.tif -L data/mid/worldclim/avg_temp/wc2.1_30s_tavg_12.tif --outfile=data/mid/worldclim/avg_temp/average_temperatures.tif --calc="numpy.mean((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+
+## Worldclim temperatures - Calculate min of mins
+data/mid/worldclim/min_temp/minimal_temperatures.tif: data/mid/worldclim/min_temp/unzip | data/mid/worldclim/min_temp ## Calculate minimal yearly temperature from Worldclim montly minimals
+	rm -f data/mid/worldclim/min_temp/minimal_temperatures.tif
+	gdal_calc.py -A data/mid/worldclim/min_temp/wc2.1_30s_tmin_01.tif -B data/mid/worldclim/min_temp/wc2.1_30s_tmin_02.tif -C data/mid/worldclim/min_temp/wc2.1_30s_tmin_03.tif -D data/mid/worldclim/min_temp/wc2.1_30s_tmin_04.tif -E data/mid/worldclim/min_temp/wc2.1_30s_tmin_05.tif -F data/mid/worldclim/min_temp/wc2.1_30s_tmin_06.tif -G data/mid/worldclim/min_temp/wc2.1_30s_tmin_07.tif -H data/mid/worldclim/min_temp/wc2.1_30s_tmin_08.tif -I data/mid/worldclim/min_temp/wc2.1_30s_tmin_09.tif -J data/mid/worldclim/min_temp/wc2.1_30s_tmin_10.tif -K data/mid/worldclim/min_temp/wc2.1_30s_tmin_11.tif -L data/mid/worldclim/min_temp/wc2.1_30s_tmin_12.tif --outfile=data/mid/worldclim/min_temp/minimal_temperatures.tif --calc="numpy.min((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+
+## Worldclim temperatures - Calculate max of maxs
+data/mid/worldclim/max_temp/maximal_temperatures.tif: data/mid/worldclim/max_temp/unzip | data/mid/worldclim/max_temp ## Calculate maximal yearly temperature from Worldclim montly maximals
+	rm -f data/mid/worldclim/max_temp/maximal_temperatures.tif
+	gdal_calc.py -A data/mid/worldclim/max_temp/wc2.1_30s_tmax_01.tif -B data/mid/worldclim/max_temp/wc2.1_30s_tmax_02.tif -C data/mid/worldclim/max_temp/wc2.1_30s_tmax_03.tif -D data/mid/worldclim/max_temp/wc2.1_30s_tmax_04.tif -E data/mid/worldclim/max_temp/wc2.1_30s_tmax_05.tif -F data/mid/worldclim/max_temp/wc2.1_30s_tmax_06.tif -G data/mid/worldclim/max_temp/wc2.1_30s_tmax_07.tif -H data/mid/worldclim/max_temp/wc2.1_30s_tmax_08.tif -I data/mid/worldclim/max_temp/wc2.1_30s_tmax_09.tif -J data/mid/worldclim/max_temp/wc2.1_30s_tmax_10.tif -K data/mid/worldclim/max_temp/wc2.1_30s_tmax_11.tif -L data/mid/worldclim/max_temp/wc2.1_30s_tmax_12.tif --outfile=data/mid/worldclim/max_temp/maximal_temperatures.tif --calc="numpy.max((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+
+## Worldclim temperatures - download rasters to database
+
+db/table/worldclim_avg_temp: data/mid/worldclim/avg_temp/average_temperatures.tif | db/table ## Load worldclim average temperatures raster
+	psql -c "drop table if exists worldclim_avg_temp;"
+	raster2pgsql -M -Y -s 4326 data/mid/worldclim/avg_temp/average_temperatures.tif -t auto worldclim_avg_temp | psql -q
+	touch $@
+
+db/table/worldclim_min_temp: data/mid/worldclim/min_temp/minimal_temperatures.tif | db/table ## Load worldclim minimal temperatures raster
+	psql -c "drop table if exists worldclim_min_temp;"
+	raster2pgsql -M -Y -s 4326 data/mid/worldclim/min_temp/minimal_temperatures.tif -t auto worldclim_min_temp | psql -q
+	touch $@
+
+db/table/worldclim_max_temp: data/mid/worldclim/max_temp/maximal_temperatures.tif | db/table ## Load worldclim maximal temperatures raster
+	psql -c "drop table if exists worldclim_max_temp;"
+	raster2pgsql -M -Y -s 4326 data/mid/worldclim/max_temp/maximal_temperatures.tif -t auto worldclim_max_temp | psql -q
+	touch $@
+
+## Worldclim temperatures - create all tables and unite them to one
+db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldclim_min_temp db/table/worldclim_max_temp | db/table ## Worldclim temperatures - create summary H3 table
+	psql -f tables/worldclim_temperatures_h3.sql
+	psql -c "call generate_overviews('worldclim_temperatures_h3', '{worldclim_avg_temperature, worldclim_min_temperature, worldclim_max_temperature}'::text[], '{avg, min, max}'::text[], 8);"
+	psql -c "create index on worldclim_temperatures_h3 (h3);"
+	touch $@
+
+### END WorldClim temperatures ###

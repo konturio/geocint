@@ -372,7 +372,7 @@ values ('food_shops_count', 'Number of OSM food shops', jsonb_build_array(
         '[["unimportant"], ["important"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('mapswipe_area_km2', 'MapSwipe populated area km2', jsonb_build_array(
+values ('mapswipe_area_km2', 'MapSwipe Human Activity', jsonb_build_array(
         'Copyright © 2022 MapSwipe https://mapswipe.org/en/privacy.html'),
         '[["unimportant"], ["important"]]'::jsonb);
 

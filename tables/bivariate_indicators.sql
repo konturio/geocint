@@ -381,6 +381,26 @@ values ('gsa_ghi', 'GSA Global horizontal irradiation', jsonb_build_array(
         'Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use'),
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('worldclim_avg_temperature', 'Average air temperature', jsonb_build_array(
+        'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('worldclim_min_temperature', 'Minimal air temperature', jsonb_build_array(
+        'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
+        '[["bad"], ["good"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('worldclim_max_temperature', 'Maximal air temperature', jsonb_build_array(
+        'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('worldclim_amp_temperature', 'Amplitude of air temperatures', jsonb_build_array(
+        'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
+        '[["good"], ["bad"]]'::jsonb);
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

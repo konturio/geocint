@@ -75,7 +75,11 @@ create table stat_h3_quality as (
                 avg(a.eatery_count::float) as agg_eatery_count,
                 avg(a.food_shops_count::float) as agg_food_shops_count,
                 avg(a.mapswipe_area_km2::float) as agg_mapswipe_area_km2,
-                avg(a.gsa_ghi::float) as agg_gsa_ghi
+                avg(a.gsa_ghi::float) as agg_gsa_ghi,
+                avg(worldclim_avg_temperature::float) as agg_worldclim_avg_temperature,
+                avg(worldclim_min_temperature::float) as agg_worldclim_min_temperature,
+                avg(worldclim_max_temperature::float) as agg_worldclim_max_temperature,
+                avg(worldclim_amp_temperature::float) as agg_worldclim_amp_temperature
             from
                 stat_h3 a
             where

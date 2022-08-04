@@ -41,33 +41,18 @@ from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 3,
-       'Kontur OpenStreetMap Road Length',
-       'highway_length',
-       'area_km2',
-       'population',
-       'area_km2',
-       false,
-       'This map shows whether populated places have roads to visit them or escape in time of disaster. Last updated  ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
-from osm_meta;
-
-insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
-select 4,
-       'Kontur OpenStreetMap Road Estimates',
+       'Kontur OpenStreetMap Road Completeness',
        'highway_length',
        'total_road_length',
        'population',
        'area_km2',
        false,
-       'This map shows whether populated places have roads in OpenStreetMap to visit them or escape 
-        in time of disaster. Road completeness is calculated as the ratio of OpenStreetMap road length 
-        to total estimated road length(OpenStreetMap + Meta roads). Population data is provided by Kontur Population.',
+       'This map shows whether all roads are mapped in OpenStreetMap. Road completeness is calculated as the ratio of OpenStreetMap road length to total estimated road length (OpenStreetMap + Facebook roads). For places where Facebook roads data are unavailable, the estimation is based on statistical regression from Kontur Population data.',
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 ;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
-select 5,
+select 4,
        'Kontur OpenStreetMap Mapping Activity',
        'local_hours',
        'area_km2',
@@ -80,7 +65,7 @@ select 5,
 from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
-select 6,
+select 5,
        'Kontur OpenStreetMap Antiquity',
        'avgmax_ts',
        'one',
@@ -93,7 +78,7 @@ select 6,
 from tile_logs;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
-select 7,
+select 6,
        'Kontur Nighttime Heatwave Risk',
        'days_mintemp_above_25c_1c',
        'one',
@@ -105,7 +90,7 @@ select 7,
        '[{"id":"A1","color":"rgb(103,176,100)"},{"id":"A2","color":"rgb(103,176,100)"},{"id":"A3","color":"rgb(103,176,100)"},{"id":"B1","color":"rgb(232,232,157)"},{"id":"B2","color":"rgb(228,185,129)"},{"id":"B3","color":"rgb(228,127,129)"},{"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(229,154,55)"},{"id":"C3","color":"rgb(228,26,28)"}]';
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
-select 8,
+select 7,
        'Kontur Fire Service Scarcity Risk',
        'man_distance_to_fire_brigade',
        'population',
@@ -118,7 +103,7 @@ select 8,
 from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
-select 9,
+select 8,
        'Kontur OpenStreetMap Views before/after 24.02.22',
        'view_count_bf2402',
        'area_km2',

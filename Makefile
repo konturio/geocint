@@ -612,7 +612,6 @@ db/table/mapswipe_hot_tasking_data: data/mid/mapswipe/ym_files/update | db/table
 
 db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 db/procedure/generate_overviews | db/table ## Create h3 table with mapswipe data
 	psql -f tables/mapswipe_hot_tasking_data_h3.sql
-	psql -c "call generate_overviews('mapswipe_hot_tasking_data_h3', '{mapswipe_area}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 data/in/raster/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz: | data/in/raster/VNL_v21_npp_2021_global  ## download, tile, pack and upload nightlights rasters

@@ -515,7 +515,7 @@ create table stat_h3 tablespace evo4tb as (
          left join disaster_event_episodes_h3 on (a.h3 = disaster_event_episodes_h3.h3)
          left join facebook_medium_voltage_distribution_h3 on (a.h3 = facebook_medium_voltage_distribution_h3.h3)
          left join night_lights_h3 nl on (a.h3 = nl.h3)
-         left join global_solar_atlas_h3 gsa on (a.h3 = gsa.h3),
+         left join global_solar_atlas_h3 gsa on (a.h3 = gsa.h3)
          left join worldclim_temperatures_h3 wc_temp on (a.h3 = wc_temp.h3),
          ST_HexagonFromH3(a.h3) hex
 );

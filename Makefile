@@ -1,9 +1,9 @@
 export PGDATABASE = gis
 current_date:=$(shell date '+%Y%m%d')
 
-all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 ## [FINAL] Meta-target on top of all other targets.
+all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco  ## [FINAL] Meta-target on top of all other targets.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/users_tiles deploy/s3/test/osm_users_hex_dump deploy/dev/users_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/morocco data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes data/mid/mapswipe/mapswipe_s3_data_update ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/geocint/users_tiles deploy/s3/test/osm_users_hex_dump deploy/dev/users_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public db/function/build_isochrone deploy/s3/topology_boundaries data/out/kontur_boundaries_per_country/export data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated deploy/s3/prod/kontur_events_updated db/table/prescale_to_osm_check_changes data/mid/mapswipe/mapswipe_s3_data_update ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -600,7 +600,7 @@ data/mid/mapswipe/ym_files/update: data/mid/mapswipe/ym_files/unzip data/mid/map
 
 data/mid/mapswipe/mapswipe_s3_data_update: data/in/mapswipe/projects_old_update data/mid/mapswipe/ym_files/update | data/mid/mapswipe ## Zip updated geojsonl and load to s3
 	rm -f data/mid/mapswipe/mapswipe.zip
-	cd data/mid/mapswipe/ym_files/ ; zip ~/geocint/data/mid/mapswipe/mapswipe.zip *.geojson
+	cd data/mid/mapswipe/ym_files/ ; zip mapswipe.zip *.geojson
 	aws s3 cp data/mid/mapswipe/mapswipe.zip s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/mapswipe.zip --profile geocint_pipeline_sender
 	touch $@
 
@@ -697,7 +697,7 @@ db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevat
 	touch $@
 
 data/mid/ndvi_2019_06_10/generate_ndvi_tifs: | data/mid/ndvi_2019_06_10 ## NDVI rasters generated from Sentinel 2 data.
-	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && python3 /usr/bin/gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --outfile=ndvi.tif'
+	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --outfile=ndvi.tif'
 	touch $@
 
 data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/mid/ndvi_2019_06_10/generate_ndvi_tifs ## Reproject NDVI rasters to EPSG-4326.
@@ -1042,7 +1042,7 @@ db/table/wikidata_population: data/in/wikidata_population_csv/download | db/tabl
 	touch $@
 
 data/in/un_population.csv: | data/in ## Download United Nations population division dataset.
-	wget 'https://population.un.org/wpp/Download/Files/1_Indicators%20(Standard)/CSV_FILES/WPP2019_TotalPopulationBySex.csv' -O $@
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/un_population.csv $@ --profile geocint_pipeline_sender
 
 db/table/un_population: data/in/un_population.csv | db/table ## UN (United Nations) population division dataset imported into database.
 	psql -c 'drop table if exists un_population_text;'
@@ -1740,7 +1740,8 @@ data/in/census_gov: | data/in ## Directory for input census tract data.
 	mkdir $@
 
 data/in/census_gov/cb_2019_us_tract_500k.zip: | data/in/census_gov ## Download census tract data from AWS S3 bucket.
-	cd data/in/census_gov; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/cb_2019_us_tract_500k.zip ./
+	cd data/in/census_gov; aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/cb_2019_us_tract_500k.zip ./ --profile geocint_pipeline_sender
+	touch $@
 
 data/mid/census_gov: | data/mid ## Directory for intermediate census tract data.
 	mkdir $@
@@ -1754,12 +1755,12 @@ db/table/us_census_tract_boundaries_subdivide: data/mid/census_gov/cb_2019_us_tr
 	psql -f tables/us_census_tract_boundaries_subdivide.sql
 	touch $@
 
-db/table/us_census_tracts_population_h3_r8: db/table/us_census_tract_boundaries_subdivide | db/table ## Extract hex with population on 8 resolution for US from kontur_population_h3
+db/table/us_census_tracts_population_h3_r8: db/table/us_census_tract_boundaries_subdivide db/table/kontur_population_h3 | db/table ## Extract hex with population on 8 resolution for US from kontur_population_h3
 	psql -f tables/us_census_tracts_population_h3_r8.sql
 	touch $@
 
 data/in/census_gov/data_census_download: | data/in/census_gov ## Download thematic census tracts Zealand's buildings from AWS S3 bucket.
-	cd data/in/census_gov; aws s3 cp s3://geodata-us-east-1-kontur/public/geocint/in/ ./ --recursive --exclude "*" --include "*us_census_tracts_*"
+	cd data/in/census_gov; aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/us_census/ ./ --recursive --exclude "*" --include "*us_census_tracts_*" --profile geocint_pipeline_sender
 	touch $@
 
 data/mid/census_gov/us_census_tracts_stats.csv: data/in/census_gov/data_census_download | data/mid/census_gov ## Normalize US census tracts dataset.
@@ -2052,6 +2053,9 @@ deploy/s3/prod/osm_users_hex_dump: deploy/s3/test/osm_users_hex_dump data/out/os
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/osm_users_hex_update_time s3://geodata-eu-central-1-kontur/private/geocint/prod/osm_users_hex_update_time --profile geocint_pipeline_sender
 	touch $@
 
+tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
+	cd tile_generator; go get; go build -o tile_generator
+
 data/tiles/users_tiles.tar.bz2: tile_generator/tile_generator db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res | data/tiles ## Generate vector tiles from osm_users_hex table (most active user per H3 hexagon cell) and archive it for further deploy to QA and production servers.
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/users.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/users
 	cd data/tiles/users/; tar cvf ../users_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
@@ -2246,7 +2250,7 @@ deploy/s3/prod/kontur_events_updated: data/out/kontur_events/updated | deploy/s3
 data/in/event_api_data: | data/in ## download directory for events-api data
 	mkdir -p $@
 
-data/in/event_api_data/kontur_public_feed : | data/in/event_api_data ## download event-api data (only kontur-public feed at the moment)
+data/in/event_api_data/kontur_public_feed: | data/in/event_api_data ## download event-api data (only kontur-public feed at the moment)
 	python3 ./scripts/event_api_parser.py \
 		-e \
 		--work-dir ./data/in/event_api_data \
@@ -2257,18 +2261,7 @@ data/in/event_api_data/kontur_public_feed : | data/in/event_api_data ## download
 db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db/table  ## import kontur-public feed event episodes in database
 	psql -c 'drop table if exists disaster_event_episodes;'
 	psql -c 'create table if not exists disaster_event_episodes (fid serial primary key, eventid uuid, episode_type text, episode_severity text, episode_name text, episode_starteda timestamptz, episode_endedat timestamptz, geom geometry(geometry, 4326)) tablespace evo4tb;'
-	find data/in/event_api_data/kontur-public/ -name "*.geojson*" -type f \
-		| xargs readlink -m \
-		| parallel " \
-			ogr2ogr \
-				--config PG_USE_COPY YES \
-				-append \
-				-f PostgreSQL \
-				-nln disaster_event_episodes \
-				-a_srs EPSG:4326 \
-				PG:\"dbname=gis\" \
-				\"{}\" \
-		"
+	find data/in/event_api_data/kontur-public/ -name "*.geojson*" -type f | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln disaster_event_episodes -a_srs EPSG:4326'
 	psql -c 'create index disaster_event_episodes_episode_type_episode_endedat_idx on disaster_event_episodes (episode_type, episode_endedat)'
 	touch $@
 

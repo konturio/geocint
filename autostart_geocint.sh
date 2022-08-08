@@ -28,7 +28,7 @@ touch make.lock
 trap 'cleanup' EXIT
 
 # On Sunday, force checkout master branch
-test $(date +'%w') "=" 0 && git checkout -f master
+# test $(date +'%w') "=" 0 && git checkout -f master
 
 # Install / upgrade the python libs
 sudo pip3 install slackclient

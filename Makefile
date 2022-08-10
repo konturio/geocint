@@ -207,6 +207,7 @@ db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table ## Metadata for
 	rm -f data/planet-latest-updated.osm.pbf.meta.json
 	osmium fileinfo data/planet-latest.osm.pbf -ej > data/planet-latest.osm.pbf.meta.json
 	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
+	psql -AXt -c "select count((meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz) from osm_meta;" |  xargs -I {} bash scripts/check_items_count.sh {} 1
 	touch $@
 
 db/index/osm_tags_idx: db/table/osm | db/index ## GIN index on planet OpenStreetMap dataset tags column.
@@ -450,7 +451,7 @@ db/table/osm_road_segments_h3: db/table/osm_road_segments | db/table ## osm road
 	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_road_segments_6_months: db/table/osm_roads | db/table ## osm road segments for 6 months
+db/table/osm_road_segments_6_months: db/table/osm_roads db/table/osm_meta | db/table ## osm road segments for 6 months
 	psql -f tables/osm_road_segments_6_months.sql
 	touch $@
 
@@ -599,9 +600,9 @@ data/mid/mapswipe/ym_files/update: data/mid/mapswipe/ym_files/unzip data/mid/map
 	touch $@
 
 data/mid/mapswipe/mapswipe_s3_data_update: data/in/mapswipe/projects_old_update data/mid/mapswipe/ym_files/update | data/mid/mapswipe ## Zip updated geojsonl and load to s3
-	rm -f data/mid/mapswipe/mapswipe.zip
+	rm -f data/mid/mapswipe/ym_files/mapswipe.zip
 	cd data/mid/mapswipe/ym_files/ ; zip mapswipe.zip *.geojson
-	aws s3 cp data/mid/mapswipe/mapswipe.zip s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/mapswipe.zip --profile geocint_pipeline_sender
+	aws s3 cp data/mid/mapswipe/ym_files/mapswipe.zip s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/mapswipe.zip --profile geocint_pipeline_sender
 	touch $@
 
 db/table/mapswipe_hot_tasking_data: data/mid/mapswipe/ym_files/update | db/table ## Loading mapswipe hot tasking geojsons to database
@@ -1975,6 +1976,7 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 
 db/table/stat_h3_zeros_check: db/table/stat_h3 | db/table ## control that there is no indicators in stat_h3 where all values on 8th resolution are zeros.
 	psql -qXc "copy (select column_name::text FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'stat_h3' and column_name not in ('h3', 'geom', 'zoom', 'resolution')) to stdout with csv;" | parallel "bash scripts/psql_query_number_of_records_at_stat_h3.sh {}" | xargs -I {} bash scripts/check_value_is_not_zero_with_description.sh {}
+	touch $@
 
 db/table/stat_h3_quality: db/table/stat_h3 db/table/stat_h3_zeros_check | db/table ## summarized statistics aggregated on H3 hexagons between resolutions.
 	psql -f tables/stat_h3_quality.sql

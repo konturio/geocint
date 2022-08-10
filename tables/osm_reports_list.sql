@@ -2,9 +2,24 @@
 -- Full description on populating procedure can be found in Fibery:
 -- (https://kontur.fibery.io/Tasks/Task/Instruction-how-to-prepare-reports-7464)
 
+
+-- create empty table on first run of pipeline
+create table if not exists osm_reports_list
+(
+    id text,
+    name text,
+    link text,
+    last_updated text,
+    description_brief text,
+    description_full text,
+    sortable boolean not null default true,      -- flag indicating that the table has to be sortable or not
+    searchable_columns_indexes integer[],        -- array of indexes of colums which will be used for search (start from 0)
+    public_access boolean not null default true
+);
+
 -- Keep old osm_reports_list table to keep and compare previous timestamps
 drop table if exists osm_reports_list_old;
-create table if not exists osm_reports_list_old as (
+create table osm_reports_list_old as (
         select * from osm_reports_list
 );
 

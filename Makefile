@@ -230,7 +230,7 @@ data/in/covid19/_global_csv: | data/in/covid19 ## Download global daily COVID-19
 data/in/covid19/_us_csv: | data/in/covid19 ## Download US detailed daily COVID-19 data from github Data Repository by the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University.
 	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv" -O data/in/covid19/time_series_us_confirmed.csv
 	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv" -O data/in/covid19/time_series_us_deaths.csv
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/Utah_COVID19_data.zip data/in/covid19/utah_covid19.zip --profile geocint_pipeline_sender
+	wget "https://acolyte.kontur.io/nobackup/geo/Utah_COVID19_data.zip" -O data/in/covid19/utah_covid19.zip
 	touch $@
 
 data/mid/covid19: | data/mid  ## Directory for storing temporary file based datasets on COVID-19

@@ -42,15 +42,16 @@ profile_make clean || true
 
 # Check name of current git branch
 branch="$(git rev-parse --abbrev-ref HEAD)"
+host_name="$(hostname)"
 
-if [[ "$branch" == "master" ]]; then
-  echo "Current branch is $branch. Running dev and prod targets." | python3 scripts/slack_message.py geocint "Nightly build" cat
-  profile_make -j -k dev prod
-  make -k -q -n --debug=b dev prod 2>&1 | grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" | tail -n+10 | python3 scripts/slack_message.py geocint "Nightly build" cat
+if [[ "$host_name" == "geocint" ]]; then
+  echo "Geocint server: current branch is $branch. Running prod targets." | python3 scripts/slack_message.py geocint "Nightly build" cat
+  profile_make -j -k prod
+  make -k -q -n --debug=b prod 2>&1 | grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" | tail -n+10 | python3 scripts/slack_message.py geocint "Nightly build" cat
 else
-  echo "Current branch is $branch (not master). Running dev target." | python3 scripts/slack_message.py geocint "Nightly build" cat
+  echo "Mustang server: current branch is $branch. Running dev target." | python3 scripts/slack_message.py geocint "Nightly build" racehorse
   profile_make -j -k dev
-  make -k -q -n --debug=b dev 2>&1 | grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" | tail -n+10 | python3 scripts/slack_message.py geocint "Nightly build" cat
+  make -k -q -n --debug=b dev 2>&1 | grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" | tail -n+10 | python3 scripts/slack_message.py geocint "Nightly build" racehorse
 fi
 
 # redraw the make.svg after build

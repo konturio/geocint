@@ -1037,7 +1037,7 @@ db/table/wikidata_population: data/in/wikidata_population_csv/download | db/tabl
 
 	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) ]; then \
 		echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one." \
-			| python3 scripts/slack_message.py geocint "Nightly build" question; \
+			| python3 scripts/slack_message.py geocint "Nightly build" cat; \
 	fi
 	rm -f $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
 	touch $@
@@ -1080,9 +1080,9 @@ db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm db/ta
 db/table/prescale_to_osm_check_changes: db/table/prescale_to_osm_boundaries | db/table ## Check the number of object with nonactual osm population
 	psql -q -X -t -c 'select count(*) from changed_population where geom is null;' > $@__WRONG_GEOM
 	psql -q -X -t -c 'select count(*) from changed_population where right_population <> actual_osm_pop;' > $@__CHANG_POP
-	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
-	if [ 0 -lt $$(cat $@__CHANG_POP) ]; then echo "Some population values in OSM was changed. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
-	if [ 0 -lt $$(cat $@__WRONG_GEOM) ]; then echo "Some geometry values is null. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
+	if [ 0 -lt $$(cat $@__CHANG_POP) ]; then echo "Some population values in OSM was changed. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
+	if [ 0 -lt $$(cat $@__WRONG_GEOM) ]; then echo "Some geometry values is null. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
 	rm $@__CHANG_POP $@__WRONG_GEOM
 	touch $@
 
@@ -1098,7 +1098,7 @@ data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/
 	psql -q -X -t -c 'select sum(population) from kontur_population_v3_h3 where resolution = 0' > $@__KONTUR_POP_V3
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4
 	if [ $$(cat $@__KONTUR_POP_V4) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py geocint "Nightly build" x && exit 1; fi
-	if [ $$(cat $@__KONTUR_POP_V4) -lt $$(cat $@__KONTUR_POP_V3) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py geocint "Nightly build" question; fi
+	if [ $$(cat $@__KONTUR_POP_V4) -lt $$(cat $@__KONTUR_POP_V3) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
 	rm -f $@__KONTUR_POP_V3 $@__KONTUR_POP_V4
 	touch $@
 

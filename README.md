@@ -69,7 +69,13 @@ tested by other team members, and will automatically produce new artifacts once 
   **Draft** MR status
 - After your MR is ready, write about it to a suitable slack channel. Mention people who are able to review code and
   approve it. Describe how did you test your code.
-- Try to run the pipeline at least once on your test branch.
+- Try to run the pipeline at least once on your test branch, or create simple short makefile for test_* tables in
+  separate folder and run it, avoiding affect on running pipeline.
+- Add sources for download 3rd-party data
+- Before sending to QA or analysis make sure that you wrote 3 points at the task for the mr you have:
+    - summary what did you do
+    - info on how to test (general flow)
+    - some tips on what should be tested in your opinion and what part of the app can be affected.
 
 #### Technical details for **code review** checks:
 
@@ -83,6 +89,8 @@ tested by other team members, and will automatically produce new artifacts once 
 - Check all dependencies twice.
 - Commands log level - will it generate lots of unnecessary info?
 - If you replace one target with another one, make sure to delete unused one everywhere (especially dev/prod targets)
+- Updates on tables should be a part of target, where this tables are created, for not updating smth twice.
+
 
 #### After-Merge duties. Share them and your progress with teammates.
 

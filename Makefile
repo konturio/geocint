@@ -113,7 +113,7 @@ data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.
 data/in/raster/gebco_2022_geotiff: | data/in/raster ## Directory for GEBCO 2022 (General Bathymetric Chart of the Oceans) dataset.
 	mkdir -p $@
 
-data/mid/ndvi_2019_06_10: | data/mid ## Directory for NDVI rasters.
+data/mid/ndvi_2019_06_10: | data/mid ## Directory for NDVI rasters. Taken from https://medium.com/sentinel-hub/digital-twin-sandbox-sentinel-2-collection-available-to-everyone-20f3b5de846e
 	mkdir -p $@
 
 deploy:  ## Directory for deployment targets footprints.

@@ -18,7 +18,7 @@ create table land_polygons_h3_r8_4326 as (
 drop table if exists mapswipe_hot_tasking_data_h3_in;
 create table mapswipe_hot_tasking_data_h3_in as (
 	select l.h3               as h3, 
-	       l.area / 1000000.0 as mapswipe_area, 
+	       sum(ST_Area(s.geom::geography)) / 1000000.0 as mapswipe_area,
 	       l.area / 1000000.0 as area_km2, 
 	       8                  as resolution
 	from mapswipe_hot_tasking_data_subdivide s, 
@@ -29,7 +29,7 @@ create table mapswipe_hot_tasking_data_h3_in as (
 
 -- Remove temporary table
 drop table if exists mapswipe_hot_tasking_data_subdivide;
-drop table if exists land_polygons_h3_r8_4326;	
+drop table if exists land_polygons_h3_r8_4326;
 
 -- generate overviews and dithering from copernicus_forest_h3.sql
 

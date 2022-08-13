@@ -1,10 +1,10 @@
 insert into isodist_fire_stations_h3 (h3, resolution, distance, man_distance)
 select p.h3,
        p.resolution,
-       a.max_distance,
-       (p.population * a.max_distance / 1000)
-from (select h3_to_parent(h3) as h3,
-             max(distance)    as max_distance
+       (a.man_dist_sum / p.population) * 1000,
+       a.man_dist_sum
+from (select h3_to_parent(h3)     as h3,
+             sum(man_distance)    as man_dist_sum -- weighted average distance is simple sum of child man_distances related to parent population. And according to that average distance new man_distance is just sum of child man_distances
       from isodist_fire_stations_h3
       where resolution = :seq_res
       group by 1) a

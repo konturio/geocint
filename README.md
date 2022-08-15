@@ -37,6 +37,7 @@ tested by other team members, and will automatically produce new artifacts once 
 - Views and materialized views.
 - Complex python scripts should become less complex bash+sql scripts.
 - Java services are out of scope of geocint.
+- Comments for targets, containing double quote characters (")
 
 ### Directory and files structure:
 

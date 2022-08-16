@@ -27,9 +27,4 @@ create table us_census_tracts_stats as (
                 on c.id_tract = p.affgeoid
 );
 
--- Remove temporary tables
-drop table if exists us_census_tract_boundaries_subdivide;
-drop table if exists us_census_tracts_population;
-drop table if exists us_census_tracts_stats_in;
-
 create index on us_census_tracts_stats using gist (geom);

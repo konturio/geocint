@@ -1,6 +1,6 @@
 update bivariate_axis
 set
-    label = 'Highway length (m/km²)'
+    label = 'Highway length (km/km²)'
 where
       numerator = 'highway_length'
   and denominator = 'area_km2';

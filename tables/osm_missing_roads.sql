@@ -13,8 +13,8 @@ create table osm_missing_roads as
 with q as (select distinct on (s.h3, b.name_en) s.h3 as h3, -- on h3 can intersects w/ >1 cnt polygons
         b.name_en, s.geom,
         population,
-        round(s.highway_length::numeric / 1000, 2) as osm_l,
-        round((s.total_road_length - s.highway_length)::numeric / 1000, 2) as fb_l,
+        round(s.highway_length::numeric, 2) as osm_l,
+        round((s.total_road_length - s.highway_length)::numeric, 2) as fb_l,
         abs(log(s.highway_length + 1) - log(s.total_road_length + 1)) as diff
     from stat_h3 s
     left join country_boundaries_subdivided_in b

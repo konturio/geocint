@@ -58,10 +58,10 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('building_count_6_months', 'OSM Buildings (last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('highway_length', 'OSM Road Length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
+values ('highway_length', 'OSM Road Length (km)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('highway_length_6_months', 'OSM Road Length (last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
+values ('highway_length_6_months', 'OSM Road Length (last 6 months, km)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
 values ('local_hours', 'OSM Mapping Hours by Local Mappers', jsonb_build_array('© Kontur https://kontur.io/',
@@ -297,7 +297,7 @@ values ('man_distance_to_hospital', 'Man-distance to hospitals', jsonb_build_arr
         '[["good"], ["bad"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('total_road_length', 'Total roads length', jsonb_build_array(
+values ('total_road_length', 'Total roads length (km)', jsonb_build_array(
         '©2019 Facebook, Inc. and its affiliates https://github.com/facebookmicrosites/Open-Mapping-At-Facebook/blob/main/LICENSE.md',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright', '© Kontur https://kontur.io/'),
         '[["unimportant"], ["important"]]'::jsonb);

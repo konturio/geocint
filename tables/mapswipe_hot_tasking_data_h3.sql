@@ -1,7 +1,7 @@
 drop table if exists mapswipe_hot_tasking_data_subdivide;
 create table mapswipe_hot_tasking_data_subdivide as (
 	select id, 
-	       ST_Subdivide(geom, 50) geom 
+	       ST_Subdivide(geom, 5) geom
 	from mapswipe_hot_tasking_data
 );
 

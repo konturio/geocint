@@ -14,9 +14,10 @@ with q as (select distinct on (s.h3, b.name_en) s.h3 as h3, -- on h3 can interse
         b.name_en, s.geom,
         population,
         round(s.highway_length::numeric, 2) as osm_l,
-        round((s.total_road_length - s.highway_length)::numeric, 2) as fb_l,
-        abs(log(s.highway_length + 1) - log(s.total_road_length + 1)) as diff
+        round(fbr.fb_roads_length::numeric / 1000.0, 2) as fb_l,
+        abs(log(s.highway_length + 1) - log(s.highway_length + (fbr.fb_roads_length / 1000.0) + 1)) as diff
     from stat_h3 s
+    left join facebook_roads_h3 fbr on fbr.h3 = s.h3 
     left join country_boundaries_subdivided_in b
         on ST_Intersects(s.h3::geometry, b.geom)
     where s.total_road_length > 0   -- fb roads

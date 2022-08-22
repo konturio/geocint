@@ -4,8 +4,9 @@ create table osm_unmapped_places_report_in as (
            ST_PointOnSurface(ST_Transform(geom, 4326)) as geom,
            null::text                                  as hasc,
            null::text                                  as country,
-           population,
-           view_count,
+           population                                  as population,
+           view_count                                  as view_count,
+           h3                                          as h3,
 
             -- Generate link for JOSM remote desktop:
            'hrefIcon_[Edit in JOSM](http://localhost:8111/load_and_zoom?' ||
@@ -29,10 +30,11 @@ drop table if exists osm_unmapped_places_report;
 create table osm_unmapped_places_report as (
     select distinct on (id)
            id,
-           country as "Country",
+           h3          as h3,
+           country     as "Country",
            population,
            view_count,
-           place as "Place bounding box"           
+           place       as "Place bounding box"           
     from osm_unmapped_places_report_in
     order by id, hasc
 );

@@ -38,7 +38,10 @@ create table osm_roads as (
                     tags @> '{"highway":"primary_link"}' or
                     tags @> '{"highway":"secondary"}' or
                     tags @> '{"highway":"secondary_link"}' or
-                    tags @> '{"tunnel":"yes"}'
+                    tags @> '{"tunnel":"yes"}' or
+                    tags @> '{"aeroway":"runway"}' or
+                    tags @> '{"aeroway":"taxiway"}' or
+                    tags @> '{"aeroway":"stopway"}'
                 then null
             else
                 1.4 -- 5 km/hr
@@ -57,12 +60,17 @@ create table osm_roads as (
     from
         osm
     where
-          tags ? 'highway'
-      and osm_type = 'way'
-      and ST_GeometryType(geog::geometry) = 'ST_LineString'
-      and not tags @> '{"highway":"proposed"}' -- count only existed roads
-      and not tags @> '{"highway":"dummy"}' -- special case
-      and ST_Y(ST_StartPoint(geog::geometry)) > -60   -- do not count roads in Antarctic
+        ((tags ? 'highway'
+        and not tags @> '{"highway":"proposed"}' -- count only existed roads
+        and not tags @> '{"highway":"dummy"}') -- special case
+        or
+        tags @> '{"aeroway":"runway"}' or
+        tags @> '{"aeroway":"taxiway"}' or
+        tags @> '{"aeroway":"stopway"}')
+
+        and osm_type = 'way'
+        and ST_GeometryType(geog::geometry) = 'ST_LineString'
+        and ST_Y(ST_StartPoint(geog::geometry)) > -60   -- do not count roads in Antarctic
     order by ts
 );
 

@@ -1,16 +1,32 @@
 drop table if exists total_road_length_h3_temp;
+drop table if exists total_road_length_h3_temp_in;
 drop table if exists total_road_length_h3;
 
 -- create temporary table with calculating basic total_road_length
-create table total_road_length_h3_temp as (select coalesce(fb.h3, osm.h3)                                           as h3,
-                                                   coalesce(fb.resolution, osm.resolution)                           as resolution,
-                                                   coalesce(fb.fb_roads_length, 0)                                   as fb_roads_length,
-                                                   coalesce(osm.highway_length, 0)                                   as highway_length,
-                                                   coalesce(fb.fb_roads_length, 0) + coalesce(osm.highway_length, 0) as total_road_length
-                                            from facebook_roads_h3 fb
-                                                     full outer join osm_road_segments_h3 osm
-                                                                     on fb.h3 = osm.h3
-                                            where (coalesce(fb.resolution, osm.resolution) = 8));
+create table total_road_length_h3_temp_in as (
+    select  coalesce(fb.h3, osm.h3)                                           as h3,
+            coalesce(fb.resolution, osm.resolution)                           as resolution,
+            coalesce(fb.fb_roads_length, 0)                                   as fb_roads_length,
+            coalesce(osm.highway_length, 0)                                   as highway_length,
+            coalesce(fb.fb_roads_length, 0) + coalesce(osm.highway_length, 0) as total_road_length
+    from facebook_roads_h3 fb
+         full outer join osm_road_segments_h3 osm
+         on fb.h3 = osm.h3
+    where (coalesce(fb.resolution, osm.resolution) = 8)
+);
+
+-- add facebook roads length before filtering
+create table total_road_length_h3_temp as (
+    select t.h3,
+           t.resolution,
+           t.fb_roads_length,
+           t.highway_length,
+           t.total_road_length,
+           coalesce(fin.fb_roads_in_length, 0) as fb_roads_in_length
+    from total_road_length_h3_temp_in t
+         left join facebook_roads_in_h3_r8 fin
+         on t.h3 = fin.h3
+);
 
 -- calculate regression coefficients
 with regression as (select regr_slope(trl.total_road_length, pop.population)     as slope,
@@ -40,8 +56,13 @@ with regression as (select regr_slope(trl.total_road_length, pop.population)    
 select trl.h3                                          as h3,
        trl.resolution                                  as resolution,
        case
-           when trl.total_road_length > trl.highway_length then trl.total_road_length
-           else GREATEST(trl.total_road_length, coalesce(pop.population * regression.slope +
+           when 
+                -- in case when fb_roads_length more than than 0
+                -- or if prefilter facebook road length more than 0
+                trl.total_road_length > trl.highway_length or fb_roads_in_length > 0
+                then trl.total_road_length
+           else 
+                GREATEST(trl.total_road_length, coalesce(pop.population * regression.slope +
                                                           regression.intercept,
                                                           0))
        end                                             as total_road_length
@@ -50,5 +71,6 @@ from regression,
      total_road_length_h3_temp trl
          left outer join kontur_population_h3 pop on trl.h3 = pop.h3;
 
--- drop temporary table
+-- drop temporary tables
+drop table if exists total_road_length_h3_temp_in;
 drop table if exists total_road_length_h3_temp;

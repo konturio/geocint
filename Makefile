@@ -407,6 +407,10 @@ db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## Load
 	psql -c "vacuum analyse facebook_roads_in;"
 	touch $@
 
+db/table/facebook_roads_in_h3_r8: db/table/facebook_roads_in | db/table ## Build h3 overviews for prefiltered Facebook roads at all levels.
+	psql -f tables/facebook_roads_in_h3_r8.sql
+	touch $@	
+
 db/table/facebook_roads_last_filtered: db/table/facebook_roads_in | db/table ## Save first timestamp for Facebook road filter.
 	psql -c "drop table if exists facebook_roads_last_filtered;"
 	psql -c "create table facebook_roads_last_filtered as (select '2019-01-01'::date::timestamp as ts);"
@@ -2274,7 +2278,7 @@ db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/l
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
 
-db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## adjust total road length with linear regression from population
+db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## adjust total road length with linear regression from population
 	psql -f tables/total_road_length_h3.sql
 	psql -c "call generate_overviews('total_road_length_h3', '{total_road_length}'::text[], '{sum}'::text[], 8);"
 	touch $@

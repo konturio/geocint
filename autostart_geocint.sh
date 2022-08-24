@@ -38,7 +38,7 @@ sudo pip3 install pandas
 # Pull and stash uncommitted changes from Git
 git pull --rebase --autostash || { git stash && git pull && echo 'git rebase autostash failed, stash and pull executed' | python3 scripts/slack_message.py geocint "Nightly build" cat; }
 
-profile_make clean || true
+profile_make clean
 
 # Check name of current git branch
 branch="$(git rev-parse --abbrev-ref HEAD)"

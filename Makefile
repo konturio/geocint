@@ -1073,8 +1073,8 @@ data/in/prescale_to_osm.csv: | data/in ## Download master table with right popul
 
 db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescale_to_osm data to the table
 	psql -c 'drop table if exists prescale_to_osm;'
-	psql -c 'create table prescale_to_osm (osm_type text, osm_id bigint, name text, right_population bigint, actual_osm_pop bigint, change_date date, geom geometry);'
-	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm(osm_type, osm_id, name, right_population, change_date) from stdin with csv header delimiter ',';"
+	psql -c 'create table prescale_to_osm (osm_type text, osm_id bigint, country text, name text, url text, right_population bigint, actual_osm_pop bigint, change_date date, geom geometry);'
+	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm(osm_type, osm_id, country, name, url, right_population, change_date) from stdin with csv header delimiter ',';"
 	touch $@
 
 db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm db/table/water_polygons_vector | db/table ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them

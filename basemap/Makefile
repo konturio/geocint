@@ -194,7 +194,7 @@ data/basemap/metadata/zigzag/style_night_no_globe_view_support.json: kothic/src/
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/zigzag/style_night.json: data/basemap/metadata/zigzag/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
@@ -209,7 +209,7 @@ data/basemap/metadata/zigzag/style_night_ru.json: kothic/src/komap.py | data/bas
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale ru \
 		> $@
 
@@ -222,7 +222,7 @@ data/basemap/metadata/zigzag/style_night_en.json: kothic/src/komap.py | data/bas
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
 
@@ -235,8 +235,8 @@ data/basemap/metadata/zigzag/style_day_no_globe_view_support.json: styles/ninja.
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
+		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://test-api02.konturlabs.com/layers/tiles/basemap/sprite \
 		> $@
 
 data/basemap/metadata/zigzag/style_day.json: data/basemap/metadata/zigzag/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
@@ -251,8 +251,8 @@ data/basemap/metadata/zigzag/style_day_en.json: styles/ninja.mapcss kothic/src/k
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
+		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://test-api02.konturlabs.com/layers/tiles/basemap/sprite \
 		--locale en \
 		> $@
 
@@ -268,8 +268,8 @@ data/basemap/metadata/sonic/style_day_no_globe_view_support.json: kothic/src/kom
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
+		--glyphs-url https://test-api.konturlabs.com/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://test-api.konturlabs.com/tiles/basemap/sprite \
 		> $@
 
 data/basemap/metadata/sonic/style_day.json: data/basemap/metadata/sonic/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
@@ -284,8 +284,8 @@ data/basemap/metadata/sonic/style_day_en.json: kothic/src/komap.py | data/basema
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
+		--glyphs-url https://test-api.konturlabs.com/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://test-api.konturlabs.com/tiles/basemap/sprite \
 		--locale en \
 		> $@
 
@@ -301,7 +301,7 @@ data/basemap/metadata/sonic/style_night_no_globe_view_support.json: kothic/src/k
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://test-api.konturlabs.com/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/sonic/style_night.json: data/basemap/metadata/sonic/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
@@ -316,7 +316,7 @@ data/basemap/metadata/sonic/style_night_en.json: kothic/src/komap.py | data/base
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://test-api.konturlabs.com/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
 
@@ -329,8 +329,8 @@ data/basemap/metadata/lima/style_day_no_globe_view_support.json: kothic/src/koma
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
+		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
 		> $@
 
 data/basemap/metadata/lima/style_day.json: data/basemap/metadata/lima/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
@@ -345,8 +345,8 @@ data/basemap/metadata/lima/style_day_en.json: kothic/src/komap.py | data/basemap
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
+		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
 		--locale en \
 		> $@
 
@@ -362,7 +362,7 @@ data/basemap/metadata/lima/style_night_no_globe_view_support.json: kothic/src/ko
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/lima/style_night.json: data/basemap/metadata/lima/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
@@ -377,7 +377,7 @@ data/basemap/metadata/lima/style_night_en.json: kothic/src/komap.py | data/basem
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
 

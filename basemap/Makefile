@@ -40,13 +40,13 @@ data/out: | data ## Generated final data (tiles, dumps, etc).
 deploy:  ## Directory for deployment targets footprints.
 	mkdir -p $@
 
-deploy/lima: | deploy ## We use lima.kontur.io as a production server.
+deploy/prod: | deploy ## We use lima.kontur.io as a production server.
 	mkdir -p $@
 
-deploy/sonic: | deploy ## We use sonic.kontur.io as a staging server to test software before setting it live to prod.
+deploy/test: | deploy ## We use sonic.kontur.io as a staging server to test software before setting it live to prod.
 	mkdir -p $@
 
-deploy/zigzag: | deploy ## Target-created directory for deployments on test server zigzag.kontur.io
+deploy/dev: | deploy ## Target-created directory for deployments on test server zigzag.kontur.io
 	mkdir -p $@
 
 deploy/geocint: | deploy ## We use geocint as a GIS development server.
@@ -164,13 +164,13 @@ data/basemap/sprite: | data/basemap ## Directory for icon sprites used in JSON s
 data/basemap/metadata: | data/basemap ## Directory for JSON styles used with vector tiles.
 	mkdir -p $@
 
-data/basemap/metadata/zigzag: | data/basemap/metadata ## JSON styles used with vector tiles for TEST DVLP server (because they are path specific).
+data/basemap/metadata/dev: | data/basemap/metadata ## JSON styles used with vector tiles for TEST DVLP server (because they are path specific).
 	mkdir -p $@
 
-data/basemap/metadata/sonic: | data/basemap/metadata ## JSON styles used with vector tiles for TEST QA server (because they are path specific).
+data/basemap/metadata/test: | data/basemap/metadata ## JSON styles used with vector tiles for TEST QA server (because they are path specific).
 	mkdir -p $@
 
-data/basemap/metadata/lima: | data/basemap/metadata ## JSON styles used with vector tiles for PROD server (because they are path specific).
+data/basemap/metadata/prod: | data/basemap/metadata ## JSON styles used with vector tiles for PROD server (because they are path specific).
 	mkdir -p $@
 
 data/basemap/glyphs_all: | data/basemap/glyphs ## Target that generates glyphs (SDF) from TTFs using OpenMapTiles font builder.
@@ -185,7 +185,7 @@ data/basemap/sprite_all: | data/basemap/sprite ## Build sprites currently fetche
 	cp -r sprite/. data/basemap/sprite
 	touch $@
 
-data/basemap/metadata/zigzag/style_night_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server.
+data/basemap/metadata/dev/style_night_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/dev ## Generating of Night style JSON for TEST DVLP server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -194,13 +194,13 @@ data/basemap/metadata/zigzag/style_night_no_globe_view_support.json: kothic/src/
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/zigzag/style_night.json: data/basemap/metadata/zigzag/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/zigzag/style_night_no_globe_view_support.json > $@
+data/basemap/metadata/dev/style_night.json: data/basemap/metadata/dev/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/dev/style_night_no_globe_view_support.json > $@
 
-data/basemap/metadata/zigzag/style_night_ru.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server. (language=ru)
+data/basemap/metadata/dev/style_night_ru.json: kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Night style JSON for TEST DVLP server. (language=ru)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -209,11 +209,11 @@ data/basemap/metadata/zigzag/style_night_ru.json: kothic/src/komap.py | data/bas
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale ru \
 		> $@
 
-data/basemap/metadata/zigzag/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Night style JSON for TEST DVLP server. (language=en)
+data/basemap/metadata/dev/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Night style JSON for TEST DVLP server. (language=en)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -222,11 +222,11 @@ data/basemap/metadata/zigzag/style_night_en.json: kothic/src/komap.py | data/bas
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
 
-data/basemap/metadata/zigzag/style_day_no_globe_view_support.json: styles/ninja.mapcss scripts/patch_style_add_unfolded_globe_view_dummy_layers.py kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Geocint server.
+data/basemap/metadata/dev/style_day_no_globe_view_support.json: styles/ninja.mapcss scripts/patch_style_add_unfolded_globe_view_dummy_layers.py kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for Geocint server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -235,14 +235,14 @@ data/basemap/metadata/zigzag/style_day_no_globe_view_support.json: styles/ninja.
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
+		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://test-api02.konturlabs.com/layers/tiles/basemap/sprite \
 		> $@
 
-data/basemap/metadata/zigzag/style_day.json: data/basemap/metadata/zigzag/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/zigzag/style_day_no_globe_view_support.json > $@
+data/basemap/metadata/dev/style_day.json: data/basemap/metadata/dev/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/dev/style_day_no_globe_view_support.json > $@
 
-data/basemap/metadata/zigzag/style_day_en.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/zigzag ## Generating of Ninja style JSON for Geocint server. (language=en)
+data/basemap/metadata/dev/style_day_en.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for Geocint server. (language=en)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -251,15 +251,15 @@ data/basemap/metadata/zigzag/style_day_en.json: styles/ninja.mapcss kothic/src/k
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://zigzag.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://zigzag.kontur.io/tiles/basemap/sprite \
+		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://test-api02.konturlabs.com/layers/tiles/basemap/sprite \
 		--locale en \
 		> $@
 
-data/basemap/metadata/zigzag/style_ninja.json: kothic/src/komap.py data/basemap/metadata/zigzag/style_day_en.json | data/basemap/metadata/zigzag ## Patch style to fall into osm.org tile starting from z10
-	cat data/basemap/metadata/zigzag/style_day_en.json > $@
+data/basemap/metadata/dev/style_ninja.json: kothic/src/komap.py data/basemap/metadata/dev/style_day_en.json | data/basemap/metadata/dev ## Patch style to fall into osm.org tile starting from z10
+	cat data/basemap/metadata/dev/style_day_en.json > $@
 
-data/basemap/metadata/sonic/style_day_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server.
+data/basemap/metadata/test/style_day_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/test ## Generating of Ninja style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -268,14 +268,14 @@ data/basemap/metadata/sonic/style_day_no_globe_view_support.json: kothic/src/kom
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
+		--glyphs-url https://test-api.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://test-api.konturlabs.com/layers/tiles/basemap/sprite \
 		> $@
 
-data/basemap/metadata/sonic/style_day.json: data/basemap/metadata/sonic/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/sonic/style_day_no_globe_view_support.json > $@
+data/basemap/metadata/test/style_day.json: data/basemap/metadata/test/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/test/style_day_no_globe_view_support.json > $@
 
-data/basemap/metadata/sonic/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Ninja style JSON for TEST QA server. (language=en)
+data/basemap/metadata/test/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for TEST QA server. (language=en)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -284,15 +284,15 @@ data/basemap/metadata/sonic/style_day_en.json: kothic/src/komap.py | data/basema
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://sonic.kontur.io/tiles/basemap/sprite \
+		--glyphs-url https://test-api.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://test-api.konturlabs.com/layers/tiles/basemap/sprite \
 		--locale en \
 		> $@
 
-data/basemap/metadata/sonic/style_ninja.json: kothic/src/komap.py data/basemap/metadata/sonic/style_day_en.json | data/basemap/metadata/sonic ## Patch style to fall into osm.org tile starting from z10
-	cat data/basemap/metadata/sonic/style_day_en.json > $@
+data/basemap/metadata/test/style_ninja.json: kothic/src/komap.py data/basemap/metadata/test/style_day_en.json | data/basemap/metadata/test ## Patch style to fall into osm.org tile starting from z10
+	cat data/basemap/metadata/test/style_day_en.json > $@
 
-data/basemap/metadata/sonic/style_night_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server.
+data/basemap/metadata/test/style_night_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/test ## Generating of Night style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -301,13 +301,13 @@ data/basemap/metadata/sonic/style_night_no_globe_view_support.json: kothic/src/k
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://test-api.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/sonic/style_night.json: data/basemap/metadata/sonic/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/sonic/style_night_no_globe_view_support.json > $@
+data/basemap/metadata/test/style_night.json: data/basemap/metadata/test/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/test/style_night_no_globe_view_support.json > $@
 
-data/basemap/metadata/sonic/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/sonic ## Generating of Night style JSON for TEST QA server. (language=en)
+data/basemap/metadata/test/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/test ## Generating of Night style JSON for TEST QA server. (language=en)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -316,11 +316,11 @@ data/basemap/metadata/sonic/style_night_en.json: kothic/src/komap.py | data/base
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://sonic.kontur.io/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://test-api.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
 
-data/basemap/metadata/lima/style_day_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for PROD server.
+data/basemap/metadata/prod/style_day_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for PROD server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -329,14 +329,14 @@ data/basemap/metadata/lima/style_day_no_globe_view_support.json: kothic/src/koma
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
+		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
 		> $@
 
-data/basemap/metadata/lima/style_day.json: data/basemap/metadata/lima/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/lima/style_day_no_globe_view_support.json > $@
+data/basemap/metadata/prod/style_day.json: data/basemap/metadata/prod/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/prod/style_day_no_globe_view_support.json > $@
 
-data/basemap/metadata/lima/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Ninja style JSON for PROD server. (language=en)
+data/basemap/metadata/prod/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for PROD server. (language=en)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -345,15 +345,15 @@ data/basemap/metadata/lima/style_day_en.json: kothic/src/komap.py | data/basemap
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://disaster.ninja/tiles/basemap/sprite \
+		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
 		--locale en \
 		> $@
 
-data/basemap/metadata/lima/style_ninja.json: data/basemap/metadata/lima/style_day_en.json kothic/src/komap.py | data/basemap/metadata/lima ## Patch style to fall into osm.org tile starting from z10
-	cat data/basemap/metadata/lima/style_day_en.json > $@
+data/basemap/metadata/prod/style_ninja.json: data/basemap/metadata/prod/style_day_en.json kothic/src/komap.py | data/basemap/metadata/prod ## Patch style to fall into osm.org tile starting from z10
+	cat data/basemap/metadata/prod/style_day_en.json > $@
 
-data/basemap/metadata/lima/style_night_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server.
+data/basemap/metadata/prod/style_night_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/prod ## Generating of Night style JSON for PROD server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -362,13 +362,13 @@ data/basemap/metadata/lima/style_night_no_globe_view_support.json: kothic/src/ko
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
-data/basemap/metadata/lima/style_night.json: data/basemap/metadata/lima/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/lima/style_night_no_globe_view_support.json > $@
+data/basemap/metadata/prod/style_night.json: data/basemap/metadata/prod/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
+	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/prod/style_night_no_globe_view_support.json > $@
 
-data/basemap/metadata/lima/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/lima ## Generating of Night style JSON for PROD server. (language=en)
+data/basemap/metadata/prod/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Night style JSON for PROD server. (language=en)
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
 		--minzoom 0 \
@@ -377,43 +377,43 @@ data/basemap/metadata/lima/style_night_en.json: kothic/src/komap.py | data/basem
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
 		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://disaster.ninja/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		> $@
 
-deploy/geocint/basemap_mapcss: data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_night.json | deploy/geocint ## Deploy JSON styles for vector tiles on geocint.
-	cp data/basemap/metadata/zigzag/style_ninja.json /var/www/html/basemap/style_ninja.json
-	cp data/basemap/metadata/zigzag/style_day.json /var/www/html/basemap/style_mwm.json
-	cp data/basemap/metadata/zigzag/style_night.json /var/www/html/basemap/style_mwm_night.json
+deploy/geocint/basemap_mapcss: data/basemap/metadata/dev/style_ninja.json data/basemap/metadata/dev/style_day.json data/basemap/metadata/dev/style_night.json | deploy/geocint ## Deploy JSON styles for vector tiles on geocint.
+	cp data/basemap/metadata/dev/style_ninja.json /var/www/html/basemap/style_ninja.json
+	cp data/basemap/metadata/dev/style_day.json /var/www/html/basemap/style_mwm.json
+	cp data/basemap/metadata/dev/style_night.json /var/www/html/basemap/style_mwm_night.json
 	touch $@
 
-data/basemap/zigzag.tar.bz2: data/basemap/metadata/zigzag/style_night_ru.json data/basemap/metadata/zigzag/style_night_en.json data/basemap/metadata/zigzag/style_ninja.json data/basemap/metadata/zigzag/style_day.json data/basemap/metadata/zigzag/style_day_en.json data/basemap/metadata/zigzag/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST DVLP server.
-	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/zigzag .
+data/basemap/dev.tar.bz2: data/basemap/metadata/dev/style_night_ru.json data/basemap/metadata/dev/style_night_en.json data/basemap/metadata/dev/style_ninja.json data/basemap/metadata/dev/style_day.json data/basemap/metadata/dev/style_day_en.json data/basemap/metadata/dev/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST DVLP server.
+	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/dev .
 
-data/basemap/sonic.tar.bz2: data/basemap/metadata/sonic/style_ninja.json data/basemap/metadata/sonic/style_day.json data/basemap/metadata/sonic/style_day_en.json data/basemap/metadata/sonic/style_night.json data/basemap/metadata/sonic/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST QA server.
-	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/sonic .
+data/basemap/test.tar.bz2: data/basemap/metadata/test/style_ninja.json data/basemap/metadata/test/style_day.json data/basemap/metadata/test/style_day_en.json data/basemap/metadata/test/style_night.json data/basemap/metadata/test/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST QA server.
+	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/test .
 
-data/basemap/lima.tar.bz2: data/basemap/metadata/lima/style_ninja.json data/basemap/metadata/lima/style_day.json data/basemap/metadata/lima/style_day_en.json data/basemap/metadata/lima/style_night.json data/basemap/metadata/lima/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to PROD server.
-	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/lima .
+data/basemap/prod.tar.bz2: data/basemap/metadata/prod/style_ninja.json data/basemap/metadata/prod/style_day.json data/basemap/metadata/prod/style_day_en.json data/basemap/metadata/prod/style_night.json data/basemap/metadata/prod/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to PROD server.
+	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/prod .
 
 deploy/s3/basemap.mbtiles: data/basemap.mbtiles | deploy/s3 ## deploy basemap.mbtiles to S3
 	aws s3 cp data/basemap.mbtiles $(S3_BASEMAP_PATH)
 	touch $@
 
-deploy/zigzag/basemap: deploy/zigzag/basemap.mbtiles data/basemap/zigzag.tar.bz2 | deploy/zigzag ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST DVLP server.
-	aws s3 cp --recursive data/basemap/metadata/zigzag s3://basemap-locker01/DEV/styles
+deploy/dev/basemap: deploy/dev/basemap.mbtiles data/basemap/dev.tar.bz2 | deploy/dev ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST DVLP server.
+	aws s3 cp --recursive data/basemap/metadata/dev s3://basemap-locker01/DEV/styles
 	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/DEV/glyphs
 	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/DEV/sprite
 	touch $@
 
-deploy/sonic/basemap: deploy/sonic/basemap.mbtiles data/basemap/sonic.tar.bz2 | deploy/sonic ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST QA server.
-	aws s3 cp --recursive data/basemap/metadata/sonic s3://basemap-locker01/TEST/styles
+deploy/test/basemap: deploy/test/basemap.mbtiles data/basemap/test.tar.bz2 | deploy/test ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST QA server.
+	aws s3 cp --recursive data/basemap/metadata/test s3://basemap-locker01/TEST/styles
 	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/TEST/glyphs
 	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/TEST/sprite
 	touch $@
 
-deploy/lima/basemap: deploy/lima/basemap.mbtiles data/basemap/lima.tar.bz2 | deploy/lima ## Transfer and deploy tar archive with tiles, glyphs and styles on PROD server.
-	aws s3 cp --recursive data/basemap/metadata/lima s3://basemap-locker01/PROD/styles
+deploy/prod/basemap: deploy/prod/basemap.mbtiles data/basemap/prod.tar.bz2 | deploy/prod ## Transfer and deploy tar archive with tiles, glyphs and styles on PROD server.
+	aws s3 cp --recursive data/basemap/metadata/prod s3://basemap-locker01/PROD/styles
 	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/PROD/glyphs
 	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/PROD/sprite
 	touch $@

@@ -412,14 +412,13 @@ db/table/facebook_roads_in_h3_r8: db/table/facebook_roads_in | db/table ## Build
 	touch $@	
 
 db/table/facebook_roads_last_filtered: db/table/facebook_roads_in | db/table ## Save first timestamp for Facebook road filter.
-	psql -c "drop table if exists facebook_roads_last_filtered;"
-	psql -c "create table facebook_roads_last_filtered as (select '2019-01-01'::date::timestamp as ts);"
+	psql -c "create table if not exists facebook_roads_last_filtered as (select '2006-01-01'::date::timestamp as ts);"
 	touch $@
 
 db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last_filtered db/table/osm_roads | db/table ## Filter Facebook roads.
 	psql -f tables/facebook_roads.sql
 	psql -1 -c "alter table facebook_roads rename to facebook_roads_old; alter table facebook_roads_new rename to facebook_roads;"
-	psql -c "update facebook_roads_last_filtered set ts = (select ts from osm_roads_increment limit 1);"
+	psql -c "update facebook_roads_last_filtered set ts = coalesce((select ts from osm_roads_increment limit 1), ts);"
 	psql -c "drop table facebook_roads_old; drop table osm_roads_increment;"
 	touch $@
 

@@ -68,7 +68,7 @@ drop table if exists disaster_event_episodes_validated_subdivided;
 create table disaster_event_episodes_validated_subdivided as (
     select
         episode_type,
-        greatest(now() at time zone 'utc' - interval '1 year', episode_starteda) episode_starteda,
+        greatest(now() at time zone 'utc' - interval '1 year', episode_startedat) episode_startedat,
         episode_endedat,
         ST_Subdivide(fix_and_wrap_geometry(geom)) geom
     from disaster_event_episodes
@@ -99,7 +99,7 @@ create table disaster_event_episodes_h3_multidaterange as (
         8 resolution,
         episode_type,
         range_agg(
-            daterange(episode_starteda::date, episode_endedat::date, '[]')
+            daterange(episode_startedat::date, episode_endedat::date, '[]')
         ) multidaterange
     from land_polygons_h3_r8 as land
     join disaster_event_episodes_validated_subdivided as events

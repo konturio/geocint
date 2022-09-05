@@ -26,7 +26,7 @@ try:
     del land_style["paint"]["fill-color"]
     del land_style["paint"]["fill-opacity"]
     land_style["type"] = "background"
-    land_style["id"] = "bg"
+    land_style["id"] = "background"
     land_style["filter"] = ["boolean", False]
     style["layers"].append(land_style)
 except Exception:

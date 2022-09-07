@@ -13,7 +13,7 @@ from (
          from stat_h3
          where :numerator != 0
            and :denominator != 0
-           and population > 0
+           -- and population > 0
 
      ) s
 where a.numerator = :'numerator'

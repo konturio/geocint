@@ -22,8 +22,11 @@ create table total_road_length_h3_temp as (
            t.fb_roads_length,
            t.highway_length,
            t.total_road_length,
+           h.h3 as no_facebook_mark,
            coalesce(fin.fb_roads_in_length, 0) as fb_roads_in_length
     from total_road_length_h3_temp_in t
+         left join hexagons_for_regression h
+         on t.h3 = h.h3
          left join facebook_roads_in_h3_r8 fin
          on t.h3 = fin.h3
 );
@@ -59,7 +62,7 @@ select trl.h3                                          as h3,
            when 
                 -- in case when fb_roads_length more than than 0
                 -- or if prefilter facebook road length more than 0
-                trl.total_road_length > trl.highway_length or fb_roads_in_length > 0
+                trl.total_road_length > trl.highway_length or no_facebook_mark is null or fb_roads_in_length > 0
                 then trl.total_road_length
            else 
                 GREATEST(trl.total_road_length, coalesce(pop.population * regression.slope +

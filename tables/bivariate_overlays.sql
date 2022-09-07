@@ -47,9 +47,10 @@ select 3,
        'population',
        'area_km2',
        false,
-       'This map shows whether all roads are mapped in OpenStreetMap. Road completeness is calculated as the ratio of OpenStreetMap road length to total estimated road length (OpenStreetMap + Facebook roads). For places where Facebook roads data are unavailable, the estimation is based on statistical regression from Kontur Population data.',
+       'This map shows whether all roads are mapped in OpenStreetMap. Road completeness is calculated as the ratio of OpenStreetMap road length to total estimated road length (OpenStreetMap + Facebook roads). For places where Facebook roads data are unavailable, the estimation is based on statistical regression from Kontur Population data. Last updated  ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
-;
+from osm_meta;;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 4,
@@ -86,8 +87,10 @@ select 6,
        'area_km2',
        false,
        'This map shows heat-stress risk areas, where nighttime temperatures stay above 25°C. Due to the increase of greenhouse gases the nighttime temperatures are growing at a rate of 0.07 degrees per decade, compared to 0.05 degrees for daytime maximums globally (for the period from 1960 to 2009).
-       The number of people exposed to nighttime heatwaves in particular regions is provided by Kontur. The current warming scenario of the average number of nights over 25°C during the year is based on data and other content made available by Probable Futures, a Project of SouthCoast Community Foundation, and certain of that data may have been provided to Probable Futures by Woodwell Climate Research Center, Inc. or The Coordinated Regional climate Downscaling Experiment (CORDEX).',
-       '[{"id":"A1","color":"rgb(103,176,100)"},{"id":"A2","color":"rgb(103,176,100)"},{"id":"A3","color":"rgb(103,176,100)"},{"id":"B1","color":"rgb(232,232,157)"},{"id":"B2","color":"rgb(228,185,129)"},{"id":"B3","color":"rgb(228,127,129)"},{"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(229,154,55)"},{"id":"C3","color":"rgb(228,26,28)"}]';
+       The number of people exposed to nighttime heatwaves in particular regions is provided by Kontur. The current warming scenario of the average number of nights over 25°C during the year is based on data and other content made available by Probable Futures, a Project of SouthCoast Community Foundation, and certain of that data may have been provided to Probable Futures by Woodwell Climate Research Center, Inc. or The Coordinated Regional climate Downscaling Experiment (CORDEX). Last updated  ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+       '[{"id":"A1","color":"rgb(103,176,100)"},{"id":"A2","color":"rgb(103,176,100)"},{"id":"A3","color":"rgb(103,176,100)"},{"id":"B1","color":"rgb(232,232,157)"},{"id":"B2","color":"rgb(228,185,129)"},{"id":"B3","color":"rgb(228,127,129)"},{"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(229,154,55)"},{"id":"C3","color":"rgb(228,26,28)"}]'
+from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
 select 7,
@@ -97,7 +100,7 @@ select 7,
        'population',
        'area_km2',
        false,
-       'This map shows areas at higher risk in case of a fire due to population density and fire station distance ratio' ||
+       'This map shows areas at higher risk in case of a fire due to population density and fire station distance ratio. Last updated  ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id":"A1","color":"rgb(103,176,100)"},{"id":"A2","color":"rgb(103,176,100)"},{"id":"A3","color":"rgb(103,176,100)"},{"id":"B1","color":"rgb(232,232,157)"},{"id":"B2","color":"rgb(228,185,129)"},{"id":"B3","color":"rgb(228,127,129)"},{"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(229,154,55)"},{"id":"C3","color":"rgb(228,26,28)"}]'
 from osm_meta;
@@ -110,6 +113,7 @@ select 8,
        'view_count',
        'area_km2',
        false,
-       'This map shows how many times users viewed OpenStreetMap in particular region for the last 30 days in comparison to 30 days before 24.02.2022.',
+       'This map shows how many times users viewed OpenStreetMap in particular region for the last 30 days in comparison to 30 days before 24.02.2022. Last updated  ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
        '[{"id":"A1","color":"rgb(204,204,204)"},{"id":"A2","color":"rgb(206,154,151)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(136,135,222)"},{"id":"B2","color":"rgb(166,166,166)"},{"id":"B3","color":"rgb(180,80,75)"},{"id":"C1","color":"rgb(28,26,228)"},{"id":"C2","color":"rgb(78,77,178)"},{"id":"C3","color":"rgb(128,128,128)"}]'
-;
+from osm_meta;

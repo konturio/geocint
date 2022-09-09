@@ -1932,7 +1932,7 @@ db/table/isodist_charging_stations_h3: db/table/update_isochrone_destinations db
 
 db/table/isodist_bomb_shelters_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 | db/table ## H3 hexagons from bomb shelters.
 	psql -f tables/isodist_bomb_shelters_h3.sql
-	seq 8 -1 1 | xargs -I {} psql -f tables/isodist_h3_overview.sql -v table_name=isodist_bomb_shelters_h3 -v seq_res={} 
+	seq 8 -1 1 | xargs -I {} psql -f tables/isodist_h3_overview.sql -v table_name=isodist_bomb_shelters_h3 -v seq_res={}
 	psql -c "drop table isodist_bomb_shelters_h3_distinct;"
 	touch $@
 
@@ -2001,7 +2001,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 worldbank_powerlines_proximity_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -2446,17 +2446,17 @@ db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldcl
 
 ### WorldBank powerlines proximity ###
 
-data/in/worldband_powerlines: | data/in # Directory for downloading worldbank powerlines gpkg
+data/in/worldband_powerlines: | data/in ## Directory for downloading worldbank powerlines gpkg
 	mkdir $@
 
-data/in/worldband_powerlines/grid.gpkg: | data/in/worldband_powerlines # Download worldbank powerlines gpkg
+data/in/worldband_powerlines/grid.gpkg: | data/in/worldband_powerlines ## Download worldbank powerlines gpkg
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/world_bank_powerlines/grid.gpkg $@ --profile geocint_pipeline_sender
 	touch $@
 
-data/mid/worldband_powerlines: | data/mid # Directory for calculations of worldbank powerlines proximity
+data/mid/worldband_powerlines: | data/mid ## Directory for calculations of worldbank powerlines proximity
 	mkdir $@
 
-data/mid/worldband_powerlines/worldbank_powerlines_proximity.tif: data/in/worldband_powerlines/grid.gpkg | data/mid/worldband_powerlines # Worldbank powerlines proximity - calculate geotif
+data/mid/worldband_powerlines/worldbank_powerlines_proximity.tif: data/in/worldband_powerlines/grid.gpkg | data/mid/worldband_powerlines ## Worldbank powerlines proximity - calculate geotif
 	sh scripts/global_proximity_map_from_vector.sh data/in/worldband_powerlines/grid.gpkg grid data/mid/worldband_powerlines $@
 	touch $@
 

@@ -14,7 +14,7 @@ prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/clea
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -467,11 +467,19 @@ db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months | db
 	psql -c "call generate_overviews('osm_road_segments_6_months_h3', '{highway_length_6_months}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.
+data/in/users_deleted.txt: | data/in ## get list of deleted osm users
+	wget -q "https://planet.openstreetmap.org/users_deleted/users_deleted.txt" -O $@
+
+db/table/users_deleted: data/in/users_deleted.txt | db/table ## load list of deleted osm users to db
+	psql -c "drop table if exists users_deleted; create table users_deleted (osm_user text);"
+	cat data/in/users_deleted.txt | sed 's/ //g' | sed 's/^/user_/' | psql -c 'copy users_deleted (osm_user) from stdin with csv header;'
+	touch $@
+
+db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta db/table/users_deleted | db/table ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.
 	psql -f tables/osm_user_count_grid_h3.sql
 	touch $@
 
-db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_active_users ## Select most active user per H3 hexagon cell.
+db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_active_users | db/table ## Select most active user per H3 hexagon cell.
 	psql -f tables/osm_users_hex.sql
 	touch $@
 

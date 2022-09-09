@@ -19,5 +19,11 @@ create table osm_user_count_grid_h3 as (
     group by 1, 2, 3
 );
 
-create index on osm_user_count_grid_h3 (h3);
+delete from osm_user_count_grid_h3 
+	where exists 
+	(select 1 
+	from users_deleted 
+	where 
+	osm_user_count_grid_h3.osm_user = users_deleted.osm_user);
 
+create index on osm_user_count_grid_h3 (h3);

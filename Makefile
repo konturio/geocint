@@ -2460,7 +2460,7 @@ data/mid/worldband_powerlines/worldbank_powerlines_proximity.tif: data/in/worldb
 	sh scripts/global_proximity_map_from_vector.sh data/in/worldband_powerlines/grid.gpkg grid data/mid/worldband_powerlines $@
 	touch $@
 
-db/table/worldbank_powerlines_proximity: data/out/worldbank_powerlines_proximity.tif | db/table ## Load worldbank powerlines proximity raster
+db/table/worldbank_powerlines_proximity: data/mid/worldband_powerlines/worldbank_powerlines_proximity.tif | db/table ## Load worldbank powerlines proximity raster
 	psql -c "drop table if exists worldbank_powerlines_proximity;"
 	raster2pgsql -M -Y -s 4326 data/mid/worldband_powerlines/worldbank_powerlines_proximity.tif -t auto worldbank_powerlines_proximity | psql -q
 	touch $@

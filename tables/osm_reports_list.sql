@@ -52,7 +52,7 @@ select 'population_tag_check',
         [Kontur Population](https://data.humdata.org/dataset/kontur-population-dataset) is a global population dataset generated based on various public data sources, including OpenStreetMap. 
         Inconsistencies in the values between Kontur data and OpenStreetMap population key on administrative division boundaries may indicate inaccuracies in OpenStreetMap data. 
         Click here to download this report as a csv-file: [https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_reports@@@@@/population_check_osm.csv](https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_reports@@@@@/population_check_osm.csv). 
-        \n\nNote: To use links in the Name field and open the exact area you want to edit, please install [JOSM](https://josm.openstreetmap.de/), an open-source editor for OpenStreetMap.'
+        \n\nNote: To use links in the Name field and open the exact area you want to edit, please install [JOSM](https://josm.openstreetmap.de/), an open-source editor for OpenStreetMap.',
         true,
         '{1}',
         true

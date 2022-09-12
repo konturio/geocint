@@ -21,8 +21,8 @@ select 1,
        'population',
        'area_km2',
        true,
-       'This map shows relative distribution of OpenStreetMap objects and Population. Last updated ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+       E'This map shows relative distribution of OpenStreetMap objects and Population. \n\nLast updated ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
@@ -34,8 +34,8 @@ select 2,
        'population',
        'area_km2',
        false,
-       'This map shows whether all populated houses are mapped in OpenStreetMap. Last updated  ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+       E'This map shows whether all populated houses are mapped in OpenStreetMap. \n\nLast updated  ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
@@ -47,8 +47,8 @@ select 3,
        'population',
        'area_km2',
        false,
-       'This map shows whether all roads are mapped in OpenStreetMap. Road completeness is calculated as the ratio of OpenStreetMap road length to total estimated road length (OpenStreetMap + Facebook roads). For places where Facebook roads data are unavailable, the estimation is based on statistical regression from Kontur Population data. Last updated  ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+       E'This map shows whether all roads are mapped in OpenStreetMap. Road completeness is calculated as the ratio of OpenStreetMap road length to total estimated road length (OpenStreetMap + Facebook roads). For places where Facebook roads data are unavailable, the estimation is based on statistical regression from Kontur Population data. \n\nLast updated  ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;;
 
@@ -60,8 +60,8 @@ select 4,
        'total_hours',
        'area_km2',
        false,
-       'Greener - stronger local community, darker - more active mapping. This map shows how active mapping in the area in last two years is. All mapping hours are shown against mapping hours we can surely attribute to an active local user. Mapper is considered active if they contributed more than 30 mapping hours during last two years. Position of active mapper is estimated by region of their highest activity. A mapping hour is a hour in which an user uploaded at least one tagged object. Last updated  ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+       E'Greener - stronger local community, darker - more active mapping. This map shows how active mapping in the area in last two years is. All mapping hours are shown against mapping hours we can surely attribute to an active local user. Mapper is considered active if they contributed more than 30 mapping hours during last two years. Position of active mapper is estimated by region of their highest activity. A mapping hour is a hour in which an user uploaded at least one tagged object. \n\nLast updated  ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(173,169,200)"},{"id":"A2","color":"rgb(122,113,178)"},{"id":"A3","color":"rgb(93,83,152)"},{"id":"B1","color":"rgb(157,183,181)"},{"id":"B2","color":"rgb(118,142,159)"},{"id":"B3","color":"rgb(88,118,129)"},{"id":"C1","color":"rgb(137,200,158)"},{"id":"C2","color":"rgb(113,178,135)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from osm_meta;
 
@@ -73,8 +73,8 @@ select 5,
        'view_count',
        'area_km2',
        false,
-       'This map shows how old is OpenStreetMap and how many times users view in particular region of OpenStreetMap for the last 30 days. Explore to find the least edited, but the most popular areas at the same time. Last updated ' ||
-        max(tile_date),
+       E'This map shows how old is OpenStreetMap and how many times users view in particular region of OpenStreetMap for the last 30 days. Explore to find the least edited, but the most popular areas at the same time. \n\nLast updated ' ||
+        max(tile_date) || E' \n\n',
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},{"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
 from tile_logs;
 
@@ -86,9 +86,9 @@ select 6,
        'population',
        'area_km2',
        false,
-       'This map shows heat-stress risk areas, where nighttime temperatures stay above 25°C. Due to the increase of greenhouse gases the nighttime temperatures are growing at a rate of 0.07 degrees per decade, compared to 0.05 degrees for daytime maximums globally (for the period from 1960 to 2009).
-       The number of people exposed to nighttime heatwaves in particular regions is provided by Kontur. The current warming scenario of the average number of nights over 25°C during the year is based on data and other content made available by Probable Futures, a Project of SouthCoast Community Foundation, and certain of that data may have been provided to Probable Futures by Woodwell Climate Research Center, Inc. or The Coordinated Regional climate Downscaling Experiment (CORDEX). Last updated  ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+       E'This map shows heat-stress risk areas, where nighttime temperatures stay above 25°C. Due to the increase of greenhouse gases the nighttime temperatures are growing at a rate of 0.07 degrees per decade, compared to 0.05 degrees for daytime maximums globally (for the period from 1960 to 2009).
+       The number of people exposed to nighttime heatwaves in particular regions is provided by Kontur. The current warming scenario of the average number of nights over 25°C during the year is based on data and other content made available by Probable Futures, a Project of SouthCoast Community Foundation, and certain of that data may have been provided to Probable Futures by Woodwell Climate Research Center, Inc. or The Coordinated Regional climate Downscaling Experiment (CORDEX). \n\nLast updated  ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(103,176,100)"},{"id":"A2","color":"rgb(103,176,100)"},{"id":"A3","color":"rgb(103,176,100)"},{"id":"B1","color":"rgb(232,232,157)"},{"id":"B2","color":"rgb(228,185,129)"},{"id":"B3","color":"rgb(228,127,129)"},{"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(229,154,55)"},{"id":"C3","color":"rgb(228,26,28)"}]'
 from osm_meta;
 
@@ -100,8 +100,8 @@ select 7,
        'population',
        'area_km2',
        false,
-       'This map shows areas at higher risk in case of a fire due to population density and fire station distance ratio. Last updated  ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+       E'This map shows areas at higher risk in case of a fire due to population density and fire station distance ratio. \n\nLast updated  ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(103,176,100)"},{"id":"A2","color":"rgb(103,176,100)"},{"id":"A3","color":"rgb(103,176,100)"},{"id":"B1","color":"rgb(232,232,157)"},{"id":"B2","color":"rgb(228,185,129)"},{"id":"B3","color":"rgb(228,127,129)"},{"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(229,154,55)"},{"id":"C3","color":"rgb(228,26,28)"}]'
 from osm_meta;
 
@@ -113,7 +113,7 @@ select 8,
        'view_count',
        'area_km2',
        false,
-       'This map shows how many times users viewed OpenStreetMap in particular region for the last 30 days in comparison to 30 days before 24.02.2022. Last updated  ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+       E'This map shows how many times users viewed OpenStreetMap in particular region for the last 30 days in comparison to 30 days before 24.02.2022. \n\nLast updated  ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(204,204,204)"},{"id":"A2","color":"rgb(206,154,151)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(136,135,222)"},{"id":"B2","color":"rgb(166,166,166)"},{"id":"B3","color":"rgb(180,80,75)"},{"id":"C1","color":"rgb(28,26,228)"},{"id":"C2","color":"rgb(78,77,178)"},{"id":"C3","color":"rgb(128,128,128)"}]'
 from osm_meta;

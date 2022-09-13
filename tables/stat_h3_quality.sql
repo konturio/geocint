@@ -81,7 +81,8 @@ create table stat_h3_quality as (
                 avg(worldclim_max_temperature::float) as agg_worldclim_max_temperature,
                 avg(worldclim_amp_temperature::float) as agg_worldclim_amp_temperature,
                 avg(a.man_distance_to_bomb_shelters) as agg_man_distance_to_bomb_shelters,
-                avg(a.man_distance_to_charging_stations) as agg_man_distance_to_charging_stations
+                avg(a.man_distance_to_charging_stations) as agg_man_distance_to_charging_stations,
+                avg(powerlines_proximity_m::float) as agg_powerlines_proximity_m
             from
                 stat_h3 a
             where

@@ -2444,31 +2444,32 @@ db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldcl
 
 ### END WorldClim temperatures ###
 
-### WorldBank powerlines proximity ###
+### Powerlines proximity ###
 
-data/in/worldband_powerlines: | data/in ## Directory for downloading worldbank powerlines gpkg
+data/in/worldbank_powerlines: | data/in ## Directory for downloading worldbank powerlines gpkg
 	mkdir $@
 
-data/in/worldband_powerlines/grid.gpkg: | data/in/worldband_powerlines ## Download worldbank powerlines gpkg
+data/in/worldbank_powerlines/grid.gpkg: | data/in/worldbank_powerlines ## Download worldbank powerlines gpkg
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/world_bank_powerlines/grid.gpkg $@ --profile geocint_pipeline_sender
 	touch $@
 
-data/mid/worldband_powerlines: | data/mid ## Directory for calculations of worldbank powerlines proximity
+data/mid/worldbank_powerlines: | data/mid ## Directory for calculations of worldbank powerlines proximity
 	mkdir $@
 
-data/mid/worldband_powerlines/worldbank_powerlines_proximity.tif: data/in/worldband_powerlines/grid.gpkg | data/mid/worldband_powerlines ## Worldbank powerlines proximity - calculate geotif
-	sh scripts/global_proximity_map_from_vector.sh data/in/worldband_powerlines/grid.gpkg grid data/mid/worldband_powerlines $@
+data/mid/worldbank_powerlines/worldbank_powerlines_proximity.tif: data/in/worldbank_powerlines/grid.gpkg | data/mid/worldbank_powerlines ## Worldbank powerlines proximity - calculate geotif
+	sh scripts/global_proximity_map_from_vector.sh data/in/worldbank_powerlines/grid.gpkg grid data/mid/worldbank_powerlines $@
 	touch $@
 
-db/table/worldbank_powerlines_proximity: data/mid/worldband_powerlines/worldbank_powerlines_proximity.tif | db/table ## Load worldbank powerlines proximity raster
-	psql -c "drop table if exists worldbank_powerlines_proximity;"
-	raster2pgsql -M -Y -s 4326 data/mid/worldband_powerlines/worldbank_powerlines_proximity.tif -t auto worldbank_powerlines_proximity | psql -q
+db/table/powerlines_proximity: data/mid/worldbank_powerlines/worldbank_powerlines_proximity.tif | db/table ## Load worldbank powerlines proximity raster
+	psql -c "drop table if exists powerlines_proximity;"
+	raster2pgsql -M -Y -s 4326 data/mid/worldbank_powerlines/worldbank_powerlines_proximity.tif -t auto powerlines_proximity | psql -q
 	touch $@
 
-db/table/worldbank_powerlines_proximity_h3: db/table/worldbank_powerlines_proximity | db/table ## Worldbank powerlines proximity - create summary H3 table
-	psql -f tables/worldbank_powerlines_proximity_h3.sql
-	psql -c "call generate_overviews('worldbank_powerlines_proximity_h3', '{worldbank_powerlines_proximity}'::text[], '{avg}'::text[], 8);"
-	psql -c "create index on worldbank_powerlines_proximity_h3 (h3);"
+db/table/powerlines_proximity_h3: db/table/powerlines_proximity | db/table ## Powerlines proximity - create summary H3 table
+	psql -f scripts/raster_values_into_h3.sql -v table_name=powerlines_proximity -v table_name_h3=powerlines_proximity_h3 -v aggr_func=avg -v item_name=powerlines_proximity_m -v threshold=1200000
+	psql -c "create index on powerlines_proximity_h3 (h3);"
+	psql -c "call generate_overviews('powerlines_proximity_h3', '{powerlines_proximity_m}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on powerlines_proximity_h3 (h3);"
 	touch $@
 
-### END WorldBank powerlines proximity ###
+### END Powerlines proximity ###

@@ -2466,7 +2466,7 @@ db/table/powerlines_proximity: data/mid/worldbank_powerlines/worldbank_powerline
 	touch $@
 
 db/table/powerlines_proximity_h3: db/table/powerlines_proximity | db/table ## Powerlines proximity - create summary H3 table
-	psql -f scripts/raster_values_into_h3.sql -v table_name=powerlines_proximity -v table_name_h3=powerlines_proximity_h3 -v aggr_func=avg -v item_name=powerlines_proximity_m -v threshold=1200000
+	psql -f scripts/proximity_raster_to_h3.sql -v table_name=powerlines_proximity -v table_name_h3=powerlines_proximity_h3 -v aggr_func=avg -v item_name=powerlines_proximity_m -v threshold=1200000
 	psql -c "create index on powerlines_proximity_h3 (h3);"
 	psql -c "call generate_overviews('powerlines_proximity_h3', '{powerlines_proximity_m}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on powerlines_proximity_h3 (h3);"

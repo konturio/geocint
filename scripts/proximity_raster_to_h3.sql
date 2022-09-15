@@ -8,7 +8,7 @@ create table :table_name_h3 as (
             select h3_geo_to_h3(geom::point, 8) as h3,
             :aggr_func(val) as :item_name
              from (
-                     select p.geom, p.val,
+                     select p.geom as geom,
                       case
                         when p.val > :threshold then :threshold
                         when p.val = 'NaN' then :threshold

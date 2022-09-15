@@ -1,3 +1,4 @@
+#!/bin/bash
 # Inputs:
 # $1 - source vector dataset
 # $2 - name of layer inside vector dataset

@@ -14,6 +14,7 @@ create table :table_name_h3 as (
                         when p.val = 'NaN' then :threshold
                         when p.val is null then :threshold
                         when p.val = 0 then 1
+                      else p.val
                       end val
                       from :table_name,
                            ST_PixelAsCentroids(rast) p

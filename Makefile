@@ -864,15 +864,15 @@ data/out/reports/osm_missing_boundaries_report.csv: db/table/osm_missing_boundar
 	psql -qXc 'copy (select "OSM id", "Admin level", "Name", "Country" from osm_missing_boundaries_report order by id) to stdout with (format csv, header true, delimiter ";");' | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
 
 data/out/reports/osm_reports_list_test.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (development version)
-	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' | sed 's/\@\@\@\@\@/\/test/g' > $@
+	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' | sed 's/\@\@\@\@\@/\/test/g' | sed 's=\\=@@=g' | sed 's/\@\@\@\@/\\/g' > $@
 	touch $@
 
 data/out/reports/osm_reports_list_dev.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (development version)
-	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' | sed 's/\@\@\@\@\@/\/dev/g' > $@
+	psql -qXc 'copy (select jsonb_agg(row) from osm_reports_list row) to stdout;' | sed 's/\@\@\@\@\@/\/dev/g' | sed 's=\\=@@=g' | sed 's/\@\@\@\@/\\/g' > $@
 	touch $@
 
 data/out/reports/osm_reports_list_prod.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (production version)
-	psql -qXc 'copy (select jsonb_agg(row) from (select * from osm_reports_list) row where public_access is true) to stdout;' | sed 's/\@\@\@\@\@//g' > $@
+	psql -qXc 'copy (select jsonb_agg(row) from (select * from osm_reports_list) row where public_access is true) to stdout;' | sed 's/\@\@\@\@\@//g' | sed 's=\\=@@=g' | sed 's/\@\@\@\@/\\/g'> $@
 	touch $@
 
 deploy/geocint/reports/osm_gadm_comparison.csv: data/out/reports/osm_gadm_comparison.csv | deploy/geocint/reports ## Copy OSM-GADM comparison report to public_html folder to make it available online.

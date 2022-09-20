@@ -2200,16 +2200,16 @@ deploy/test/cleanup_cache: deploy/test/population_api_tables | deploy/test ## Cl
 	bash scripts/check_http_response_code.sh GET https://test-apps.konturlabs.com/insights-api/cache/cleanUp 200
 	touch $@
 
-deploy/s3/prod/stat_h3_dump: deploy/s3/test/stat_h3_dump | deploy/s3/prod ## AWS-side copying stat_h3 table dump from test folder to prod one.
+deploy/s3/prod/stat_h3_dump: data/out/population/stat_h3.sqld.gz | deploy/s3/prod ## Copying stat_h3 table dump from server to AWS-prod one.
 	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz.bak --profile geocint_pipeline_sender || true
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz --profile geocint_pipeline_sender
+	aws s3 cp data/out/population/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
-deploy/s3/prod/bivariate_tables_dump: deploy/s3/test/bivariate_tables_dump | deploy/s3/prod ## AWS-side copying bivariate tables dump from test folder to prod one.
+deploy/s3/prod/bivariate_tables_dump: data/out/population/bivariate_tables.sqld.gz | deploy/s3/prod ## Сopying bivariate tables dump from server to AWS-prod one.
 	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
+	aws s3 cp data/out/population/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
 	touch $@
 
 deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/stat_h3_dump deploy/s3/prod/bivariate_tables_dump data/out/population/stat_h3.sqld.gz data/out/population/bivariate_tables.sqld.gz | deploy/s3/prod ## Checking if dumps on AWS is not older than local file.

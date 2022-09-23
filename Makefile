@@ -2431,7 +2431,7 @@ db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldcl
 ### Proximity to populated areas ###
 
 data/in/populated_areas.gpkg: | data/in ## Get populated areas GPKG
-	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "populated" -sql "SELECT geom, population from stat_h3 where population>100 and resolution=7"
+	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "populated" -sql "SELECT h3_to_geometry(h3), population FROM kontur_population_h3 WHERE population>100 and resolution=7"
 	touch $@
 
 data/mid/populated_areas: | data/mid ## Directory for calculations of populated areas proximity

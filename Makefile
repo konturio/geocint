@@ -2427,3 +2427,33 @@ db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldcl
 	touch $@
 
 ### END WorldClim temperatures ###
+
+### Proximity to populated areas ###
+
+data/in/populated_areas.gpkg: | data/in ## Get populated areas GPKG
+	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "populated" -sql "SELECT geom, population from stat_h3 where population>100 and resolution=7"
+	touch $@
+
+data/mid/populated_areas: | data/mid ## Directory for calculations of populated areas proximity
+	mkdir $@
+
+data/mid/populated_areas/populated_areas_proximity.tif: data/in/populated_areas.gpkg | data/mid/populated_areas ## Populated areas proximity - calculate geotif
+	bash scripts/global_proximity_map_from_vector.sh data/in/populated_areas.gpkg populated data/mid/populated_areas $@
+	rm -f data/mid/populated_areas/north*
+	rm -f data/mid/populated_areas/south*
+	rm -f data/mid/populated_areas/part*
+	touch $@
+
+db/table/populated_areas_proximity: data/mid/populated_areas/populated_areas_proximity.tif | db/table ## Load populated areas proximity raster
+	psql -c "drop table if exists populated_areas_proximity;"
+	raster2pgsql -M -Y -s 4326 data/mid/populated_areas/populated_areas_proximity.tif -t auto popolated_areas_proximity | psql -q
+	touch $@
+
+db/table/populated_areas_proximity_h3: db/table/populated_areas_proximity | db/table ## Populated areas proximity - create summary H3 table
+	psql -f scripts/proximity_raster_to_h3.sql -v table_name=populated_areas_proximity -v table_name_h3=populated_areas_proximity_h3 -v aggr_func=avg -v item_name=populated_areas_proximity_m -v threshold=1200000
+	psql -c "create index on populated_areas_proximity_h3 (h3);"
+	psql -c "call generate_overviews('populated_areas_proximity_h3', '{populated_areas_proximity_m}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on populated_areas_proximity_h3 (h3);"
+	touch $@
+
+### END Proximity to populated areas ###

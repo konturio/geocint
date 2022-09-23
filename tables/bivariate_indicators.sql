@@ -401,6 +401,11 @@ values ('worldclim_amp_temperature', 'Amplitude of air temperatures', jsonb_buil
         'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
         '[["good"], ["bad"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('populated_areas_proximity_m', 'Proximity to populated areas, m', jsonb_build_array(
+        'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        '[["good"], ["bad"]]'::jsonb);
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

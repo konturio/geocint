@@ -2458,9 +2458,9 @@ data/mid/worldbank_powerlines: | data/mid ## Directory for calculations of world
 
 data/mid/worldbank_powerlines/worldbank_powerlines_proximity.tif: data/in/worldbank_powerlines/grid.gpkg | data/mid/worldbank_powerlines ## Worldbank powerlines proximity - calculate geotif
 	bash scripts/global_proximity_map_from_vector.sh data/in/worldbank_powerlines/grid.gpkg grid data/mid/worldbank_powerlines $@
-	rm -f data/in/worldbank_powerlines/north*
-	rm -f data/in/worldbank_powerlines/south*
-	rm -f data/in/worldbank_powerlines/part*
+	rm -f data/mid/worldbank_powerlines/north*
+	rm -f data/mid/worldbank_powerlines/south*
+	rm -f data/mid/worldbank_powerlines/part*
 	touch $@
 
 db/table/powerlines_proximity: data/mid/worldbank_powerlines/worldbank_powerlines_proximity.tif | db/table ## Load worldbank powerlines proximity raster

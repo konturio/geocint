@@ -1985,7 +1985,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/power_stations_proximity_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -2427,3 +2427,33 @@ db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldcl
 	touch $@
 
 ### END WorldClim temperatures ###
+
+### Proximity to electric power stations ###
+
+data/in/power_stations.gpkg: | data/in ## Get powerstations GPKG
+	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "power_stations" -sql "SELECT osm_id, st_centroid(geog)::geometry as geometry FROM osm WHERE tags@>'{"power":"substation"}' or tags@>'{"power":"plant"}'"
+	touch $@
+
+data/mid/power_stations: | data/mid ## Directory for calculations of powerstations proximity
+	mkdir $@
+
+data/mid/power_stations/power_stations_proximity.tif: data/in/power_stations.gpkg | data/mid/power_stations ## powerstations proximity - calculate geotif
+	bash scripts/global_proximity_map_from_vector.sh data/in/power_stations.gpkg populated data/mid/power_stations $@
+	rm -f data/mid/power_stations/north*
+	rm -f data/mid/power_stations/south*
+	rm -f data/mid/power_stations/part*
+	touch $@
+
+db/table/power_stations_proximity: data/mid/power_stations/power_stations_proximity.tif | db/table ## Load powerstations proximity raster
+	psql -c "drop table if exists power_stations_proximity;"
+	raster2pgsql -M -Y -s 4326 data/mid/power_stations/power_stations_proximity.tif -t auto power_stations_proximity | psql -q
+	touch $@
+
+db/table/power_stations_proximity_h3: db/table/power_stations_proximity | db/table ## Powerstations proximity - create summary H3 table
+	psql -f scripts/proximity_raster_to_h3.sql -v table_name=power_stations_proximity -v table_name_h3=power_stations_proximity_h3 -v aggr_func=avg -v item_name=power_stations_proximity_m -v threshold=1200000
+	psql -c "create index on power_stations_proximity_h3 (h3);"
+	psql -c "call generate_overviews('power_stations_proximity_h3', '{power_stations_proximity_m}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on power_stations_proximity_h3 (h3);"
+	touch $@
+
+### END Proximity to electric power stationss ###

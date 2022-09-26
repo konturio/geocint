@@ -79,7 +79,8 @@ create table stat_h3_quality as (
                 avg(worldclim_avg_temperature::float) as agg_worldclim_avg_temperature,
                 avg(worldclim_min_temperature::float) as agg_worldclim_min_temperature,
                 avg(worldclim_max_temperature::float) as agg_worldclim_max_temperature,
-                avg(worldclim_amp_temperature::float) as agg_worldclim_amp_temperature
+                avg(worldclim_amp_temperature::float) as agg_worldclim_amp_temperature,
+                avg(power_stations_proximity_m::float) as agg_power_stations_proximity_m
             from
                 stat_h3 a
             where

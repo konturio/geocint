@@ -1,7 +1,7 @@
 drop table if exists abu_dhabi_bivariate_pop_food_shops;
 create table abu_dhabi_bivariate_pop_food_shops as (
     with places as (
-        select h3_geo_to_h3(geom::box::point, 8) "h3", count(p) "places"
+        select h3_lat_lng_to_cell(geom::box::point, 8) "h3", count(p) "places"
         from (
                  select geom
                  from abu_dhabi_eatery

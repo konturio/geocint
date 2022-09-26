@@ -4,7 +4,7 @@ create table global_solar_atlas_ghi_h3_r8 as (
            8 as resolution,
            gsa_ghi
     from (
-            select h3_geo_to_h3(geom::point, 8) as h3,
+            select h3_lat_lng_to_cell(geom::point, 8) as h3,
             avg(val) as gsa_ghi
              from (
                      select p.geom, p.val

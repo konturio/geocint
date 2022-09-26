@@ -6,7 +6,7 @@ create table night_lights_h3 as (
            8          as resolution,
            avg(val)   as intensity
     from (
-              select h3_geo_to_h3(ST_Transform(p.geom, 4326)::point, 8) as h3, 
+              select h3_lat_lng_to_cell(ST_Transform(p.geom, 4326)::point, 8) as h3, 
                      p.val                                              as val
               from night_lights_raster,
                    ST_PixelAsCentroids(rast) p

@@ -4,7 +4,7 @@ create table worldclim_avg_temp_h3_r8 as (
            8    as resolution,
            worldclim_avg_temperature
     from (
-            select h3_geo_to_h3(geom::point, 8) as h3,
+            select h3_lat_lng_to_cell(geom::point, 8) as h3,
             avg(val)                                     as worldclim_avg_temperature
              from (
                       select p.geom, p.val
@@ -23,7 +23,7 @@ create table worldclim_min_temp_h3_r8 as (
            8    as resolution,
            worldclim_min_temperature
     from (
-            select h3_geo_to_h3(geom::point, 8) as h3,
+            select h3_lat_lng_to_cell(geom::point, 8) as h3,
             min(val)                                     as worldclim_min_temperature
              from (
                       select p.geom, p.val
@@ -42,7 +42,7 @@ create table worldclim_max_temp_h3_r8 as (
            8    as resolution,
            worldclim_max_temperature
     from (
-            select h3_geo_to_h3(geom::point, 8) as h3,
+            select h3_lat_lng_to_cell(geom::point, 8) as h3,
             max(val)                                     as worldclim_max_temperature
              from (
                       select p.geom, p.val

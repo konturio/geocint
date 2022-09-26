@@ -11,7 +11,7 @@ select h3,
                                  geog,
                                  uc.h3::geography
                              ) <= (
-                             50000 + h3_edge_length(uc.resolution)
+                             50000 + h3_get_hexagon_edge_length_avg(uc.resolution)
                              )
                )
            )         as local_hours,

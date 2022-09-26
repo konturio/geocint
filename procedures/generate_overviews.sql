@@ -22,7 +22,7 @@ begin
         while res > 0
             loop
                 execute 'insert into ' || table_h3 || ' (h3, ' || column_list || ', resolution) ' ||
-                        'select h3_to_parent(h3) as h3, ' || item_list || ', ' || (res - 1)::text || ' as resolution '
+                        'select h3_cell_to_parent(h3) as h3, ' || item_list || ', ' || (res - 1)::text || ' as resolution '
                             'from ' || table_h3 ||
                         ' where
                         resolution = ' || res::text || '

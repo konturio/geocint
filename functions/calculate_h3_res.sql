@@ -17,7 +17,7 @@ begin
     if z < 8 then
         return query
             with h3_resolutions as (
-                select i as id, h3_edge_length(i, 'm') as edge_length from generate_series(0, 15) i
+                select i as id, h3_get_hexagon_edge_length_avg(i, 'm') as edge_length from generate_series(0, 15) i
             )
             select least((
                              select id
@@ -29,7 +29,7 @@ begin
     else
         return query
             with h3_resolutions as (
-                select i as id, h3_edge_length(i, 'm') as edge_length from generate_series(0, 15) i
+                select i as id, h3_get_hexagon_edge_length_avg(i, 'm') as edge_length from generate_series(0, 15) i
             )
             select least((
                              select id

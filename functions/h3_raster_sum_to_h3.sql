@@ -8,7 +8,7 @@ create or replace function h3_raster_sum_to_h3
     )
 as $$
 select
-    h3_geo_to_h3(
+    h3_lat_lng_to_cell(
         case
             when ST_SRID(geom) = 4326  then
                 -- 4326 is what H3 wants

@@ -4,7 +4,7 @@ create table stat_h3_quality as (
     from
         (
             select
-                h3_to_parent(a.h3) as h3_parent,
+                h3_cell_to_parent(a.h3) as h3_parent,
                 avg(a.count) as agg_count,
                 avg(a.count_6_months) as agg_count_6_months,
                 avg(a.building_count) as agg_building_count,

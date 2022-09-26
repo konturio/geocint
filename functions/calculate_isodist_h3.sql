@@ -128,13 +128,13 @@ begin
                  where d1.edge is null
                    and coalesce(d2.edge, d3.edge) is not null
              )
-        select hex, avg(ST_Z(p.geom)), h3_to_geo_boundary_geometry(hex)
+        select hex, avg(ST_Z(p.geom)), h3_cell_to_boundary_geometry(hex)
         from spanning_tree s,
              ST_DumpPoints(ST_Segmentize(
                      s.geom::geography,
-                     h3_edge_length(resolution, 'm')
+                     h3_get_hexagon_edge_length_avg(resolution, 'm')
                  )::geometry) p,
-             h3_geo_to_h3(p.geom, resolution) hex
+             h3_lat_lng_to_cell(p.geom, resolution) hex
         where ST_Z(p.geom) <= max_distance
         group by hex;
 end;

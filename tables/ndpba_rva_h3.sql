@@ -38,7 +38,7 @@ where g.hasc = k.hasc_wiki;
 drop table if exists ndpba_rva_h3;
 
 create table ndpba_rva_h3 as
-select distinct on (h3) h3_polyfill(ST_Subdivide(geom), 8) as h3,
+select distinct on (h3) h3_polygon_to_cells(ST_Subdivide(geom), 8) as h3,
     8 as resolution,
     "raw_population_exposure_index",
     "raw_economic_exposure",

@@ -13,7 +13,7 @@ create table osm_country_boundaries as (
 -- generate h3 grid for every boundary:
 drop table if exists h3_in;
 create table h3_in as (
-    select  h3_polyfill(ST_Subdivide(geom), 8) as h3,
+    select  h3_polygon_to_cells(ST_Subdivide(geom), 8) as h3,
             osm_id,
             admin_level,
             hasc_wiki,

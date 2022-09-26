@@ -3,7 +3,7 @@ select p.h3,
        p.resolution,
        a.max_distance,
        (p.population * a.max_distance / 1000)
-from (select h3_to_parent(h3) as h3,
+from (select h3_cell_to_parent(h3) as h3,
              max(distance)    as max_distance
       from isodist_hospitals_h3
       where resolution = :seq_res

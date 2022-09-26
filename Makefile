@@ -2438,7 +2438,7 @@ data/mid/power_stations: | data/mid ## Directory for calculations of powerstatio
 	mkdir $@
 
 data/mid/power_stations/power_stations_proximity.tif: data/in/power_stations.gpkg | data/mid/power_stations ## powerstations proximity - calculate geotif
-	bash scripts/global_proximity_map_from_vector.sh data/in/power_stations.gpkg populated data/mid/power_stations $@
+	bash scripts/global_proximity_map_from_vector.sh data/in/power_stations.gpkg power_stations data/mid/power_stations $@
 	rm -f data/mid/power_stations/north*
 	rm -f data/mid/power_stations/south*
 	rm -f data/mid/power_stations/part*

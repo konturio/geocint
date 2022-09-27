@@ -7,5 +7,14 @@ create table isochrone_destinations_new as (
     from osm o
     where tags @> '{"amenity":"fire_station"}'
        or tags @> '{"amenity":"hospital"}'
+       or tags @> '{"amenity":"charging_station"}'
+    union all
+    select osm_id,
+           'bomb_shelter' as type,
+           tags,
+           ST_Centroid(geog::geometry) as geom
+    from osm o
+    where tags @> '{"building":"bunker"}'
+       or tags @> '{"military":"bunker"}'
     order by osm_id
 );

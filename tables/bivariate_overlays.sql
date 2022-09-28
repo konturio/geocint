@@ -129,7 +129,7 @@ select 9,
         E'This map shows charging station coverage for electric vehicles (EVs). Green areas have a charger nearby. 
         Red areas are populated and need a charging station to be constructed or added to the OpenStreetMap database if one already exists. \n\nLast updated  ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
-       '[{"id":"A1","color":"rgb(196,227,198)"},{"id":"A2","color":"rgb(175,209,182)"},{"id":"A3","color":"rgb(143,194,160)"},
-         {"id":"B1","color":"rgb(217,235,194)"},{"id":"B2","color":"rgb(231,207,177)"},{"id":"B3","color":"rgb(223,181,159)"},
-         {"id":"C1","color":"rgb(243,243,206)"},{"id":"C2","color":"rgb(238,221,196)"},{"id":"C3","color":"rgb(241,140,141)"}]'
+       '[{"id":"A1","color":"rgb(134,198,136)"},{"id":"A2","color":"rgb(87,164,103)"},{"id":"A3","color":"rgb(36,133,67)"},
+        {"id":"B1","color":"rgb(176,214,128)"},{"id":"B2","color":"rgb(208,159,97)"},{"id":"B3","color":"rgb(191,108,64)"},
+        {"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(224,185,133)"},{"id":"C3","color":"rgb(228,26,28)"}]'
 from osm_meta;

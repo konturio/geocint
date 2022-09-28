@@ -326,14 +326,16 @@ where
 
 update bivariate_axis
 set
-    label = 'Man-distance to bomb shelters'
+    label = 'Distance to bomb shelters (km)'
 where
       numerator = 'man_distance_to_bomb_shelters'
   and denominator = 'one';
 
 update bivariate_axis
 set
-    label = 'Man-distance to electric car charging stations'
+    label = 'Distance to electric car charging stations (km)',
+    p25 = 30.0,
+    p75 = 80.0
 where
       numerator = 'man_distance_to_charging_stations'
-  and denominator = 'one';
+ and denominator = 'population';

@@ -337,3 +337,12 @@ set
 where
       numerator = 'man_distance_to_charging_stations'
   and denominator = 'one';
+
+update bivariate_axis
+set
+    label = 'Distance to electric car charging stations (km)',
+    p25 = 3.0,
+    p75 = 30.0
+where
+      numerator = 'man_distance_to_charging_stations'
+ and denominator = 'population';

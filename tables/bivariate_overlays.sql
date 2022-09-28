@@ -117,3 +117,19 @@ select 8,
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(204,204,204)"},{"id":"A2","color":"rgb(206,154,151)"},{"id":"A3","color":"rgb(228,26,28)"},{"id":"B1","color":"rgb(136,135,222)"},{"id":"B2","color":"rgb(166,166,166)"},{"id":"B3","color":"rgb(180,80,75)"},{"id":"C1","color":"rgb(28,26,228)"},{"id":"C2","color":"rgb(78,77,178)"},{"id":"C3","color":"rgb(128,128,128)"}]'
 from osm_meta;
+
+insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
+select 9,
+       'EV Charging Availability',
+       'man_distance_to_charging_stations',
+       'population',
+       'population',
+       'area_km2',
+       false,
+        E'This map shows charging station coverage for electric vehicles (EVs). Green areas have a charger nearby. 
+        Red areas are populated and need a charging station to be constructed or added to the OpenStreetMap database if one already exists. \n\nLast updated  ' ||
+       json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
+       '[{"id":"A1","color":"rgb(134,198,136)"},{"id":"A2","color":"rgb(87,164,103)"},{"id":"A3","color":"rgb(36,133,67)"},
+        {"id":"B1","color":"rgb(176,214,128)"},{"id":"B2","color":"rgb(208,159,97)"},{"id":"B3","color":"rgb(191,108,64)"},
+        {"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(224,185,133)"},{"id":"C3","color":"rgb(228,26,28)"}]'
+from osm_meta;

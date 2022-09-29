@@ -4,6 +4,11 @@ cleanup() {
   rm -f make.lock
 }
 
+# Install / upgrade the python libs
+sudo pip3 install slackclient
+sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
+sudo pip3 install pandas
+
 # Terminate script after failed command execution
 set -e
 PATH="/home/gis/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/go/bin"
@@ -29,11 +34,6 @@ trap 'cleanup' EXIT
 
 # On Sunday, force checkout master branch
 # test $(date +'%w') "=" 0 && git checkout -f master
-
-# Install / upgrade the python libs
-sudo pip3 install slackclient
-sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
-sudo pip3 install pandas
 
 # Pull and stash uncommitted changes from Git
 git pull --rebase --autostash || { git stash && git pull && echo 'git rebase autostash failed, stash and pull executed' | python3 scripts/slack_message.py geocint "Nightly build" cat; }

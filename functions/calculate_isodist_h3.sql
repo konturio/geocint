@@ -128,7 +128,7 @@ begin
                  where d1.edge is null
                    and coalesce(d2.edge, d3.edge) is not null
              )
-        select hex, avg(ST_Z(p.geom)), h3_cell_to_boundary_geometry(hex)
+        select hex, avg(ST_Z(p.geom)), h3_cell_to_boundary(hex)::geometry
         from spanning_tree s,
              ST_DumpPoints(ST_Segmentize(
                      s.geom::geography,

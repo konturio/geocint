@@ -24,8 +24,8 @@ create table osm_landuse_industrial_h3_in as (
           from osm_landuse_industrial_plain
           union
           select distinct h3_grid_path_cells(
-                                  h3_lat_lng_to_cell(st_startpoint(b.line_segment), 8),
-                                  h3_lat_lng_to_cell(st_endpoint(b.line_segment), 8))
+                                  h3_lat_lng_to_cell(st_startpoint(b.line_segment)::point, 8),
+                                  h3_lat_lng_to_cell(st_endpoint(b.line_segment)::point, 8))
                 from
                      (select (ST_DumpSegments(geom)).geom as line_segment from osm_landuse_industrial_plain) b
          ) a

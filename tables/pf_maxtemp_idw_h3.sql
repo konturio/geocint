@@ -17,7 +17,7 @@ create index on pf_maxtemp_all using gist (geom);
 
 -- generate H3 level 4 grid covering at least one point in 22*22 km original grid
 drop table if exists pf_maxtemp_h3_r4;
-create table pf_maxtemp_h3_r4 as (select distinct h3_lat_lng_to_cell(geom, 4) as h3
+create table pf_maxtemp_h3_r4 as (select distinct h3_lat_lng_to_cell(geom::point, 4) as h3
                                   from pf_maxtemp_all);
 
 -- generate H3 level 7 grid with data from original source. h8 takes more than 8 hours

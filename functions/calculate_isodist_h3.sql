@@ -134,7 +134,7 @@ begin
                      s.geom::geography,
                      h3_get_hexagon_edge_length_avg(resolution, 'm')
                  )::geometry) p,
-             h3_lat_lng_to_cell(p.geom, resolution) hex
+             h3_lat_lng_to_cell(p.geom::point, resolution) hex
         where ST_Z(p.geom) <= max_distance
         group by hex;
 end;

@@ -31,7 +31,7 @@ select
         ),
     ST_Area(hex_raw::geography)
 from
-        ( select h3_cell_to_boundary_geometry(h3) as hex_raw ) hex_raw_geog
+        ( select h3_cell_to_boundary(h3) as hex_raw ) hex_raw_geog
         join lateral (
                  select
                      case

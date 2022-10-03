@@ -31,11 +31,11 @@ select
         ),
     ST_Area(hex_raw::geography)
 from
-        ( select h3_cell_to_boundary(h3) as hex_raw ) hex_raw_geog
+        ( select h3_cell_to_boundary($1)::geometry as hex_raw ) hex_raw_geog
         join lateral (
                  select
                      case
-                         when h3_get_resolution(h3) < 3 then ST_Segmentize(hex_raw::geography, 200000)::geometry
+                         when h3_get_resolution($1) < 3 then ST_Segmentize(hex_raw::geography, 200000)::geometry
                          else hex_raw
                      end as geom
                  ) as                                         hex on true;

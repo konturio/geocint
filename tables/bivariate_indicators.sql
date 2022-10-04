@@ -411,6 +411,12 @@ values ('worldclim_amp_temperature', 'Amplitude of air temperatures', jsonb_buil
         'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
         '[["good"], ["bad"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('powerlines_proximity_m', 'Powerlines grid proximity (m)', jsonb_build_array(
+        'Copyright © OpenStreetMap contributors https://www.openstreetmap.org/copyright',
+        '© 2020 The World Bank Group, CC-BY 4.0'),
+        '[["important"], ["unimportant"]]'::jsonb);
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

@@ -2479,7 +2479,7 @@ db/table/powerlines_proximity_h3: db/table/powerlines_proximity | db/table ## Po
 
 ### City Waste management block ###
 
-db/table/waste_containers_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## create a table with the average number of waste containers within a hexagon or less than 75m apart per hexagon
+db/table/waste_containers_h3: db/table/osm db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## create a table with the average number of waste containers within a hexagon or less than 75m apart per hexagon
 	psql -f tables/waste_containers_h3_r8.sql
 	call generate_overviews('waste_containers_h3', '{number_of_waste_containers}'::text[], '{sum}'::text[], 8);
 	touch $@

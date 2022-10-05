@@ -417,6 +417,11 @@ values ('powerlines_proximity_m', 'Powerlines grid proximity (m)', jsonb_build_a
         '© 2020 The World Bank Group, CC-BY 4.0'),
         '[["important"], ["unimportant"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('waste_containers_availability', 'Availability of waste containers', jsonb_build_array(
+        '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        '[["bad"], ["good"]]'::jsonb);
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

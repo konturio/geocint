@@ -46,7 +46,7 @@ $$
                        sum(shrubs),
                        sum(herbage),
                        sum(unknown_forest),
-                       ST_Area(h3_cell_to_boundary(h3_cell_to_parent(h3))::geography) / 1000000.0,
+                       ST_Area(h3_cell_to_boundary_geometry(h3_cell_to_parent(h3))::geography) / 1000000.0,
                        (res - 1)
                 from copernicus_forest_h3_in
                 where resolution = res

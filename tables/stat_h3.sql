@@ -531,7 +531,7 @@ create table stat_h3 tablespace evo4tb as (
            a.foursquare_visits_count,
            a.eatery_count,
            a.food_shops_count,
-           (coalesce(a.number_of_waste_containers, 0))::float as number_of_waste_containers
+           (coalesce(a.number_of_waste_containers, 0))::float as number_of_waste_containers,
            (coalesce(ms.mapswipe_area, 0))::float as mapswipe_area_km2,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
            (coalesce(gbc.avg_elevation_gebco_2022, 0))::float as avg_elevation_gebco_2022,

@@ -44,6 +44,7 @@ create table stat_h3_in tablespace evo4tb as (
            coalesce(sum(food_shops_count), 0) as food_shops_count,
            coalesce(sum(man_distance_to_bomb_shelters), 0) as man_distance_to_bomb_shelters,
            coalesce(sum(man_distance_to_charging_stations), 0) as man_distance_to_charging_stations,
+           coalesce(sum(number_of_waste_containers), 0) as number_of_waste_containers,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
@@ -531,7 +532,7 @@ create table stat_h3 tablespace evo4tb as (
            a.foursquare_visits_count,
            a.eatery_count,
            a.food_shops_count,
-           (coalesce(a.number_of_waste_containers, 0))::float as number_of_waste_containers,
+           a.number_of_waste_containers,
            (coalesce(ms.mapswipe_area, 0))::float as mapswipe_area_km2,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
            (coalesce(gbc.avg_elevation_gebco_2022, 0))::float as avg_elevation_gebco_2022,
@@ -617,5 +618,6 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      worldclim_avg_temperature, worldclim_min_temperature,
                                                      worldclim_max_temperature, worldclim_amp_temperature,
                                                      man_distance_to_bomb_shelters, man_distance_to_charging_stations,
-                                                     powerlines_proximity_m, waste_containers_availability
+                                                     powerlines_proximity_m, number_of_waste_containers
+
     );

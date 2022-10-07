@@ -14,7 +14,8 @@ create table waste_containers_h3_r8 as (
 drop table if exists waste_containers_h3;
 create table waste_containers_h3 as (
     select h3                 as h3,
-           count(osm_id)      as number_of_waste_containers
+           count(osm_id)      as number_of_waste_containers,
+           8                  as resolution
     from waste_containers_h3_r8
     group by 1
 );

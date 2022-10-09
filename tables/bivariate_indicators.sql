@@ -418,7 +418,7 @@ values ('powerlines_proximity_m', 'Powerlines grid proximity (m)', jsonb_build_a
         '[["important"], ["unimportant"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('number_of_waste_containers', 'Number of waste containers', jsonb_build_array(
+values ('waste_basket_coverage_area_km2', 'Number of waste containers', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["bad"], ["good"]]'::jsonb);
 

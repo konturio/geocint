@@ -133,3 +133,17 @@ select 9,
         {"id":"B1","color":"rgb(176,214,128)"},{"id":"B2","color":"rgb(208,159,97)"},{"id":"B3","color":"rgb(191,108,64)"},
         {"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(224,185,133)"},{"id":"C3","color":"rgb(228,26,28)"}]'
 from osm_meta;
+
+insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors)
+select 10,
+       'Waste containers availability',
+       'waste_basket_coverage_area_km2',
+       'populated_area_km2',
+       'population',
+       'area_km2',
+       false,
+       E'description',
+       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},
+         {"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},
+         {"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]'
+;

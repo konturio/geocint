@@ -402,7 +402,7 @@ values ('worldclim_amp_temperature', 'Amplitude of air temperatures', jsonb_buil
         '[["good"], ["bad"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('power_stations_proximity_m', 'Proximity to power stations and substations, m', jsonb_build_array(
+values ('power_substations_proximity_m', 'Proximity to power substations, m', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["good"], ["bad"]]'::jsonb);
 

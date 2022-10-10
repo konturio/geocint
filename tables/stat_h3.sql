@@ -489,7 +489,7 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(wc_temp.worldclim_min_temperature, 0))::float as worldclim_min_temperature,
            (coalesce(wc_temp.worldclim_max_temperature, 0))::float as worldclim_max_temperature,
            (coalesce((wc_temp.worldclim_max_temperature - wc_temp.worldclim_min_temperature) , 0))::float as worldclim_amp_temperature,
-           (coalesce(pwstatprox.power_stations_proximity_m,0))::float as power_stations_proximity_m,
+           (coalesce(pwstatprox.power_substations_proximity_m,0))::float as power_substations_proximity_m,
            hex.geom as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
@@ -503,7 +503,7 @@ create table stat_h3 tablespace evo4tb as (
          left join global_solar_atlas_h3 gsa on (a.h3 = gsa.h3)
          left join worldclim_temperatures_h3 wc_temp on (a.h3 = wc_temp.h3)
          left join mapswipe_hot_tasking_data_h3 ms on (a.h3 = ms.h3)
-         left join power_stations_proximity_h3 pwstatprox on (a.h3 = pwstatprox.h3),
+         left join power_substations_proximity_h3 pwstatprox on (a.h3 = pwstatprox.h3),
          ST_HexagonFromH3(a.h3) hex
 );
 drop table stat_h3_in;
@@ -539,5 +539,5 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      avg_slope_gebco_2022, mapswipe_area_km2, gsa_ghi,
                                                      worldclim_avg_temperature, worldclim_min_temperature,
                                                      worldclim_max_temperature, worldclim_amp_temperature,
-                                                     power_stations_proximity_m
+                                                     power_substations_proximity_m
     );

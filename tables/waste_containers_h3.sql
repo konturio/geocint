@@ -36,7 +36,7 @@ create table waste_containers_h3_r8 as (
 drop table if exists waste_containers_h3;
 create table waste_containers_h3 as (
     select h3                                            as h3,
-           count(distinct h3_geo_to_h3(geom, 10)) / 49.0 as waste_basket_coverage,
+           count(distinct h3_geo_to_h3(geom, 10))        as waste_basket_coverage,
            8                                             as resolution
     from waste_containers_h3_r8
     group by 1

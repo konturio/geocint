@@ -532,7 +532,7 @@ create table stat_h3 tablespace evo4tb as (
            a.foursquare_visits_count,
            a.eatery_count,
            a.food_shops_count,
-           (hex.area / 1000000.0) * a.waste_basket_coverage as waste_basket_coverage_area_km2,
+           (hex.area / 1000000.0) * a.waste_basket_coverage / 49.0 * POWER(7, 8 - a.resolution) as waste_basket_coverage_area_km2,
            (coalesce(ms.mapswipe_area, 0))::float as mapswipe_area_km2,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
            (coalesce(gbc.avg_elevation_gebco_2022, 0))::float as avg_elevation_gebco_2022,

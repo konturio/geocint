@@ -2,7 +2,7 @@ drop table if exists isodist_bomb_shelters_h3_distinct;
 create table isodist_bomb_shelters_h3_distinct as (
     select h3, 
            min(distance) as distance, 
-           geom
+           st_setsrid(geom,4326) as geom
     from isochrone_destinations_h3_r8
     where type = 'bomb_shelter'
     group by h3, geom

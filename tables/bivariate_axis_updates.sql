@@ -346,3 +346,11 @@ set
 where
       numerator = 'man_distance_to_charging_stations'
  and denominator = 'population';
+
+update bivariate_axis
+set
+    label = 'Waste basket coverage (coverage / populated area)',
+    p25 = 0.2,
+    p75 = 0.5,
+    max = 1.0
+where numerator = 'waste_basket_coverage_area_km2' and denominator = 'populated_area_km2';

@@ -46,11 +46,8 @@ host_name="$(hostname)"
 
 if [[ "$host_name" == "geocint" ]]; then
   echo "Geocint server: current branch is $branch. Running prod targets." | python3 scripts/slack_message.py geocint "Nightly build" cat
-  # Rollback to profile_make -j -k prod before merge
-  #profile_make -j -k prod
-  profile_make -j -k dev
-  make -k -q -n --debug=b dev 2>&1 | grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" | tail -n+10 | python3 scripts/slack_message.py geocint "Nightly build" cat
-  # make -k -q -n --debug=b prod 2>&1 | grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" | tail -n+10 | python3 scripts/slack_message.py geocint "Nightly build" cat
+  profile_make -j -k prod
+  make -k -q -n --debug=b prod 2>&1 | grep -v Trying | grep -v Rejecting | grep -v implicit | grep -v "Looking for" | grep -v "Successfully remade" | tail -n+10 | python3 scripts/slack_message.py geocint "Nightly build" cat
 else
   echo "Mustang server: current branch is $branch. Running dev target." | python3 scripts/slack_message.py geocint "Nightly build" racehorse
   profile_make -j -k dev

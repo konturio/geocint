@@ -71,11 +71,11 @@ with gsa_ghi as (select gsa.h3         as h3,
                                             case
                                                 when pwstat_prox_tab.power_substations_proximity_m > 50000 then 0
                                                 else 1 end        constraint_powersubstations
-                                     from power_substations_proximity_h3 pwstat_prox_tab),
+                                     from power_substations_proximity_h3 pwstat_prox_tab)
 
      select gsa_ghi.h3                                                                as h3,
        gsa_ghi.resolution                                                        as resolution,
-       (gsa_ghi.ghi * 0.55 + slope.slope * 0.12 + powerlines_prox.powl_prox * 0.2 + powersubstations_prox*0.13)*constraint_temperatures.constraint_temperatures*constraint_ghi.constraint_ghi*constraint_slope.constraint_slope*constraint_popprox.constraint_popprox*constraint_powerlines.constraint_powerlines*constraint_powersubstations.constraint_powersubstations as solar_farms_placement_suitability
+       (gsa_ghi.ghi * 0.55 + slope.slope * 0.12 + powerlines_prox.powl_prox * 0.2 + powersubstations_prox.pwstat_prox*0.13)*constraint_temperatures.constraint_temperatures*constraint_ghi.constraint_ghi*constraint_slope.constraint_slope*constraint_popprox.constraint_popprox*constraint_powerlines.constraint_powerlines*constraint_powersubstations.constraint_powersubstations as solar_farms_placement_suitability
 into solar_farms_placement_suitability_synthetic_h3
 from gsa_ghi
          inner join slope on gsa_ghi.h3 = slope.h3

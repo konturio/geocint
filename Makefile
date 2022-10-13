@@ -2519,7 +2519,7 @@ db/table/populated_areas_proximity_h3: db/table/populated_areas_proximity | db/t
 ### Proximity to electric power substations ###
 
 data/in/power_substations.gpkg: db/index/osm_tags_idx | data/in ## Get power substations GPKG
-	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "power_substations" -sql "SELECT osm_id, st_centroid(geog)::geometry as geometry FROM osm WHERE tags@>'{"power":"substation"}'"
+	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "power_substations" -sql "SELECT osm_id, st_centroid(geog)::geometry as geometry FROM osm WHERE tags@>'{\"power\":\"substation\"}'"
 	touch $@
 
 data/mid/power_substations: | data/mid ## Directory for calculations of power substations proximity

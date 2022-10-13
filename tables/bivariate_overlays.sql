@@ -142,8 +142,7 @@ select 10,
        'population',
        'area_km2',
        false,
-       E'This map shows the coverage of a populated area with garbage containers. Green zones are located at a short distance from the nearest garbage container.
-       The red areas are populated and need to place more waste containers or add them to the OpenStreetMap database if they already exist. \n\nLast updated  ' ||
+       E'This map shows the availability of waste bins in populated areas. In a green zone, a large part of the populated area is covered with waste containers. Red zones are populated and require placing more waste containers in the area - or adding them to the OpenStreetMap database if they are already placed. Yellow zones are unpopulated and thus do not require waste collection. \n\nLast updated  ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},
          {"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},

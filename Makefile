@@ -2504,7 +2504,7 @@ data/mid/populated_areas/populated_areas_proximity.tif: data/in/populated_areas.
 
 db/table/populated_areas_proximity: data/mid/populated_areas/populated_areas_proximity.tif | db/table ## Load populated areas proximity raster
 	psql -c "drop table if exists populated_areas_proximity;"
-	raster2pgsql -M -Y -s 4326 data/mid/populated_areas/populated_areas_proximity.tif -t auto popolated_areas_proximity | psql -q
+	raster2pgsql -M -Y -s 4326 data/mid/populated_areas/populated_areas_proximity.tif -t auto populated_areas_proximity | psql -q
 	touch $@
 
 db/table/populated_areas_proximity_h3: db/table/populated_areas_proximity | db/table ## Populated areas proximity - create summary H3 table

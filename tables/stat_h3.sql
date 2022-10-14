@@ -585,7 +585,7 @@ create table stat_h3 tablespace evo4tb as (
          left join worldclim_temperatures_h3 wc_temp on (a.h3 = wc_temp.h3)
          left join mapswipe_hot_tasking_data_h3 ms on (a.h3 = ms.h3)
          left join powerlines_proximity_h3 pwprox on (a.h3 = pwprox.h3)
-         left join populated_areas_proximity_h3 popprox on (a.h3 = pwprox.h3)
+         left join populated_areas_proximity_h3 popprox on (a.h3 = popprox.h3)
          left join power_substations_proximity_h3 pwstatprox on (a.h3 = pwstatprox.h3)
          left join solar_farms_placement_suitability_synthetic_h3 solar_suitability on (a.h3 = solar_suitability.h3),
          ST_HexagonFromH3(a.h3) hex

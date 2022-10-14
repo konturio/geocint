@@ -13,7 +13,7 @@ create table osm_object_count_grid_h3 as (
            array_agg(distinct z.osm_user)                        as osm_users_array
     from (
              select
-                    h3_geo_to_h3(ST_PointOnSurface(geog::geometry)::point, 8) as h3,
+                    h3_lat_lng_to_cell(ST_PointOnSurface(geog::geometry)::point, 8) as h3,
                     extract(epoch from ts) as ts_epoch,
                     ts                     as ts,
                     osm_user               as osm_user,
@@ -41,7 +41,7 @@ $$
                                                       building_count_6_months,
                                                       min_ts, max_ts, avgmax_ts)
                 select (res - 1) as resolution,
-                       h3_to_parent(h3) as h3,
+                       h3_cell_to_parent(h3) as h3,
                        sum(count) as count,
                        sum(count_6_months) as count_6_months,
                        sum(building_count) as building_count,
@@ -55,7 +55,7 @@ $$
 
                 insert into osm_object_count_grid_h3 (resolution, h3, osm_users, osm_users_array)
                 select (res - 1) as resolution,
-                       h3_to_parent(h3) as h3,
+                       h3_cell_to_parent(h3) as h3,
                        count(distinct osm_user) as osm_users,
                        array_agg(distinct osm_user) as osm_users_array
                 from osm_object_count_grid_h3, unnest(osm_users_array) as osm_user

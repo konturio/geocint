@@ -1,7 +1,7 @@
 drop table if exists covid19_vaccine_accept_us_counties_h3_in;
 create table covid19_vaccine_accept_us_counties_h3_in as (
-    select distinct on (h3_polyfill((geom), 8)) h3_polyfill((geom), 8) as h3,
-           h3_to_geometry(h3_polyfill(geom, 8))                        as geom,
+    select distinct on (h3_polygon_to_cells((geom), 8)) h3_polygon_to_cells((geom), 8) as h3,
+           h3_cell_to_geometry(h3_polygon_to_cells(geom, 8))                        as geom,
            fips_code
     from covid19_vaccine_accept_us_counties
     order by 1
@@ -11,7 +11,7 @@ create index on covid19_vaccine_accept_us_counties_h3_in using gist(geom);
 
 drop table if exists covid19_vaccine_accept_us_counties_h3;
 create table covid19_vaccine_accept_us_counties_h3 as (
-    select h3_polyfill((geom), 8)              as h3,
+    select h3_polygon_to_cells((geom), 8)              as h3,
            vaccine_value / h3_count            as vaccine_value,
            8::int                              as resolution
     from covid19_vaccine_accept_us_counties u,

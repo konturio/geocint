@@ -31,11 +31,11 @@ select
         ),
     ST_Area(hex_raw::geography)
 from
-        ( select h3_to_geo_boundary_geometry(h3) as hex_raw ) hex_raw_geog
+        ( select h3_cell_to_boundary_geometry($1) as hex_raw ) hex_raw_geog
         join lateral (
                  select
                      case
-                         when h3_get_resolution(h3) < 3 then ST_Segmentize(hex_raw::geography, 200000)::geometry
+                         when h3_get_resolution($1) < 3 then ST_Segmentize(hex_raw::geography, 200000)::geometry
                          else hex_raw
                      end as geom
                  ) as                                         hex on true;
@@ -72,9 +72,9 @@ create or replace function ST_H3Bucket(geom geometry, max_resolution integer def
     immutable strict parallel safe
 as
 $function$
-select h3_to_parent(hex, res), res
+select h3_cell_to_parent(hex, res), res
 from
-    ( select h3_geo_to_h3(ST_Transform(ST_StartPoint(geom), 4326)::point, max_resolution) as hex ) hex,
+    ( select h3_lat_lng_to_cell(ST_Transform(ST_StartPoint(geom), 4326)::point, max_resolution) as hex ) hex,
     generate_series(0, max_resolution)                                                                 res
 $function$;
 
@@ -88,9 +88,9 @@ create or replace function ST_H3Bucket(geog geography, max_resolution integer de
     immutable strict parallel safe
 as
 $function$
-select h3_to_parent(hex, res), res
+select h3_cell_to_parent(hex, res), res
 from
     ( select
-          h3_geo_to_h3(ST_StartPoint(geog::geometry)::point, max_resolution) as hex ) hex,
+          h3_lat_lng_to_cell(ST_StartPoint(geog::geometry)::point, max_resolution) as hex ) hex,
     generate_series(0, max_resolution)             res
 $function$;

@@ -1273,7 +1273,7 @@ db/table/global_fires_stat_h3: deploy/s3/global_fires ## Aggregate active fire d
 
 data/out/global_fires/global_fires_h3_r8_13months.csv.gz: db/table/global_fires | data/out/global_fires ## Daily export of fires for last 13 months (archived CSV).
 	rm -f $@
-	psql -q -X -c "set timezone to utc; copy (select h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8) as h3, acq_datetime from global_fires order by 1,2) to stdout with csv;" | pigz > $@
+	psql -q -X -c "set timezone to utc; copy (select h3_lat_lng_to_cell(ST_SetSrid(ST_Point(longitude, latitude), 4326)::point, 8) as h3, acq_datetime from global_fires order by 1,2) to stdout with csv;" | pigz > $@
 
 deploy/geocint/global_fires_h3_r8_13months.csv.gz: data/out/global_fires/global_fires_h3_r8_13months.csv.gz | deploy/geocint  ## Copy last 13 months fires to public_html folder to make it available online.
 	cp -vp data/out/global_fires/global_fires_h3_r8_13months.csv.gz ~/public_html/global_fires_h3_r8_13months.csv.gz
@@ -1905,7 +1905,7 @@ db/function/calculate_isodist_h3: db/table/osm_road_segments | db/function ## H3
 db/table/update_isochrone_destinations_h3_r8: db/table/isochrone_destinations_new db/table/isochrone_destinations_h3_r8 db/function/calculate_isodist_h3 | db/table ## Aggregate 30 km isodists to H3 hexagons with resolution 8 for new isochrone destinations.
 	psql -c 'delete from isochrone_destinations_h3_r8 where osm_id in (select osm_id from isochrone_destinations except all select osm_id from isochrone_destinations_new);'
 	psql -c 'vacuum isochrone_destinations_h3_r8;'
-	psql -X -c 'copy (select osm_id from isochrone_destinations_new except all select osm_id from isochrone_destinations) to stdout;' | parallel --eta 'psql -c "insert into isochrone_destinations_h3_r8(osm_id, h3, type, distance, geom) select d.osm_id, i.h3, d.type, i.distance, i.geom from isochrone_destinations_new d, calculate_isodist_h3(geom, 30000, 8) i where d.osm_id = {};"'
+	psql -X -c 'copy (select osm_id from isochrone_destinations_new except all select osm_id from isochrone_destinations) to stdout;' | parallel --eta 'psql -c "insert into isochrone_destinations_h3_r8(osm_id, h3, type, distance, geom) select d.osm_id, i.h3, d.type, i.distance, st_setsrid(i.geom, 4326) from isochrone_destinations_new d, calculate_isodist_h3(geom, 30000, 8) i where d.osm_id = {};"'
 	touch $@
 
 db/table/update_isochrone_destinations: db/table/update_isochrone_destinations_h3_r8 | db/table ## Update update_isochrone_destinations table.
@@ -1981,13 +1981,13 @@ data/mid/foursquare/kontour_visits_csv: data/in/foursquare/downloaded | data/mid
 
 db/table/foursquare_places: data/mid/foursquare/kontour_places.csv | db/table ## Import 4sq places into database.
 	psql -c 'drop table if exists foursquare_places;'
-	psql -c 'create table foursquare_places(fsq_id text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);'
+	psql -c 'create table foursquare_places(fsq_id text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_lat_lng_to_cell(ST_SetSrid(ST_Point(longitude, latitude), 4326)::point, 8)) STORED);'
 	cat data/mid/foursquare/kontour_places.csv | psql -c "copy foursquare_places (fsq_id, latitude, longitude) from stdin with csv header delimiter ','"
 	touch $@
 
 db/table/foursquare_visits: data/mid/foursquare/kontour_visits_csv | db/table ## Import 4sq visits into database.
 	psql -c 'drop table if exists foursquare_visits;'
-	psql -c 'create table foursquare_visits (protectedts text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);'
+	psql -c 'create table foursquare_visits (protectedts text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_lat_lng_to_cell(ST_SetSrid(ST_Point(longitude, latitude), 4326)::point, 8)) STORED);'
 	ls data/mid/foursquare/kontour_visits*.csv | parallel 'cat {} | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header; "'
 	touch $@
 
@@ -2001,7 +2001,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/powerlines_proximity_h3 db/table/waste_containers_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/powerlines_proximity_h3 db/table/waste_containers_h3 db/table/populated_areas_proximity_h3 db/table/power_substations_proximity_h3 db/table/solar_farms_placement_suitability_synthetic_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -2485,3 +2485,73 @@ db/table/waste_containers_h3: db/table/osm db/index/osm_tags_idx db/procedure/ge
 	touch $@
 
 ### End City waste management block ###
+
+### Proximity to populated areas ###
+
+data/in/populated_areas.gpkg: db/table/kontur_population_h3 | data/in ## Get populated areas GPKG
+	ogr2ogr -f GPKG -t_srs EPSG:4326 $@ PG:"dbname=gis" -nln "populated" -sql "SELECT h3_cell_to_geometry(h3), population FROM kontur_population_h3 WHERE population>80 and resolution=8"
+	touch $@
+
+data/mid/populated_areas: | data/mid ## Directory for calculations of populated areas proximity
+	mkdir $@
+
+data/mid/populated_areas/populated_areas_proximity.tif: data/in/populated_areas.gpkg | data/mid/populated_areas ## Populated areas proximity - calculate geotif
+	bash scripts/global_proximity_map_from_vector.sh data/in/populated_areas.gpkg populated data/mid/populated_areas $@
+	rm -f data/mid/populated_areas/north*
+	rm -f data/mid/populated_areas/south*
+	rm -f data/mid/populated_areas/part*
+	touch $@
+
+db/table/populated_areas_proximity: data/mid/populated_areas/populated_areas_proximity.tif | db/table ## Load populated areas proximity raster
+	psql -c "drop table if exists populated_areas_proximity;"
+	raster2pgsql -M -Y -s 4326 data/mid/populated_areas/populated_areas_proximity.tif -t auto populated_areas_proximity | psql -q
+	touch $@
+
+db/table/populated_areas_proximity_h3: db/table/populated_areas_proximity | db/table ## Populated areas proximity - create summary H3 table
+	psql -f scripts/proximity_raster_to_h3.sql -v table_name=populated_areas_proximity -v table_name_h3=populated_areas_proximity_h3 -v aggr_func=avg -v item_name=populated_areas_proximity_m -v threshold=1200000
+	psql -c "create index on populated_areas_proximity_h3 (h3);"
+	psql -c "call generate_overviews('populated_areas_proximity_h3', '{populated_areas_proximity_m}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on populated_areas_proximity_h3 (h3);"
+	touch $@
+
+### END Proximity to populated areas ###
+
+### Proximity to electric power substations ###
+
+data/in/power_substations.gpkg: db/index/osm_tags_idx | data/in ## Get power substations GPKG
+	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "power_substations" -sql "SELECT osm_id, st_centroid(geog)::geometry as geometry FROM osm WHERE tags@>'{\"power\":\"substation\"}'"
+	touch $@
+
+data/mid/power_substations: | data/mid ## Directory for calculations of power substations proximity
+	mkdir $@
+
+data/mid/power_substations/power_substations_proximity.tif: data/in/power_substations.gpkg | data/mid/power_substations ## power substations proximity - calculate geotif
+	bash scripts/global_proximity_map_from_vector.sh data/in/power_substations.gpkg power_substations data/mid/power_substations $@
+	rm -f data/mid/power_substations/north*
+	rm -f data/mid/power_substations/south*
+	rm -f data/mid/power_substations/part*
+	touch $@
+
+db/table/power_substations_proximity: data/mid/power_substations/power_substations_proximity.tif | db/table ## Load power substations proximity raster
+	psql -c "drop table if exists power_substations_proximity;"
+	raster2pgsql -M -Y -s 4326 data/mid/power_substations/power_substations_proximity.tif -t auto power_substations_proximity | psql -q
+	touch $@
+
+db/table/power_substations_proximity_h3: db/table/power_substations_proximity | db/table ## Power substations proximity - create summary H3 table
+	psql -f scripts/proximity_raster_to_h3.sql -v table_name=power_substations_proximity -v table_name_h3=power_substations_proximity_h3 -v aggr_func=avg -v item_name=power_substations_proximity_m -v threshold=1200000
+	psql -c "create index on power_substations_proximity_h3 (h3);"
+	psql -c "call generate_overviews('power_substations_proximity_h3', '{power_substations_proximity_m}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on power_substations_proximity_h3 (h3);"
+	touch $@
+
+### END Proximity to electric power substationss ###
+
+### Synthetic solar farms placement layer ###
+
+db/table/solar_farms_placement_suitability_synthetic_h3: db/table/power_substations_proximity_h3 db/table/populated_areas_proximity_h3 db/table/powerlines_proximity_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 | db/table ## create a table with synthetic solar farms placement suitability (MCDA)
+	psql -f tables/solar_farms_placement_suitability_synthetic_h3.sql
+	psql -c "call generate_overviews('solar_farms_placement_suitability_synthetic_h3', '{solar_farms_placement_suitability}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on solar_farms_placement_suitability_synthetic_h3 (h3);"
+	touch $@
+
+### END Synthetic solar farms placement layer ###

@@ -422,6 +422,23 @@ values ('waste_basket_coverage_area_km2', 'Number of waste containers', jsonb_bu
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["bad"], ["good"]]'::jsonb);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('populated_areas_proximity_m', 'Proximity to populated areas, m', jsonb_build_array(
+        'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('power_substations_proximity_m', 'Proximity to power substations, m', jsonb_build_array(
+        '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        '[["good"], ["bad"]]'::jsonb);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction)
+values ('solar_farms_placement_suitability', 'Suitability estimation for solar farms placement', jsonb_build_array(
+        'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright',
+        'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html', 
+        'Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use'),
+        '[["bad"], ["good"]]'::jsonb);
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

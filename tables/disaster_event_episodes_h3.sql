@@ -124,7 +124,7 @@ $$
                     h3, resolution, episode_type, multidaterange
                 )
                 select
-                    h3_to_parent(h3) as h3,
+                    h3_cell_to_parent(h3) as h3,
                     (res - 1) as resolution,
                     episode_type,
                     range_agg(r) as multidaterange

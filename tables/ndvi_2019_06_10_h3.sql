@@ -4,7 +4,7 @@ create table ndvi_2019_06_10_h3 as (
            8    as resolution,
            avg_ndvi
     from (
-            select h3_geo_to_h3(geom::point, 8) as h3,
+            select h3_lat_lng_to_cell(geom::point, 8) as h3,
             avg(val)                                     as avg_ndvi
              from (
                       select p.geom, p.val

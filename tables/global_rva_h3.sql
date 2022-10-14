@@ -16,7 +16,7 @@ create table boundaries_in as
 -- remove duplicates with low admin level
 drop table if exists global_rva_h3;
 create table global_rva_h3  as
-	select distinct on (h3) h3_polyfill(ST_Subdivide(geom), 8) as h3,
+	select distinct on (h3) h3_polygon_to_cells(ST_Subdivide(geom), 8) as h3,
 	                        mhr_index,
 	                        mhe_index,
 	                        resilience_index,

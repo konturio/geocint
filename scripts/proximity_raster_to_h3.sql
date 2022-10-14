@@ -5,7 +5,7 @@ create table :table_name_h3 as (
            8 as resolution,
            :item_name
     from (
-            select h3_geo_to_h3(geom::point, 8) as h3,
+            select h3_lat_lng_to_cell(geom::point, 8) as h3,
             :aggr_func(val) as :item_name
              from (
                      select p.geom as geom,

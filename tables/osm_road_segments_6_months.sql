@@ -4,7 +4,7 @@ create table osm_road_segments_6_months as
     select z.ordinality as id_of_segm,
         osm_id,
         8::int as resolution,
-        h3_geo_to_h3(ST_PointOnSurface(z.geom)::point, 8) as h3,
+        h3_lat_lng_to_cell(ST_PointOnSurface(z.geom)::point, 8) as h3,
         ST_Length(z.geom::geography) as length,
         z.geom
     from

@@ -76,17 +76,17 @@ create table stat_h3_quality as (
                 avg(a.food_shops_count::float) as agg_food_shops_count,
                 avg(a.mapswipe_area_km2::float) as agg_mapswipe_area_km2,
                 avg(a.gsa_ghi::float) as agg_gsa_ghi,
-                avg(worldclim_avg_temperature::float) as agg_worldclim_avg_temperature,
-                avg(worldclim_min_temperature::float) as agg_worldclim_min_temperature,
-                avg(worldclim_max_temperature::float) as agg_worldclim_max_temperature,
-                avg(worldclim_amp_temperature::float) as agg_worldclim_amp_temperature,
+                avg(a.worldclim_avg_temperature::float) as agg_worldclim_avg_temperature,
+                avg(a.worldclim_min_temperature::float) as agg_worldclim_min_temperature,
+                avg(a.worldclim_max_temperature::float) as agg_worldclim_max_temperature,
+                avg(a.worldclim_amp_temperature::float) as agg_worldclim_amp_temperature,
                 avg(a.man_distance_to_bomb_shelters) as agg_man_distance_to_bomb_shelters,
                 avg(a.man_distance_to_charging_stations) as agg_man_distance_to_charging_stations,
-                avg(powerlines_proximity_m::float) as agg_powerlines_proximity_m,
+                avg(a.powerlines_proximity_m::float) as agg_powerlines_proximity_m,
                 avg(a.waste_basket_coverage_area_km2) as agg_waste_basket_coverage_area_km2,
-                avg(populated_areas_proximity_m::float) as agg_populated_areas_proximity_m,
-                avg(power_substations_proximity_m::float) as agg_power_substations_proximity_m,
-                avg(solar_farms_placement_suitability::float) as agg_solar_farms_placement_suitability
+                avg(a.populated_areas_proximity_m::float) as agg_populated_areas_proximity_m,
+                avg(a.power_substations_proximity_m::float) as agg_power_substations_proximity_m,
+                avg(a.solar_farms_placement_suitability::float) as agg_solar_farms_placement_suitability
             from
                 stat_h3 a
             where

@@ -189,7 +189,7 @@ drop table if exists kontur_population_h3;
 create table kontur_population_h3 as (
     select p.resolution,
            st_transform(h3_cell_to_boundary_geometry(p.h3), 3857) as geom,
-           st_area(h3_cell_to_boundary_geometry(a.h3)::geography) as area,
+           st_area(h3_cell_to_boundary_geometry(p.h3)::geography) as area,
            h.area,
            p.populated_area,
            p.h3,

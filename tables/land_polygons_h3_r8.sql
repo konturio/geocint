@@ -10,10 +10,9 @@ create table land_polygons_h3_r8_in as (
 drop table if exists land_polygons_h3_r8;
 create table land_polygons_h3_r8 as (
     select l.h3     as h3,
-           hex.geom as geom,
-           hex.area as area
-    from land_polygons_h3_r8_in l,
-         ST_HexagonFromH3(l.h3) hex
+           st_transform(h3_cell_to_boundary_geometry(l.h3), 3857) as geom,
+           st_area(h3_cell_to_boundary_geometry(l.h3)::geography) as area
+    from land_polygons_h3_r8_in l
     group by 1, 2, 3
 );
 

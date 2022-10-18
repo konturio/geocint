@@ -423,7 +423,7 @@ values ('waste_basket_coverage_area_km2', 'Number of waste containers', jsonb_bu
         '[["bad"], ["good"]]'::jsonb);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction)
-values ('populated_areas_proximity_m', 'Proximity to populated areas, m', jsonb_build_array(
+values ('populated_areas_proximity_m', 'Proximity to densely populated areas, m', jsonb_build_array(
         'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["good"], ["bad"]]'::jsonb);
 

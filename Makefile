@@ -2488,7 +2488,7 @@ db/table/waste_containers_h3: db/table/osm db/index/osm_tags_idx db/procedure/ge
 
 ### Proximity to populated areas ###
 
-data/in/populated_areas.gpkg: | db/table/kontur_population_h3 data/in ## Get populated areas GPKG
+data/in/populated_areas.gpkg: db/table/kontur_population_h3 | data/in ## Get populated areas GPKG
 	ogr2ogr -f GPKG -t_srs EPSG:4326 $@ PG:"dbname=gis" -nln "populated" -sql "SELECT h3_cell_to_boundary_geometry(h3), population FROM kontur_population_h3 WHERE population>80 and resolution=8"
 	touch $@
 
@@ -2518,7 +2518,7 @@ db/table/populated_areas_proximity_h3: db/table/populated_areas_proximity | db/t
 
 ### Proximity to electric power substations ###
 
-data/in/power_substations.gpkg: | db/index/osm_tags_idx data/in ## Get power substations GPKG
+data/in/power_substations.gpkg: db/index/osm_tags_idx | data/in ## Get power substations GPKG
 	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "power_substations" -sql "SELECT osm_id, st_centroid(geog)::geometry as geometry FROM osm WHERE tags@>'{\"power\":\"substation\"}'"
 	touch $@
 

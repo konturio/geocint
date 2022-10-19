@@ -489,7 +489,7 @@ create table stat_h3 tablespace evo4tb as (
     select a.h3,
            a.zoom,
            a.population,
-           st_area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0 as area_km2,
+           ST_Area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0 as area_km2,
            a.view_count,
            a.count,
            a.one,
@@ -532,7 +532,7 @@ create table stat_h3 tablespace evo4tb as (
            a.foursquare_visits_count,
            a.eatery_count,
            a.food_shops_count,
-           (st_area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0) * a.waste_basket_coverage / (49.0 * POWER(7, 8 - a.resolution)) as waste_basket_coverage_area_km2,
+           (ST_Area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0) * a.waste_basket_coverage / (49.0 * POWER(7, 8 - a.resolution)) as waste_basket_coverage_area_km2,
            (coalesce(ms.mapswipe_area, 0))::float as mapswipe_area_km2,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
            (coalesce(gbc.avg_elevation_gebco_2022, 0))::float as avg_elevation_gebco_2022,
@@ -571,7 +571,7 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(popprox.populated_areas_proximity_m,0))::float as populated_areas_proximity_m,
            (coalesce(pwstatprox.power_substations_proximity_m,0))::float as power_substations_proximity_m,
            (coalesce(solar_suitability.solar_farms_placement_suitability,0))::float as solar_farms_placement_suitability,
-           st_transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
+           ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)

@@ -28,7 +28,7 @@ create table kontur_population_in as (
 drop table if exists kontur_population_mid1;
 create table kontur_population_mid1 as (
     select a.*,
-           st_area(h3_cell_to_boundary_geometry(a.h3)::geography) / 1000000.0 as area_km2,
+           st_area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0 as area_km2,
            st_transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from kontur_population_in a
 );
@@ -175,7 +175,7 @@ create table kontur_population_mid4 as (
     select p.h3,
            p.population as population,
            p.resolution,
-           st_area(h3_cell_to_boundary_geometry(p.h3)::geography) as populated_area
+           st_area(h3_cell_to_boundary_geography(p.h3)) as populated_area
     from kontur_population_mid3 p
 );
 
@@ -189,7 +189,7 @@ drop table if exists kontur_population_h3;
 create table kontur_population_h3 as (
     select p.resolution,
            st_transform(h3_cell_to_boundary_geometry(p.h3), 3857) as geom,
-           st_area(h3_cell_to_boundary_geometry(p.h3)::geography) as area,
+           st_area(h3_cell_to_boundary_geography(p.h3)) as area,
            p.populated_area,
            p.h3,
            p.population as population

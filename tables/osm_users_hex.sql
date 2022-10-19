@@ -146,7 +146,7 @@ call trim_osm_users_h3();
 drop table if exists osm_users_hex;
 create table osm_users_hex as (
     select a.*,
-           st_area(h3_cell_to_boundary_geometry(a.h3)::geography) / 1000000.0 as area_km2,
+           st_area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0 as area_km2,
            st_transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom,
            false                as is_local
     from osm_users_hex_out a

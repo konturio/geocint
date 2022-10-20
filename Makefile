@@ -2489,7 +2489,7 @@ db/table/waste_containers_h3: db/table/osm db/index/osm_tags_idx db/procedure/ge
 ### Proximity to populated areas ###
 
 data/in/populated_areas.gpkg: db/table/kontur_population_h3 | data/in ## Get populated areas GPKG
-	ogr2ogr -f GPKG -t_srs EPSG:4326 $@ PG:"dbname=gis" -nln "populated" -sql "SELECT h3_cell_to_geometry(h3), population FROM kontur_population_h3 WHERE population>80 and resolution=8"
+	ogr2ogr -f GPKG -t_srs EPSG:4326 $@ PG:"dbname=gis" -nln "populated" -sql "SELECT h3_cell_to_boundary_geometry(h3), population FROM kontur_population_h3 WHERE population>80 and resolution=8"
 	touch $@
 
 data/mid/populated_areas: | data/mid ## Directory for calculations of populated areas proximity

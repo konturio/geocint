@@ -489,7 +489,7 @@ create table stat_h3 tablespace evo4tb as (
     select a.h3,
            a.zoom,
            a.population,
-           hex.area / 1000000.0 as area_km2,
+           ST_Area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0 as area_km2,
            a.view_count,
            a.count,
            a.one,
@@ -532,7 +532,7 @@ create table stat_h3 tablespace evo4tb as (
            a.foursquare_visits_count,
            a.eatery_count,
            a.food_shops_count,
-           (hex.area / 1000000.0) * a.waste_basket_coverage / (49.0 * POWER(7, 8 - a.resolution)) as waste_basket_coverage_area_km2,
+           (ST_Area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0) * a.waste_basket_coverage / (49.0 * POWER(7, 8 - a.resolution)) as waste_basket_coverage_area_km2,
            (coalesce(ms.mapswipe_area, 0))::float as mapswipe_area_km2,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
            (coalesce(gbc.avg_elevation_gebco_2022, 0))::float as avg_elevation_gebco_2022,
@@ -571,7 +571,7 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(popprox.populated_areas_proximity_m,0))::float as populated_areas_proximity_m,
            (coalesce(pwstatprox.power_substations_proximity_m,0))::float as power_substations_proximity_m,
            (coalesce(solar_suitability.solar_farms_placement_suitability,0))::float as solar_farms_placement_suitability,
-           hex.geom as geom
+           ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
@@ -587,8 +587,7 @@ create table stat_h3 tablespace evo4tb as (
          left join powerlines_proximity_h3 pwprox on (a.h3 = pwprox.h3)
          left join populated_areas_proximity_h3 popprox on (a.h3 = popprox.h3)
          left join power_substations_proximity_h3 pwstatprox on (a.h3 = pwstatprox.h3)
-         left join solar_farms_placement_suitability_synthetic_h3 solar_suitability on (a.h3 = solar_suitability.h3),
-         ST_HexagonFromH3(a.h3) hex
+         left join solar_farms_placement_suitability_synthetic_h3 solar_suitability on (a.h3 = solar_suitability.h3)
 );
 drop table stat_h3_in;
 vacuum analyze stat_h3;

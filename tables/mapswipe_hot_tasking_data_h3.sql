@@ -46,7 +46,7 @@ $$
                 insert into mapswipe_hot_tasking_data_h3_in (h3, mapswipe_area, area_km2, resolution)
                 select h3_cell_to_parent(h3),
                        sum(mapswipe_area),
-                       ST_Area(h3_cell_to_boundary_geometry(h3_cell_to_parent(h3))::geography) / 1000000.0,
+                       ST_Area(h3_cell_to_boundary_geography(h3_cell_to_parent(h3))) / 1000000.0,
                        (res - 1)
                 from mapswipe_hot_tasking_data_h3_in
                 where resolution = res

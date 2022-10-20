@@ -7,7 +7,7 @@ create table copernicus_forest_h3_in as (
            herbage / 1000000                                               as herbage,
            unknown_forest / 1000000                                        as unknown_forest,
            forest_area / 1000000                                           as forest_area,
-           ST_Area(h3_cell_to_boundary_geometry(h3)::geography) / 1000000.0 as area_km2
+           ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0 as area_km2
     from (
              select p_h3                                                             as h3,
                     coalesce(sum(cell_area) filter (where p.val in (111, 121)), 0)   as evergreen_needle_leaved_forest,
@@ -46,7 +46,7 @@ $$
                        sum(shrubs),
                        sum(herbage),
                        sum(unknown_forest),
-                       ST_Area(h3_cell_to_boundary_geometry(h3_cell_to_parent(h3))::geography) / 1000000.0,
+                       ST_Area(h3_cell_to_boundary_geography(h3_cell_to_parent(h3))) / 1000000.0,
                        (res - 1)
                 from copernicus_forest_h3_in
                 where resolution = res

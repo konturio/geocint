@@ -2172,13 +2172,13 @@ data/out/population/bivariate_tables_checks: db/table/bivariate_axis db/table/bi
 	touch $@
 
 data/out/population/bivariate_tables.sqld.gz: data/out/population/bivariate_tables_checks | data/out/population ## Crafting bivariate tables SQL dump
-	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | pigz" > $@__TMP
+	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@
 
-deploy/dev/neon_tech_insights_api_tables: data/out/population/bivariate_tables.sqld.gz data/out/population/stat_h3.sqld.gz | deploy/dev ## deploying insights-api tables on Neon-tech DB
-	ansible localhost -m community.postgresql.postgresql_db -a 'name=main maintenance_db=main login_user=kontur login_host=ancient-pond-139865.cloud.neon.tech state=restore target=data/out/population/stat_h3.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible localhost -m community.postgresql.postgresql_db -a 'name=main maintenance_db=main login_user=kontur login_host=ancient-pond-139865.cloud.neon.tech state=restore target=data/out/population/bivariate_tables.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
+deploy/dev/neon_tech_insights_api_tables: db/table/stat_h3 data/out/population/bivariate_tables_checks | deploy/dev ## deploying insights-api tables on Neon-tech DB
+	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner --no-tablespaces -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') scripts/population_api_dump_footer.sql | psql -h ancient-pond-139865.cloud.neon.tech -U kontur main"
+	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | psql -h ancient-pond-139865.cloud.neon.tech -U kontur main"
 	touch $@
 
 deploy/s3/test/stat_h3_dump: data/out/population/stat_h3.sqld.gz | deploy/s3/test ## Putting stat_h3 dump from local folder to AWS test folder in private bucket.

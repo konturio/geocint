@@ -33,9 +33,9 @@ $$
                         where c.key = r.key
                         into carry, carry_out;
 
-                        -- insert new value when difference between forest and hexagon area area is bigger then zero' || 
-                        E'if jsonb_path_exists(carry_out, ''$.** ? (@ > 0)'') then' ||
-                            'insert into '|| table_h3 || '
+                        -- insert new value when difference between forest and hexagon area area is bigger then zero 
+                        if  jsonb_path_exists(carry_out, ' || E'''$.** ? (@ > 0)'') then
+                            insert into '|| table_h3 || '
                             select *
                             from jsonb_populate_record(null::' || table_h3 || ', cur_row || carry_out);
                         end if;

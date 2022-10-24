@@ -9,6 +9,8 @@ as
 
 $$
     declare
+        input_table text := input_table;
+        table_h3    text := table_h3;
         res         integer := resolution;
         cur_row     jsonb;
         carry       jsonb;
@@ -18,6 +20,7 @@ $$
         while res >= 0
             loop
                 select jsonb_object_agg(column_name, 0) from unnest(columns) "column_name" into carry;
+
                 for cur_row in (select to_jsonb(r) from input_table r where resolution = res order by h3)
                     loop
                         -- recursive сalculation carry value for every type of area
@@ -37,6 +40,7 @@ $$
                             from jsonb_populate_record(null::table_h3, cur_row || carry_out);
                         end if;
                     end loop;
+
                 raise notice 'unprocessed carry %', carry;
                 res = res - 1;
             end loop;

@@ -2176,9 +2176,9 @@ data/out/population/bivariate_tables.sqld.gz: data/out/population/bivariate_tabl
 	mv $@__TMP $@
 	touch $@
 
-deploy/dev/neon_tech_insights_api_tables: db/table/stat_h3 data/out/population/bivariate_tables_checks | deploy/dev ## deploying insights-api tables on Neon-tech DB
-	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner --no-tablespaces -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') scripts/population_api_dump_footer.sql | psql -h ancient-pond-139865.cloud.neon.tech -U kontur main"
-	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | psql -h ancient-pond-139865.cloud.neon.tech -U kontur main"
+deploy/dev/neon_tech_insights_api_tables: data/out/population/bivariate_tables.sqld.gz data/out/population/stat_h3.sqld.gz | deploy/dev ## deploying insights-api tables on Neon-tech DB
+	gzip -dck data/out/population/stat_h3.sqld.gz | psql -h ancient-pond-139865.cloud.neon.tech -U kontur main
+	gzip -dck data/out/population/bivariate_tables.sqld.gz | psql -h ancient-pond-139865.cloud.neon.tech -U kontur main
 	touch $@
 
 deploy/s3/test/stat_h3_dump: data/out/population/stat_h3.sqld.gz | deploy/s3/test ## Putting stat_h3 dump from local folder to AWS test folder in private bucket.
@@ -2203,7 +2203,7 @@ deploy/dev/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/biv
 	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
-deploy/dev/cleanup_cache: deploy/dev/population_api_tables | deploy/dev ## Clear insights-api cache on DEV.
+deploy/dev/cleanup_cache: deploy/dev/population_api_tables deploy/dev/neon_tech_insights_api_tables | deploy/dev ## Clear insights-api cache on DEV.
 	bash scripts/check_http_response_code.sh GET https://test-apps02.konturlabs.com/insights-api/cache/cleanUp 200
 	touch $@
 

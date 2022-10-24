@@ -9,8 +9,8 @@ as
 
 $$
     declare
-        input_table text := input_table;
-        table_h3    text := table_h3;
+        -- input_table text := input_table;
+        -- table_h3    text := table_h3;
         res         integer := resolution;
         cur_row     jsonb;
         carry       jsonb;
@@ -21,7 +21,7 @@ $$
             loop
                 select jsonb_object_agg(column_name, 0) from unnest(columns) "column_name" into carry;
 
-                for cur_row in (select to_jsonb(r) from input_table r where resolution = res order by h3)
+                for cur_row in (select to_jsonb(r) from quote_ident(input_table) r where resolution = res order by h3)
                     loop
                         -- recursive сalculation carry value for every type of area
                         select jsonb_object_agg(c.key, carry_value - carry_out_value),
@@ -35,9 +35,9 @@ $$
 
                         -- insert new value when difference between forest and hexagon area area is bigger then zero
                         if jsonb_path_exists(carry_out, '$.** ? (@ > 0)') then
-                            insert into table_h3
+                            insert into quote_ident(table_h3)
                             select *
-                            from jsonb_populate_record(null::table_h3, cur_row || carry_out);
+                            from jsonb_populate_record(null::quote_ident(table_h3), cur_row || carry_out);
                         end if;
                     end loop;
 

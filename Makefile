@@ -2030,7 +2030,15 @@ db/table/bivariate_overlays: db/table/osm_meta db/table/tile_logs | db/table ## 
 	psql -f tables/bivariate_overlays.sql
 	touch $@
 
-db/table/bivariate_indicators: db/table/stat_h3 | db/table ## Bivariate indicators properties, and attribution used in Bivariate manager.
+db/table/bivariate_unit: | db/table ## Bivariate units description
+	psql -f tables/bivariate_unit.sql
+	touch $@
+
+db/table/bivariate_unit_localization: db/table/bivariate_unit | db/table ## Bivariate unit localization
+	psql -f tables/bivariate_unit_localization.sql
+	touch $@
+
+db/table/bivariate_indicators: db/table/stat_h3 db/table/bivariate_unit_localization | db/table ## Bivariate indicators properties, and attribution used in Bivariate manager.
 	psql -f tables/bivariate_indicators.sql
 	touch $@
 

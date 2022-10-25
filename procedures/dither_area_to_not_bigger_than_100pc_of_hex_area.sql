@@ -9,7 +9,7 @@ $$
     begin
         -- res = :start_resolution::integer;
 
-        res = 8::integer
+        res = 8::integer;
 
         while res >= 0
             loop

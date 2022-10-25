@@ -38,7 +38,7 @@ $$
                             if jsonb_path_exists(carry_out, '$.** ? (@ > 0)') then
                             execute 'insert into '|| quote_ident(table_h3) || '
                             select *
-                            from jsonb_populate_record(null::' || quote_ident(table_h3) || ', cur_row || carry_out)';
+                            from jsonb_populate_record(null::' || quote_ident(table_h3) || ', $1 || $2 )' using cur_row, carry_out;
                         end if;
                     end loop;
 

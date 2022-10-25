@@ -7,9 +7,6 @@ create table bivariate_unit_localization
     long_name text
 );
 
-alter table bivariate_unit_localization
-    set (parallel_workers = 32);
-
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('m', 'en', 'm', 'meters');
 

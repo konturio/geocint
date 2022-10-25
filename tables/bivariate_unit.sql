@@ -7,9 +7,6 @@ create table bivariate_unit
     is_base boolean
 );
 
-alter table bivariate_unit
-    set (parallel_workers = 32);
-
 insert into bivariate_unit (id, type, measurement, is_base)
 values ('m', 'metric', 'length', TRUE);
 

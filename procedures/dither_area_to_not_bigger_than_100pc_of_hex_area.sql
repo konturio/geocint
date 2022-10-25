@@ -1,17 +1,16 @@
 do
 $$
     declare
-        columns   text[];
+        -- columns   text[];
         res       integer;
         cur_row   jsonb;
         carry     jsonb;
         carry_out jsonb;
     begin
-        columns = :'columns_list'::text[];
         res = :start_resolution;
         while res >= 0
             loop
-                select jsonb_object_agg(column_name, 0) from unnest(columns) "column_name" into carry;
+                select jsonb_object_agg(column_name, 0) from unnest('columns_list'::text[]) "column_name" into carry;
                 for cur_row in (select to_jsonb(r) from :input_table r where resolution = res order by h3)
                     loop
                         -- recursive сalculation carry value for every forest type area

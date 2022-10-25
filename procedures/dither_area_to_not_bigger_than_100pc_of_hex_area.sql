@@ -7,7 +7,10 @@ $$
         carry     jsonb;
         carry_out jsonb;
     begin
-        res = :start_resolution::integer;
+        -- res = :start_resolution::integer;
+
+        select :start_resolution into res;
+
         while res >= 0
             loop
                 select jsonb_object_agg(column_name, 0) from unnest('columns_list'::text[]) "column_name" into carry;

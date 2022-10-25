@@ -7,7 +7,7 @@ $$
         carry     jsonb;
         carry_out jsonb;
     begin
-        columns = :columns_list;
+        columns = :'columns_list'::text[];
         res = :start_resolution;
         while res >= 0
             loop

@@ -1,6 +1,6 @@
 drop table if exists osm_road_segments_6_months;
 
-create table osm_road_segments_6_months as
+create table osm_road_segments_6_months tablespace evo4tb as
     select z.ordinality as id_of_segm,
         osm_id,
         8::int as resolution,

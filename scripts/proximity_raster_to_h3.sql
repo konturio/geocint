@@ -1,6 +1,6 @@
 drop table if exists :table_name_h3;
 
-create table :table_name_h3 as (
+create table :table_name_h3 tablespace evo4tb as (
     select h3,
            8 as resolution,
            :item_name

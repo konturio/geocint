@@ -11,8 +11,7 @@ create table bivariate_indicators
     update_frequency text,
     is_public boolean,
     application json,
-    unit_id text,
-    constraint fk_unit_id foreign key(unit_id) references bivariate_unit(id)
+    unit_id text
 );
 
 alter table bivariate_indicators

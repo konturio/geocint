@@ -4,8 +4,7 @@ create table bivariate_unit_localization
     unit_id   text not null primary key,
     language text,
     short_name text,
-    long_name text,
-    constraint fk_unit_id foreign key(unit_id) references bivariate_unit(id)
+    long_name text
 );
 
 alter table bivariate_unit_localization

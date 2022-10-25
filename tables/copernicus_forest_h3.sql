@@ -61,4 +61,3 @@ create table copernicus_forest_h3
 (
     like copernicus_forest_h3_in
 );
-

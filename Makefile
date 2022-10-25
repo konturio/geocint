@@ -634,7 +634,7 @@ db/table/mapswipe_hot_tasking_data: data/mid/mapswipe/ym_files/update | db/table
 
 db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 db/procedure/generate_overviews db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area | db/table ## Create h3 table with mapswipe data
 	psql -f tables/mapswipe_hot_tasking_data_h3.sql
-	psql -f procedures/dither_area_to_not_bigger_than_100pc_of_hex_area.sql -v input_table=mapswipe_hot_tasking_data_h3_in -v table_h3=mapswipe_hot_tasking_data_h3 -v columns_list='{mapswipe_area}' -v start_resolution=8
+	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('mapswipe_hot_tasking_data_h3_in', 'mapswipe_hot_tasking_data_h3', '{mapswipe_area}'::text[], 8);"
 	psql -c "drop table if exists mapswipe_hot_tasking_data_h3_in;"
 	touch $@
 

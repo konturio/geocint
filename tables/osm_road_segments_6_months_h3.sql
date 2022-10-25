@@ -1,6 +1,6 @@
 drop table if exists osm_road_segments_6_months_h3;
 
-create table osm_road_segments_6_months_h3 as (
+create table osm_road_segments_6_months_h3 tablespace evo4tb as (
     select
         resolution,
         h3,

@@ -1,5 +1,5 @@
 drop table if exists osm_roads;
-create table osm_roads as (
+create table osm_roads tablespace evo4tb as (
     select
         osm_id,
         osm_type,

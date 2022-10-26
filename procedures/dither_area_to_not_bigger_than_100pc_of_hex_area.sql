@@ -9,8 +9,6 @@ as
 
 $$
     declare
-        -- input_table text := input_table;
-        -- table_h3    text := table_h3;
         res         integer := resolution;
         cur_row     jsonb;
         carry       jsonb;
@@ -19,8 +17,11 @@ $$
 
         while res >= 0
             loop
-                select jsonb_object_agg(column_name, 0) from unnest(columns) "column_name" into carry;
 
+                -- jsonb_object_agg(any, any) - aggregates name/value pairs as a JSON object; values can be null, but not names
+                -- in this line we create jsonb from text array with column names like a  {"column1": 0, "column2": 0, "column3": 0}
+                select jsonb_object_agg(column_name, 0) from unnest(columns) "column_name" into carry;
+ 
                 for cur_row in execute '(select to_jsonb(r) from '|| quote_ident(input_table) || ' r where resolution = ' || res::text || ' order by h3)'
                     loop
                         

@@ -2030,7 +2030,15 @@ db/table/bivariate_overlays: db/table/osm_meta db/table/tile_logs | db/table ## 
 	psql -f tables/bivariate_overlays.sql
 	touch $@
 
-db/table/bivariate_indicators: db/table/stat_h3 | db/table ## Bivariate indicators properties, and attribution used in Bivariate manager.
+db/table/bivariate_unit: db/table/stat_h3 | db/table ## Bivariate units description
+	psql -f tables/bivariate_unit.sql
+	touch $@
+
+db/table/bivariate_unit_localization: db/table/bivariate_unit | db/table ## Bivariate unit localization
+	psql -f tables/bivariate_unit_localization.sql
+	touch $@
+
+db/table/bivariate_indicators: db/table/bivariate_unit_localization | db/table ## Bivariate indicators properties, and attribution used in Bivariate manager.
 	psql -f tables/bivariate_indicators.sql
 	touch $@
 
@@ -2172,7 +2180,7 @@ data/out/population/bivariate_tables_checks: db/table/bivariate_axis db/table/bi
 	touch $@
 
 data/out/population/bivariate_tables.sqld.gz: data/out/population/bivariate_tables_checks | data/out/population ## Crafting bivariate tables SQL dump
-	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | pigz" > $@__TMP
+	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays -t bivariate_unit -t bivariate_unit_localization | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@
 

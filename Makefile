@@ -361,6 +361,10 @@ db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 res
 	psql -f procedures/generate_overviews.sql
 	touch $@
 
+db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area: | db/procedure ## Dither areas to not be bigger than 100% of hexagon's area for every resolution.
+	psql -f procedures/dither_area_to_not_bigger_than_100pc_of_hex_area.sql
+	touch $@
+
 data/in/facebook: | data/in  ## Directory for Facebook data
 	mkdir -p $@
 
@@ -562,8 +566,10 @@ db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table 
 	psql -f tables/copernicus_builtup_h3.sql
 	touch $@
 
-db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table ## Forest area in km2 by types from land cover raster into h3 hexagons on 8 resolution.
+db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area | db/table ## Forest area in km2 by types from land cover raster into h3 hexagons on 8 resolution.
 	psql -f tables/copernicus_forest_h3.sql
+	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('copernicus_forest_h3_in', 'copernicus_forest_h3', '{forest_area, evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest}'::text[], 8);"
+	psql -c "drop table if exists copernicus_forest_h3_in;"
 	touch $@
 
 db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
@@ -626,8 +632,10 @@ db/table/mapswipe_hot_tasking_data: data/mid/mapswipe/ym_files/update | db/table
 	ls -S data/mid/mapswipe/ym_files/*.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln mapswipe_hot_tasking_data -nlt POLYGON --config PG_USE_COPY YES'
 	touch $@
 
-db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 db/procedure/generate_overviews | db/table ## Create h3 table with mapswipe data
+db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 db/procedure/generate_overviews db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area | db/table ## Create h3 table with mapswipe data
 	psql -f tables/mapswipe_hot_tasking_data_h3.sql
+	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('mapswipe_hot_tasking_data_h3_in', 'mapswipe_hot_tasking_data_h3', '{mapswipe_area}'::text[], 8);"
+	psql -c "drop table if exists mapswipe_hot_tasking_data_h3_in;"
 	touch $@
 
 data/in/raster/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz: | data/in/raster/VNL_v21_npp_2021_global  ## download, tile, pack and upload nightlights rasters

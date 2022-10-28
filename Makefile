@@ -2093,7 +2093,7 @@ data/out/osm_users_hex_dump_min_file_size: data/out/osm_users_hex.sql.gz| data/o
 	bash scripts/check_min_file_size.sh data/out/osm_users_hex.sql.gz 750
 	touch $@
 
-deploy/s3/test/osm_users_hex_dump: data/out/osm_users_hex.sql.gz | deploy/s3/dev ## Putting active user dump from local folder to AWS dev folder in private bucket.
+deploy/s3/test/osm_users_hex_dump: data/out/osm_users_hex.sql.gz | deploy/s3/test ## Putting active user dump from local folder to AWS dev folder in private bucket.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/osm_users_hex.sql.gz s3://geodata-eu-central-1-kontur/private/geocint/test/osm_users_hex.sql.gz.bak --profile geocint_pipeline_sender || true
 	aws s3 cp data/out/osm_users_hex.sql.gz      s3://geodata-eu-central-1-kontur/private/geocint/test/osm_users_hex.sql.gz      --profile geocint_pipeline_sender
 	aws s3 cp data/out/osm_users_hex_update_time s3://geodata-eu-central-1-kontur/private/geocint/test/osm_users_hex_update_time --profile geocint_pipeline_sender

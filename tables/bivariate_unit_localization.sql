@@ -52,4 +52,5 @@ values ('n', 'en', 'n', 'number');
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('ppl', 'en', 'ppl', 'people');
 
-vacuum full bivariate_unit_localization;
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('perc', 'en', '%', 'percentage');

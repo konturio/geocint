@@ -52,4 +52,5 @@ values ('n', 'generic', NULL, NULL);
 insert into bivariate_unit (id, type, measurement, is_base)
 values ('ppl', 'generic', NULL, NULL);
 
-vacuum full bivariate_unit;
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('perc', 'generic', NULL, NULL);

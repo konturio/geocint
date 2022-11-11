@@ -2571,3 +2571,10 @@ db/table/solar_farms_placement_suitability_synthetic_h3: db/table/power_substati
 	touch $@
 
 ### END Synthetic solar farms placement layer ###
+
+### MapAction export ###
+db/table/map_action: db/table/osm db/index/osm_tags_idx | db/table ## Landuse polygons extracted from OpenStreetMap.
+	psql -f tables/map_action.sql
+	touch $@
+
+### END MapAction export ###

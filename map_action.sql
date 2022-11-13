@@ -86,8 +86,8 @@ where
 
 -- 
 insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
-select 'dam',
-    'phys',
+select 'phys',
+    'dam',
     'dam',
     tags ->> 'waterway',
     'point',

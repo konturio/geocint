@@ -298,11 +298,12 @@ select 'phys',
     'lake',
     '',
     'polygon',
-    case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
+    geog::geometry as geom
 from osm
 where 
-    tags @> '{"water":"lake"}' or
-    tags @> '{"water":"reservoir"}';
+    (tags @> '{"water":"lake"}' or
+    tags @> '{"water":"reservoir"}')
+    and geometrytype(geog) ~* 'polygon';
 
 -- 
 insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
@@ -311,9 +312,11 @@ select 'phys',
     'river',
     '',
     'polygon',
-    case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
+    geog::geometry as geom
 from osm
-where tags @> '{"water":"river"}';
+where 
+    tags @> '{"water":"river"}'
+    and geometrytype(geog) ~* 'polygon';
 
 -- 
 insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
@@ -322,7 +325,7 @@ select 'phys',
     'river',
     '',
     'line',
-    case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
+    geog::geometry as geom
 from osm
 where 
     tags @> '{"water":"river"}'
@@ -335,8 +338,78 @@ select 'tran',
     'canal',
     '',
     'line',
-    case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
+    geog::geometry as geom
 from osm
 where 
     tags @> '{"water":"canal"}'
     and geometrytype(geog) ~* 'linestring';
+
+
+-- 
+insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
+select 'pois',
+    'rel',
+    'placeofworship',
+    '',
+    'point',
+    case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
+from osm
+where 
+    tags @> '{"amenity":"place_of_worship"}';
+
+
+-- 
+insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
+select 'pois',
+    'bor',
+    'bordercrossing',
+    '',
+    'point',
+    case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
+from osm
+where 
+    tags @> '{"border":"border_control"}';
+
+
+-- 
+insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
+select 'stle',
+    'stl',
+    'settlements',
+    '',
+    'point',
+    case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
+from osm
+where 
+    tags @> '{"place":"city"}' or
+    tags @> '{"place":"borough"}' or
+    tags @> '{"place":"town"}' or
+    tags @> '{"place":"village"}' or
+    tags @> '{"place":"hamlet"}';
+
+
+-- 
+insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
+select 'stle',
+    'stle',
+    'settlements',
+    '',
+    'point',
+    case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
+from osm
+where 
+    tags @> '{"place":"city"}' or
+    tags @> '{"place":"town"}';
+
+
+-- 
+insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
+select 'wash',
+    'toi',
+    '',
+    '',
+    'point',
+    case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
+from osm
+where 
+    tags @> '{"amenity":"toilet"}';

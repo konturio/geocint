@@ -29,7 +29,7 @@ insert into bivariate_unit_localization (unit_id, language, short_name, long_nam
 values ('nW_cm2_sr', 'en', 'nW/cm²/sr', 'watts per square centimeter per steradian');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
-values ('unixtime', 'en', 'unix_timestamp', NULL);
+values ('unixtime', 'en', 'date', 'date');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('celc_deg', 'en', '°C', 'degrees Celsius');
@@ -54,3 +54,6 @@ values ('ppl', 'en', 'ppl', 'people');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('perc', 'en', '%', 'percentage');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('fract', 'en', 'fraction', 'fraction');

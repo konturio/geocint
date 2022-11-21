@@ -11,7 +11,7 @@ insert into bivariate_unit (id, type, measurement, is_base)
 values ('m', 'metric', 'length', TRUE);
 
 insert into bivariate_unit (id, type, measurement, is_base)
-values ('km', 'metric', 'area', FALSE);
+values ('km', 'metric', 'length', FALSE);
 
 insert into bivariate_unit (id, type, measurement, is_base)
 values ('km2', 'metric', 'area', FALSE);
@@ -54,3 +54,6 @@ values ('ppl', 'generic', NULL, NULL);
 
 insert into bivariate_unit (id, type, measurement, is_base)
 values ('perc', 'generic', NULL, NULL);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('fract', 'generic', NULL, NULL);

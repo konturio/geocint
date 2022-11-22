@@ -179,13 +179,14 @@ from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors, is_public)
 select 11,
-       'Kontur Bomb Shelters Scarcity Risk',
+       'Shelters Scarcity Risk',
        'man_distance_to_bomb_shelters',
        'population',
        'population',
        'area_km2',
        false,
-       E'This map shows areas at higher risk in case of a bomb attack due to population density and bomb shelter distance ratio. \n\nLast updated  ' ||
+       E'The availability of strongly built shelters that give protection from extreme weather events or attacks is an indicator of community resilience. 
+       This map shows areas at risk of failing to protect inhabitants in case of emergencies due to the combination of high population density and long distance to the nearest bunker. \n\nLast updated  ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(103,176,100)"},{"id":"A2","color":"rgb(103,176,100)"},{"id":"A3","color":"rgb(103,176,100)"},
          {"id":"B1","color":"rgb(232,232,157)"},{"id":"B2","color":"rgb(228,185,129)"},{"id":"B3","color":"rgb(228,127,129)"},

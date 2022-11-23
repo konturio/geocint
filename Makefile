@@ -77,9 +77,6 @@ data/out/kontur_boundaries: | data/out ## Directory for Kontur Boundaries final 
 data/out/reports: | data/out ## Directory for OpenStreetMap quality reports.
 	mkdir -p $@
 
-data/out/map_action: | data/out ## Directory for export map_action.
-	mkdir -p $@
-
 data/in/gadm: | data/in ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
 	mkdir -p $@
 
@@ -2576,6 +2573,9 @@ db/table/solar_farms_placement_suitability_synthetic_h3: db/table/power_substati
 ### END Synthetic solar farms placement layer ###
 
 ### MapAction export ###
+data/out/map_action: | data/out ## Directory for export map_action.
+	mkdir -p $@
+
 db/table/map_action: db/table/osm db/index/osm_tags_idx data/out/map_action | db/table ## Create map action tables and export.
 	psql -f tables/map_action.sql
 	sh scripts/map_action_export.sh

@@ -1,4 +1,7 @@
-create table lgudyma.map_action(id bigserial primary key, 
+DROP TABLE IF EXISTS lgudyma.map_action;
+
+create table lgudyma.map_action(id bigserial primary key,
+    country_code text,
     ma_category text, 
     ma_theme text, 
     ma_tag text, 
@@ -15,8 +18,7 @@ select 'tran',
     tags ->> 'highway',
     'line',
     geog::geometry as geom
-from
-    osm
+from osm
 where
     (tags @> '{"highway":"residential"}' or
     tags @> '{"highway":"service"}' or
@@ -41,7 +43,8 @@ select 'tran',
     'line',
     geog::geometry as geom
 from osm
-where tags @> '{"highway":"motorway"}' or
+where 
+    tags @> '{"highway":"motorway"}' or
     tags @> '{"highway":"motorway_link"}' or
     tags @> '{"highway":"trunk"}' or
     tags @> '{"highway":"trunk_link"}' or
@@ -60,12 +63,10 @@ select 'tran',
     'line',
     geog::geometry as geom
 from osm
-where
-    (
-        tags @> '{"railway":"rail"}' or
-        tags @> '{"railway":"narrow_gauge"}' or
-        tags @> '{"railway":"subway"}'
-    )
+where 
+    (tags @> '{"railway":"rail"}' or
+    tags @> '{"railway":"narrow_gauge"}' or
+    tags @> '{"railway":"subway"}')
     and geometrytype(geog) ~* 'linestring';
 
 -- 
@@ -78,10 +79,8 @@ select 'tran',
     geog::geometry as geom
 from osm
 where
-    (
-        tags @> '{"railway":"subway"}' or
-        tags @> '{"railway":"tram"}'
-    )
+    (tags @> '{"railway":"subway"}' or
+    tags @> '{"railway":"tram"}')
     and geometrytype(geog) ~* 'linestring';
 
 -- 
@@ -344,7 +343,6 @@ where
     tags @> '{"water":"canal"}'
     and geometrytype(geog) ~* 'linestring';
 
-
 -- 
 insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
 select 'pois',
@@ -354,9 +352,7 @@ select 'pois',
     'point',
     case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
 from osm
-where 
-    tags @> '{"amenity":"place_of_worship"}';
-
+where tags @> '{"amenity":"place_of_worship"}';
 
 -- 
 insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
@@ -367,9 +363,7 @@ select 'pois',
     'point',
     case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
 from osm
-where 
-    tags @> '{"border":"border_control"}';
-
+where tags @> '{"border":"border_control"}';
 
 -- 
 insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
@@ -387,7 +381,6 @@ where
     tags @> '{"place":"village"}' or
     tags @> '{"place":"hamlet"}';
 
-
 -- 
 insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
 select 'stle',
@@ -401,7 +394,6 @@ where
     tags @> '{"place":"city"}' or
     tags @> '{"place":"town"}';
 
-
 -- 
 insert into lgudyma.map_action(ma_category, ma_theme, ma_tag, fclass, feature_type, geom) --, osm_minimum_tags
 select 'wash',
@@ -411,5 +403,33 @@ select 'wash',
     'point',
     case when geometrytype(geog::geometry) != 'POINT' then st_centroid(geog::geometry) else geog::geometry end as geom
 from osm
-where 
-    tags @> '{"amenity":"toilet"}';
+where tags @> '{"amenity":"toilet"}';
+
+-- 
+create index on lgudyma.map_action using gist(geom);
+
+-- 
+create table lgudyma.kontur_cnt as
+select tags ->> 'ISO3166-1:alpha3' as iso_code, geom
+from kontur_boundaries
+where kontur_admin_level = 2
+    and tags ? 'ISO3166-1:alpha3';
+    
+
+-- ~1h
+create table lgudyma.map_action_ids as 
+select iso_code, id
+from lgudyma.kontur_cnt as b, lgudyma.map_action as m
+where st_intersects(b.geom, m.geom)
+
+-- 
+with cnt as (select distinct on (tags ->> 'ISO3166-1:alpha3') tags ->> 'ISO3166-1:alpha3' as iso_code, geog
+    from public.osm
+    where tags @> '{"admin_level":"2"}'
+        and tags ? 'ISO3166-1:alpha3'
+        and geometrytype(geog) ~* 'polygon'
+    order by tags ->> 'ISO3166-1:alpha3', osm_id)
+update lgudyma.map_action
+set country_code = iso_code
+from cnt
+where st_intersects(geom, geog::geometry)

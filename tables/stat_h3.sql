@@ -567,9 +567,9 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(wc_temp.worldclim_min_temperature, 0))::float as worldclim_min_temperature,
            (coalesce(wc_temp.worldclim_max_temperature, 0))::float as worldclim_max_temperature,
            (coalesce((wc_temp.worldclim_max_temperature - wc_temp.worldclim_min_temperature) , 0))::float as worldclim_amp_temperature,
-           (coalesce(pwprox.powerlines_proximity_m, 0))::float as powerlines_proximity_m,
-           (coalesce(popprox.populated_areas_proximity_m,0))::float as populated_areas_proximity_m,
-           (coalesce(pwstatprox.power_substations_proximity_m,0))::float as power_substations_proximity_m,
+           (coalesce(prox.powerlines_proximity_m, 0))::float as powerlines_proximity_m,
+           (coalesce(prox.populated_areas_proximity_m,0))::float as populated_areas_proximity_m,
+           (coalesce(prox.power_substations_proximity_m,0))::float as power_substations_proximity_m,
            (coalesce(solar_suitability.solar_farms_placement_suitability,0))::float as solar_farms_placement_suitability,
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
@@ -584,9 +584,7 @@ create table stat_h3 tablespace evo4tb as (
          left join global_solar_atlas_h3 gsa on (a.h3 = gsa.h3)
          left join worldclim_temperatures_h3 wc_temp on (a.h3 = wc_temp.h3)
          left join mapswipe_hot_tasking_data_h3 ms on (a.h3 = ms.h3)
-         left join powerlines_proximity_h3 pwprox on (a.h3 = pwprox.h3)
-         left join populated_areas_proximity_h3 popprox on (a.h3 = popprox.h3)
-         left join power_substations_proximity_h3 pwstatprox on (a.h3 = pwstatprox.h3)
+         left join proximities_h3 prox on (a.h3 = prox.h3)
          left join solar_farms_placement_suitability_synthetic_h3 solar_suitability on (a.h3 = solar_suitability.h3)
 );
 drop table stat_h3_in;

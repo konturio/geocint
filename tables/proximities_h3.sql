@@ -2,6 +2,7 @@ drop table if exists proximities_h3;
 
 create table proximities_h3 as
     (select a.h3,
+            a.resolution,
             a.powerlines_proximity_m,
             b.populated_areas_proximity_m,
             c.power_substations_proximity_m

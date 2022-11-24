@@ -354,3 +354,12 @@ set
     p75 = 0.5,
     max = 1.0
 where numerator = 'waste_basket_coverage_area_km2' and denominator = 'populated_area_km2';
+
+update bivariate_axis
+set
+    label = 'Distance to shelters (km)',
+    p25 = 3.0,
+    p75 = 10.0
+where
+      numerator = 'man_distance_to_bomb_shelters'
+  and denominator = 'population';

@@ -2573,20 +2573,27 @@ db/table/solar_farms_placement_suitability_synthetic_h3: db/table/power_substati
 ### END Synthetic solar farms placement layer ###
 
 ### MapAction per country ###
-data/in/mapaction-country: data ## Dir for export
+data/in/mapaction-country: data ## Dir for extract from planet
 	mkdir -p $@
 
-data/in/mapaction-country/osm-extract.osm.pbf: data/in/mapaction-country ## Change URL in scripts/osmium-extract.sh to download 
-	bash scripts/osmium-extract.sh
-	psql -c "drop table if exists lgudyma.osm_cnt;"
-	# # Pin osmium to CPU1 and disable HT on it
-	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=800 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=800 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=800 OSMIUM_MAX_WORK_QUEUE_SIZE=100 osmium export -i dense_mmap_array -c /home/gis/geocint/osmium.config.json -f pg $@ -v --progress | psql -1 -c 'create table lgudyma.osm_cnt(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table lgudyma.osm_cnt set (fillfactor=100); copy lgudyma.osm_cnt from stdin freeze;'
-	psql -c "alter table lgudyma.osm_cnt set (parallel_workers = 32);"
-	psql -c "create index on lgudyma.osm_cnt(tags);"
+data/out/mapaction-country: data ## Dir for export
+	mkdir -p $@
+
+data/in/mapaction-country/osm-extract.osm.pbf: data/planet-latest-updated.osm.pbf data/in/mapaction-country ## Change URL in scripts/osmium-extract.sh what to download
+	bash scripts/mapaction_osmium_extract.sh
 	touch $@
 
-db/table/map_action-country: data/in/mapaction-country/osm-extract.osm.pbf | db/table ## Create map action tables and export.
-	psql -f map_action.sql
+db/table/map_action-country: data/in/mapaction-country/osm-extract.osm.pbf | db/table ## Create map action tables in database
+	psql -c "drop table if exists lgudyma.osm_cnt;"
+	# # Pin osmium to CPU1 and disable HT on it
+	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=800 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=800 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=800 OSMIUM_MAX_WORK_QUEUE_SIZE=100 osmium export -i dense_mmap_array -c /home/gis/geocint/osmium.config.json -f pg data/in/mapaction-country/osm-extract.osm.pbf -v --progress | psql -1 -c 'create table lgudyma.osm_cnt(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table lgudyma.osm_cnt set (fillfactor=100); copy lgudyma.osm_cnt from stdin freeze;'
+	psql -c "alter table lgudyma.osm_cnt set (parallel_workers = 32);"
+	psql -c "create index on lgudyma.osm_cnt using gin (tags);"
+	psql -f mapaction.sql
+	touch $@
+
+data/out/mapaction-country/mapaction-country: db/table/map_action-country data/out/mapaction-country ## Export from db to SHP and JSON
+	sh scripts/mapaction_export.sh
 	touch $@
 
 ### END MapAction per country ###

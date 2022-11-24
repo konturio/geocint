@@ -2571,3 +2571,8 @@ db/table/solar_farms_placement_suitability_synthetic_h3: db/table/power_substati
 	touch $@
 
 ### END Synthetic solar farms placement layer ###
+
+### MapAction per country ###
+
+
+### END MapAction per country ###

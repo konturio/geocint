@@ -16,5 +16,7 @@ create table land_polygons_h3_r8 as (
     group by 1, 2, 3
 );
 
+create index on land_polygons_h3_r8 (h3);
+
 -- Remove temporary table
 drop table if exists land_polygons_h3_r8_in;

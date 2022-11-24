@@ -17,20 +17,20 @@ with gsa_ghi as (select gsa.h3         as h3,
                           else (1 - ((gebco.avg_slope_gebco_2022 - 0) / (4 - 0))) end slope
                from gebco_2022_h3 gebco),
 
-     powerlines_prox as (select powl_prox_tab.h3 as                                                               h3,
+     powerlines_prox as (select prox_tab.h3 as                                                               h3,
                                 case
-                                    when powl_prox_tab.powerlines_proximity_m < 100 then 1
-                                    when powl_prox_tab.powerlines_proximity_m > 15000 then 0
-                                    else (1 - ((powl_prox_tab.powerlines_proximity_m - 100) / (15000 - 100))) end powl_prox
-                         from powerlines_proximity_h3 powl_prox_tab),
+                                    when prox_tab.powerlines_proximity_m < 100 then 1
+                                    when prox_tab.powerlines_proximity_m > 15000 then 0
+                                    else (1 - ((prox_tab.powerlines_proximity_m - 100) / (15000 - 100))) end powl_prox
+                         from proximities_h3 prox_tab),
 
-     powersubstations_prox as (select pwstat_prox_tab.h3 as                                                                  h3,
+     powersubstations_prox as (select prox_tab.h3 as                                                                  h3,
                                       case
-                                          when pwstat_prox_tab.power_substations_proximity_m < 100 then 1
-                                          when pwstat_prox_tab.power_substations_proximity_m > 50000 then 0
+                                          when prox_tab.power_substations_proximity_m < 100 then 1
+                                          when prox_tab.power_substations_proximity_m > 50000 then 0
                                           else (1 -
-                                                ((pwstat_prox_tab.power_substations_proximity_m - 100) / (50000 - 100))) end pwstat_prox
-                               from power_substations_proximity_h3 pwstat_prox_tab),
+                                                ((prox_tab.power_substations_proximity_m - 100) / (50000 - 100))) end pwstat_prox
+                               from proximities_h3 prox_tab),
 
 
 -- constraints
@@ -54,24 +54,24 @@ with gsa_ghi as (select gsa.h3         as h3,
                                      else 1 end constraint_slope
                           from gebco_2022_h3 gebco),
 
-     constraint_popprox as (select pop_prox.h3 as h3,
+     constraint_popprox as (select prox_tab.h3 as h3,
                                    case
-                                       when pop_prox.populated_areas_proximity_m < 500 then 0
-                                       when pop_prox.populated_areas_proximity_m > 50000 then 0
+                                       when prox_tab.populated_areas_proximity_m < 500 then 0
+                                       when prox_tab.populated_areas_proximity_m > 50000 then 0
                                        else 1 end constraint_popprox
-                            from populated_areas_proximity_h3 pop_prox),
+                            from proximities_h3 prox_tab),
 
-     constraint_powerlines as (select powl_prox_tab.h3 as h3,
+     constraint_powerlines as (select prox_tab.h3 as h3,
                                       case
-                                          when powl_prox_tab.powerlines_proximity_m > 15000 then 0
+                                          when prox_tab.powerlines_proximity_m > 15000 then 0
                                           else 1 end      constraint_powerlines
-                               from powerlines_proximity_h3 powl_prox_tab),
+                               from proximities_h3 prox_tab),
 
-     constraint_powersubstations as (select pwstat_prox_tab.h3 as h3,
+     constraint_powersubstations as (select prox_tab.h3 as h3,
                                             case
-                                                when pwstat_prox_tab.power_substations_proximity_m > 50000 then 0
+                                                when prox_tab.power_substations_proximity_m > 50000 then 0
                                                 else 1 end        constraint_powersubstations
-                                     from power_substations_proximity_h3 pwstat_prox_tab)
+                                     from proximities_h3 prox_tab)
 
      select gsa_ghi.h3                                                                as h3,
        gsa_ghi.resolution                                                        as resolution,

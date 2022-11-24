@@ -357,7 +357,7 @@ where numerator = 'waste_basket_coverage_area_km2' and denominator = 'populated_
 
 update bivariate_axis
 set
-    label = 'Distance to bomb shelters (km)',
+    label = 'Distance to shelters (km)',
     p25 = 3.0,
     p75 = 10.0
 where

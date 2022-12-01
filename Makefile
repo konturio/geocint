@@ -21,7 +21,7 @@ include runner_make osm_make
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/uploads/upload_dev deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -63,6 +63,9 @@ data/out/kontur_boundaries: | data/out ## Directory for Kontur Boundaries final 
 	mkdir -p $@
 
 data/out/reports: | data/out ## Directory for OpenStreetMap quality reports.
+	mkdir -p $@
+
+data/out/csv: | data/out ## Directory for csv dumps of data tables
 	mkdir -p $@
 
 data/in/gadm: | data/in ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
@@ -111,6 +114,9 @@ deploy/test: | deploy ## folder for test deployment footprints.
 	mkdir -p $@
 
 deploy/dev: | deploy ## folder for dev deployment footprints.
+	mkdir -p $@
+
+deploy/dev/uploads: | deploy/dev ## folder for layer uploading to Insights API footprints
 	mkdir -p $@
 
 deploy/geocint: | deploy ## We use geocint as a GIS development server.
@@ -2875,3 +2881,42 @@ data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_upda
 	touch $@
 
 ### End update customviz using hdxloader ###
+
+### CSV Imports ###
+
+data/out/csv/osm_object_count_h3.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## CSV export of OSM objects count
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh osm_object_count_grid_h3 count $@
+	touch $@
+
+data/out/csv/population_h3.csv: db/table/kontur_population_h3 | data/out/csv ## CSV export of Kontur population dataset
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh kontur_population_h3 population $@
+	touch $@
+
+data/out/csv/highway_length_h3.csv: db/table/osm_road_segments_h3 | data/out/csv ## CSV export of OSM highway length
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh osm_road_segments_h3 highway_length $@
+	touch $@
+
+data/out/csv/elevation_h3.csv: db/table/gebco_2022_h3 | data/out/csv ## CSV export of Gebco elevation data
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh gebco_2022_h3 avg_elevation_gebco_2022 $@
+	touch $@
+
+### DEV - CSV Uploads ###
+
+deploy/dev/uploads/osm_object_count_h3: data/out/csv/osm_object_count_h3.csv | deploy/dev/uploads ## Upload OSM objects count to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_object_count_h3.csv "count" "OSM: objects count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World", "daily", "n"
+	touch $@
+
+deploy/dev/uploads/population_h3: data/out/csv/population_h3.csv | deploy/dev/uploads ## Upload Kontur population dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population_h3.csv "population" "Population" "[["unimportant"], ["important"]]" true true "[\"© Kontur https://kontur.io\",\"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps\",\"Dataset: Schiavina, Marcello; Freire, Sergio; MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio; MacManus, Kytt; Pesaresi, Martino; Doxsey-Whitfield, Erin; Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World; Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\",\"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\",\"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\",\"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz\",\"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\",\"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org\",\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data. The datasets detailed methodology is available here: https://data.humdata.org/dataset/kontur-population-dataset" "World" "daily" "ppl"
+	touch $@
+
+deploy/dev/uploads/highway_length_h3: data/out/csv/highway_length_h3.csv | deploy/dev/uploads ## Upload OSM highway length dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_h3.csv "highway_length" "OSM: road length" "[[\"bad\"], [\"good\"]]" true true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total length of roads in a given area according to OpenStreetMap." "World" "daily" "km"
+	touch $@
+
+deploy/dev/uploads/elevation_h3: data/out/csv/elevation_h3.csv | deploy/dev/uploads ## Upload Gebco elevation dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_h3.csv "avg_elevation_gebco_2022" "Elevation (avg)" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface elevation in meters." "World" "static" "m"
+	touch $@
+
+deploy/dev/uploads/upload_dev: deploy/dev/uploads/osm_object_count_h3 deploy/dev/uploads/population_h3 deploy/dev/uploads/highway_length_h3 deploy/dev/uploads/elevation_h3 | deploy/dev/uploads ## Control of layer uplodings to Insigths API for DEV
+	touch $@

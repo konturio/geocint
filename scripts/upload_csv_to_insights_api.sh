@@ -1,12 +1,16 @@
 #!/bin/bash
 # $1 - prod, test or dev
-# $2 - csv file path
-# $3 - layer id 
-# $4 - layer label
-# $5 - layer direction
-# $6 - layer isBase
-# $7 - layer isPublic
-# $8 - layer copyrights
+# $2 - csv file path (data/trees.csv)
+# $3 - layer id ("trees")
+# $4 - layer label ("layer with trees")
+# $5 - layer direction ("[[\"neutral\"], [\"neutral\"]]")
+# $6 - layer isBase (true)
+# $7 - layer isPublic (false)
+# $8 - layer copyrights ("[\"Kontur.io\",\"OSM Contributors\"]")
+# $9 - layer description ("very cool trees layer produced by Kontur")
+# $10 - layer coverage ("World")
+# $11 - layer update frequency ("daily")
+# $12 - layer unit_id ("n")
 # if properly runned, we have EVENTAPI_USERNAME and EVENTAPI_PASSWORD variable in environment
 # define endpoints
 case $1 in
@@ -47,8 +51,12 @@ if [ "$8" == "null" ]; then
 else
   layer_copyrights=$8 #(sed 's/"/\\"/g' <<<"$8")
 fi
+layer_description="\"$9\""
+layer_coverage="\"${10}\""
+layer_update_freq="\"${11}\""
+layer_unit_id="\"${12}\""
 
-parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}}"
+parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}}"
 curl_request="curl -w "\":::\"%{http_code}" --location --request POST ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$2\"'"
 
 # Upload file
@@ -60,6 +68,12 @@ if [[ -z $request_result ]]; then
 fi
 
 response_status=$(sed 's/.*:::\(.*\)/\1/' <<< $request_result)
+response_status_length=${#response_status}
+
+if [ $response_status_length != 3 ]; then
+  echo "Error. Failed to upload layer. Message: $response_status"
+  exit 1
+fi
 
 if [ $response_status != 200 ]; then
   echo "Error. Failed to upload layer. Status code: $response_status"

@@ -5,4 +5,4 @@
 table_name=$1
 indicator_value=$2
 output_csv=$3
-psql -q -X -c "copy (select h3, ${indicator_value} from ${table_name}) to stdout with delimiter ',' csv;" > ${output_csv}
+psql -q -X -c "copy (select h3, ${indicator_value} from ${table_name} where h3 is not null and ${indicator_value} is not null) to stdout with delimiter ',' csv;" > ${output_csv}

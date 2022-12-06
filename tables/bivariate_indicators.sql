@@ -460,7 +460,8 @@ values ('residential', 'Percentage of permanent population', jsonb_build_array(
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true
-where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2', 'one', 'total_road_length');
+where param_id in ('population', 'area_km2', 'one'); -- experiment with disabling three base indicators/denominators
+-- where param_id in ('population', 'total_building_count', 'area_km2', 'populated_area_km2', 'one', 'total_road_length');
 
 --- this is an ugly hack to enable Parallel Seq Scan on bivariate_indicators
 -- Postgres parallel seq scan works on page level, so we can't really get it to run more workers than there are

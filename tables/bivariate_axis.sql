@@ -28,3 +28,8 @@ create table bivariate_axis as (
          bivariate_indicators as b
     where b.is_base and a.param_id != b.param_id
 );
+
+-- During experiment we disabling three base indicators, but we still want to calculate to overlayes based on two of them, so we should manually add some pairs to bivariate_axis
+insert into bivariate_axis (numerator, denominator,min_label,p25_label,p75_label,max_label,label)
+values ('waste_basket_coverage_area_km2', 'populated_area_km2', '','','','',''),
+       ('highway_length', 'total_road_length', '','','','','')

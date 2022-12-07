@@ -493,10 +493,6 @@ tables.countries = osm2pgsql.define_relation_table('countries', {
     { column = 'geom', type = 'geometry' },
 })
 
-boundary_id_lang = {}
-boundary_id_lang[148838] = "name:en" -- United States
-boundary_id_lang[80500] = "name:en" -- Australia
-
 function make_check_in_list_func(list)
     local h = {}
     for _, k in ipairs(list) do
@@ -687,12 +683,12 @@ function osm2pgsql.process_relation(object)
     end
     object.tags.type = nil
 
-    if boundary_id_lang[object.id] ~= nil then
+    if object.tags.default_language ~= nil and object.tags.default_language ~= '' then
         tables.countries:add_row({
-            geom = { create = 'area' },
-            name = object.tags.name,
-            lang = boundary_id_lang[object.id]
-        })
+                geom = { create = 'area' },
+                name = object.tags.name,
+                lang = 'name:' .. object.tags.default_language
+            })
     end
 
     local output

@@ -96,9 +96,9 @@ db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql | db/table
 	touch $@
 
 db/table/osm2pgsql_fill_lang: db/table/osm2pgsql_with_boundaries | db/table ## fill missing name:[lang]
-	psql -c "with cte as (select distinct on (p.osm_id) p.osm_id, c.lang from planet_osm_point p join countries c on ST_Intersects(p.way, c.geom) where not tags ? c.lang and p.name is not null order by p.osm_id, c.geom asc) update planet_osm_point set tags = tags || hstore(cte.lang, name) from cte where cte.osm_id = planet_osm_point.osm_id;"
-	psql -c "with cte as (select distinct on (p.osm_id) p.osm_id, c.lang from planet_osm_line p join countries c on ST_Intersects(p.way, c.geom) where not tags ? c.lang and p.name is not null order by p.osm_id, c.geom asc) update planet_osm_line set tags = tags || hstore(cte.lang, name) from cte where cte.osm_id = planet_osm_line.osm_id;"
-	psql -c "with cte as (select distinct on (p.osm_id) p.osm_id, c.lang from planet_osm_polygon p join countries c on ST_Intersects(p.way, c.geom) where not tags ? c.lang and p.name is not null order by p.osm_id, c.geom asc) update planet_osm_polygon set tags = tags || hstore(cte.lang, name) from cte where cte.osm_id = planet_osm_polygon.osm_id;"
+	psql -c "with cte as (select osm_id, lang from (select distinct on (p.osm_id) p.osm_id, tags, p.name, lang from planet_osm_point p join countries c on ST_Intersects(p.way, c.geom) where p.name is not null order by p.osm_id, c.geom) t where not tags ? lang) update planet_osm_point set tags = tags || hstore(cte.lang, name) from cte where cte.osm_id = planet_osm_point.osm_id;"
+	psql -c "with cte as (select osm_id, lang from (select distinct on (p.osm_id) p.osm_id, tags, p.name, lang from planet_osm_line p join countries c on ST_Intersects(p.way, c.geom) where p.name is not null order by p.osm_id, c.geom) t where not tags ? lang) update planet_osm_line set tags = tags || hstore(cte.lang, name) from cte where cte.osm_id = planet_osm_line.osm_id;"
+	psql -c "with cte as (select osm_id, lang from (select distinct on (p.osm_id) p.osm_id, tags, p.name, lang from planet_osm_polygon p join countries c on ST_Intersects(p.way, c.geom) where p.name is not null order by p.osm_id, c.geom) t where not tags ? lang) update planet_osm_polygon set tags = tags || hstore(cte.lang, name) from cte where cte.osm_id = planet_osm_polygon.osm_id;"
 	touch $@
 
 db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries

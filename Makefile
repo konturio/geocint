@@ -2317,7 +2317,7 @@ db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db
 	psql -c 'create index disaster_event_episodes_episode_type_episode_endedat_idx on disaster_event_episodes (episode_type, episode_endedat)'
 	touch $@
 
-db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3_r8 | db/table  ## hexagonify kontur-public event geometries
+db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3_r8 db/table/osm | db/table  ## hexagonify kontur-public event geometries
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
 

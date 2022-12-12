@@ -2422,17 +2422,23 @@ data/mid/worldclim/max_temp/unzip: data/in/raster/worldclim/wc2.1_30s_tmax.zip |
 ## Worldclim temperatures - Calculate mean from averages
 data/mid/worldclim/avg_temp/average_temperatures.tif: data/mid/worldclim/avg_temp/unzip | data/mid/worldclim/avg_temp ## Calculate average yearly temperature from Worldclim montly means
 	rm -f data/mid/worldclim/avg_temp/average_temperatures.tif
-	gdal_calc.py -A data/mid/worldclim/avg_temp/wc2.1_30s_tavg_01.tif -B data/mid/worldclim/avg_temp/wc2.1_30s_tavg_02.tif -C data/mid/worldclim/avg_temp/wc2.1_30s_tavg_03.tif -D data/mid/worldclim/avg_temp/wc2.1_30s_tavg_04.tif -E data/mid/worldclim/avg_temp/wc2.1_30s_tavg_05.tif -F data/mid/worldclim/avg_temp/wc2.1_30s_tavg_06.tif -G data/mid/worldclim/avg_temp/wc2.1_30s_tavg_07.tif -H data/mid/worldclim/avg_temp/wc2.1_30s_tavg_08.tif -I data/mid/worldclim/avg_temp/wc2.1_30s_tavg_09.tif -J data/mid/worldclim/avg_temp/wc2.1_30s_tavg_10.tif -K data/mid/worldclim/avg_temp/wc2.1_30s_tavg_11.tif -L data/mid/worldclim/avg_temp/wc2.1_30s_tavg_12.tif --outfile=data/mid/worldclim/avg_temp/average_temperatures.tif --calc="numpy.mean((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	gdal_calc.py -A data/mid/worldclim/avg_temp/wc2.1_30s_tavg_01.tif -B data/mid/worldclim/avg_temp/wc2.1_30s_tavg_02.tif -C data/mid/worldclim/avg_temp/wc2.1_30s_tavg_03.tif -D data/mid/worldclim/avg_temp/wc2.1_30s_tavg_04.tif -E data/mid/worldclim/avg_temp/wc2.1_30s_tavg_05.tif -F data/mid/worldclim/avg_temp/wc2.1_30s_tavg_06.tif -G data/mid/worldclim/avg_temp/wc2.1_30s_tavg_07.tif -H data/mid/worldclim/avg_temp/wc2.1_30s_tavg_08.tif -I data/mid/worldclim/avg_temp/wc2.1_30s_tavg_09.tif -J data/mid/worldclim/avg_temp/wc2.1_30s_tavg_10.tif -K data/mid/worldclim/avg_temp/wc2.1_30s_tavg_11.tif -L data/mid/worldclim/avg_temp/wc2.1_30s_tavg_12.tif --outfile=data/mid/worldclim/avg_temp/average_temperatures_in.tif --calc="numpy.mean((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	gdalwarp data/mid/worldclim/avg_temp/average_temperatures_in.tif -co compress=deflate -tr 0.005 0.005 $@
+	rm -f data/mid/worldclim/avg_temp/average_temperatures_in.tif
 
 ## Worldclim temperatures - Calculate min of mins
 data/mid/worldclim/min_temp/minimal_temperatures.tif: data/mid/worldclim/min_temp/unzip | data/mid/worldclim/min_temp ## Calculate minimal yearly temperature from Worldclim montly minimals
 	rm -f data/mid/worldclim/min_temp/minimal_temperatures.tif
-	gdal_calc.py -A data/mid/worldclim/min_temp/wc2.1_30s_tmin_01.tif -B data/mid/worldclim/min_temp/wc2.1_30s_tmin_02.tif -C data/mid/worldclim/min_temp/wc2.1_30s_tmin_03.tif -D data/mid/worldclim/min_temp/wc2.1_30s_tmin_04.tif -E data/mid/worldclim/min_temp/wc2.1_30s_tmin_05.tif -F data/mid/worldclim/min_temp/wc2.1_30s_tmin_06.tif -G data/mid/worldclim/min_temp/wc2.1_30s_tmin_07.tif -H data/mid/worldclim/min_temp/wc2.1_30s_tmin_08.tif -I data/mid/worldclim/min_temp/wc2.1_30s_tmin_09.tif -J data/mid/worldclim/min_temp/wc2.1_30s_tmin_10.tif -K data/mid/worldclim/min_temp/wc2.1_30s_tmin_11.tif -L data/mid/worldclim/min_temp/wc2.1_30s_tmin_12.tif --outfile=data/mid/worldclim/min_temp/minimal_temperatures.tif --calc="numpy.min((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	gdal_calc.py -A data/mid/worldclim/min_temp/wc2.1_30s_tmin_01.tif -B data/mid/worldclim/min_temp/wc2.1_30s_tmin_02.tif -C data/mid/worldclim/min_temp/wc2.1_30s_tmin_03.tif -D data/mid/worldclim/min_temp/wc2.1_30s_tmin_04.tif -E data/mid/worldclim/min_temp/wc2.1_30s_tmin_05.tif -F data/mid/worldclim/min_temp/wc2.1_30s_tmin_06.tif -G data/mid/worldclim/min_temp/wc2.1_30s_tmin_07.tif -H data/mid/worldclim/min_temp/wc2.1_30s_tmin_08.tif -I data/mid/worldclim/min_temp/wc2.1_30s_tmin_09.tif -J data/mid/worldclim/min_temp/wc2.1_30s_tmin_10.tif -K data/mid/worldclim/min_temp/wc2.1_30s_tmin_11.tif -L data/mid/worldclim/min_temp/wc2.1_30s_tmin_12.tif --outfile=data/mid/worldclim/min_temp/minimal_temperatures_in.tif --calc="numpy.min((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	gdalwarp data/mid/worldclim/avg_temp/minimal_temperatures_in.tif -co compress=deflate -tr 0.005 0.005 $@
+	rm -f data/mid/worldclim/min_temp/minimal_temperatures_in.tif
 
 ## Worldclim temperatures - Calculate max of maxs
 data/mid/worldclim/max_temp/maximal_temperatures.tif: data/mid/worldclim/max_temp/unzip | data/mid/worldclim/max_temp ## Calculate maximal yearly temperature from Worldclim montly maximals
 	rm -f data/mid/worldclim/max_temp/maximal_temperatures.tif
-	gdal_calc.py -A data/mid/worldclim/max_temp/wc2.1_30s_tmax_01.tif -B data/mid/worldclim/max_temp/wc2.1_30s_tmax_02.tif -C data/mid/worldclim/max_temp/wc2.1_30s_tmax_03.tif -D data/mid/worldclim/max_temp/wc2.1_30s_tmax_04.tif -E data/mid/worldclim/max_temp/wc2.1_30s_tmax_05.tif -F data/mid/worldclim/max_temp/wc2.1_30s_tmax_06.tif -G data/mid/worldclim/max_temp/wc2.1_30s_tmax_07.tif -H data/mid/worldclim/max_temp/wc2.1_30s_tmax_08.tif -I data/mid/worldclim/max_temp/wc2.1_30s_tmax_09.tif -J data/mid/worldclim/max_temp/wc2.1_30s_tmax_10.tif -K data/mid/worldclim/max_temp/wc2.1_30s_tmax_11.tif -L data/mid/worldclim/max_temp/wc2.1_30s_tmax_12.tif --outfile=data/mid/worldclim/max_temp/maximal_temperatures.tif --calc="numpy.max((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	gdal_calc.py -A data/mid/worldclim/max_temp/wc2.1_30s_tmax_01.tif -B data/mid/worldclim/max_temp/wc2.1_30s_tmax_02.tif -C data/mid/worldclim/max_temp/wc2.1_30s_tmax_03.tif -D data/mid/worldclim/max_temp/wc2.1_30s_tmax_04.tif -E data/mid/worldclim/max_temp/wc2.1_30s_tmax_05.tif -F data/mid/worldclim/max_temp/wc2.1_30s_tmax_06.tif -G data/mid/worldclim/max_temp/wc2.1_30s_tmax_07.tif -H data/mid/worldclim/max_temp/wc2.1_30s_tmax_08.tif -I data/mid/worldclim/max_temp/wc2.1_30s_tmax_09.tif -J data/mid/worldclim/max_temp/wc2.1_30s_tmax_10.tif -K data/mid/worldclim/max_temp/wc2.1_30s_tmax_11.tif -L data/mid/worldclim/max_temp/wc2.1_30s_tmax_12.tif --outfile=data/mid/worldclim/max_temp/maximal_temperatures_in.tif --calc="numpy.max((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	gdalwarp data/mid/worldclim/avg_temp/maximal_temperatures_in.tif -co compress=deflate -tr 0.005 0.005 $@
+	rm -f data/mid/worldclim/min_temp/maximal_temperatures_in.tif
 
 ## Worldclim temperatures - download rasters to database
 
@@ -2454,7 +2460,7 @@ db/table/worldclim_max_temp: data/mid/worldclim/max_temp/maximal_temperatures.ti
 ## Worldclim temperatures - create all tables and unite them to one
 db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldclim_min_temp db/table/worldclim_max_temp db/procedure/generate_overviews | db/table ## Worldclim temperatures - create summary H3 table
 	psql -f tables/worldclim_temperatures_h3.sql
-	psql -c "call generate_overviews('worldclim_temperatures_h3', '{worldclim_avg_temperature, worldclim_min_temperature, worldclim_max_temperature}'::text[], '{avg, min, max}'::text[], 8);"
+	psql -c "call generate_overviews('worldclim_temperatures_h3', '{worldclim_avg_temperature, worldclim_min_temperature, worldclim_max_temperature, worldclim_amp_temperature}'::text[], '{avg, min, max, max}'::text[], 8);"
 	psql -c "create index on worldclim_temperatures_h3 (h3);"
 	touch $@
 

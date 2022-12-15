@@ -8,6 +8,7 @@ cleanup() {
 sudo pip3 install slackclient
 sudo pip3 install https://github.com/konturio/make-profiler/archive/master.zip
 sudo pip3 install pandas
+sudo pip3 install hdx-python-api
 
 # Terminate script after failed command execution
 set -e

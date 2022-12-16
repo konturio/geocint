@@ -259,34 +259,38 @@ data/basemap/metadata/dev/style_day_en.json: styles/ninja.mapcss kothic/src/koma
 data/basemap/metadata/dev/style_ninja.json: kothic/src/komap.py data/basemap/metadata/dev/style_day_en.json | data/basemap/metadata/dev ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/dev/style_day_en.json > $@
 
-data/basemap/metadata/dev/style_ninja_es.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for Geocint server. (language=es)
-	python2 kothic/src/komap.py \
-		--attribution-text "© OpenStreetMap" \
-		--minzoom 0 \
-		--maxzoom 24 \
-		--renderer=mapbox-style-language \
-		--stylesheet styles/ninja.mapcss \
-		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://test-api02.konturlabs.com/layers/tiles/basemap/sprite \
-		--locale es \
-		--label-fallback "int_name,name" \
-		> $@
+data/basemap/metadata/dev/style_ninja_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for Latin like languages.
+	for lang in en es de uk id ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://test-api02.konturlabs.com/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			--label-fallback "int_name,name" \
+			> data/basemap/metadata/dev/style_ninja_$$lang.json; \
+	done
 
-data/basemap/metadata/dev/style_ninja_ar.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for Geocint server. (language=ar)
-	python2 kothic/src/komap.py \
-		--attribution-text "© OpenStreetMap" \
-		--minzoom 0 \
-		--maxzoom 24 \
-		--renderer=mapbox-style-language \
-		--stylesheet styles/ninja.mapcss \
-		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://test-api02.konturlabs.com/layers/tiles/basemap/sprite \
-		--locale ar \
-		> $@
+data/basemap/metadata/dev/style_ninja_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for NON Latin like languages.
+	for lang in ar th ko ja ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://test-api02.konturlabs.com/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			> data/basemap/metadata/dev/style_ninja_$$lang.json; \
+	done
 
 data/basemap/metadata/test/style_day_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/test ## Generating of Ninja style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
@@ -424,7 +428,7 @@ deploy/s3/basemap.mbtiles: data/basemap.mbtiles | deploy/s3 ## deploy basemap.mb
 	aws s3 cp data/basemap.mbtiles $(S3_BASEMAP_PATH)
 	touch $@
 
-deploy/dev/basemap: data/basemap/metadata/dev/style_night_ru.json data/basemap/metadata/dev/style_night_en.json data/basemap/metadata/dev/style_ninja.json data/basemap/metadata/dev/style_ninja_es.json data/basemap/metadata/dev/style_ninja_ar.json data/basemap/metadata/dev/style_day.json data/basemap/metadata/dev/style_day_en.json data/basemap/metadata/dev/style_night.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/dev ## Transfer and deploy tar archive with tiles, glyphs and styles on DEV server.
+deploy/dev/basemap: data/basemap/metadata/dev/style_night_ru.json data/basemap/metadata/dev/style_night_en.json data/basemap/metadata/dev/style_ninja.json data/basemap/metadata/dev/style_ninja_latin_languages.json data/basemap/metadata/dev/style_ninja_non_latin_languages.json data/basemap/metadata/dev/style_day.json data/basemap/metadata/dev/style_day_en.json data/basemap/metadata/dev/style_night.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/dev ## Transfer and deploy tar archive with tiles, glyphs and styles on DEV server.
 	aws s3 cp --recursive data/basemap/metadata/dev s3://basemap-locker01/DEV/styles
 	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/DEV/glyphs
 	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/DEV/sprite

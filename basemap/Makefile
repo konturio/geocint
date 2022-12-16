@@ -292,6 +292,72 @@ data/basemap/metadata/dev/style_ninja_non_latin_languages.json: styles/ninja.map
 			> data/basemap/metadata/dev/style_ninja_$$lang.json; \
 	done
 
+data/basemap/metadata/test/style_ninja_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for Latin like languages.
+	for lang in en es de uk id ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://test-api.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://test-api.konturlabs.com/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			--label-fallback "int_name,name" \
+			> data/basemap/metadata/test/style_ninja_$$lang.json; \
+	done
+
+data/basemap/metadata/test/style_ninja_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for NON Latin like languages.
+	for lang in ar th ko ja ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://test-api.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://test-api.konturlabs.com/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			> data/basemap/metadata/test/style_ninja_$$lang.json; \
+	done
+
+data/basemap/metadata/prod/style_ninja_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for Latin like languages.
+	for lang in en es de uk id ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			--label-fallback "int_name,name" \
+			> data/basemap/metadata/prod/style_ninja_$$lang.json; \
+	done
+
+data/basemap/metadata/prod/style_ninja_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for NON Latin like languages.
+	for lang in ar th ko ja ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			> data/basemap/metadata/prod/style_ninja_$$lang.json; \
+	done
+
 data/basemap/metadata/test/style_day_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/test ## Generating of Ninja style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
 		--attribution-text "© OpenStreetMap" \
@@ -434,13 +500,13 @@ deploy/dev/basemap: data/basemap/metadata/dev/style_night_ru.json data/basemap/m
 	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/DEV/sprite
 	touch $@
 
-deploy/test/basemap: data/basemap/metadata/test/style_ninja.json data/basemap/metadata/test/style_day.json data/basemap/metadata/test/style_day_en.json data/basemap/metadata/test/style_night.json data/basemap/metadata/test/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/test ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST server.
+deploy/test/basemap: data/basemap/metadata/test/style_ninja.json data/basemap/metadata/test/style_day.json data/basemap/metadata/test/style_day_en.json data/basemap/metadata/test/style_ninja_latin_languages.json data/basemap/metadata/test/style_ninja_non_latin_languages.json data/basemap/metadata/test/style_night.json data/basemap/metadata/test/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/test ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST server.
 	aws s3 cp --recursive data/basemap/metadata/test s3://basemap-locker01/TEST/styles
 	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/TEST/glyphs
 	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/TEST/sprite
 	touch $@
 
-deploy/prod/basemap: data/basemap/metadata/prod/style_ninja.json data/basemap/metadata/prod/style_day.json data/basemap/metadata/prod/style_day_en.json data/basemap/metadata/prod/style_night.json data/basemap/metadata/prod/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/prod ## Transfer and deploy tar archive with tiles, glyphs and styles on PROD server.
+deploy/prod/basemap: data/basemap/metadata/prod/style_ninja.json data/basemap/metadata/prod/style_day.json data/basemap/metadata/prod/style_day_en.json data/basemap/metadata/prod/style_ninja_latin_languages.json data/basemap/metadata/prod/style_ninja_non_latin_languages.json data/basemap/metadata/prod/style_night.json data/basemap/metadata/prod/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/prod ## Transfer and deploy tar archive with tiles, glyphs and styles on PROD server.
 	aws s3 cp --recursive data/basemap/metadata/prod s3://basemap-locker01/PROD/styles
 	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/PROD/glyphs
 	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/PROD/sprite

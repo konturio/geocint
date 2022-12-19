@@ -566,7 +566,7 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(wc_temp.worldclim_avg_temperature, 0))::float as worldclim_avg_temperature,
            (coalesce(wc_temp.worldclim_min_temperature, 0))::float as worldclim_min_temperature,
            (coalesce(wc_temp.worldclim_max_temperature, 0))::float as worldclim_max_temperature,
-           (coalesce((wc_temp.worldclim_max_temperature - wc_temp.worldclim_min_temperature) , 0))::float as worldclim_amp_temperature,
+           (coalesce(wc_temp.worldclim_amp_temperature, 0))::float as worldclim_amp_temperature,
            (coalesce(prox.powerlines_proximity_m, 0))::float as powerlines_proximity_m,
            (coalesce(prox.populated_areas_proximity_m,0))::float as populated_areas_proximity_m,
            (coalesce(prox.power_substations_proximity_m,0))::float as power_substations_proximity_m,

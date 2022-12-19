@@ -60,7 +60,8 @@ create table worldclim_temperatures_h3 as (
     select
         wc_avg.*,
         wc_min.worldclim_min_temperature,
-        wc_max.worldclim_max_temperature
+        wc_max.worldclim_max_temperature,
+        wc_max.worldclim_max_temperature - wc_min.worldclim_min_temperature as worldclim_amp_temperature
     from
         worldclim_avg_temp_h3_r8 AS wc_avg
         full join worldclim_min_temp_h3_r8 AS wc_min using (h3)

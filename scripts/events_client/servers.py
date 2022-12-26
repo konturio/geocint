@@ -18,6 +18,6 @@ STAGES = {
     ),
     'prod': EventsServers(
         api='https://apps.kontur.io/events/v1',
-        auth='prod-keycloak.k8s-01.konturlabs.com/auth/realms/kontur/protocol/openid-connect/token',
+        auth='https://prod-keycloak.k8s-01.konturlabs.com/auth/realms/kontur/protocol/openid-connect/token',
     ),
 }

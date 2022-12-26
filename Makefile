@@ -587,7 +587,7 @@ data/mid/mapswipe/ym_files/unzip: data/in/mapswipe/mapswipe.zip | data/mid/mapsw
 
 data/in/mapswipe/projects_new.csv: | data/in/mapswipe ## Dowload actual overview of mapswipe projects.
 	rm -f data/in/mapswipe/projects_new.csv
-	wget https://apps.mapswipe.org/api/projects/projects.csv -O $@
+	wget https://apps.mapswipe.org/api/projects/projects.csv --no-check-certificate -O $@
 
 data/in/mapswipe/projects_old.csv: | data/in/mapswipe ## Dowload previous overview of mapswipe projects.
 	rm -f data/in/mapswipe/projects_old.csv

@@ -9,7 +9,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 RUN apt-get update && apt-get install -y pigz postgresql-client-14 aria2 gdal-bin golang python2 awscli git make cmake g++ \
   libboost-dev libboost-system-dev \
   libboost-filesystem-dev libexpat1-dev zlib1g-dev \
-  libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc
+  libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc python npm
 
 # build and install osm2pgsql
 RUN git clone https://github.com/openstreetmap/osm2pgsql.git \

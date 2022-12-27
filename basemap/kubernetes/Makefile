@@ -1,7 +1,8 @@
 # Basemap rendering job
 
 basemap-rendering-job-dev.yaml: basemap-rendering-job.yaml
-	sed  -e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/DEV\//g' \
+	sed -e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/DEV\//g' \
+		-e 's/%ENV_NAME%/dev/g' \
 		basemap-rendering-job.yaml > $@
 
 deploy-rendering-job-dev: basemap-rendering-job-dev.yaml
@@ -11,7 +12,8 @@ teardown-rendering-job-dev: basemap-rendering-job-dev.yaml
 	kubectl delete -f basemap-rendering-job-dev.yaml -n dev-basemap
 
 basemap-rendering-job-test.yaml: basemap-rendering-job.yaml
-	sed  -e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/TEST\//g' \
+	sed -e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/TEST\//g' \
+		-e 's/%ENV_NAME%/test/g' \
 		basemap-rendering-job.yaml > $@
 
 deploy-rendering-job-test: basemap-rendering-job-test.yaml
@@ -21,7 +23,8 @@ teardown-rendering-job-test: basemap-rendering-job-test.yaml
 	kubectl delete -f basemap-rendering-job-test.yaml -n test-basemap
 
 basemap-rendering-job-prod.yaml: basemap-rendering-job.yaml
-	sed  -e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/PROD\//g' \
+	sed -e 's/%S3_BASEMAP_PATH%/s3:\/\/basemap-locker01\/PROD\//g' \
+		-e 's/%ENV_NAME%/prod/g' \
 		basemap-rendering-job.yaml > $@
 
 deploy-rendering-job-prod: basemap-rendering-job-prod.yaml

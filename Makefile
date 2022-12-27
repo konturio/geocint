@@ -292,7 +292,7 @@ db/table/covid19_population_h3_r8: db/table/kontur_population_h3 db/table/covid1
 	psql -f tables/covid19_population_h3_r8.sql
 	touch $@
 
-db/table/covid19_h3: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table ## calculate cases rate, dither and generate overviews of covid19_population_h3_r8
+db/table/covid19_h3: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries db/procedure/generate_overviews | db/table ## calculate cases rate, dither and generate overviews of covid19_population_h3_r8
 	psql -f tables/covid19_h3.sql
 	psql -c "call generate_overviews('covid19_h3', '{date, population, total_population, confirmed, recovered, dead}'::text[], '{max, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
@@ -324,7 +324,7 @@ db/table/covid19_vaccine_accept_us_counties: data/in/covid19/vaccination/vaccine
 	psql -f tables/covid19_vaccine_accept_us_counties.sql
 	touch $@
 
-db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_us_counties ## Aggregated data on COVID-19 vaccine acceptance in US based on Carnegie Mellon University dataset distributed on H3 hexagon grid.
+db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_us_counties db/procedure/generate_overviews | db/table  ## Aggregated data on COVID-19 vaccine acceptance in US based on Carnegie Mellon University dataset distributed on H3 hexagon grid.
 	psql -f tables/covid19_vaccine_accept_us_counties_h3.sql
 	psql -c "call generate_overviews('covid19_vaccine_accept_us_counties_h3', '{vaccine_value}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -384,7 +384,7 @@ db/table/facebook_medium_voltage_distribution_in: data/in/facebook/medium_voltag
 			"psql -c \"\copy facebook_medium_voltage_distribution_in (lat, lon, value) from '{}' with csv header delimiter ',';\""
 	touch $@
 
-db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/table  ## Put Facebook Medium Voltage Distribution on H3
+db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in db/procedure/generate_overviews | db/table  ## Put Facebook Medium Voltage Distribution on H3
 	psql -f tables/facebook_medium_voltage_distribution_h3.sql
 	psql -c "call generate_overviews('facebook_medium_voltage_distribution_h3', '{powerlines}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -430,7 +430,7 @@ db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last
 	psql -c "drop table facebook_roads_old; drop table osm_roads_increment;"
 	touch $@
 
-db/table/facebook_roads_h3: db/table/facebook_roads | db/table ## Build h3 overviews for Facebook roads at all levels.
+db/table/facebook_roads_h3: db/table/facebook_roads db/procedure/generate_overviews | db/table ## Build h3 overviews for Facebook roads at all levels.
 	psql -f tables/facebook_roads_h3.sql
 	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -457,7 +457,7 @@ db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_seg
 	psql -c "alter index if exists osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx rename to osm_road_segments_seg_id_node_from_node_to_seg_geom_idx;"
 	touch $@
 
-db/table/osm_road_segments_h3: db/table/osm_road_segments | db/table ## osm road segments aggregated to h3
+db/table/osm_road_segments_h3: db/table/osm_road_segments db/procedure/generate_overviews | db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_h3.sql
 	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -466,7 +466,7 @@ db/table/osm_road_segments_6_months: db/table/osm_roads db/table/osm_meta | db/t
 	psql -f tables/osm_road_segments_6_months.sql
 	touch $@
 
-db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months | db/table ## osm road segments aggregated to h3
+db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months db/procedure/generate_overviews | db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_6_months_h3.sql
 	psql -c "call generate_overviews('osm_road_segments_6_months_h3', '{highway_length_6_months}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -587,7 +587,7 @@ data/mid/mapswipe/ym_files/unzip: data/in/mapswipe/mapswipe.zip | data/mid/mapsw
 
 data/in/mapswipe/projects_new.csv: | data/in/mapswipe ## Dowload actual overview of mapswipe projects.
 	rm -f data/in/mapswipe/projects_new.csv
-	wget https://apps.mapswipe.org/api/projects/projects.csv -O $@
+	wget https://apps.mapswipe.org/api/projects/projects.csv --no-check-certificate -O $@
 
 data/in/mapswipe/projects_old.csv: | data/in/mapswipe ## Dowload previous overview of mapswipe projects.
 	rm -f data/in/mapswipe/projects_old.csv
@@ -714,7 +714,7 @@ db/table/gebco_2022_elevation_h3: db/table/gebco_2022_elevation | db/table ## GE
 	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2022_elevation -v table_name_h3=gebco_2022_elevation_h3 -v aggr_func=avg -v item_name=avg_elevation_gebco_2022
 	touch $@
 
-db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 | db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
+db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 db/procedure/generate_overviews | db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
 	psql -f tables/gebco_2022_h3.sql
 	psql -c "call generate_overviews('gebco_2022_h3', '{avg_slope_gebco_2022, avg_elevation_gebco_2022}'::text[], '{avg, avg}'::text[], 8);"
 	psql -c "create index on gebco_2022_h3 (h3);"
@@ -736,7 +736,7 @@ db/table/ndvi_2019_06_10: data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/tabl
 	psql -c "vacuum analyze ndvi_2019_06_10;"
 	touch $@
 
-db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table ## Generate h3 table with average NDVI from 1 to 8 resolution.
+db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 db/procedure/generate_overviews | db/table ## Generate h3 table with average NDVI from 1 to 8 resolution.
 	psql -f tables/ndvi_2019_06_10_h3.sql
 	psql -c "call generate_overviews('ndvi_2019_06_10_h3', '{avg_ndvi}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);"
@@ -746,7 +746,7 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Cou
 	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r8 -v item_count=building_count
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 db/procedure/generate_overviews | db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
 	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -1445,7 +1445,7 @@ db/table/kontur_population_v3: data/mid/kontur_population_v3/kontur_population_2
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_population_v3/kontur_population_20211109.gpkg -t_srs EPSG:4326 -nln kontur_population_v3 -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/kontur_population_v3_h3: db/table/kontur_population_v3 | db/table ## Generate h3 hexagon for population v3.
+db/table/kontur_population_v3_h3: db/table/kontur_population_v3 db/procedure/generate_overviews | db/table ## Generate h3 hexagon for population v3.
 	psql -f tables/kontur_population_v3_h3.sql
 	psql -c "call generate_overviews('kontur_population_v3_h3', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -1714,7 +1714,7 @@ db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table #
 	psql -f tables/osm_landuse_industrial.sql
 	touch $@
 
-db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table ## Aggregate industrial landuse area on H3 hexagons grid.
+db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial db/procedure/generate_overviews | db/table ## Aggregate industrial landuse area on H3 hexagons grid.
 	psql -f tables/osm_landuse_industrial_h3.sql
 	psql -c "call generate_overviews('osm_landuse_industrial_h3', '{industrial_area}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -1999,12 +1999,12 @@ db/table/foursquare_visits: data/mid/foursquare/kontour_visits_csv | db/table ##
 	ls data/mid/foursquare/kontour_visits*.csv | parallel 'cat {} | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header; "'
 	touch $@
 
-db/table/foursquare_places_h3: db/table/foursquare_places | db/table ## Aggregate 4sq places count  on H3 hexagon grid.
+db/table/foursquare_places_h3: db/table/foursquare_places db/procedure/generate_overviews | db/table ## Aggregate 4sq places count  on H3 hexagon grid.
 	psql -f tables/foursquare_places_h3.sql
 	psql -c "call generate_overviews('foursquare_places_h3', '{foursquare_places_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visits count on H3 hexagon grid.
+db/table/foursquare_visits_h3: db/table/foursquare_visits db/procedure/generate_overviews | db/table ## Aggregate 4sq visits count on H3 hexagon grid.
 	psql -f tables/foursquare_visits_h3.sql
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -2021,7 +2021,7 @@ db/table/stat_h3_quality: db/table/stat_h3 db/table/stat_h3_zeros_check | db/tab
 	psql -f tables/stat_h3_quality.sql
 	touch $@
 
-db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 db/table/stat_h3_quality | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
+db/table/bivariate_axis: db/table/bivariate_indicators db/table/bivariate_overlays db/table/stat_h3 db/table/stat_h3_quality | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
 	psql -f tables/bivariate_axis.sql
 	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' 'psql -f tables/bivariate_axis_stops.sql -v numerator={1} -v denominator={2}'
 	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | tee /dev/tty | parallel --colsep ',' 'psql -f tables/bivariate_axis_quality_estimate.sql -v numerator={1} -v denominator={2}'
@@ -2061,7 +2061,7 @@ data/tile_logs/_download: | data/tile_logs data ## Download OpenStreetMap tiles 
 	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np -nc https://planet.openstreetmap.org/tile_logs/
 	touch $@
 
-db/table/tile_logs: data/tile_logs/_download | db/table ## OpenStreetMap tiles usage logs imported into database.
+db/table/tile_logs: data/tile_logs/_download db/procedure/generate_overviews | db/table ## OpenStreetMap tiles usage logs imported into database.
 	psql -c "drop table if exists tile_logs;"
 	psql -c "create table tile_logs (tile_date timestamptz, z int, x int, y int, view_count int, geom geometry generated always as (ST_Transform(ST_TileEnvelope(z, x, y), 4326)) stored);"
 	find data/tile_logs/ -type f -size +10M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs from stdin with csv'"
@@ -2073,7 +2073,7 @@ db/table/tile_logs: data/tile_logs/_download | db/table ## OpenStreetMap tiles u
 data/tile_logs/tiles-2022-02-23.txt.xz: | data/tile_logs/_download ## use txt.xz file as footprint not to run next target every run.
 	touch $@
 
-db/table/tile_logs_bf2402: | data/tile_logs/tiles-2022-02-23.txt.xz db/table ## OpenStreetMap tiles logs 30 days before 24.02.2022.
+db/table/tile_logs_bf2402: db/procedure/generate_overviews | data/tile_logs/tiles-2022-02-23.txt.xz db/table ## OpenStreetMap tiles logs 30 days before 24.02.2022.
 	psql -c "drop table if exists tile_logs_bf2402;"
 	psql -c "create table tile_logs_bf2402 (tile_date timestamptz, z int, x int, y int, view_count int) tablespace evo4tb;"
 	cat static_data/tile_list/tile_logs_list.txt | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs_bf2402 from stdin with csv'"
@@ -2317,7 +2317,7 @@ db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db
 	psql -c 'create index disaster_event_episodes_episode_type_episode_endedat_idx on disaster_event_episodes (episode_type, episode_endedat)'
 	touch $@
 
-db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3_r8 | db/table  ## hexagonify kontur-public event geometries
+db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3_r8 db/table/osm | db/table  ## hexagonify kontur-public event geometries
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
 
@@ -2420,19 +2420,39 @@ data/mid/worldclim/max_temp/unzip: data/in/raster/worldclim/wc2.1_30s_tmax.zip |
 
 ## Worldclim temperatures - prepare datasets
 ## Worldclim temperatures - Calculate mean from averages
-data/mid/worldclim/avg_temp/average_temperatures.tif: data/mid/worldclim/avg_temp/unzip | data/mid/worldclim/avg_temp ## Calculate average yearly temperature from Worldclim montly means
-	rm -f data/mid/worldclim/avg_temp/average_temperatures.tif
-	gdal_calc.py -A data/mid/worldclim/avg_temp/wc2.1_30s_tavg_01.tif -B data/mid/worldclim/avg_temp/wc2.1_30s_tavg_02.tif -C data/mid/worldclim/avg_temp/wc2.1_30s_tavg_03.tif -D data/mid/worldclim/avg_temp/wc2.1_30s_tavg_04.tif -E data/mid/worldclim/avg_temp/wc2.1_30s_tavg_05.tif -F data/mid/worldclim/avg_temp/wc2.1_30s_tavg_06.tif -G data/mid/worldclim/avg_temp/wc2.1_30s_tavg_07.tif -H data/mid/worldclim/avg_temp/wc2.1_30s_tavg_08.tif -I data/mid/worldclim/avg_temp/wc2.1_30s_tavg_09.tif -J data/mid/worldclim/avg_temp/wc2.1_30s_tavg_10.tif -K data/mid/worldclim/avg_temp/wc2.1_30s_tavg_11.tif -L data/mid/worldclim/avg_temp/wc2.1_30s_tavg_12.tif --outfile=data/mid/worldclim/avg_temp/average_temperatures.tif --calc="numpy.mean((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+data/mid/worldclim/avg_temp/average_temperatures_in.tif: data/mid/worldclim/avg_temp/unzip | data/mid/worldclim/avg_temp ## Calculate average yearly temperature from Worldclim montly means
+	rm -f $@
+	gdal_calc.py -A data/mid/worldclim/avg_temp/wc2.1_30s_tavg_01.tif -B data/mid/worldclim/avg_temp/wc2.1_30s_tavg_02.tif -C data/mid/worldclim/avg_temp/wc2.1_30s_tavg_03.tif -D data/mid/worldclim/avg_temp/wc2.1_30s_tavg_04.tif -E data/mid/worldclim/avg_temp/wc2.1_30s_tavg_05.tif -F data/mid/worldclim/avg_temp/wc2.1_30s_tavg_06.tif -G data/mid/worldclim/avg_temp/wc2.1_30s_tavg_07.tif -H data/mid/worldclim/avg_temp/wc2.1_30s_tavg_08.tif -I data/mid/worldclim/avg_temp/wc2.1_30s_tavg_09.tif -J data/mid/worldclim/avg_temp/wc2.1_30s_tavg_10.tif -K data/mid/worldclim/avg_temp/wc2.1_30s_tavg_11.tif -L data/mid/worldclim/avg_temp/wc2.1_30s_tavg_12.tif --outfile=$@ --calc="numpy.mean((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	touch $@
+
+data/mid/worldclim/avg_temp/average_temperatures.tif: data/mid/worldclim/avg_temp/average_temperatures_in.tif | data/mid/worldclim/avg_temp ## Change resolution of average yearly temperature from Worldclim montly means
+	rm -f $@
+	gdalwarp data/mid/worldclim/avg_temp/average_temperatures_in.tif -co compress=deflate -tr 0.005 0.005 $@
+	touch $@
 
 ## Worldclim temperatures - Calculate min of mins
-data/mid/worldclim/min_temp/minimal_temperatures.tif: data/mid/worldclim/min_temp/unzip | data/mid/worldclim/min_temp ## Calculate minimal yearly temperature from Worldclim montly minimals
-	rm -f data/mid/worldclim/min_temp/minimal_temperatures.tif
-	gdal_calc.py -A data/mid/worldclim/min_temp/wc2.1_30s_tmin_01.tif -B data/mid/worldclim/min_temp/wc2.1_30s_tmin_02.tif -C data/mid/worldclim/min_temp/wc2.1_30s_tmin_03.tif -D data/mid/worldclim/min_temp/wc2.1_30s_tmin_04.tif -E data/mid/worldclim/min_temp/wc2.1_30s_tmin_05.tif -F data/mid/worldclim/min_temp/wc2.1_30s_tmin_06.tif -G data/mid/worldclim/min_temp/wc2.1_30s_tmin_07.tif -H data/mid/worldclim/min_temp/wc2.1_30s_tmin_08.tif -I data/mid/worldclim/min_temp/wc2.1_30s_tmin_09.tif -J data/mid/worldclim/min_temp/wc2.1_30s_tmin_10.tif -K data/mid/worldclim/min_temp/wc2.1_30s_tmin_11.tif -L data/mid/worldclim/min_temp/wc2.1_30s_tmin_12.tif --outfile=data/mid/worldclim/min_temp/minimal_temperatures.tif --calc="numpy.min((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+
+data/mid/worldclim/min_temp/minimal_temperatures_in.tif: data/mid/worldclim/min_temp/unzip | data/mid/worldclim/min_temp ## Calculate minimal yearly temperature from Worldclim montly minimals
+	rm -f $@
+	gdal_calc.py -A data/mid/worldclim/min_temp/wc2.1_30s_tmin_01.tif -B data/mid/worldclim/min_temp/wc2.1_30s_tmin_02.tif -C data/mid/worldclim/min_temp/wc2.1_30s_tmin_03.tif -D data/mid/worldclim/min_temp/wc2.1_30s_tmin_04.tif -E data/mid/worldclim/min_temp/wc2.1_30s_tmin_05.tif -F data/mid/worldclim/min_temp/wc2.1_30s_tmin_06.tif -G data/mid/worldclim/min_temp/wc2.1_30s_tmin_07.tif -H data/mid/worldclim/min_temp/wc2.1_30s_tmin_08.tif -I data/mid/worldclim/min_temp/wc2.1_30s_tmin_09.tif -J data/mid/worldclim/min_temp/wc2.1_30s_tmin_10.tif -K data/mid/worldclim/min_temp/wc2.1_30s_tmin_11.tif -L data/mid/worldclim/min_temp/wc2.1_30s_tmin_12.tif --outfile=$@ --calc="numpy.min((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	touch $@
+
+data/mid/worldclim/min_temp/minimal_temperatures.tif: data/mid/worldclim/min_temp/minimal_temperatures_in.tif | data/mid/worldclim/min_temp ## Change resolution for minimal yearly temperature from Worldclim montly minimals
+	rm -f $@
+	gdalwarp data/mid/worldclim/min_temp/minimal_temperatures_in.tif -co compress=deflate -tr 0.005 0.005 $@
+	touch $@
 
 ## Worldclim temperatures - Calculate max of maxs
-data/mid/worldclim/max_temp/maximal_temperatures.tif: data/mid/worldclim/max_temp/unzip | data/mid/worldclim/max_temp ## Calculate maximal yearly temperature from Worldclim montly maximals
-	rm -f data/mid/worldclim/max_temp/maximal_temperatures.tif
-	gdal_calc.py -A data/mid/worldclim/max_temp/wc2.1_30s_tmax_01.tif -B data/mid/worldclim/max_temp/wc2.1_30s_tmax_02.tif -C data/mid/worldclim/max_temp/wc2.1_30s_tmax_03.tif -D data/mid/worldclim/max_temp/wc2.1_30s_tmax_04.tif -E data/mid/worldclim/max_temp/wc2.1_30s_tmax_05.tif -F data/mid/worldclim/max_temp/wc2.1_30s_tmax_06.tif -G data/mid/worldclim/max_temp/wc2.1_30s_tmax_07.tif -H data/mid/worldclim/max_temp/wc2.1_30s_tmax_08.tif -I data/mid/worldclim/max_temp/wc2.1_30s_tmax_09.tif -J data/mid/worldclim/max_temp/wc2.1_30s_tmax_10.tif -K data/mid/worldclim/max_temp/wc2.1_30s_tmax_11.tif -L data/mid/worldclim/max_temp/wc2.1_30s_tmax_12.tif --outfile=data/mid/worldclim/max_temp/maximal_temperatures.tif --calc="numpy.max((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+
+data/mid/worldclim/max_temp/maximal_temperatures_in.tif: data/mid/worldclim/max_temp/unzip | data/mid/worldclim/max_temp ## Calculate maximal yearly temperature from Worldclim montly maximals
+	rm -f $@
+	gdal_calc.py -A data/mid/worldclim/max_temp/wc2.1_30s_tmax_01.tif -B data/mid/worldclim/max_temp/wc2.1_30s_tmax_02.tif -C data/mid/worldclim/max_temp/wc2.1_30s_tmax_03.tif -D data/mid/worldclim/max_temp/wc2.1_30s_tmax_04.tif -E data/mid/worldclim/max_temp/wc2.1_30s_tmax_05.tif -F data/mid/worldclim/max_temp/wc2.1_30s_tmax_06.tif -G data/mid/worldclim/max_temp/wc2.1_30s_tmax_07.tif -H data/mid/worldclim/max_temp/wc2.1_30s_tmax_08.tif -I data/mid/worldclim/max_temp/wc2.1_30s_tmax_09.tif -J data/mid/worldclim/max_temp/wc2.1_30s_tmax_10.tif -K data/mid/worldclim/max_temp/wc2.1_30s_tmax_11.tif -L data/mid/worldclim/max_temp/wc2.1_30s_tmax_12.tif --outfile=$@ --calc="numpy.max((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	touch $@
+
+data/mid/worldclim/max_temp/maximal_temperatures.tif: data/mid/worldclim/max_temp/maximal_temperatures_in.tif | data/mid/worldclim/max_temp ## Change resolution of maximal yearly temperature from Worldclim montly maximals
+	rm -f $@
+	gdalwarp data/mid/worldclim/max_temp/maximal_temperatures_in.tif -co compress=deflate -tr 0.005 0.005 $@
+	touch $@
 
 ## Worldclim temperatures - download rasters to database
 
@@ -2452,9 +2472,9 @@ db/table/worldclim_max_temp: data/mid/worldclim/max_temp/maximal_temperatures.ti
 	touch $@
 
 ## Worldclim temperatures - create all tables and unite them to one
-db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldclim_min_temp db/table/worldclim_max_temp | db/table ## Worldclim temperatures - create summary H3 table
+db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldclim_min_temp db/table/worldclim_max_temp db/procedure/generate_overviews | db/table ## Worldclim temperatures - create summary H3 table
 	psql -f tables/worldclim_temperatures_h3.sql
-	psql -c "call generate_overviews('worldclim_temperatures_h3', '{worldclim_avg_temperature, worldclim_min_temperature, worldclim_max_temperature}'::text[], '{avg, min, max}'::text[], 8);"
+	psql -c "call generate_overviews('worldclim_temperatures_h3', '{worldclim_avg_temperature, worldclim_min_temperature, worldclim_max_temperature, worldclim_amp_temperature}'::text[], '{avg, min, max, max}'::text[], 8);"
 	psql -c "create index on worldclim_temperatures_h3 (h3);"
 	touch $@
 
@@ -2557,7 +2577,7 @@ db/table/power_substations_proximity_h3_r8: db/table/power_substations_proximity
 ### END Proximity to electric power substationss ###
 
 ### Unite all proximity maps to one and generate overviews
-db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/populated_areas_proximity_h3_r8 db/table/powerlines_proximity_h3_r8 db/table/land_polygons_h3_r8 | db/table ## Unite proximity maps to one table
+db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/populated_areas_proximity_h3_r8 db/table/powerlines_proximity_h3_r8 db/table/land_polygons_h3_r8 db/procedure/generate_overviews | db/table ## Unite proximity maps to one table
 	psql -f tables/proximities_h3.sql
 	psql -c "create index on proximities_h3 (h3);"
 	psql -c "call generate_overviews('proximities_h3', '{powerlines_proximity_m, populated_areas_proximity_m, power_substations_proximity_m}'::text[], '{avg, avg, avg}'::text[], 8);"
@@ -2565,7 +2585,7 @@ db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/pop
 
 ### Synthetic solar farms placement layer ###
 
-db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 | db/table ## create a table with synthetic solar farms placement suitability (MCDA)
+db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/procedure/generate_overviews | db/table ## create a table with synthetic solar farms placement suitability (MCDA)
 	psql -f tables/solar_farms_placement_suitability_synthetic_h3.sql
 	psql -c "call generate_overviews('solar_farms_placement_suitability_synthetic_h3', '{solar_farms_placement_suitability}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on solar_farms_placement_suitability_synthetic_h3 (h3);"

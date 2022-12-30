@@ -1,0 +1,34 @@
+name: build
+on:
+  workflow_dispatch:
+    git_ref:
+      description: Git ref (optional) # The branch, tag or SHA to checkout
+      required: false
+
+jobs:
+  deploy-basemap-image:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Logging into Kontur Nexus
+      env:
+        NEXUS_DEPLOYER: ${{ secrets.NEXUS_DEPLOYER }}
+        NEXUS_DEPLOYER_PASS: ${{ secrets.NEXUS_DEPLOYER_PASS }}
+      run: |-
+        set -e
+        echo '${{ secrets.NEXUS_DEPLOYER_PASS }}' | docker login nexus.kontur.io:8084 -u '${{ secrets.NEXUS_DEPLOYER }}' --password-stdin
+        echo '${{ secrets.NEXUS_DEPLOYER_PASS }}' | docker login nexus.kontur.io:8085 -u '${{ secrets.NEXUS_DEPLOYER }}' --password-stdin
+    - name: Extract Docker metadata
+      uses: docker/metadata-action@v4.0.1
+      id: meta
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        tags: |
+          type=raw,value=nexus.kontur.io:8085/konturdev/build-basemap.{{sha}}.${{ github.run_attempt }}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v3.0.0
+      with:
+        context: basemap/
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}

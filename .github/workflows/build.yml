@@ -1,4 +1,4 @@
-name: build
+name: Deploy Basemap image
 on:
   workflow_dispatch:
     git_ref:
@@ -25,6 +25,8 @@ jobs:
         images: nexus.kontur.io:8085/konturdev/build-basemap
         tags: |
           type=raw,value=${{ github.ref_name }}.{{sha}}.${{ github.run_attempt }}
+    - name: Copy tile_generator
+      run: cp -r tile_generator basemap/tile_generator
     - name: Build and push Docker image
       uses: docker/build-push-action@v3.0.0
       with:

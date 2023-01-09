@@ -92,7 +92,7 @@ db/table/osm2pgsql: db/table/kontur_topology_boundary data/planet-latest.osm.pbf
 	touch $@
 
 db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql | db/table
-	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, maritime, way) select -osm_id as osm_id, 'administrative' as boundary, admin_level, maritime, geom as way from kontur_topology_boundary;"
+	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, maritime, way) select -osm_id as osm_id, 'administrative' as boundary, admin_level, nullif(maritime, false), geom as way from kontur_topology_boundary;"
 	touch $@
 
 db/table/osm2pgsql_fill_lang: db/table/osm2pgsql_with_boundaries | db/table ## fill missing name:[lang]
@@ -142,7 +142,7 @@ data/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL func
 		--stylesheet styles/ninja.mapcss \
 		--stylesheet styles/mapsme_mod/style-clear/style.mapcss \
 		--osm2pgsql-style osm2pgsql_styles/default.style \
-		--locale en,ru,be,pl,uk \
+		--locale en,es,de,ru,be,pl,uk,id,ar,th,ko,ja  \
 		> data/basemap.sql
 	touch $@
 

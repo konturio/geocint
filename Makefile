@@ -3,7 +3,7 @@ current_date:=$(shell date '+%Y%m%d')
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes  ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r8.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes  ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1382,6 +1382,32 @@ data/out/kontur_population.gpkg.gz: db/table/kontur_population_h3 | data/out  ##
 		data/out/kontur_population.gpkg \
 		PG:'dbname=gis'
 	pigz data/out/kontur_population.gpkg
+
+data/out/kontur_population_r6.gpkg.gz: db/table/kontur_population_h3 | data/out  ## Kontur Population (most recent) geopackage archive at 6th resolution.
+	rm -f $@
+	rm -f data/out/kontur_population_r6.gpkg
+	ogr2ogr \
+		-f GPKG \
+		-sql "select h3, population, geom from kontur_population_h3 where population > 0 and resolution = 6 order by h3" \
+		-lco "SPATIAL_INDEX=NO" \
+		-nln population \
+		-gt 65536 \
+		data/out/kontur_population_r6.gpkg \
+		PG:'dbname=gis'
+	pigz data/out/kontur_population_r6.gpkg
+
+data/out/kontur_population_r4.gpkg.gz: db/table/kontur_population_h3 | data/out  ## Kontur Population (most recent) geopackage archive at 4th resolution.
+	rm -f $@
+	rm -f data/out/kontur_population_r4.gpkg
+	ogr2ogr \
+		-f GPKG \
+		-sql "select h3, population, geom from kontur_population_h3 where population > 0 and resolution = 4 order by h3" \
+		-lco "SPATIAL_INDEX=NO" \
+		-nln population \
+		-gt 65536 \
+		data/out/kontur_population_r4.gpkg \
+		PG:'dbname=gis'
+	pigz data/out/kontur_population_r4.gpkg
 
 data/out/kontur_population_per_country: | data/out ## Directory for per country extraction from kontur_boundaries
 	mkdir -p $@

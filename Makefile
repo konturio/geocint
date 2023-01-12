@@ -3,7 +3,7 @@ current_date:=$(shell date '+%Y%m%d')
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r8.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes  ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r8.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_20220630_r4.gpkg.gz data/out/kontur_population_v4_20220630_r6.gpkg.gz ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
 
@@ -1438,6 +1438,9 @@ data/out/kontur_population_per_country/export: data/out/kontur_population_per_co
 data/in/kontur_population_v3: | data/in ## Kontur Population v3 (input).
 	mkdir -p $@
 
+data/in/kontur_population_v4: | data/in ## Kontur Population v4 (input).
+	mkdir -p $@
+
 data/in/kontur_boundaries_v2: | data/in ## Kontur Boundaries v2 (input).
 	mkdir -p $@
 
@@ -1475,6 +1478,53 @@ db/table/kontur_population_v3_h3: db/table/kontur_population_v3 db/procedure/gen
 	psql -f tables/kontur_population_v3_h3.sql
 	psql -c "call generate_overviews('kontur_population_v3_h3', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
+
+data/in/kontur_population_v4/kontur_population_20220630.gpkg.gz: | data/in/kontur_population_v4 ## Download Kontur Population v4 gzip to geocint.
+	rm -rf $@
+	wget -c -nc https://geodata-eu-central-1-kontur-public.s3.amazonaws.com/kontur_datasets/kontur_population_20220630.gpkg.gz -O $@
+
+data/mid/kontur_population_v4: | data/mid ## Kontur Population v4 dataset.
+	mkdir -p $@
+
+data/mid/kontur_population_v4/kontur_population_20220630.gpkg: data/in/kontur_population_v4/kontur_population_20220630.gpkg.gz | data/mid/kontur_population_v4 ## Unzip Kontur Population v4 geopackage archive.
+	gzip -dck data/in/kontur_population_v4/kontur_population_20220630.gpkg.gz > $@
+
+db/table/kontur_population_v4: data/mid/kontur_population_v4/kontur_population_20220630.gpkg | db/table ## Import population v4 into database.
+	psql -c "drop table if exists kontur_population_v4;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_population_v4/kontur_population_20220630.gpkg -t_srs EPSG:4326 -nln kontur_population_v4 -lco GEOMETRY_NAME=geom
+	touch $@
+
+db/table/kontur_population_v4_h3: db/table/kontur_population_v4 db/procedure/generate_overviews | db/table ## Generate h3 hexagon for population v4.
+	psql -f tables/kontur_population_v4_h3.sql
+	psql -c "call generate_overviews('kontur_population_v4_h3', '{population}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+data/out/kontur_population_v4_20220630_r6.gpkg.gz: db/table/kontur_population_v4_h3 | data/out  ## Kontur Population v4 20220630 geopackage archive at 6th resolution.
+	rm -f $@
+	rm -f data/out/kontur_population_v4_20220630_r6.gpkg
+	ogr2ogr \
+		-f GPKG \
+		-sql "select h3, population, geom from kontur_population_v4_h3 where population > 0 and resolution = 6 order by h3" \
+		-lco "SPATIAL_INDEX=NO" \
+		-nln population \
+		-gt 65536 \
+		data/out/kontur_population_v4_20220630_r6.gpkg \
+		PG:'dbname=gis'
+	pigz data/out/kontur_population_v4_20220630_r6.gpkg
+
+data/out/kontur_population_v4_20220630_r4.gpkg.gz: db/table/kontur_population_v4_h3 | data/out  ## Kontur Population v4 20220630 geopackage archive at 4th resolution.
+	rm -f $@
+	rm -f data/out/kontur_population_v4_20220630_r4.gpkg
+	ogr2ogr \
+		-f GPKG \
+		-sql "select h3, population, geom from kontur_population_v4_h3 where population > 0 and resolution = 4 order by h3" \
+		-lco "SPATIAL_INDEX=NO" \
+		-nln population \
+		-gt 65536 \
+		data/out/kontur_population_v4_20220630_r4.gpkg \
+		PG:'dbname=gis'
+	pigz data/out/kontur_population_v4_20220630_r4.gpkg
+
 
 db/table/morocco_buildings_manual_roofprints: static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
 	psql -c "drop table if exists morocco_buildings_manual_roofprints;"

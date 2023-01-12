@@ -400,7 +400,7 @@ data/in/facebook_roads/downloaded: | data/in/facebook_roads ## Download Facebook
 	touch $@
 
 data/in/facebook_roads/validity_controlled: data/in/facebook_roads/downloaded | data/in/facebook_roads ## Check Facebook roads downloaded archives validity
-	for f in data/in/facebook_roads/*.tar.gz; do echo "Checking $f"; gunzip -c "$f" | tar -t > /dev/null; if [[ "$?" -ne 0 ]]; then echo "$f is not valid tar.gz archive"; exit 1; fi done
+	ls -1 data/in/facebook_roads/*.tar.gz | parallel --halt now,fail=1 gunzip -t {}
 	touch $@
 
 data/mid/facebook_roads/extracted: data/in/facebook_roads/validity_controlled | data/mid/facebook_roads ## Extract Facebook roads.
@@ -1318,7 +1318,7 @@ data/in/microsoft_buildings/download: | data/in/microsoft_buildings ## Download 
 	touch $@
 
 data/in/microsoft_buildings/validity_controlled: data/in/microsoft_buildings/download | data/in/microsoft_buildings ## Check downloaded Microsoft Building Footprints archives.
-	for f in data/in/microsoft_buildings/*.zip; do echo "Checking $f"; unzip -t "$f"; if [[ "$?" -ne 0 ]]; then echo "$f is not valid zip archive"; exit 1; fi done
+	ls -1 data/in/microsoft_buildings/*.zip | parallel --halt now,fail=1 unzip -t {}
 	touch $@
 
 db/table/microsoft_buildings: data/in/microsoft_buildings/validity_controlled | db/table  ## Microsoft Building Footprints dataset imported into database.

@@ -399,7 +399,11 @@ data/in/facebook_roads/downloaded: | data/in/facebook_roads ## Download Facebook
 	wget -nc --input-file=static_data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads
 	touch $@
 
-data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/facebook_roads ## Extract Facebook roads.
+data/in/facebook_roads/validity_controlled: data/in/facebook_roads/downloaded | data/in/facebook_roads ## Check Facebook roads downloaded archives validity
+	ls -1 data/in/facebook_roads/*.tar.gz | parallel --halt now,fail=1 gunzip -t {}
+	touch $@
+
+data/mid/facebook_roads/extracted: data/in/facebook_roads/validity_controlled | data/mid/facebook_roads ## Extract Facebook roads.
 	rm -f data/mid/facebook_roads/*.gpkg
 	ls data/in/facebook_roads/*.tar.gz | parallel 'tar -C data/mid/facebook_roads -xf {}'
 	touch $@
@@ -1313,7 +1317,11 @@ data/in/microsoft_buildings/download: | data/in/microsoft_buildings ## Download 
 	grep -h -v '^#' static_data/microsoft_buildings/*.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_buildings {}'
 	touch $@
 
-db/table/microsoft_buildings: data/in/microsoft_buildings/download | db/table  ## Microsoft Building Footprints dataset imported into database.
+data/in/microsoft_buildings/validity_controlled: data/in/microsoft_buildings/download | data/in/microsoft_buildings ## Check downloaded Microsoft Building Footprints archives.
+	ls -1 data/in/microsoft_buildings/*.zip | parallel --halt now,fail=1 unzip -t {}
+	touch $@
+
+db/table/microsoft_buildings: data/in/microsoft_buildings/validity_controlled | db/table  ## Microsoft Building Footprints dataset imported into database.
 	psql -c "drop table if exists microsoft_buildings;"
 	psql -c "create table microsoft_buildings(filename text, geom geometry(Geometry,4326)) tablespace evo4tb;"
 	find data/in/microsoft_buildings/* -type f -name "*.zip" -printf '%s\t%p\n' | sort -r -n | cut -f2- | sed -r 's/(.*\/(.*)\.(.*)$$)/ogr2ogr -append -f PostgreSQL --config PG_USE_COPY YES PG:"dbname=gis" "\/vsizip\/\1" -sql "select '\''\2'\'' as filename, * from \\"\2\\"" -nln microsoft_buildings -a_srs EPSG:4326/' | parallel --eta '{}'

@@ -37,7 +37,7 @@ with gsa_ghi as (select gsa.h3         as h3,
 
      constraint_temperatures as (select wc.h3 as       h3,
                                         case
-                                            when wc.worldclim_max_temperature > 35 then 0
+                                            when wc.worldclim_max_temperature > 45 then 0
                                             when wc.worldclim_min_temperature < -30 then 0
                                             else 1 end constraint_temperatures
                                  from worldclim_temperatures_h3 wc),

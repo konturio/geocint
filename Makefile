@@ -1389,7 +1389,7 @@ data/out/kontur_population_r6.gpkg.gz: db/table/kontur_population_h3 | data/out 
 	ogr2ogr \
 		-f GPKG \
 		-sql "select h3, population, geom from kontur_population_h3 where population > 0 and resolution = 6 order by h3" \
-		-lco "SPATIAL_INDEX=NO" \
+		-lco "SPATIAL_INDEX=YES" \
 		-nln population \
 		-gt 65536 \
 		data/out/kontur_population_r6.gpkg \
@@ -1402,7 +1402,7 @@ data/out/kontur_population_r4.gpkg.gz: db/table/kontur_population_h3 | data/out 
 	ogr2ogr \
 		-f GPKG \
 		-sql "select h3, population, geom from kontur_population_h3 where population > 0 and resolution = 4 order by h3" \
-		-lco "SPATIAL_INDEX=NO" \
+		-lco "SPATIAL_INDEX=YES" \
 		-nln population \
 		-gt 65536 \
 		data/out/kontur_population_r4.gpkg \
@@ -1483,7 +1483,7 @@ data/out/kontur_population_v4_r6.gpkg.gz: db/table/kontur_population_v4_h3 | dat
 	ogr2ogr \
 		-f GPKG \
 		-sql "select h3, population, geom from kontur_population_v4_h3 where population > 0 and resolution = 6 order by h3" \
-		-lco "SPATIAL_INDEX=NO" \
+		-lco "SPATIAL_INDEX=YES" \
 		-nln population \
 		-gt 65536 \
 		data/out/kontur_population_v4_r6.gpkg \
@@ -1496,7 +1496,7 @@ data/out/kontur_population_v4_r4.gpkg.gz: db/table/kontur_population_v4_h3 | dat
 	ogr2ogr \
 		-f GPKG \
 		-sql "select h3, population, geom from kontur_population_v4_h3 where population > 0 and resolution = 4 order by h3" \
-		-lco "SPATIAL_INDEX=NO" \
+		-lco "SPATIAL_INDEX=YES" \
 		-nln population \
 		-gt 65536 \
 		data/out/kontur_population_v4_r4.gpkg \

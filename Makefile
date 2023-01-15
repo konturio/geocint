@@ -1482,7 +1482,7 @@ data/out/kontur_population_v4_r6.gpkg.gz: db/table/kontur_population_v4_h3 | dat
 	rm -f data/out/kontur_population_v4_r6.gpkg
 	ogr2ogr \
 		-f GPKG \
-		-sql "select h3, population, geom from kontur_population_v4_h3 where population > 0 and resolution = 6 order by h3" \
+		-sql "select h3, population, st_setsrid(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v4_h3 where population > 0 and resolution = 6 order by h3" \
 		-lco "SPATIAL_INDEX=YES" \
 		-nln population \
 		-gt 65536 \
@@ -1495,7 +1495,7 @@ data/out/kontur_population_v4_r4.gpkg.gz: db/table/kontur_population_v4_h3 | dat
 	rm -f data/out/kontur_population_v4_r4.gpkg
 	ogr2ogr \
 		-f GPKG \
-		-sql "select h3, population, geom from kontur_population_v4_h3 where population > 0 and resolution = 4 order by h3" \
+		-sql "select h3, population, st_setsrid(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v4_h3 where population > 0 and resolution = 4 order by h3" \
 		-lco "SPATIAL_INDEX=YES" \
 		-nln population \
 		-gt 65536 \

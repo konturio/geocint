@@ -223,7 +223,7 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage, resolution
-             from kontur_population_v3_h3
+             from kontur_population_v4_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,

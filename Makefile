@@ -1511,6 +1511,17 @@ data/out/kontur_population_v4_r4.gpkg.gz: db/table/kontur_population_v4_h3 | dat
 		PG:'dbname=gis'
 	pigz data/out/kontur_population_v4_r4.gpkg
 
+data/out/kontur_population_v4.csv: db/table/kontur_population_v4_h3 | data/out  ## Kontur Population v4 csv at 8th resolution.
+	rm -f $@
+	psql -qXc 'copy (select "h3", "population" from kontur_population_v4_h3 where resolution=8 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
+
+data/out/kontur_population_v4_r6.csv: db/table/kontur_population_v4_h3 | data/out  ## Kontur Population v4 csv at 6th resolution.
+	rm -f $@
+	psql -qXc 'copy (select "h3", "population" from kontur_population_v4_h3 where resolution=6 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
+
+data/out/kontur_population_v4_r4.csv: db/table/kontur_population_v4_h3 | data/out  ## Kontur Population v4 csv at 4th resolution.
+	rm -f $@
+	psql -qXc 'copy (select "h3", "population" from kontur_population_v4_h3 where resolution=4 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
 
 db/table/morocco_buildings_manual_roofprints: static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
 	psql -c "drop table if exists morocco_buildings_manual_roofprints;"

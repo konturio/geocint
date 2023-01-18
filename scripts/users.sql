@@ -1,4 +1,8 @@
-  with user_hex as (
+  with zoom as (select calculate_h3_res_new(zoom_lvl, max_h3_resolution := 8) as tile_resolution, zoom_lvl
+              from (select generate_series(z1, z2) as zoom_lvl
+                    from (select case when $1 < 8 then $1 else 8 end  as z1,
+                                 case when $1 < 8 then $1 else 12 end as z2) a) b),  
+  user_hex as (
       select osm_user                                                                     as top_user,
               ST_AsMVTGeom(ST_Transform(h3::geometry, 3857), ST_TileEnvelope($1, $2, $3), 8192, 64, true) as centroid,
               ST_AsMVTGeom(geom, ST_TileEnvelope($1, $2, $3), 8192, 64, true)              as geom,
@@ -7,7 +11,7 @@
               is_local,
               zoom.zoom_lvl
       from osm_users_hex,
-            calculate_h3_res($1) zoom
+            zoom
       where resolution = zoom.tile_resolution
         and geom && ST_TileEnvelope($1, $2, $3)
   )

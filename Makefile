@@ -358,7 +358,7 @@ db/function/calculate_h3_res_old: db/function/h3 ## Function to get H3 resolutio
 	touch $@
 
 db/function/calculate_h3_res_test: db/function/calculate_h3_res db/function/calculate_h3_res_old ## Test if current version of function returns same h3 resolutions as previous one
-    calculate_h3_res_test=$(cat scripts/test_calculate_h3_res_function.sql | psql -AXt)
+	calculate_h3_res_test=$(cat scripts/test_calculate_h3_res_function.sql | psql -AXt)
 	if [[ 1 -eq $calculate_h3_res_test ]]; then echo 'test passed'; else echo 'test failed'; exit 1; fi
 
 db/function/h3_raster_sum_to_h3: | db/function ## Aggregate sum raster values on H3 hexagon grid.

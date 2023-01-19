@@ -4,7 +4,7 @@ drop function if exists calculate_h3_res(z numeric);
 create or replace function calculate_h3_res
 (
     z numeric,                           -- input tile zoom level
-    hex_edge_pixels numeric default 22,  -- how many pixels should be presented by the average hex edge
+    hex_edge_pixels numeric default 44,  -- how many pixels should be presented by the average hex edge
     tile_size integer default 512,       -- which tile size in pixels is used
     max_h3_resolution integer default 15 -- for cases when there are limits on max h3 resolution allowed
 )
@@ -29,7 +29,7 @@ begin
                              from h3_resolutions
                              -- calculate single pixel length at given tile zoom level, multiply it on desired hex edge size in pixels
                              -- and compare with hexagon edge length at each resolution. Select optimal
-                             order by abs(40075016.6855785 / (tile_size * 2 ^ (z-1)) * hex_edge_pixels - edge_length)
+                             order by abs(40075016.6855785 / (tile_size * 2 ^ (z)) * hex_edge_pixels - edge_length)
                              limit 1),
                          -- force given max_h3_resolution if calculated is greater
                          max_h3_resolution) as h3_resolution);

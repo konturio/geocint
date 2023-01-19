@@ -1,4 +1,4 @@
-  with zoom as (select calculate_h3_res_new(zoom_lvl, max_h3_resolution := 8) as tile_resolution, zoom_lvl
+  with zoom as (select calculate_h3_res(zoom_lvl, max_h3_resolution := 8) as tile_resolution, zoom_lvl
               from (select generate_series(z1, z2) as zoom_lvl
                     from (select case when $1 < 8 then $1 else 8 end  as z1,
                                  case when $1 < 8 then $1 else 12 end as z2) a) b),  

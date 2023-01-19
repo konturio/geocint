@@ -1,5 +1,6 @@
 drop function if exists calculate_h3_res(z integer);
 drop function if exists calculate_h3_res(z numeric);
+drop function if exists calculate_h3_res(z numeric, hex_edge_pixels numeric, tile_size integer, max_h3_resolution integer);
 
 create or replace function calculate_h3_res
 (

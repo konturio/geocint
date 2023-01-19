@@ -156,45 +156,6 @@ deploy/prod/osrm-backend-by-car: deploy/geocint/belarus-latest.osm.pbf | deploy/
 	aws sqs send-message --output json --region eu-central-1 --queue-url https://sqs.eu-central-1.amazonaws.com/001426858141/PuppetmasterInbound.fifo --message-body '{"jsonrpc":"2.0","method":"rebuildDockerImage","params":{"imageName":"kontur-osrm-backend-by-car","osmPbfUrl":"https://geocint.kontur.io/gis/belarus-latest.osm.pbf"},"id":"'`uuid`'"}' --message-group-id rebuildDockerImage--kontur-osrm-backend-by-car
 	touch $@
 
-data/planet-latest.osm.pbf: | data ## Download latest planet OSM pbf extraction through Bit torrent and rename it to planet-latest.osm.pbf.
-	rm -f data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
-	cd data; aria2c https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent --seed-time=0
-	mv data/planet-*.osm.pbf $@
-	rm -f data/planet-*.osm.pbf.torrent
-	touch $@
-
-data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data ## Update planet-latest.osm.pbf OpenStreetMap extract with hourly diff.
-	rm -f data/planet-diff.osc
-	if [ -f data/planet-latest.seq ]; then pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -f data/planet-latest.seq -o data/planet-diff.osc; else pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -O data/planet-latest.osm.pbf -f data/planet-latest.seq -o data/planet-diff.osc; fi ||true
-	rm -f data/planet-latest-updated.osm.pbf data/planet-latest-updated.osm.pbf.meta.json
-	osmium apply-changes data/planet-latest.osm.pbf data/planet-diff.osc -f pbf,pbf_compression=false -o data/planet-latest-updated.osm.pbf
-	# TODO: smoke check correctness of file
-	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
-	touch $@
-
-data/planet-check-refs: data/planet-latest-updated.osm.pbf | data ## Check if planet-latest.osm.pbf OSM extraction is referentially complete using Osmium tool (osmcode.org/osmium-tool/manual.html#checking-references).
-	osmium check-refs -r --no-progress data/planet-latest.osm.pbf || touch data/planet-is-broken
-	touch $@
-
-db/table/osm: data/planet-latest-updated.osm.pbf | db/table ## Daily Planet OpenStreetMap dataset.
-	psql -c "drop table if exists osm;"
-	# Pin osmium to CPU1 and disable HT on it
-	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=800 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=800 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=800 OSMIUM_MAX_WORK_QUEUE_SIZE=100 osmium export -i dense_mmap_array -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb) tablespace evo4tb;alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
-	psql -c "alter table osm set (parallel_workers = 32);"
-	touch $@
-
-db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table ## Metadata for daily Planet OpenStreetMap dataset.
-	psql -c "drop table if exists osm_meta;"
-	rm -f data/planet-latest-updated.osm.pbf.meta.json
-	osmium fileinfo data/planet-latest.osm.pbf -ej > data/planet-latest.osm.pbf.meta.json
-	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
-	psql -AXt -c "select count((meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz) from osm_meta;" |  xargs -I {} bash scripts/check_items_count.sh {} 1
-	touch $@
-
-db/index/osm_tags_idx: db/table/osm | db/index ## GIN index on planet OpenStreetMap dataset tags column.
-	psql -c "create index osm_tags_idx on osm using gin (tags);"
-	touch $@
-
 data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data ## Extract Belarus from planet-latest-updated.osm.pbf using Osmium tool.
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
 	touch $@

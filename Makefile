@@ -37,37 +37,7 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	docker image prune --force --filter label=stage=osrm-builder
 	docker image prune --force --filter label=stage=osrm-backend
 
-data: ## Temporary file based datasets. Located on bcache. Some files could be returned to SSD.
-	mkdir -p $@
-
-db: ## Directory for storing database objects creation footprints.
-	mkdir -p $@
-
-db/function: | db ## Directory for storing database functions footprints.
-	mkdir -p $@
-
-db/procedure: | db ## Directory for storing database procedures footprints.
-	mkdir -p $@
-
-db/table: | db ## Directory for storing database tables footprints.
-	mkdir -p $@
-
-db/index: | db ## Directory for storing database indexes footprints.
-	mkdir -p $@
-
 data/tiles: | data ## Directory for storing generated vector tiles.
-	mkdir -p $@
-
-data/in: | data  ## Input data, downloaded from elsewhere.
-	mkdir -p $@
-
-data/in/raster: | data/in ## Directory for all the mega-terabyte geotiffs!
-	mkdir -p $@
-
-data/mid: | data ## Intermediate data (retiles, unpacks, reprojections, …) that can be removed daily.
-	mkdir -p $@
-
-data/out: | data ## Generated final data (tiles, dumps, etc).
 	mkdir -p $@
 
 data/out/morocco_buildings: | data/out ## Data generated within project Morocco Buildings for Swiss Re.
@@ -133,9 +103,6 @@ data/in/raster/gebco_2022_geotiff: | data/in/raster ## Directory for GEBCO 2022 
 data/mid/ndvi_2019_06_10: | data/mid ## Directory for NDVI rasters. Taken from https://medium.com/sentinel-hub/digital-twin-sandbox-sentinel-2-collection-available-to-everyone-20f3b5de846e
 	mkdir -p $@
 
-deploy:  ## Directory for deployment targets footprints.
-	mkdir -p $@
-
 deploy/prod: | deploy ## folder for prod deployment footprints.
 	mkdir -p $@
 
@@ -146,9 +113,6 @@ deploy/dev: | deploy ## folder for dev deployment footprints.
 	mkdir -p $@
 
 deploy/geocint: | deploy ## We use geocint as a GIS development server.
-	mkdir -p $@
-
-deploy/s3: | deploy ## Target-created directory for deployments on S3.
 	mkdir -p $@
 
 deploy/s3/test: | deploy/s3 ## Target-created directory for deployments on S3 test division.

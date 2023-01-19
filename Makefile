@@ -1,5 +1,22 @@
-export PGDATABASE = gis
+## -------------- EXPORT BLOCK ------------------------
+
+# configuration file
+file := ${GEOCINT_WORK_DIRECTORY}/config.inc.sh
+# Add here export for every varible from configuration file that you are going to use in targets
+export PGDATABASE = $(shell sed -n -e '/^PGDATABASE/p' ${file} | cut -d "=" -f 2)
+export SLACK_CHANNEL = $(shell sed -n -e '/^SLACK_CHANNEL/p' ${file} | cut -d "=" -f 2)
+export SLACK_BOT_NAME = $(shell sed -n -e '/^SLACK_BOT_NAME/p' ${file} | cut -d "=" -f 2)
+export SLACK_BOT_EMOJI = $(shell sed -n -e '/^SLACK_BOT_EMOJI/p' ${file} | cut -d "=" -f 2)
+export SLACK_BOT_KEY = $(shell sed -n -e '/^SLACK_BOT_KEY/p' ${file} | cut -d "=" -f 2)
+
 current_date:=$(shell date '+%Y%m%d')
+
+# these makefiles stored in geocint-runner and geocint-openstreetmap repositories
+# runner_make contains basic set of targets for creation project folder structure
+# osm_make contains contain set of targets for osm data processing
+include runner_make osm_make
+
+## ------------- CONTROL BLOCK -------------------------
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 

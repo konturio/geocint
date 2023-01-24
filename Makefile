@@ -349,15 +349,15 @@ db/function/parse_integer: | db/function ## Converts text levels into a integer 
 	psql -f functions/parse_integer.sql
 	touch $@
 
-db/function/calculate_h3_res: db/function/h3 ## Function to get H3 resolution that will fit label of given pixel size.
+db/function/calculate_h3_res: | db/function ## Function to get H3 resolution that will fit label of given pixel size.
 	psql -f functions/calculate_h3_res.sql
 	touch $@
 
-db/function/calculate_h3_res_old: db/function/h3 ## Function to get H3 resolution that will fit label of given pixel size (previous version)
+db/function/calculate_h3_res_old: | db/function ## Function to get H3 resolution that will fit label of given pixel size (previous version)
 	psql -f functions/calculate_h3_res_old.sql
 	touch $@
 
-db/function/calculate_h3_res_test: db/function/calculate_h3_res db/function/calculate_h3_res_old ## Test if current version of function returns same h3 resolutions as previous one
+data/out/calculate_h3_res_test: db/function/calculate_h3_res db/function/calculate_h3_res_old | data/out ## Test if current version of function returns same h3 resolutions as previous one
 	cat scripts/test_calculate_h3_res_function.sql | psql -AXt |  xargs -I {} bash scripts/check_items_count.sh {} 1
 	touch $@
 
@@ -2126,7 +2126,7 @@ deploy/s3/prod/osm_users_hex_dump: deploy/s3/test/osm_users_hex_dump data/out/os
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
 	cd tile_generator; go get; go build -o tile_generator
 
-data/tiles/users_tiles.tar.bz2: tile_generator/tile_generator db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res db/function/calculate_h3_res_test | data/tiles ## Generate vector tiles from osm_users_hex table (most active user per H3 hexagon cell) and archive it for further deploy to QA and production servers.
+data/tiles/users_tiles.tar.bz2: tile_generator/tile_generator db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res data/out/calculate_h3_res_test | data/tiles ## Generate vector tiles from osm_users_hex table (most active user per H3 hexagon cell) and archive it for further deploy to QA and production servers.
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/users.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/users
 	cd data/tiles/users/; tar cvf ../users_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
 

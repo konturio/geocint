@@ -1,8 +1,6 @@
-drop function if exists calculate_h3_res(z integer);
-drop function if exists calculate_h3_res(z numeric);
-drop function if exists calculate_h3_res(z numeric, hex_edge_pixels numeric, tile_size integer, max_h3_resolution integer);
+drop function if exists tile_zoom_level_to_h3_resolution(z numeric, hex_edge_pixels numeric, tile_size integer, max_h3_resolution integer);
 
-create or replace function calculate_h3_res
+create or replace function tile_zoom_level_to_h3_resolution
 (
     z numeric,                           -- input tile zoom level
     hex_edge_pixels numeric default 44,  -- how many pixels should be presented by the average hex edge

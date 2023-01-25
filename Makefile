@@ -7,7 +7,7 @@ export PGDATABASE = $(shell sed -n -e '/^PGDATABASE/p' ${file} | cut -d "=" -f 2
 export SLACK_CHANNEL = $(shell sed -n -e '/^SLACK_CHANNEL/p' ${file} | cut -d "=" -f 2)
 export SLACK_BOT_NAME = $(shell sed -n -e '/^SLACK_BOT_NAME/p' ${file} | cut -d "=" -f 2)
 export SLACK_BOT_EMOJI = $(shell sed -n -e '/^SLACK_BOT_EMOJI/p' ${file} | cut -d "=" -f 2)
-export SLACK_BOT_KEY = $(shell sed -n -e '/^SLACK_BOT_KEY/p' ${file} | cut -d "=" -f 2)
+export SLACK_KEY = $(shell sed -n -e '/^SLACK_KEY/p' ${file} | cut -d "=" -f 2)
 
 current_date:=$(shell date '+%Y%m%d')
 
@@ -22,11 +22,11 @@ all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export d
 
 dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv  ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
-	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
+	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
-	echo "Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
+	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
@@ -810,7 +810,7 @@ data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inc
 
 data/out/reports/population_check_osm.csv: db/table/population_check_osm db/table/osm_meta | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
 	psql -qXc "copy (select \"OSM id\", \"Country\", \"Name\", \"OSM population date\", \"OSM population\", \"Kontur population\", \"Wikidata population\", \"OSM-Kontur Population difference\", \"Wikidata-Kontur Population difference\" from population_check_osm order by abs(\"OSM-Kontur Population difference\") desc limit 1000) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
-	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
+	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | data/out/reports ## Export report to CSV
 	psql -qXc "copy (select h3 as \"H3 index\", \"Country\", population as \"Kontur population\", view_count as \"osm.org view count\", \"Place bounding box\" from osm_unmapped_places_report order by id) to stdout with (format csv, header true, delimiter ';');" > $@
@@ -1010,7 +1010,7 @@ db/table/wikidata_population: data/in/wikidata_population_csv/download | db/tabl
 
 	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) ]; then \
 		echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one." \
-			| python3 scripts/slack_message.py geocint "Nightly build" cat; \
+			| python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; \
 	fi
 	rm -f $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
 	touch $@
@@ -1035,7 +1035,7 @@ db/table/un_population: data/in/un_population.csv | db/table ## UN (United Natio
 
 #data/out/reports/population_check_un.csv: db/table/population_check_un | data/out/reports
 #	psql -c 'copy (select * from population_check_un order by diff_pop) to stdout with csv header;' > $@
-#	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
+#	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 data/in/prescale_to_osm.csv: | data/in ## Download master table with right population values from osm
 	wget -c -nc "https://docs.google.com/spreadsheets/d/1-XuFA8c3sweMhCi52tdfhepGXavimUWA7vPc3BoQb1c/export?format=csv&gid=0" -O $@
@@ -1053,9 +1053,9 @@ db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm db/ta
 db/table/prescale_to_osm_check_changes: db/table/prescale_to_osm_boundaries | db/table ## Check the number of object with nonactual osm population
 	psql -q -X -t -c 'select count(*) from changed_population where geom is null;' > $@__WRONG_GEOM
 	psql -q -X -t -c 'select count(*) from changed_population where right_population <> actual_osm_pop;' > $@__CHANG_POP
-	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
-	if [ 0 -lt $$(cat $@__CHANG_POP) ]; then echo "Some population values in OSM was changed. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
-	if [ 0 -lt $$(cat $@__WRONG_GEOM) ]; then echo "Some geometry values is null. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
+	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	if [ 0 -lt $$(cat $@__CHANG_POP) ]; then echo "Some population values in OSM was changed. Please check changed_population table." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	if [ 0 -lt $$(cat $@__WRONG_GEOM) ]; then echo "Some geometry values is null. Please check changed_population table." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
 	rm $@__CHANG_POP $@__WRONG_GEOM
 	touch $@
 
@@ -1070,8 +1070,8 @@ db/table/prescale_to_osm_coefficient_table: db/procedure/decimate_admin_level_in
 data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_population_v4_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
 	psql -q -X -t -c 'select sum(population) from kontur_population_v4_h3 where resolution = 0' > $@__KONTUR_POP_V4
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4_1
-	if [ $$(cat $@__KONTUR_POP_V4_1) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py geocint "Nightly build" x && exit 1; fi
-	if [ $$(cat $@__KONTUR_POP_V4_1) -lt $$(cat $@__KONTUR_POP_V4) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
+	if [ $$(cat $@__KONTUR_POP_V4_1) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	if [ $$(cat $@__KONTUR_POP_V4_1) -lt $$(cat $@__KONTUR_POP_V4) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
 	rm -f $@__KONTUR_POP_V4 $@__KONTUR_POP_V4_1
 	touch $@
 
@@ -1216,7 +1216,7 @@ db/table/global_fires: db/table/global_fires_in | db/table ## Active fire produc
 data/out/global_fires/update: db/table/global_fires | data/out/global_fires ## Last update for active fire products.
 	rm -f data/out/global_fires/firms_archive_*.csv.gz
 	aws s3 ls s3://geodata-eu-central-1-kontur/private/geocint/in/global_fires/ --profile geocint_pipeline_sender | tail -1 | cut -d ' ' -f 1,2 | date +"%s" -f - > $@__LAST_DEPLOY_TS
-	if [ $$(cat $@__LAST_DEPLOY_TS) -lt $$(date -d "1 week ago" +"%s") ]; then echo '*Global Fires* broken. Latest data for *'$$(cat $@__LAST_DEPLOY_TS | xargs -I {} date -d @{} -u +"%Y-%m-%d")'*. See section <https://gitlab.com/kontur-private/platform/geocint/#manual-update-of-global-fires|"Manual update of Global Fires"> in README.md' | python3 scripts/slack_message.py geocint "Nightly build" x; fi
+	if [ $$(cat $@__LAST_DEPLOY_TS) -lt $$(date -d "1 week ago" +"%s") ]; then echo '*Global Fires* broken. Latest data for *'$$(cat $@__LAST_DEPLOY_TS | xargs -I {} date -d @{} -u +"%Y-%m-%d")'*. See section <https://gitlab.com/kontur-private/platform/geocint/#manual-update-of-global-fires|"Manual update of Global Fires"> in README.md' | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
 	seq $$(cat $@__LAST_DEPLOY_TS | xargs -I {}  date -u -d @{} +"%Y") $$(date -u +"%Y") | parallel --eta "psql -qXc 'set time zone utc; copy (select * from global_fires where acq_datetime >= '\''{}-01-01'\'' and acq_datetime < '\''{}-01-01'\''::date + interval '\''1 year'\'' order by acq_datetime, hash) to stdout with csv header;' | pigz -9 > data/out/global_fires/firms_archive_{}.csv.gz"
 	rm -f $@__LAST_DEPLOY_TS
 	touch $@

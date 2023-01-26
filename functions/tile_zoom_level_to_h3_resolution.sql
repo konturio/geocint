@@ -13,9 +13,9 @@ create or replace function tile_zoom_level_to_h3_resolution
 as
 $func$
 begin
-    -- tile zoom level couldn't be negative
+    -- Negative tile zoom levels are not supported
     if z < 0 then
-        raise exception 'Tile zoom level could not be negative';
+        raise exception 'Negative tile zoom levels are not supported';
     end if;
 
     return (

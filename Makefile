@@ -349,8 +349,12 @@ db/function/parse_integer: | db/function ## Converts text levels into a integer 
 	psql -f functions/parse_integer.sql
 	touch $@
 
-db/function/calculate_h3_res: db/function/h3 ## Function to get H3 resolution that will fit label of given pixel size.
-	psql -f functions/calculate_h3_res.sql
+db/function/tile_zoom_level_to_h3_resolution: | db/function ## Function to get H3 resolution that will fit given tile zoom level
+	psql -f functions/tile_zoom_level_to_h3_resolution.sql
+	touch $@
+
+data/out/tile_zoom_level_to_h3_resolution_test: db/function/tile_zoom_level_to_h3_resolution | data/out ## Test if current version of function returns same h3 resolutions as previous one
+	cat scripts/tile_zoom_level_to_h3_resolution_test.sql | psql -AXt |  xargs -I {} bash scripts/check_items_count.sh {} 1
 	touch $@
 
 db/function/h3_raster_sum_to_h3: | db/function ## Aggregate sum raster values on H3 hexagon grid.
@@ -2186,7 +2190,7 @@ deploy/s3/prod/osm_users_hex_dump: deploy/s3/test/osm_users_hex_dump data/out/os
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
 	cd tile_generator; go get; go build -o tile_generator
 
-data/tiles/users_tiles.tar.bz2: tile_generator/tile_generator db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res | data/tiles ## Generate vector tiles from osm_users_hex table (most active user per H3 hexagon cell) and archive it for further deploy to QA and production servers.
+data/tiles/users_tiles.tar.bz2: tile_generator/tile_generator db/table/osm_users_hex db/table/osm_meta db/function/tile_zoom_level_to_h3_resolution data/out/tile_zoom_level_to_h3_resolution_test | data/tiles ## Generate vector tiles from osm_users_hex table (most active user per H3 hexagon cell) and archive it for further deploy to QA and production servers.
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/users.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/users
 	cd data/tiles/users/; tar cvf ../users_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
 

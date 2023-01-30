@@ -25,6 +25,8 @@ ln -s /persisted-volume/deploy deploy
 
 trap 'cleanup' EXIT
 
+make clean
+
 # wait until postgres which is running in another container will be ready
 bash scripts/wait_until_postgres_is_ready.sh
 
@@ -40,5 +42,3 @@ elif [[ "$ENV_NAME" == "prod" ]]
 then
   make -j deploy/prod/basemap
 fi
-
-make clean

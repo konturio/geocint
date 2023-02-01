@@ -1,4 +1,4 @@
-name: Deploy Basemap image
+name: Build Basemap image
 on:
   workflow_dispatch:
     git_ref:
@@ -6,7 +6,7 @@ on:
       required: false
 
 jobs:
-  deploy-basemap-image:
+  build-basemap-image:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3

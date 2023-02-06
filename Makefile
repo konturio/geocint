@@ -1980,16 +1980,18 @@ db/table/isodist_bomb_shelters_h3: db/table/update_isochrone_destinations db/tab
 
 ## Isochrones calculation block end
 
-db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manager
-	psql -c "drop table if exists global_rva_indexes;"
-	psql -c "create table global_rva_indexes (country_name text,iso_code text,hasc text,raw_mhe_pop_scaled numeric,raw_mhe_cap_scaled numeric,raw_mhe_index numeric,relative_mhe_pop_scaled numeric,relative_mhe_cap_scaled numeric,relative_mhe_index numeric,mhe_index numeric,life_expectancy_scale numeric,infant_mortality_scale numeric,maternal_mortality_scale numeric,prevalence_undernourished_scale numeric,vulnerable_health_status_index numeric,pop_wout_improved_sanitation_scale numeric,pop_wout_improved_water_scale numeric,clean_water_access_vulnerability_index numeric,adult_illiteracy_scale numeric,gross_enrollment_scale numeric,years_of_schooling_scale numeric,pop_wout_internet_scale numeric,info_access_vulnerability_index numeric,export_minus_import_percent_scale numeric,average_inflation_scale numeric,economic_dependency_scale numeric,economic_constraints_index numeric,female_govt_seats_scale numeric,female_male_secondary_enrollment_scale numeric,female_male_labor_ratio_scale numeric,gender_inequality_index numeric,max_political_discrimination_scale numeric,max_economic_discrimination_scale numeric,ethnic_discrimination_index numeric,marginalization_index numeric,population_change_scale numeric,urban_population_change_scale numeric,population_pressures_index numeric,freshwater_withdrawals_scale numeric,forest_area_change_scale numeric,ruminant_density_scale numeric,environmental_stress_index numeric,recent_disaster_losses_scale numeric,recent_disaster_deaths_scale numeric,recent_disaster_impacts_index numeric,recent_conflict_deaths_scale numeric,displaced_populations_scale numeric,conflict_impacts_index numeric,vulnerability_index numeric,voice_and_accountability_scale numeric,rule_of_law_scale numeric,political_stability_scale numeric,govt_effectiveness_scale numeric,control_of_corruption_scale numeric,governance_index numeric,gni_per_capita_scale numeric,reserves_per_capita_scale numeric,economic_capacity_index numeric,fixed_phone_access_scale numeric,mobile_phone_access_scale numeric,internet_server_access_scale numeric,communications_capacity_index numeric,port_rnwy_density_scale numeric,road_rr_density_scale numeric,transportation_index numeric,hospital_bed_density_scale numeric,nurses_midwives_scale numeric,physicians_scale numeric,health_care_capacity_index numeric,infrastructure_capacity_index numeric,biome_protection_scale numeric,marine_protected_area_scale numeric,environmental_capacity_index numeric,coping_capacity_index numeric,resilience_index numeric,mhr_index numeric);"
-	cat static_data/pdc_bivariate_manager/global_rva_hasc.csv | psql -c "copy global_rva_indexes from stdin with csv header;"
-	psql -c "create index on global_rva_indexes using btree(hasc);"
+### PDC Data
+### Downloaded at first iteration - normalized indicies
+db/table/global_rva_normalized_indexes: | db/table ## Global RVA normalized indexes to Bivariate Manager
+	psql -c "drop table if exists global_rva_normalized_indexes;"
+	psql -c "create table global_rva_normalized_indexes (country_name text,iso_code text,hasc text,raw_mhe_pop_scaled numeric,raw_mhe_cap_scaled numeric,raw_mhe_index numeric,relative_mhe_pop_scaled numeric,relative_mhe_cap_scaled numeric,relative_mhe_index numeric,mhe_index numeric,life_expectancy_scale numeric,infant_mortality_scale numeric,maternal_mortality_scale numeric,prevalence_undernourished_scale numeric,vulnerable_health_status_index numeric,pop_wout_improved_sanitation_scale numeric,pop_wout_improved_water_scale numeric,clean_water_access_vulnerability_index numeric,adult_illiteracy_scale numeric,gross_enrollment_scale numeric,years_of_schooling_scale numeric,pop_wout_internet_scale numeric,info_access_vulnerability_index numeric,export_minus_import_percent_scale numeric,average_inflation_scale numeric,economic_dependency_scale numeric,economic_constraints_index numeric,female_govt_seats_scale numeric,female_male_secondary_enrollment_scale numeric,female_male_labor_ratio_scale numeric,gender_inequality_index numeric,max_political_discrimination_scale numeric,max_economic_discrimination_scale numeric,ethnic_discrimination_index numeric,marginalization_index numeric,population_change_scale numeric,urban_population_change_scale numeric,population_pressures_index numeric,freshwater_withdrawals_scale numeric,forest_area_change_scale numeric,ruminant_density_scale numeric,environmental_stress_index numeric,recent_disaster_losses_scale numeric,recent_disaster_deaths_scale numeric,recent_disaster_impacts_index numeric,recent_conflict_deaths_scale numeric,displaced_populations_scale numeric,conflict_impacts_index numeric,vulnerability_index numeric,voice_and_accountability_scale numeric,rule_of_law_scale numeric,political_stability_scale numeric,govt_effectiveness_scale numeric,control_of_corruption_scale numeric,governance_index numeric,gni_per_capita_scale numeric,reserves_per_capita_scale numeric,economic_capacity_index numeric,fixed_phone_access_scale numeric,mobile_phone_access_scale numeric,internet_server_access_scale numeric,communications_capacity_index numeric,port_rnwy_density_scale numeric,road_rr_density_scale numeric,transportation_index numeric,hospital_bed_density_scale numeric,nurses_midwives_scale numeric,physicians_scale numeric,health_care_capacity_index numeric,infrastructure_capacity_index numeric,biome_protection_scale numeric,marine_protected_area_scale numeric,environmental_capacity_index numeric,coping_capacity_index numeric,resilience_index numeric,mhr_index numeric);"
+	cat static_data/pdc_bivariate_manager/global_rva_normalized.csv | psql -c "copy global_rva_normalized_indexes from stdin with csv header;"
+	psql -c "create index on global_rva_normalized_indexes using btree(hasc);"
 	touch $@
 
-db/table/global_rva_h3: db/table/kontur_boundaries db/table/global_rva_indexes db/procedure/generate_overviews | db/table ## Generation overviws of global rva indexes
-	psql -f tables/global_rva_h3.sql
-	psql -c "call generate_overviews('global_rva_h3', '{mhe_index, vulnerability_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg}'::text[], 8);"
+db/table/global_rva_normalized_h3: db/table/kontur_boundaries db/table/global_rva_normalized_indexes db/procedure/generate_overviews | db/table ## Generation overviws of global rva indexes
+	psql -f tables/global_rva_normalized_h3.sql
+	psql -c "call generate_overviews('global_rva_normalized_h3', '{mhe_index, vulnerability_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
 
 db/table/ndpba_rva_indexes: | db/table ## NDPBA RVA indexes
@@ -2002,6 +2004,9 @@ db/table/ndpba_rva_h3: db/table/kontur_boundaries db/table/ndpba_rva_indexes db/
 	psql -f tables/ndpba_rva_h3.sql
 	psql -c "call generate_overviews('ndpba_rva_h3', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
+
+### Second iteration - add raw data
+### TODO
 
 data/in/foursquare/downloaded: | data/in/foursquare ## download and rename 4sq archives
 	cd data/in/foursquare; aws s3 sync s3://geodata-eu-central-1-kontur/private/geocint/in/foursquare/ ./ --profile geocint_pipeline_sender
@@ -3184,23 +3189,23 @@ deploy/dev/uploads/powerlines_h3: data/out/csv/powerlines_h3.csv | deploy/dev/up
 	touch $@
 
 deploy/dev/uploads/mhr_index_h3: data/out/csv/mhr_index_h3.csv | deploy/dev/uploads  ## Upload mhr_index dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mhr_index_h3.csv "mhr_index" "PDC GRVA Multi-hazard risk" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "" "World" "static" "index" "$(date -r static_data/pdc_bivariate_manager/global_rva_hasc.csv +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mhr_index_h3.csv "mhr_index" "PDC GRVA Multi-hazard risk" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "" "World" "static" "index" "2020-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/mhe_index_h3: data/out/csv/mhe_index_h3.csv | deploy/dev/uploads  ## Upload mhe_index dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mhe_index_h3.csv "mhe_index" "PDC GRVA Multi-hazard exposure" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "" "World" "static" "index" "$(date -r static_data/pdc_bivariate_manager/global_rva_hasc.csv +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mhe_index_h3.csv "mhe_index" "PDC GRVA Multi-hazard exposure" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "" "World" "static" "index" "2020-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/coping_capacity_index_h3: data/out/csv/coping_capacity_index_h3.csv | deploy/dev/uploads  ## Upload coping_capacity_index dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/coping_capacity_index_h3.csv "coping_capacity_index" "PDC GRVA Coping сapacity" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "" "World" "static" "index" "$(date -r static_data/pdc_bivariate_manager/global_rva_hasc.csv +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/coping_capacity_index_h3.csv "coping_capacity_index" "PDC GRVA Coping сapacity" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "" "World" "static" "index" "2020-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/resilience_index_h3: data/out/csv/resilience_index_h3.csv | deploy/dev/uploads  ## Upload resilience_index dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/resilience_index_h3.csv "resilience_index" "PDC GRVA Resilience" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "" "World" "static" "index" "$(date -r static_data/pdc_bivariate_manager/global_rva_hasc.csv +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/resilience_index_h3.csv "resilience_index" "PDC GRVA Resilience" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "" "World" "static" "index" "2020-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/vulnerability_index_h3: data/out/csv/vulnerability_index_h3.csv | deploy/dev/uploads  ## Upload vulnerability_index dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerability_index_h3.csv "vulnerability_index" "PDC GRVA Vulnerability" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "" "World" "static" "index" "$(date -r static_data/pdc_bivariate_manager/global_rva_hasc.csv +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerability_index_h3.csv "vulnerability_index" "PDC GRVA Vulnerability" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "" "World" "static" "index" "2020-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/night_lights_intensity_h3: data/out/csv/night_lights_intensity_h3.csv | deploy/dev/uploads  ## Upload night_lights_intensity dataset to Insights API

@@ -577,7 +577,7 @@ create table stat_h3 tablespace evo4tb as (
          left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
          left join pf_maxtemp_h3 pf on (a.h3 = pf.h3)
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)
-         left join global_rva_h3 rva on (a.h3 = rva.h3)
+         left join global_rva_normalized_h3 rva on (a.h3 = rva.h3)
          left join disaster_event_episodes_h3 on (a.h3 = disaster_event_episodes_h3.h3)
          left join facebook_medium_voltage_distribution_h3 on (a.h3 = facebook_medium_voltage_distribution_h3.h3)
          left join night_lights_h3 nl on (a.h3 = nl.h3)

@@ -2013,8 +2013,9 @@ db/table/global_rva_data: | db/table ## Global RVA data to Bivariate Manager
 	psql -c "create index on global_rva_data using btree(hasc);"
 	touch $@
 
-db/table/global_rva_data_h3: db/table/kontur_boundaries db/table/global_rva_data | db/table ## Create h3 table with global RVA data on 4th resolution
+db/table/global_rva_data_h3: db/table/kontur_boundaries db/table/global_rva_data db/procedure/generate_overviews | db/table ## Create h3 table with global RVA data on 4th resolution
 	psql -f tables/global_rva_data_h3.sql
+	psql -c "call generate_overviews('global_rva_data_h3', '{raw_mhe_pop_exposure,raw_mhe_cap_exp,relative_mhe_pop,relative_mhe_cap,life_expectancy,infant_mortality,maternal_mortality,undernourished,improved_sanitation,improved_water,adult_literacy,gross_enrollment,mean_years_schooling,internet_users_per_100,export_minus_import_percent,five_year_average_inflation,age_dependency_ratio,proportion_female_seats_parliament,fem_to_male_secondary_enroll,fem_to_male_labor,max_political_discrimination,max_economic_discrimination,avg_ann_pop_change,avg_ann_urban_pop_change,freshwater_withdrawal,pct_forest_change,ruminant_density,losses_percent_gni,deaths_per_10k,deaths_per_million,refugees,voice_and_accountability,rule_of_law,political_stability,government_effectiveness,control_of_corruption,gni_per_capita,reserves_per_capita,fixed_telephone_per_100,mobile_phone_subs_per_100,secure_internet_servers,hospital_bed_per_10k,nurse_midwife_per_10k,physician_per_10k,avg_biome_protection,marine_protected_area}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 4);"
 	touch $@
 
 

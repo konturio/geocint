@@ -84,7 +84,7 @@ create table global_rva_data_h3 as
 	       avg(freshwater_withdrawal) as freshwater_withdrawal,
 	       avg(pct_forest_change) as pct_forest_change,
 	       avg(ruminant_density) as ruminant_density,
-	       avg(losses_percent_gni) aslosses_percent_gni,
+	       avg(losses_percent_gni) as losses_percent_gni,
 	       avg(deaths_per_10k) as deaths_per_10k,
 	       avg(deaths_per_million) as deaths_per_million,
 	       avg(refugees) as refugees,

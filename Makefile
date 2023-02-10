@@ -2008,14 +2008,14 @@ db/table/ndpba_rva_h3: db/table/kontur_boundaries db/table/ndpba_rva_indexes db/
 ### Second iteration - add raw data
 db/table/global_rva_data: | db/table ## Global RVA data to Bivariate Manager
 	psql -c "drop table if exists global_rva_data;"
-	psql -c "create table global_rva_data (iso_code text,country_name text,hasc text,raw_mhe_pop_exposure numeric,raw_mhe_cap_exp numeric,relative_mhe_pop numeric,relative_mhe_cap numeric,life_expectancy numeric,infant_mortality numeric,maternal_mortality numeric,undernourished numeric,improved_sanitation numeric,improved_water numeric,adult_literacy numeric,gross_enrollment numeric,mean_years_schooling numeric,internet_users_per_100 numeric,export_minus_import_percent numeric,five_year_average_inflation numeric,age_dependency_ratio numeric,proportion_female_seats_parliament numeric,fem_to_male_secondary_enroll numeric,fem_to_male_labor numeric,max_political_discrimination numeric,max_economic_discrimination numeric,avg_ann_pop_change numeric,avg_ann_urban_pop_change numeric,freshwater_withdrawal numeric,pct_forest_change numeric,ruminant_density numeric,losses_percent_gni numeric,deaths_per_10k numeric,deaths_per_million numeric,refugees numeric,voice_and_accountability numeric,rule_of_law numeric,political_stability numeric,government_effectiveness numeric,control_of_corruption numeric,gni_per_capita numeric,reserves_per_capita numeric,fixed_telephone_per_100 numeric,mobile_phone_subs_per_100 numeric,secure_internet_servers numeric,hospital_bed_per_10k numeric,nurse_midwife_per_10k numeric,physician_per_10k numeric,avg_biome_protection numeric,marine_protected_area numeric);"
+	psql -c "create table global_rva_data (iso_code text,country_name text,hasc text,raw_mhe_pop_exposure numeric,raw_mhe_cap_exp numeric,relative_mhe_pop numeric,relative_mhe_cap numeric,life_expectancy numeric,infant_mortality numeric,maternal_mortality numeric,undernourished numeric,improved_sanitation numeric,improved_water numeric,adult_literacy numeric,gross_enrollment numeric,mean_years_schooling numeric,internet_users_per_100 numeric,export_minus_import_percent numeric,five_year_average_inflation numeric,age_dependency_ratio numeric,proportion_female_seats_parliament numeric,fem_to_male_secondary_enroll numeric,fem_to_male_labor numeric,max_political_discrimination numeric,max_economic_discrimination numeric,avg_ann_pop_change numeric,avg_ann_urban_pop_change numeric,freshwater_withdrawal numeric,pct_forest_change numeric,ruminant_density numeric,losses_percent_gni numeric,disaster_deaths_per_10k numeric,conflict_deaths_per_10k numeric,refugees numeric,voice_and_accountability numeric,rule_of_law numeric,political_stability numeric,government_effectiveness numeric,control_of_corruption numeric,gni_per_capita numeric,reserves_per_capita numeric,fixed_telephone_per_100 numeric,mobile_phone_subs_per_100 numeric,secure_internet_servers numeric,hospital_bed_per_10k numeric,nurse_midwife_per_10k numeric,physician_per_10k numeric,avg_biome_protection numeric,marine_protected_area numeric);"
 	cat static_data/pdc_bivariate_manager/global_rva.csv | psql -c "copy global_rva_data from stdin with csv header;"
 	psql -c "create index on global_rva_data using btree(hasc);"
 	touch $@
 
 db/table/global_rva_data_h3: db/table/kontur_boundaries db/table/global_rva_data db/procedure/generate_overviews | db/table ## Create h3 table with global RVA data on 4th resolution
 	psql -f tables/global_rva_data_h3.sql
-	psql -c "call generate_overviews('global_rva_data_h3', '{raw_mhe_pop_exposure,raw_mhe_cap_exp,relative_mhe_pop,relative_mhe_cap,life_expectancy,infant_mortality,maternal_mortality,undernourished,improved_sanitation,improved_water,adult_literacy,gross_enrollment,mean_years_schooling,internet_users_per_100,export_minus_import_percent,five_year_average_inflation,age_dependency_ratio,proportion_female_seats_parliament,fem_to_male_secondary_enroll,fem_to_male_labor,max_political_discrimination,max_economic_discrimination,avg_ann_pop_change,avg_ann_urban_pop_change,freshwater_withdrawal,pct_forest_change,ruminant_density,losses_percent_gni,deaths_per_10k,deaths_per_million,refugees,voice_and_accountability,rule_of_law,political_stability,government_effectiveness,control_of_corruption,gni_per_capita,reserves_per_capita,fixed_telephone_per_100,mobile_phone_subs_per_100,secure_internet_servers,hospital_bed_per_10k,nurse_midwife_per_10k,physician_per_10k,avg_biome_protection,marine_protected_area}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 4);"
+	psql -c "call generate_overviews('global_rva_data_h3', '{raw_mhe_pop_exposure,raw_mhe_cap_exp,relative_mhe_pop,relative_mhe_cap,life_expectancy,infant_mortality,maternal_mortality,undernourished,improved_sanitation,improved_water,adult_literacy,gross_enrollment,mean_years_schooling,internet_users_per_100,export_minus_import_percent,five_year_average_inflation,age_dependency_ratio,proportion_female_seats_parliament,fem_to_male_secondary_enroll,fem_to_male_labor,max_political_discrimination,max_economic_discrimination,avg_ann_pop_change,avg_ann_urban_pop_change,freshwater_withdrawal,pct_forest_change,ruminant_density,losses_percent_gni,disaster_deaths_per_10k,conflict_deaths_per_10k,refugees,voice_and_accountability,rule_of_law,political_stability,government_effectiveness,control_of_corruption,gni_per_capita,reserves_per_capita,fixed_telephone_per_100,mobile_phone_subs_per_100,secure_internet_servers,hospital_bed_per_10k,nurse_midwife_per_10k,physician_per_10k,avg_biome_protection,marine_protected_area}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 4);"
 	touch $@
 
 
@@ -3075,12 +3075,12 @@ data/out/csv/grva_losses_percent_gni_h3.csv: db/table/global_rva_data_h3 | data/
 	bash scripts/h3_table_to_csv_for_insights_uploading.sh global_rva_data_h3 losses_percent_gni 1 2 $@
 	touch $@
 
-data/out/csv/grva_deaths_per_10k_h3.csv: db/table/global_rva_data_h3 | data/out/csv ## CSV export of grva deaths_per_10k
-	bash scripts/h3_table_to_csv_for_insights_uploading.sh global_rva_data_h3 deaths_per_10k 1 2 $@
+data/out/csv/grva_disaster_deaths_per_10k_h3.csv: db/table/global_rva_data_h3 | data/out/csv ## CSV export of grva disaster_deaths_per_10k
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh global_rva_data_h3 disaster_deaths_per_10k 1 2 $@
 	touch $@
 
-data/out/csv/grva_deaths_per_million_h3.csv: db/table/global_rva_data_h3 | data/out/csv ## CSV export of grva deaths_per_million
-	bash scripts/h3_table_to_csv_for_insights_uploading.sh global_rva_data_h3 deaths_per_million 1 2 $@
+data/out/csv/grva_conflict_deaths_per_10k_h3.csv: db/table/global_rva_data_h3 | data/out/csv ## CSV export of grva conflict_deaths_per_10k
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh global_rva_data_h3 conflict_deaths_per_10k 1 2 $@
 	touch $@
 
 data/out/csv/grva_refugees_h3.csv: db/table/global_rva_data_h3 | data/out/csv ## CSV export of grva refugees
@@ -3490,11 +3490,11 @@ deploy/dev/uploads/grva_life_expectancy_h3: data/out/csv/grva_life_expectancy_h3
 	touch $@
 
 deploy/dev/uploads/grva_infant_mortality_h3: data/out/csv/grva_infant_mortality_h3.csv | deploy/dev/uploads  ## Upload grva_infant_mortality dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_infant_mortality_h3.csv "grva_infant_mortality" "PDC GRVA Life Expectancy" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Infant mortality rate per 1000 live births" "World" "static" "n" "2022-01-01T00:00:00Z"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_infant_mortality_h3.csv "grva_infant_mortality" "PDC GRVA Infant Mortality Ratio" "[[\"good\"], [\"bad\"]]" false	 false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Infant mortality rate per 1000 live births" "World" "static" "n" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_maternal_mortality_h3: data/out/csv/grva_maternal_mortality_h3.csv | deploy/dev/uploads  ## Upload grva_maternal_mortality dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_maternal_mortality_h3.csv "grva_maternal_mortality" "PDC GRVA Maternal Mortality Ratio" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Ratio of maternal deaths to 100,000 births" "World" "static" "n" "2022-01-01T00:00:00Z"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_maternal_mortality_h3.csv "grva_maternal_mortality" "PDC GRVA Maternal Mortality Ratio" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Ratio of maternal deaths to 100,000 births" "World" "static" "n" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_undernourished_h3: data/out/csv/grva_undernourished_h3.csv | deploy/dev/uploads  ## Upload grva_undernourished dataset to Insights API
@@ -3502,11 +3502,11 @@ deploy/dev/uploads/grva_undernourished_h3: data/out/csv/grva_undernourished_h3.c
 	touch $@
 
 deploy/dev/uploads/grva_improved_sanitation_h3: data/out/csv/grva_improved_sanitation_h3.csv | deploy/dev/uploads  ## Upload grva_improved_sanitation dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_improved_sanitation_h3.csv "grva_improved_sanitation" "PDC GRVA Access to improved sanitation " "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Percentage of households with access to public sewage system " "World" "static" "fract" "2022-01-01T00:00:00Z"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_improved_sanitation_h3.csv "grva_improved_sanitation" "PDC GRVA Access to improved sanitation " "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Percentage of households with access to public sewage system " "World" "static" "fract" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_improved_water_h3: data/out/csv/grva_improved_water_h3.csv | deploy/dev/uploads  ## Upload grva_improved_water dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_improved_water_h3.csv "grva_improved_water" "PDC GRVA Access to improved water" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Percentage of households with piped water access" "World" "static" "fract" "2022-01-01T00:00:00Z"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_improved_water_h3.csv "grva_improved_water" "PDC GRVA Access to improved water" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Percentage of households with piped water access" "World" "static" "fract" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_adult_literacy_h3: data/out/csv/grva_adult_literacy_h3.csv | deploy/dev/uploads  ## Upload grva_adult_literacy dataset to Insights API
@@ -3534,7 +3534,7 @@ deploy/dev/uploads/grva_five_year_average_inflation_h3: data/out/csv/grva_five_y
 	touch $@
 
 deploy/dev/uploads/grva_age_dependency_ratio_h3: data/out/csv/grva_age_dependency_ratio_h3.csv | deploy/dev/uploads  ## Upload grva_age_dependency_ratio dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_age_dependency_ratio_h3.csv "grva_age_dependency_ratio" "PDC GRVA Age dependency ratio" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Age dependency ratio (% of working-age population)" "World" "static" "perc" "2022-01-01T00:00:00Z"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_age_dependency_ratio_h3.csv "grva_age_dependency_ratio" "PDC GRVA Age dependency ratio" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Age dependency ratio (% of working-age population)" "World" "static" "perc" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_proportion_female_seats_parliament_h3: data/out/csv/grva_proportion_female_seats_parliament_h3.csv | deploy/dev/uploads  ## Upload grva_proportion_female_seats_parliament dataset to Insights API
@@ -3554,7 +3554,7 @@ deploy/dev/uploads/grva_max_political_discrimination_h3: data/out/csv/grva_max_p
 	touch $@
 
 deploy/dev/uploads/grva_max_economic_discrimination_h3: data/out/csv/grva_max_economic_discrimination_h3.csv | deploy/dev/uploads  ## Upload grva_max_economic_discrimination dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_max_economic_discrimination_h3.csv "grva_max_economic_discrimination" "PDC GRVA Maximum Ecomonic Discriminaton" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Maximum Political Discriminaton" "World" "static" "other" "2022-01-01T00:00:00Z"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_max_economic_discrimination_h3.csv "grva_max_economic_discrimination" "PDC GRVA Maximum Economic Discriminaton" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Maximum Economic Discriminaton" "World" "static" "other" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_avg_ann_pop_change_h3: data/out/csv/grva_avg_ann_pop_change_h3.csv | deploy/dev/uploads  ## Upload grva_avg_ann_pop_change dataset to Insights API
@@ -3566,7 +3566,7 @@ deploy/dev/uploads/grva_avg_ann_urban_pop_change_h3: data/out/csv/grva_avg_ann_u
 	touch $@
 
 deploy/dev/uploads/grva_freshwater_withdrawal_h3: data/out/csv/grva_freshwater_withdrawal_h3.csv | deploy/dev/uploads  ## Upload grva_freshwater_withdrawal dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_freshwater_withdrawal_h3.csv "grva_freshwater_withdrawal" "PDC GRVA Freshwater Withdrawals" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources" "World" "static" "perc" "2022-01-01T00:00:00Z"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_freshwater_withdrawal_h3.csv "grva_freshwater_withdrawal" "PDC GRVA Freshwater Withdrawals" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources" "World" "static" "perc" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_pct_forest_change_h3: data/out/csv/grva_pct_forest_change_h3.csv | deploy/dev/uploads  ## Upload grva_pct_forest_change dataset to Insights API
@@ -3574,19 +3574,19 @@ deploy/dev/uploads/grva_pct_forest_change_h3: data/out/csv/grva_pct_forest_chang
 	touch $@
 
 deploy/dev/uploads/grva_ruminant_density_h3: data/out/csv/grva_ruminant_density_h3.csv | deploy/dev/uploads  ## Upload grva_ruminant_density dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_ruminant_density_h3.csv "grva_ruminant_density" "PDC GRVA Ruminant Density" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Average number of ruminants at 1 ha of agricultural land" "World" "static" "n" "2022-01-01T00:00:00Z"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_ruminant_density_h3.csv "grva_ruminant_density" "PDC GRVA Ruminant Density" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Average number of ruminants at 1 ha of agricultural land" "World" "static" "n" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_losses_percent_gni_h3: data/out/csv/grva_losses_percent_gni_h3.csv | deploy/dev/uploads  ## Upload grva_losses_percent_gni dataset to Insights API
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_losses_percent_gni_h3.csv "grva_losses_percent_gni" "PDC GRVA Recent Disaster Losses" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Recent Disaster Losses as Percent GNI" "World" "static" "perc" "2022-01-01T00:00:00Z"
 	touch $@
 
-deploy/dev/uploads/grva_deaths_per_10k_h3: data/out/csv/grva_deaths_per_10k_h3.csv | deploy/dev/uploads  ## Upload grva_deaths_per_10k dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_deaths_per_10k_h3.csv "grva_deaths_per_10k" "PDC GRVA Recent Disaster Deaths" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Recent disaster deaths per 10000 ppl" "World" "static" "n" "2022-01-01T00:00:00Z"
+deploy/dev/uploads/grva_disaster_deaths_per_10k_h3: data/out/csv/grva_disaster_deaths_per_10k_h3.csv | deploy/dev/uploads  ## Upload grva_disaster_deaths_per_10k dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_disaster_deaths_per_10k_h3.csv "grva_disaster_deaths_per_10k" "PDC GRVA Recent Disaster Deaths" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Recent disaster deaths per 10000 ppl" "World" "static" "n" "2022-01-01T00:00:00Z"
 	touch $@
 
-deploy/dev/uploads/grva_deaths_per_million_h3: data/out/csv/grva_deaths_per_million_h3.csv | deploy/dev/uploads  ## Upload grva_deaths_per_million dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_deaths_per_million_h3.csv "grva_deaths_per_million" "PDC GRVA Recent Conflict Deaths" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Recent confilct deaths per 1000000 ppl" "World" "static" "n" "2022-01-01T00:00:00Z"
+deploy/dev/uploads/grva_conflict_deaths_per_10k_h3: data/out/csv/grva_conflict_deaths_per_10k_h3.csv | deploy/dev/uploads  ## Upload grva_conflict_deaths_per_10k dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_conflict_deaths_per_10k_h3.csv "grva_conflict_deaths_per_10k" "PDC GRVA Recent Conflict Deaths" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Recent confilct deaths per 1000000 ppl" "World" "static" "n" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_refugees_h3: data/out/csv/grva_refugees_h3.csv | deploy/dev/uploads  ## Upload grva_refugees dataset to Insights API
@@ -3610,7 +3610,7 @@ deploy/dev/uploads/grva_government_effectiveness_h3: data/out/csv/grva_governmen
 	touch $@
 
 deploy/dev/uploads/grva_control_of_corruption_h3: data/out/csv/grva_control_of_corruption_h3.csv | deploy/dev/uploads  ## Upload grva_control_of_corruption dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_control_of_corruption_h3.csv "grva_control_of_corruption" "PDC GRVA Control of corruption" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Government control of index" "World" "static" "index" "2022-01-01T00:00:00Z"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_control_of_corruption_h3.csv "grva_control_of_corruption" "PDC GRVA Control of corruption" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Government control of corruption index" "World" "static" "index" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_gni_per_capita_h3: data/out/csv/grva_gni_per_capita_h3.csv | deploy/dev/uploads  ## Upload grva_gni_per_capita dataset to Insights API
@@ -3684,7 +3684,7 @@ deploy/dev/uploads/upload_isochrone: deploy/dev/uploads/man_distance_to_charging
 deploy/dev/uploads/upload_climate: deploy/dev/uploads/gsa_ghi_h3 deploy/dev/uploads/worldclim_avg_temperature_h3 deploy/dev/uploads/worldclim_min_temperature_h3 deploy/dev/uploads/worldclim_max_temperature_h3 deploy/dev/uploads/worldclim_amp_temperature_h3 | deploy/dev/uploads  ## Collect climate uploads to one target DEV
 	touch $@
 
-deploy/dev/uploads/upload_pdc: deploy/dev/uploads/vulnerability_index_h3 deploy/dev/uploads/resilience_index_h3 deploy/dev/uploads/coping_capacity_index_h3 deploy/dev/uploads/mhr_index_h3 deploy/dev/uploads/mhe_index_h3 deploy/dev/uploads/grva_raw_mhe_pop_exposure_h3 deploy/dev/uploads/grva_raw_mhe_cap_exp_h3 deploy/dev/uploads/grva_relative_mhe_pop_h3 deploy/dev/uploads/grva_relative_mhe_cap_h3 deploy/dev/uploads/grva_life_expectancy_h3 deploy/dev/uploads/grva_infant_mortality_h3 deploy/dev/uploads/grva_maternal_mortality_h3 deploy/dev/uploads/grva_undernourished_h3 deploy/dev/uploads/grva_improved_sanitation_h3 deploy/dev/uploads/grva_improved_water_h3 deploy/dev/uploads/grva_adult_literacy_h3 deploy/dev/uploads/grva_gross_enrollment_h3 deploy/dev/uploads/grva_mean_years_schooling_h3 deploy/dev/uploads/grva_internet_users_per_100_h3 deploy/dev/uploads/grva_export_minus_import_percent_h3 deploy/dev/uploads/grva_five_year_average_inflation_h3 deploy/dev/uploads/grva_age_dependency_ratio_h3 deploy/dev/uploads/grva_proportion_female_seats_parliament_h3 deploy/dev/uploads/grva_fem_to_male_secondary_enroll_h3 deploy/dev/uploads/grva_fem_to_male_labor_h3 deploy/dev/uploads/grva_max_political_discrimination_h3 deploy/dev/uploads/grva_max_economic_discrimination_h3 deploy/dev/uploads/grva_avg_ann_pop_change_h3 deploy/dev/uploads/grva_avg_ann_urban_pop_change_h3 deploy/dev/uploads/grva_freshwater_withdrawal_h3 deploy/dev/uploads/grva_pct_forest_change_h3 deploy/dev/uploads/grva_ruminant_density_h3 deploy/dev/uploads/grva_losses_percent_gni_h3 deploy/dev/uploads/grva_deaths_per_10k_h3 deploy/dev/uploads/grva_deaths_per_million_h3 deploy/dev/uploads/grva_refugees_h3 deploy/dev/uploads/grva_voice_and_accountability_h3 deploy/dev/uploads/grva_rule_of_law_h3 deploy/dev/uploads/grva_political_stability_h3 deploy/dev/uploads/grva_government_effectiveness_h3 deploy/dev/uploads/grva_control_of_corruption_h3 deploy/dev/uploads/grva_gni_per_capita_h3 deploy/dev/uploads/grva_reserves_per_capita_h3 deploy/dev/uploads/grva_fixed_telephone_per_100_h3 deploy/dev/uploads/grva_mobile_phone_subs_per_100_h3 deploy/dev/uploads/grva_secure_internet_servers_h3 deploy/dev/uploads/grva_hospital_bed_per_10k_h3 deploy/dev/uploads/grva_nurse_midwife_per_10k_h3 deploy/dev/uploads/grva_physician_per_10k_h3 deploy/dev/uploads/grva_avg_biome_protection_h3 deploy/dev/uploads/grva_marine_protected_area_h3 | deploy/dev/uploads  ## Collect pdc uploads to one target DEV
+deploy/dev/uploads/upload_pdc: deploy/dev/uploads/vulnerability_index_h3 deploy/dev/uploads/resilience_index_h3 deploy/dev/uploads/coping_capacity_index_h3 deploy/dev/uploads/mhr_index_h3 deploy/dev/uploads/mhe_index_h3 deploy/dev/uploads/grva_raw_mhe_pop_exposure_h3 deploy/dev/uploads/grva_raw_mhe_cap_exp_h3 deploy/dev/uploads/grva_relative_mhe_pop_h3 deploy/dev/uploads/grva_relative_mhe_cap_h3 deploy/dev/uploads/grva_life_expectancy_h3 deploy/dev/uploads/grva_infant_mortality_h3 deploy/dev/uploads/grva_maternal_mortality_h3 deploy/dev/uploads/grva_undernourished_h3 deploy/dev/uploads/grva_improved_sanitation_h3 deploy/dev/uploads/grva_improved_water_h3 deploy/dev/uploads/grva_adult_literacy_h3 deploy/dev/uploads/grva_gross_enrollment_h3 deploy/dev/uploads/grva_mean_years_schooling_h3 deploy/dev/uploads/grva_internet_users_per_100_h3 deploy/dev/uploads/grva_export_minus_import_percent_h3 deploy/dev/uploads/grva_five_year_average_inflation_h3 deploy/dev/uploads/grva_age_dependency_ratio_h3 deploy/dev/uploads/grva_proportion_female_seats_parliament_h3 deploy/dev/uploads/grva_fem_to_male_secondary_enroll_h3 deploy/dev/uploads/grva_fem_to_male_labor_h3 deploy/dev/uploads/grva_max_political_discrimination_h3 deploy/dev/uploads/grva_max_economic_discrimination_h3 deploy/dev/uploads/grva_avg_ann_pop_change_h3 deploy/dev/uploads/grva_avg_ann_urban_pop_change_h3 deploy/dev/uploads/grva_freshwater_withdrawal_h3 deploy/dev/uploads/grva_pct_forest_change_h3 deploy/dev/uploads/grva_ruminant_density_h3 deploy/dev/uploads/grva_losses_percent_gni_h3 deploy/dev/uploads/grva_disaster_deaths_per_10k_h3 deploy/dev/uploads/grva_conflict_deaths_per_10k_h3 deploy/dev/uploads/grva_refugees_h3 deploy/dev/uploads/grva_voice_and_accountability_h3 deploy/dev/uploads/grva_rule_of_law_h3 deploy/dev/uploads/grva_political_stability_h3 deploy/dev/uploads/grva_government_effectiveness_h3 deploy/dev/uploads/grva_control_of_corruption_h3 deploy/dev/uploads/grva_gni_per_capita_h3 deploy/dev/uploads/grva_reserves_per_capita_h3 deploy/dev/uploads/grva_fixed_telephone_per_100_h3 deploy/dev/uploads/grva_mobile_phone_subs_per_100_h3 deploy/dev/uploads/grva_secure_internet_servers_h3 deploy/dev/uploads/grva_hospital_bed_per_10k_h3 deploy/dev/uploads/grva_nurse_midwife_per_10k_h3 deploy/dev/uploads/grva_physician_per_10k_h3 deploy/dev/uploads/grva_avg_biome_protection_h3 deploy/dev/uploads/grva_marine_protected_area_h3 | deploy/dev/uploads  ## Collect pdc uploads to one target DEV
 	touch $@
 
 deploy/dev/uploads/upload_proximity: deploy/dev/uploads/powerlines_proximity_m_h3 deploy/dev/uploads/populated_areas_proximity_m_h3 deploy/dev/uploads/power_substations_proximity_m_h3 | deploy/dev/uploads  ## Collect proximity uploads to one target DEV

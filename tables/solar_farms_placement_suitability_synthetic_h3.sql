@@ -89,3 +89,6 @@ from gsa_ghi
          inner join constraint_powersubstations on gsa_ghi.h3 = constraint_powersubstations.h3
 
 where resolution = 8;
+
+-- delete 0 values for better overviews (simplest approach)
+delete from solar_farms_placement_suitability_synthetic_h3 where solar_farms_placement_suitability = 0;

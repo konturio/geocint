@@ -57,3 +57,36 @@ values ('perc', 'generic', NULL, NULL);
 
 insert into bivariate_unit (id, type, measurement, is_base)
 values ('fract', 'generic', NULL, NULL);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('m_s2', 'metric', 'acceleration', FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('n_per_1', 'generic', NULL, FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('n_per_10', 'generic', NULL, FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('n_per_100', 'generic', NULL, FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('n_per_1k', 'generic', NULL, FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('n_per_10k', 'generic', NULL, FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('n_per_100k', 'generic', NULL, FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('n_per_1m', 'generic', NULL, FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('km_per_sq_km', 'metric', 'density', FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('n_per_10k_sq_km', 'generic', 'density', FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('n_per_ha', 'generic', 'density', FALSE);

@@ -3574,7 +3574,7 @@ deploy/dev/uploads/grva_pct_forest_change_h3: data/out/csv/grva_pct_forest_chang
 	touch $@
 
 deploy/dev/uploads/grva_ruminant_density_h3: data/out/csv/grva_ruminant_density_h3.csv | deploy/dev/uploads  ## Upload grva_ruminant_density dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_ruminant_density_h3.csv "grva_ruminant_density" "PDC GRVA Ruminant Density" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Average number of ruminants at 1 ha of agricultural land" "World" "static" "n" "2022-01-01T00:00:00Z"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/grva_ruminant_density_h3.csv "grva_ruminant_density" "PDC GRVA Ruminant Density" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Average number of ruminants at 1 ha of agricultural land" "World" "static" "n_per_ha" "2022-01-01T00:00:00Z"
 	touch $@
 
 deploy/dev/uploads/grva_losses_percent_gni_h3: data/out/csv/grva_losses_percent_gni_h3.csv | deploy/dev/uploads  ## Upload grva_losses_percent_gni dataset to Insights API

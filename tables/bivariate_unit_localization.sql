@@ -57,3 +57,36 @@ values ('perc', 'en', '%', 'percentage');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('fract', 'en', 'fraction', 'fraction');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('m_s2', 'en', 'm/s²', 'meters per square second');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('n_per_1', 'en', 'n per 1', 'number per one feature');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('n_per_10', 'en', 'n per 10', 'number per ten features');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('n_per_100', 'en', 'n per 100', 'number per one hundred features');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('n_per_1k', 'en', 'n per 1000', 'number per one thousand features');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('n_per_10k', 'en', 'n per 10 thousands', 'number per ten thousands features');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('n_per_100k', 'en', 'n per 100 thousands', 'number per one hundred thousands features');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('n_per_1m', 'en', 'n per 1 million', 'number per million features');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('km_per_sq_km', 'en', 'km/km²', 'kilometers per square kilometer');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('n_per_10k_sq_km', 'en', 'n/km²', 'number per square kilometer');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('n_per_ha', 'en', 'n/ha', 'number per hectare');

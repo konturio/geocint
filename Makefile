@@ -20,7 +20,7 @@ include runner_make osm_make
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv deploy/dev/uploads/upload_all ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_normalized_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv deploy/dev/uploads/upload_all ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -1994,15 +1994,15 @@ db/table/global_rva_normalized_h3: db/table/kontur_boundaries db/table/global_rv
 	psql -c "call generate_overviews('global_rva_normalized_h3', '{mhe_index, vulnerability_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
 
-db/table/ndpba_rva_indexes: | db/table ## NDPBA RVA indexes
-	psql -c "drop table if exists ndpba_rva_indexes;"
-	psql -c 'create table ndpba_rva_indexes("country" text, "hasc" text, "region_indicator" text, "raw_population_exposure_index" numeric, "raw_economic_exposure" numeric, "relative_population_exposure_index" numeric, "relative_economic_exposure" numeric, "poverty" numeric, "economic_dependency" numeric, "maternal_mortality" numeric, "infant_mortality" numeric, "malnutrition" numeric, "population_change" numeric, "urban_pop_change" numeric, "school_enrollment" numeric, "years_of_schooling" numeric, "fem_to_male_labor" numeric, "proportion_of_female_seats_in_government" numeric, "life_expectancy" numeric, "protected_area" numeric, "physicians_per_10000_persons" numeric, "nurse_midwife_per_10k" numeric, "distance_to_hospital" numeric, "hbeds_per_10000_persons" numeric, "distance_to_port" numeric, "road_density" numeric, "households_with_fixed_phone" numeric, "households_with_cell_phone" numeric, "voter_participation" numeric);'
-	cat static_data/pdc_bivariate_manager/ndpba_rva.csv | psql -c "copy ndpba_rva_indexes from stdin with csv header;"
+db/table/ndpba_rva_normalized_indexes: | db/table ## NDPBA RVA normalized indexes
+	psql -c "drop table if exists ndpba_rva_normalized_indexes;"
+	psql -c 'create table ndpba_rva_normalized_indexes("country" text, "hasc" text, "region_indicator" text, "raw_population_exposure_index" numeric, "raw_economic_exposure" numeric, "relative_population_exposure_index" numeric, "relative_economic_exposure" numeric, "poverty" numeric, "economic_dependency" numeric, "maternal_mortality" numeric, "infant_mortality" numeric, "malnutrition" numeric, "population_change" numeric, "urban_pop_change" numeric, "school_enrollment" numeric, "years_of_schooling" numeric, "fem_to_male_labor" numeric, "proportion_of_female_seats_in_government" numeric, "life_expectancy" numeric, "protected_area" numeric, "physicians_per_10000_persons" numeric, "nurse_midwife_per_10k" numeric, "distance_to_hospital" numeric, "hbeds_per_10000_persons" numeric, "distance_to_port" numeric, "road_density" numeric, "households_with_fixed_phone" numeric, "households_with_cell_phone" numeric, "voter_participation" numeric);'
+	cat static_data/pdc_bivariate_manager/ndpba_rva_normalized.csv | psql -c "copy ndpba_rva_normalized_indexes from stdin with csv header;"
 	touch $@
 
-db/table/ndpba_rva_h3: db/table/kontur_boundaries db/table/ndpba_rva_indexes db/procedure/generate_overviews | db/table ## Generation overviews of ndpba rva indexes
-	psql -f tables/ndpba_rva_h3.sql
-	psql -c "call generate_overviews('ndpba_rva_h3', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
+db/table/ndpba_rva_normalized_h3: db/table/kontur_boundaries db/table/ndpba_rva_normalized_indexes db/procedure/generate_overviews | db/table ## Generation overviews of ndpba rva normalized indexes
+	psql -f tables/ndpba_rva_normalized_h3.sql
+	psql -c "call generate_overviews('ndpba_rva_normalized_h3', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
 
 ### Second iteration - add raw data
@@ -2016,6 +2016,17 @@ db/table/global_rva_data: | db/table ## Global RVA data to Bivariate Manager
 db/table/global_rva_data_h3: db/table/kontur_boundaries db/table/global_rva_data db/procedure/generate_overviews | db/table ## Create h3 table with global RVA data on 4th resolution
 	psql -f tables/global_rva_data_h3.sql
 	psql -c "call generate_overviews('global_rva_data_h3', '{raw_mhe_pop_exposure,raw_mhe_cap_exp,relative_mhe_pop,relative_mhe_cap,life_expectancy,infant_mortality,maternal_mortality,undernourished,improved_sanitation,improved_water,adult_literacy,gross_enrollment,mean_years_schooling,internet_users_per_100,export_minus_import_percent,five_year_average_inflation,age_dependency_ratio,proportion_female_seats_parliament,fem_to_male_secondary_enroll,fem_to_male_labor,max_political_discrimination,max_economic_discrimination,avg_ann_pop_change,avg_ann_urban_pop_change,freshwater_withdrawal,pct_forest_change,ruminant_density,losses_percent_gni,disaster_deaths_per_10k,conflict_deaths_per_10k,refugees,voice_and_accountability,rule_of_law,political_stability,government_effectiveness,control_of_corruption,gni_per_capita,reserves_per_capita,fixed_telephone_per_100,mobile_phone_subs_per_100,secure_internet_servers,hospital_bed_per_10k,nurse_midwife_per_10k,physician_per_10k,avg_biome_protection,marine_protected_area}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 4);"
+	touch $@
+
+db/table/ndpba_data: | db/table ## NDPBA Data
+	psql -c "drop table if exists ndpba_data;"
+	psql -c 'create table ndpba_data("department" text,"hasc" text,"raw_economic_exposure" numeric,"relative_economic_exposure" numeric,"poverty" numeric,"economic_dependency numeric","maternal_mortality" numeric,"infant_mortality" numeric,"malnutrition" numeric,"population_change" numeric,"urban_pop_change" numeric,"school_enrollment" numeric,"years_of_schooling" numeric,"fem_to_male_labor" numeric,"proportion_of_female_seats_in_government" numeric,"life_expectancy" numeric,"protected_area" numeric,"distance_to_hospital" numeric,"distance_to_port" numeric,"road_density" numeric,"households_with_fixed_phone" numeric,"households_with_cell_phone" numeric,"voter_participation" numeric,"physicians_per_10000_persons" numeric,"nurse_midwife_per_10k" numeric,"hbeds_per_10000_persons" numeric);'
+	cat static_data/pdc_bivariate_manager/ndpba_rva.csv | psql -c "copy ndpba_data from stdin with csv header;"
+	touch $@
+
+db/table/ndpba_data_h3: db/table/kontur_boundaries db/table/ndpba_data db/procedure/generate_overviews | db/table ## NDPBA data to H3
+	psql -f tables/ndpba_data_h3.sql
+	psql -c "call generate_overviews('ndpba_data_h3', '{raw_economic_exposure,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,distance_to_hospital,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation,physicians_per_10000_persons,nurse_midwife_per_10k,hbeds_per_10000_persons}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 4);"
 	touch $@
 
 
@@ -3149,6 +3160,106 @@ data/out/csv/grva_marine_protected_area_h3.csv: db/table/global_rva_data_h3 | da
 
 ##### END PDC Global RVA #####
 
+##### PDC NDPBA CSV #####
+
+data/out/csv/ndpba_raw_economic_exposure_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa raw_economic_exposure
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 raw_economic_exposure 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_relative_economic_exposure_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa relative_economic_exposure
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 relative_economic_exposure 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_poverty_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa poverty
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 poverty 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_economic_dependency_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa economic_dependency
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 economic_dependency 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_maternal_mortality_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa maternal_mortality
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 maternal_mortality 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_infant_mortality_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa infant_mortality
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 infant_mortality 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_malnutrition_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa malnutrition
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 malnutrition 1 1 $@
+	touch $@
+
+data/out/csv/ndpba_population_change_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa population_change
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 population_change 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_urban_pop_change_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa urban_pop_change
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 urban_pop_change 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_school_enrollment_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa school_enrollment
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 school_enrollment 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_years of schooling_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa years of schooling
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 years of schooling 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_fem_to_male_labor_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa fem_to_male_labor
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 fem_to_male_labor 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_proportion_of_female_seats_in_government_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa proportion_of_female_seats_in_government
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 proportion_of_female_seats_in_government 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_life_expectancy_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa life_expectancy
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 life_expectancy 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_protected_area_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa protected_area
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 protected_area 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_distance_to_hospital_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa distance_to_hospital
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 distance_to_hospital 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_distance_to_port_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa distance_to_port
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 distance_to_port 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_road_density_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa road_density
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 road_density 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_households_with_fixed_phone_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa households_with_fixed_phone
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 households_with_fixed_phone 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_households_with_cell_phone_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa households_with_cell_phone
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 households_with_cell_phone 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_voter_participation_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa voter_participation
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 voter_participation 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_physicians_per_10000_persons_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa physicians_per_10000_persons
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 physicians_per_10000_persons 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_nurse_midwife_per_10k_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa nurse_midwife_per_10k
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 nurse_midwife_per_10k 1 2 $@
+	touch $@
+
+data/out/csv/ndpba_hbeds_per_10000_persons_h3.csv: db/table/ndpba_data_h3 | data/out/csv ## CSV export of ndpa hbeds_per_10000_persons
+	bash scripts/h3_table_to_csv_for_insights_uploading.sh ndpba_data_h3 hbeds_per_10000_persons 1 2 $@
+	touch $@
+
+##### END PDC NDPBA CSV #####
+
 ### DEV - CSV Uploads ###
 
 deploy/dev/uploads/populated_area_h3: data/out/csv/populated_area_h3.csv data/mid/osm_last_update_timestamp | deploy/dev/uploads ## Upload Populated area to Insights API
@@ -3655,6 +3766,106 @@ deploy/dev/uploads/grva_marine_protected_area_h3: data/out/csv/grva_marine_prote
 
 ##### END PDC Global RVA Uploads #####
 
+##### PDC NDPBA Uploads #####
+
+deploy/dev/uploads/ndpba_raw_economic_exposure_h3: data/out/csv/ndpba_raw_economic_exposure_h3.csv | deploy/dev/uploads ## Upload ndpba_raw_economic_exposure dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_raw_economic_exposure_h3.csv "ndpba_raw_economic_exposure" "PDC NDPBA Raw Economic Exposure" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Raw Multi-hazard Economic Exposure depicts the total estimated replacement cost of buildings within one or more of nine hazard zones" "World" "static" "USD" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_relative_economic_exposure_h3: data/out/csv/ndpba_relative_economic_exposure_h3.csv | deploy/dev/uploads ## Upload ndpba_relative_economic_exposure dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_relative_economic_exposure_h3.csv "ndpba_relative_economic_exposure" "PDC NDPBA Relative Econimuc Exposure" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Relative Multi-hazard Economic Exposure depicts the proportion of a country’s total estimated replacement cost of buildings within one or more of nine hazard zones. Relative Economic Exposure highlights the scale and importance of exposure. This provides information to assist with potential prioritization of resources." "World" "static" "perc" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_poverty_h3: data/out/csv/ndpba_poverty_h3.csv | deploy/dev/uploads ## Upload ndpba_poverty dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_poverty_h3.csv "ndpba_poverty" "PDC NDPBA Poverty" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "The proportion of the population living in poverty or extreme poverty" "World" "static" "perc" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_economic_dependency_h3: data/out/csv/ndpba_economic_dependency_h3.csv | deploy/dev/uploads ## Upload ndpba_economic_dependency dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_economic_dependency_h3.csv "ndpba_economic_dependency" "PDC NDPBA Economic Dependency" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Ratio of dependents - people younger than 15 or older than 64 - to the working-age population - those ages 15-64. Data are shown as the proportion of dependents by working-age population." "World" "static" "fract" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_maternal_mortality_h3: data/out/csv/ndpba_maternal_mortality_h3.csv | deploy/dev/uploads ## Upload ndpba_maternal_mortality dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_maternal_mortality_h3.csv "ndpba_maternal_mortality" "PDC NDPBA Maternal Mortality" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Maternal mortality ratio per 100,000 live births" "World" "static" "n_per_100k" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_infant_mortality_h3: data/out/csv/ndpba_infant_mortality_h3.csv | deploy/dev/uploads ## Upload ndpba_infant_mortality dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_infant_mortality_h3.csv "ndpba_infant_mortality" "PDC NDPBA Infant Mortality" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Single-year infant mortality ratio per 1,000 live births" "World" "static" "n_per_1k" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_malnutrition_h3: data/out/csv/ndpba_malnutrition_h3.csv | deploy/dev/uploads ## Upload ndpba_malnutrition dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_malnutrition_h3.csv "ndpba_malnutrition" "PDC NDPBA Malnutrition" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Percentage of children under 5 that are malnourished" "World" "static" "perc" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_population_change_h3: data/out/csv/ndpba_population_change_h3.csv | deploy/dev/uploads ## Upload ndpba_population_change dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_population_change_h3.csv "ndpba_population_change" "PDC NDPBA Population Change" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Average annual percentage population change for the period 2010 - 2015" "World" "static" "perc" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_urban_pop_change_h3: data/out/csv/ndpba_urban_pop_change_h3.csv | deploy/dev/uploads ## Upload ndpba_urban_pop_change dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_urban_pop_change_h3.csv "ndpba_urban_pop_change" "PDC NDPBA Urban Pop Change" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Percentage urban population change when comparing with preivous year" "World" "static" "perc" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_school_enrollment_h3: data/out/csv/ndpba_school_enrollment_h3.csv | deploy/dev/uploads ## Upload ndpba_school_enrollment dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_school_enrollment_h3.csv "ndpba_school_enrollment" "PDC NDPBA School Enrollment" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Index representing how many middle-age children are enrolled in primary education. Generally similar to percentage, but could be > 100 because of early entry, repetition, and, for countries with almost universal education at a given level, whenever the actual age distribution of pupils extends beyond the official school ages." "World" "static" "index" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_years of schooling_h3: data/out/csv/ndpba_years of schooling_h3.csv | deploy/dev/uploads ## Upload ndpba_years of schooling dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_years of schooling_h3.csv "ndpba_years of schooling" "PDC NDPBA Years of Schooling" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Average years of schooling for the population aged 15 and older" "World" "static" "n" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_fem_to_male_labor_h3: data/out/csv/ndpba_fem_to_male_labor_h3.csv | deploy/dev/uploads ## Upload ndpba_fem_to_male_labor dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_fem_to_male_labor_h3.csv "ndpba_fem_to_male_labor" "PDC NDPBA Female to Male Labor" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Ratio of female labor participation rate to male labor participation rate. Labor participation expressed at the ratio of active working-age population to total working - age population - by gender." "World" "static" "fract" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_proportion_of_female_seats_in_government_h3: data/out/csv/ndpba_proportion_of_female_seats_in_government_h3.csv | deploy/dev/uploads ## Upload ndpba_proportion_of_female_seats_in_government dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_proportion_of_female_seats_in_government_h3.csv "ndpba_proportion_of_female_seats_in_government" "PDC NDPBA Proportion of Female Seats in Government" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Proportion of seats held by women in national parliaments (%)" "World" "static" "fract" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_life_expectancy_h3: data/out/csv/ndpba_life_expectancy_h3.csv | deploy/dev/uploads ## Upload ndpba_life_expectancy dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_life_expectancy_h3.csv "ndpba_life_expectancy" "PDC NDPBA Life Expectancy" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Life Expectancy at birth" "World" "static" "n" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_protected_area_h3: data/out/csv/ndpba_protected_area_h3.csv | deploy/dev/uploads ## Upload ndpba_protected_area dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_protected_area_h3.csv "ndpba_protected_area" "PDC NDPBA Protected Area" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Percentage of department area that is within a natural protected area." "World" "static" "perc" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_distance_to_hospital_h3: data/out/csv/ndpba_distance_to_hospital_h3.csv | deploy/dev/uploads ## Upload ndpba_distance_to_hospital dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_distance_to_hospital_h3.csv "ndpba_distance_to_hospital" "PDC NDPBA Distance to Hospital" "[[\"good\"], [\"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Average distance to nearest hospital" "World" "static" "km" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_distance_to_port_h3: data/out/csv/ndpba_distance_to_port_h3.csv | deploy/dev/uploads ## Upload ndpba_distance_to_port dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_distance_to_port_h3.csv "ndpba_distance_to_port" "PDC NDPBA Distance to Port" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Port and airport density per 10000 sq. km land area" "World" "static" "n_per_10k_sq_km" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_road_density_h3: data/out/csv/ndpba_road_density_h3.csv | deploy/dev/uploads ## Upload ndpba_road_density dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_road_density_h3.csv "ndpba_road_density" "PDC NDPBA Road Density" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Total length of road (km) per sq. km of land" "World" "static" "km_per_sq_km" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_households_with_fixed_phone_h3: data/out/csv/ndpba_households_with_fixed_phone_h3.csv | deploy/dev/uploads ## Upload ndpba_households_with_fixed_phone dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_households_with_fixed_phone_h3.csv "ndpba_households_with_fixed_phone" "PDC NDPBA Households with Fixed Phone" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Percentage of households with fixed phone line" "World" "static" "perc" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_households_with_cell_phone_h3: data/out/csv/ndpba_households_with_cell_phone_h3.csv | deploy/dev/uploads ## Upload ndpba_households_with_cell_phone dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_households_with_cell_phone_h3.csv "ndpba_households_with_cell_phone" "PDC NDPBA Households with Cell Phone" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Percentage of households with cell phone line" "World" "static" "perc" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_voter_participation_h3: data/out/csv/ndpba_voter_participation_h3.csv | deploy/dev/uploads ## Upload ndpba_voter_participation dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_voter_participation_h3.csv "ndpba_voter_participation" "PDC NDPBA Voter Participation" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Voters per 10000 registered voters" "World" "static" "n_per_10k" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_physicians_per_10000_persons_h3: data/out/csv/ndpba_physicians_per_10000_persons_h3.csv | deploy/dev/uploads ## Upload ndpba_physicians_per_10000_persons dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_physicians_per_10000_persons_h3.csv "ndpba_physicians_per_10000_persons" "PDC NDPBA Physicians" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Physicians per 10000 population" "World" "static" "n_per_10k" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_nurse_midwife_per_10k_h3: data/out/csv/ndpba_nurse_midwife_per_10k_h3.csv | deploy/dev/uploads ## Upload ndpba_nurse_midwife_per_10k dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_nurse_midwife_per_10k_h3.csv "ndpba_nurse_midwife_per_10k" "PDC NDPBA Nurse Midwife" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Nurses and Midwives per 10000" "World" "static" "n_per_10k" "2022-01-01T00:00:00Z"
+	touch $@
+
+deploy/dev/uploads/ndpba_hbeds_per_10000_persons_h3: data/out/csv/ndpba_hbeds_per_10000_persons_h3.csv | deploy/dev/uploads ## Upload ndpba_hbeds_per_10000_persons dataset to Insights API
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ndpba_hbeds_per_10000_persons_h3.csv "ndpba_hbeds_per_10000_persons" "PDC NDPBA Hospital Beds" "[[\"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy\"]" "Hospital Beds per 10000 Persons" "World" "static" "n_per_10k" "2022-01-01T00:00:00Z"
+	touch $@
+
+##### END NDPBA RVA Uploads #####
+
 ### DEV - Uploads by categories ###
 
 deploy/dev/uploads/upload_osm: deploy/dev/uploads/eatery_count_h3 deploy/dev/uploads/food_shops_count_h3 deploy/dev/uploads/view_count_bf2402_h3 deploy/dev/uploads/volcanos_count_h3 deploy/dev/uploads/industrial_area_h3 deploy/dev/uploads/total_hours_h3 deploy/dev/uploads/local_hours_h3 deploy/dev/uploads/highway_length_6_month_h3 deploy/dev/uploads/highway_length_h3 deploy/dev/uploads/building_count_6_month_h3 deploy/dev/uploads/building_count_h3 deploy/dev/uploads/osm_users_h3 deploy/dev/uploads/osm_min_ts_h3 deploy/dev/uploads/osm_max_ts_h3 deploy/dev/uploads/osm_avgmax_ts_h3 deploy/dev/uploads/osm_view_count_h3 deploy/dev/uploads/osm_object_count_h3 deploy/dev/uploads/osm_object_count_6_month_h3 | deploy/dev/uploads  ## Collect OSM uploads to one target DEV
@@ -3684,7 +3895,10 @@ deploy/dev/uploads/upload_isochrone: deploy/dev/uploads/man_distance_to_charging
 deploy/dev/uploads/upload_climate: deploy/dev/uploads/gsa_ghi_h3 deploy/dev/uploads/worldclim_avg_temperature_h3 deploy/dev/uploads/worldclim_min_temperature_h3 deploy/dev/uploads/worldclim_max_temperature_h3 deploy/dev/uploads/worldclim_amp_temperature_h3 | deploy/dev/uploads  ## Collect climate uploads to one target DEV
 	touch $@
 
-deploy/dev/uploads/upload_pdc: deploy/dev/uploads/vulnerability_index_h3 deploy/dev/uploads/resilience_index_h3 deploy/dev/uploads/coping_capacity_index_h3 deploy/dev/uploads/mhr_index_h3 deploy/dev/uploads/mhe_index_h3 deploy/dev/uploads/grva_raw_mhe_pop_exposure_h3 deploy/dev/uploads/grva_raw_mhe_cap_exp_h3 deploy/dev/uploads/grva_relative_mhe_pop_h3 deploy/dev/uploads/grva_relative_mhe_cap_h3 deploy/dev/uploads/grva_life_expectancy_h3 deploy/dev/uploads/grva_infant_mortality_h3 deploy/dev/uploads/grva_maternal_mortality_h3 deploy/dev/uploads/grva_undernourished_h3 deploy/dev/uploads/grva_improved_sanitation_h3 deploy/dev/uploads/grva_improved_water_h3 deploy/dev/uploads/grva_adult_literacy_h3 deploy/dev/uploads/grva_gross_enrollment_h3 deploy/dev/uploads/grva_mean_years_schooling_h3 deploy/dev/uploads/grva_internet_users_per_100_h3 deploy/dev/uploads/grva_export_minus_import_percent_h3 deploy/dev/uploads/grva_five_year_average_inflation_h3 deploy/dev/uploads/grva_age_dependency_ratio_h3 deploy/dev/uploads/grva_proportion_female_seats_parliament_h3 deploy/dev/uploads/grva_fem_to_male_secondary_enroll_h3 deploy/dev/uploads/grva_fem_to_male_labor_h3 deploy/dev/uploads/grva_max_political_discrimination_h3 deploy/dev/uploads/grva_max_economic_discrimination_h3 deploy/dev/uploads/grva_avg_ann_pop_change_h3 deploy/dev/uploads/grva_avg_ann_urban_pop_change_h3 deploy/dev/uploads/grva_freshwater_withdrawal_h3 deploy/dev/uploads/grva_pct_forest_change_h3 deploy/dev/uploads/grva_ruminant_density_h3 deploy/dev/uploads/grva_losses_percent_gni_h3 deploy/dev/uploads/grva_disaster_deaths_per_10k_h3 deploy/dev/uploads/grva_conflict_deaths_per_million_h3 deploy/dev/uploads/grva_refugees_h3 deploy/dev/uploads/grva_voice_and_accountability_h3 deploy/dev/uploads/grva_rule_of_law_h3 deploy/dev/uploads/grva_political_stability_h3 deploy/dev/uploads/grva_government_effectiveness_h3 deploy/dev/uploads/grva_control_of_corruption_h3 deploy/dev/uploads/grva_gni_per_capita_h3 deploy/dev/uploads/grva_reserves_per_capita_h3 deploy/dev/uploads/grva_fixed_telephone_per_100_h3 deploy/dev/uploads/grva_mobile_phone_subs_per_100_h3 deploy/dev/uploads/grva_secure_internet_servers_h3 deploy/dev/uploads/grva_hospital_bed_per_10k_h3 deploy/dev/uploads/grva_nurse_midwife_per_10k_h3 deploy/dev/uploads/grva_physician_per_10k_h3 deploy/dev/uploads/grva_avg_biome_protection_h3 deploy/dev/uploads/grva_marine_protected_area_h3 | deploy/dev/uploads  ## Collect pdc uploads to one target DEV
+deploy/dev/uploads/upload_pdc_grva: deploy/dev/uploads/vulnerability_index_h3 deploy/dev/uploads/resilience_index_h3 deploy/dev/uploads/coping_capacity_index_h3 deploy/dev/uploads/mhr_index_h3 deploy/dev/uploads/mhe_index_h3 deploy/dev/uploads/grva_raw_mhe_pop_exposure_h3 deploy/dev/uploads/grva_raw_mhe_cap_exp_h3 deploy/dev/uploads/grva_relative_mhe_pop_h3 deploy/dev/uploads/grva_relative_mhe_cap_h3 deploy/dev/uploads/grva_life_expectancy_h3 deploy/dev/uploads/grva_infant_mortality_h3 deploy/dev/uploads/grva_maternal_mortality_h3 deploy/dev/uploads/grva_undernourished_h3 deploy/dev/uploads/grva_improved_sanitation_h3 deploy/dev/uploads/grva_improved_water_h3 deploy/dev/uploads/grva_adult_literacy_h3 deploy/dev/uploads/grva_gross_enrollment_h3 deploy/dev/uploads/grva_mean_years_schooling_h3 deploy/dev/uploads/grva_internet_users_per_100_h3 deploy/dev/uploads/grva_export_minus_import_percent_h3 deploy/dev/uploads/grva_five_year_average_inflation_h3 deploy/dev/uploads/grva_age_dependency_ratio_h3 deploy/dev/uploads/grva_proportion_female_seats_parliament_h3 deploy/dev/uploads/grva_fem_to_male_secondary_enroll_h3 deploy/dev/uploads/grva_fem_to_male_labor_h3 deploy/dev/uploads/grva_max_political_discrimination_h3 deploy/dev/uploads/grva_max_economic_discrimination_h3 deploy/dev/uploads/grva_avg_ann_pop_change_h3 deploy/dev/uploads/grva_avg_ann_urban_pop_change_h3 deploy/dev/uploads/grva_freshwater_withdrawal_h3 deploy/dev/uploads/grva_pct_forest_change_h3 deploy/dev/uploads/grva_ruminant_density_h3 deploy/dev/uploads/grva_losses_percent_gni_h3 deploy/dev/uploads/grva_disaster_deaths_per_10k_h3 deploy/dev/uploads/grva_conflict_deaths_per_million_h3 deploy/dev/uploads/grva_refugees_h3 deploy/dev/uploads/grva_voice_and_accountability_h3 deploy/dev/uploads/grva_rule_of_law_h3 deploy/dev/uploads/grva_political_stability_h3 deploy/dev/uploads/grva_government_effectiveness_h3 deploy/dev/uploads/grva_control_of_corruption_h3 deploy/dev/uploads/grva_gni_per_capita_h3 deploy/dev/uploads/grva_reserves_per_capita_h3 deploy/dev/uploads/grva_fixed_telephone_per_100_h3 deploy/dev/uploads/grva_mobile_phone_subs_per_100_h3 deploy/dev/uploads/grva_secure_internet_servers_h3 deploy/dev/uploads/grva_hospital_bed_per_10k_h3 deploy/dev/uploads/grva_nurse_midwife_per_10k_h3 deploy/dev/uploads/grva_physician_per_10k_h3 deploy/dev/uploads/grva_avg_biome_protection_h3 deploy/dev/uploads/grva_marine_protected_area_h3 | deploy/dev/uploads  ## Collect pdc grva uploads to one target DEV
+	touch $@
+
+deploy/dev/uploads/upload_pdc_ndpba: deploy/dev/uploads/ndpba_raw_economic_exposure_h3 deploy/dev/uploads/ndpba_relative_economic_exposure_h3 deploy/dev/uploads/ndpba_poverty_h3 deploy/dev/uploads/ndpba_economic_dependency_h3 deploy/dev/uploads/ndpba_maternal_mortality_h3 deploy/dev/uploads/ndpba_infant_mortality_h3 deploy/dev/uploads/ndpba_malnutrition_h3 deploy/dev/uploads/ndpba_population_change_h3 deploy/dev/uploads/ndpba_urban_pop_change_h3 deploy/dev/uploads/ndpba_school_enrollment_h3 deploy/dev/uploads/ndpba_years of schooling_h3 deploy/dev/uploads/ndpba_fem_to_male_labor_h3 deploy/dev/uploads/ndpba_proportion_of_female_seats_in_government_h3 deploy/dev/uploads/ndpba_life_expectancy_h3 deploy/dev/uploads/ndpba_protected_area_h3 deploy/dev/uploads/ndpba_distance_to_hospital_h3 deploy/dev/uploads/ndpba_distance_to_port_h3 deploy/dev/uploads/ndpba_road_density_h3 deploy/dev/uploads/ndpba_households_with_fixed_phone_h3 deploy/dev/uploads/ndpba_households_with_cell_phone_h3 deploy/dev/uploads/ndpba_voter_participation_h3 deploy/dev/uploads/ndpba_physicians_per_10000_persons_h3 deploy/dev/uploads/ndpba_nurse_midwife_per_10k_h3 deploy/dev/uploads/ndpba_hbeds_per_10000_persons_h3 | deploy/dev/uploads  ## Collect pdc ndpba uploads to one target DEV
 	touch $@
 
 deploy/dev/uploads/upload_proximity: deploy/dev/uploads/powerlines_proximity_m_h3 deploy/dev/uploads/populated_areas_proximity_m_h3 deploy/dev/uploads/power_substations_proximity_m_h3 | deploy/dev/uploads  ## Collect proximity uploads to one target DEV
@@ -3695,5 +3909,5 @@ deploy/dev/uploads/upload_other: deploy/dev/uploads/residential_h3 deploy/dev/up
 
 ### DEV - combining uploads ###
 
-deploy/dev/uploads/upload_all: deploy/dev/uploads/upload_other deploy/dev/uploads/upload_proximity deploy/dev/uploads/upload_pdc deploy/dev/uploads/upload_climate deploy/dev/uploads/upload_isochrone deploy/dev/uploads/upload_probable_futures deploy/dev/uploads/upload_us_census deploy/dev/uploads/upload_relief deploy/dev/uploads/upload_osm deploy/dev/uploads/upload_landcover deploy/dev/uploads/upload_kontur deploy/dev/uploads/upload_disasters | deploy/dev/uploads ## Control of layer uplodings to Insigths API DEV
+deploy/dev/uploads/upload_all: deploy/dev/uploads/upload_other deploy/dev/uploads/upload_proximity deploy/dev/uploads/upload_pdc_grva deploy/dev/uploads/upload_climate deploy/dev/uploads/upload_isochrone deploy/dev/uploads/upload_probable_futures deploy/dev/uploads/upload_us_census deploy/dev/uploads/upload_relief deploy/dev/uploads/upload_osm deploy/dev/uploads/upload_landcover deploy/dev/uploads/upload_kontur deploy/dev/uploads/upload_disasters | deploy/dev/uploads ## Control of layer uplodings to Insigths API DEV
 	touch $@

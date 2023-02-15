@@ -2026,7 +2026,7 @@ db/table/ndpba_data: | db/table ## NDPBA Data
 
 db/table/ndpba_data_h3: db/table/kontur_boundaries db/table/ndpba_data db/procedure/generate_overviews | db/table ## NDPBA data to H3
 	psql -f tables/ndpba_data_h3.sql
-	psql -c "call generate_overviews('ndpba_data_h3', '{raw_economic_exposure,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,distance_to_hospital,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation,physicians_per_10000_persons,nurse_midwife_per_10k,hbeds_per_10000_persons}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 4);"
+	psql -c "call generate_overviews('ndpba_data_h3', '{raw_economic_exposure,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,distance_to_hospital,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation,physicians_per_10000_persons,nurse_midwife_per_10k,hbeds_per_10000_persons}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 4);"
 	touch $@
 
 

@@ -86,7 +86,7 @@ insert into bivariate_unit_localization (unit_id, language, short_name, long_nam
 values ('km_per_sq_km', 'en', 'km/km²', 'kilometers per square kilometer');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
-values ('n_per_10k_sq_km', 'en', 'n/km²', 'number per square kilometer');
+values ('n_per_10k_sq_km', 'en', 'n/10000km²', 'number per ten thousands square kilometers');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('n_per_ha', 'en', 'n/ha', 'number per hectare');

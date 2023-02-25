@@ -10,6 +10,7 @@ update planet_osm_point
 set tags = tags || hstore(cte.lang, name) from cte
 where cte.osm_id = planet_osm_point.osm_id;
 
+vacuum planet_osm_point;
 
 with cte as (select osm_id, lang
              from (select distinct
@@ -23,6 +24,7 @@ update planet_osm_line
 set tags = tags || hstore(cte.lang, name) from cte
 where cte.osm_id = planet_osm_line.osm_id;
 
+vacuum planet_osm_line;
 
 with cte as (select osm_id, lang
              from (select distinct
@@ -36,3 +38,5 @@ update planet_osm_polygon
 set tags = tags || hstore(cte.lang, name)
 from cte
 where cte.osm_id = planet_osm_polygon.osm_id;
+
+vacuum planet_osm_polygon;

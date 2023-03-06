@@ -369,4 +369,4 @@ set
     label = 'Solar power plants'
 where
       numerator = 'solar_power_plants'
-  and denominator = 'one';
+  and denominator = 'area_km2';

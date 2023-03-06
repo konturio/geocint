@@ -1,9 +1,8 @@
 drop table if exists existing_solar_power_panels_in;
 create table existing_solar_power_panels_in as (
-    select ST_Centroid(geog::geometry) as geom        
-    from osm o
-    where tags @> '{"power":"plant"}' 
-      and tags @> '{"plant:source":"solar"}'
+    select ST_PointOnSurface(geog::geometry) as geom        
+    from osm
+    where tags @> '{"power":"plant","plant:source":"solar"}'
 );
 
 drop table if exists existing_solar_power_panels_h3;

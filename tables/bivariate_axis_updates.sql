@@ -363,3 +363,10 @@ set
 where
       numerator = 'man_distance_to_bomb_shelters'
   and denominator = 'population';
+
+update bivariate_axis
+set
+    label = 'Solar power plants'
+where
+      numerator = 'solar_power_plants'
+  and denominator = 'area_km2';

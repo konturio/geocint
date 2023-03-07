@@ -1862,7 +1862,8 @@ db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table ## Geometr
 	touch $@
 
 db/index/osm_addresses_geom_idx: db/table/osm_addresses | db/index ## Index on geometry addresses table.
-	psql -c "create index on osm_addresses using brin (geom);"
+	psql -c "drop index if exists osm_addresses_geom_idx;"
+	psql -c "create index osm_addresses_geom_idx on osm_addresses using brin (geom);"
 	touch $@
 
 db/table/osm_addresses_minsk: db/index/osm_addresses_geom_idx db/table/osm_addresses | db/table ## Minsk address geometry extracted from OpenStreetMap dataset.

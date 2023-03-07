@@ -394,10 +394,12 @@ db/table/osm_road_segments_new: db/function/osm_way_nodes_to_segments db/table/o
 	touch $@
 
 db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments_new | db/index ## Composite index on osm_road_segments_new table.
+	psql -c "drop index if exists osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx;"
 	psql -c "create index osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments_new (seg_id, node_from, node_to, seg_geom);"
 	touch $@
 
 db/index/osm_road_segments_new_seg_geom_idx: db/table/osm_road_segments_new | db/index ## Composite BRIN index on osm_road_segments_new table.
+	psql -c "drop index if exists osm_road_segments_new_seg_geom_walk_time_idx;"
 	psql -c "create index osm_road_segments_new_seg_geom_walk_time_idx on osm_road_segments_new using brin (seg_geom, walk_time);"
 	touch $@
 
@@ -1860,7 +1862,8 @@ db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table ## Geometr
 	touch $@
 
 db/index/osm_addresses_geom_idx: db/table/osm_addresses | db/index ## Index on geometry addresses table.
-	psql -c "create index on osm_addresses using brin (geom)"
+	psql -c "drop index if exists osm_addresses_geom_idx;"
+	psql -c "create index osm_addresses_geom_idx on osm_addresses using brin (geom);"
 	touch $@
 
 db/table/osm_addresses_minsk: db/index/osm_addresses_geom_idx db/table/osm_addresses | db/table ## Minsk address geometry extracted from OpenStreetMap dataset.

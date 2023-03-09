@@ -2651,7 +2651,7 @@ db/table/safety_index_h3: db/table/safety_index_per_country db/table/kontur_boun
 data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries db/table/safety_index_h3 db/table/global_rva_h3 db/table/ndpba_rva_h3 | data/out # Check if hasc codes were missed im kontur boundaries and send a message
 	rm -f $@__MISSED_HASCS
 	psql -q -X -t -c 'select count(*) from kontur_boundaries_hasc_codes_check;' > $@__MISSED_HASCS
-	if [ 0 -lt $$(cat $@__MISSED_HASCS) ]; then echo "Some hasc codes required for data processing were missed in kontur_boundaries. Check kontur_boundaries_hasc_codes_check for additional information." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	if [ 0 -lt $$(cat $@__MISSED_HASCS) ]; then echo "Some hasc codes required for data processing were missed in kontur_boundaries. Check kontur_boundaries_hasc_codes_check table for additional information." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
 	rm -f $@__MISSED_HASCS
 	touch $@
 

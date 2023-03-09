@@ -2629,3 +2629,20 @@ db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx db/p
 	touch $@
 
 ### End existing Solar power panels layer ###
+
+### Safety index layer - Global Peace Index 2022 ###
+
+db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 resolution < 8 using different aggregations.
+	psql -f procedures/transform_hasc_to_h3.sql
+	touch $@
+
+db/table/safety_index_per_country: | db/table ## Get existing solar power panels layer
+	psql -c 'drop table if exists safety_index_per_country;'
+	psql -c 'create table safety_index_per_country (iso3 char(3), iso2 char(2), name text, gpi2022 float);'
+	cat static_data/mcda/global_safety_index_2008-2022.csv | psql -c "copy safety_index_per_country (iso3, iso2, name, gpi2022) from stdin with csv header delimiter ',';"
+	touch $@
+
+db/table/safety_index_h3: db/table/safety_index_per_country db/table/kontur_boundaries | db/table
+	psql -f tables/safety_index_h3.sql
+
+### End Safety index layer ###

@@ -1980,7 +1980,7 @@ db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manag
 	psql -c "create index on global_rva_indexes using btree(hasc);"
 	touch $@
 
-db/table/global_rva_h3: db/table/kontur_boundaries db/table/global_rva_indexes db/procedure/generate_overviews db/procedure/generate_overviews | db/table ## Generation overviws of global rva indexes
+db/table/global_rva_h3: db/table/kontur_boundaries db/table/global_rva_indexes db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of global rva indexes
 	psql -c "call transform_hasc_to_h3('global_rva_indexes', 'global_rva_h3', 'hasc', '{mhe_index, vulnerability_index, coping_capacity_index, resilience_index, mhr_index}'::text[], 8);"
 	psql -c "call generate_overviews('global_rva_h3', '{mhe_index, vulnerability_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
@@ -1991,7 +1991,7 @@ db/table/ndpba_rva_indexes: | db/table ## NDPBA RVA indexes
 	cat static_data/pdc_bivariate_manager/ndpba_rva.csv | psql -c "copy ndpba_rva_indexes from stdin with csv header;"
 	touch $@
 
-db/table/ndpba_rva_h3: db/table/kontur_boundaries db/table/ndpba_rva_indexes db/procedure/generate_overviews db/procedure/generate_overviews | db/table ## Generation overviews of ndpba rva indexes
+db/table/ndpba_rva_h3: db/table/kontur_boundaries db/table/ndpba_rva_indexes db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviews of ndpba rva indexes
 	psql -c "call transform_hasc_to_h3('ndpba_rva_indexes', 'ndpba_rva_h3', 'hasc', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], 8);"
 	psql -c "call generate_overviews('ndpba_rva_h3', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
@@ -2632,7 +2632,7 @@ db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx db/p
 
 ### Safety index layer - Global Peace Index 2022 ###
 
-db/procedure/generate_overviews: db/table/kontur_boundaries | db/procedure ## Generate overviews for H3 resolution < 8 using different aggregations.
+db/procedure/transform_hasc_to_h3: db/table/kontur_boundaries | db/procedure ## Generate overviews for H3 resolution < 8 using different aggregations.
 	psql -f procedures/transform_hasc_to_h3.sql
 	touch $@
 
@@ -2642,7 +2642,7 @@ db/table/safety_index_per_country: | db/table ## Get existing solar power panels
 	cat static_data/mcda/global_safety_index_2008-2022.csv | psql -c "copy safety_index_per_country (iso3, iso2, name, safety_index) from stdin with csv header delimiter ',';"
 	touch $@
 
-db/table/safety_index_h3: db/table/safety_index_per_country db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/generate_overviews | db/table
+db/table/safety_index_h3: db/table/safety_index_per_country db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table
 	psql -c "call transform_hasc_to_h3('safety_index_per_country', 'safety_index_h3', 'iso2', '{safety_index}'::text[], 8);"
 	psql -c "call generate_overviews('safety_index_h3', '{safety_index}'::text[], '{max}'::text[], 8);"
 	psql -c "create index on safety_index_h3 (h3);"

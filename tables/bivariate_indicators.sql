@@ -462,6 +462,11 @@ values ('solar_power_plants', 'Solar power plants', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["unimportant"], ["important"]]'::jsonb, 'Total number of solar power plants in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('safety_index', 'Safety (Global Peace Index 2022)', jsonb_build_array(
+        '© The Institute for Economics and Peace Limited 2022 https://www.visionofhumanity.org/'),
+        '[["good"], ["bad"]]'::jsonb, 'The Global Peace Index covers 99.7% of the world’s population, and is calculated using 23 qualitative and quantitative indicators from highly respected sources, and measures the state of peace across three domains: the level of Societal Safety and Security, the extent of Ongoing Domestic and International Conflict, and the degree of Militarisation.', 'World', 'static', 'index', TRUE);
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

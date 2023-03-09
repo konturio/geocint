@@ -572,6 +572,7 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(prox.power_substations_proximity_m,0))::float as power_substations_proximity_m,
            (coalesce(solar_suitability.solar_farms_placement_suitability,0))::float as solar_farms_placement_suitability,
            (coalesce(solar_power_plants,0))::float as solar_power_plants,
+           (coalesce(safety_index,0))::float as safety_index,
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
@@ -588,6 +589,7 @@ create table stat_h3 tablespace evo4tb as (
          left join proximities_h3 prox on (a.h3 = prox.h3)
          left join solar_farms_placement_suitability_synthetic_h3 solar_suitability on (a.h3 = solar_suitability.h3)
          left join existing_solar_power_panels_h3 solar_panels on (a.h3 = solar_panels.h3)
+         left join safety_index_h3 sfty on (a.h3 = sfty.h3)
 );
 drop table stat_h3_in;
 vacuum analyze stat_h3;
@@ -625,5 +627,6 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      man_distance_to_bomb_shelters, man_distance_to_charging_stations,
                                                      powerlines_proximity_m, waste_basket_coverage_area_km2,
                                                      populated_areas_proximity_m, power_substations_proximity_m,
-                                                     solar_farms_placement_suitability, solar_power_plants
+                                                     solar_farms_placement_suitability, solar_power_plants,
+                                                     safety_index
     );

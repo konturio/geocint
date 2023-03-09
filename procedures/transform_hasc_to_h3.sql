@@ -3,7 +3,7 @@ create or replace procedure transform_hasc_to_h3(input_hasc_table text,
                                                  ouput_h3_table text,
                                                  hack_field_name text,
                                                  items text[],
-                                                 start_resolution integer default 8)
+                                                 resolution integer default 8)
     language plpgsql
 as
 $$
@@ -17,19 +17,25 @@ begin
     from unnest(items) t(col);
 
     begin
+        -- drop temporary table if exists before creation
         execute 'drop table if exists ' || input_hasc_table || '_temp_in_table ';
 
-        execute 'select k.kontur_admin_level as admin_level, k.geom as geom, ' || column_list || '
-                 into ' || input_hasc_table || '_temp_in_table from kontur_boundaries k join ' || input_hasc_table || ' s
+        -- match indexes with geometry with using hasc (isoalpha2) codes
+        execute 'create table ' || input_hasc_table || '_temp_in_table as (
+                 select k.kontur_admin_level as admin_level, k.geom as geom, ' || column_list || '
+                 from kontur_boundaries k join ' || input_hasc_table || ' s
                  on s.' || hack_field_name ||' = k.hasc_wiki
-                 where k.hasc_wiki in (select ' || hack_field_name ||' from ' || input_hasc_table || ')';
+                 where k.hasc_wiki in (select ' || hack_field_name ||' from ' || input_hasc_table || '))';
 
+        
+        execute 'drop table if exists ' || ouput_h3_table;
+
+        -- transform geometry to h3 hexagons
         -- remove duplicates with low admin level
-        execute 'drop table if exists' || ouput_h3_table;
-
-        execute 'select distinct on (h3) h3_polygon_to_cells(ST_Subdivide(geom), ' || res || ') as h3,' || column_list || ', ' || res::text || ' as resolution
-                 into ' || ouput_h3_table || ' from ' || input_hasc_table || '_temp_in_table
-                 order by h3, admin_level desc';
+        execute 'create table ' || ouput_h3_table || ' as (
+                 select distinct on (h3) h3_polygon_to_cells(ST_Subdivide(geom), ' || res || ') as h3,' || column_list || ', ' || res::text || ' as resolution
+                 from ' || input_hasc_table || '_temp_in_table
+                 order by h3, admin_level desc)';
 
         -- drop temporary table
         execute 'drop table if exists ' || input_hasc_table || '_temp_in_table ';

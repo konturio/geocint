@@ -28,12 +28,6 @@ begin
                  on s.' || hack_field_name ||' = k.hasc_wiki
                  where k.hasc_wiki in (select ' || hack_field_name ||' from ' || input_hasc_table || '))';
 
-        execute 'drop table if exists kontur_boundaries_hasc_codes_check';
-        -- create if not exist table to store hascs that were missed in Kontur Boundaries
-        execute 'create table if not exists kontur_boundaries_hasc_codes_check (missed_hasc char(2),
-                                                                                source_of_missed_hasc text,
-                                                                                found_at TIMESTAMPTZ DEFAULT NOW())';
-
         -- get missed hasc codes and insert to special table kontur_boundaries_hasc_codes_check
         execute 'insert into kontur_boundaries_hasc_codes_check (missed_hasc, source_of_missed_hasc, found_at)
                     (select distinct s.' || hack_field_name ||' as missed_hasc, 

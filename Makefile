@@ -31,7 +31,7 @@ prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/clea
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -2632,7 +2632,12 @@ db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx db/p
 
 ### Safety index layer - Global Peace Index 2022 ###
 
-db/procedure/transform_hasc_to_h3: db/table/kontur_boundaries | db/procedure ## Transform information with hasc codes to h3 indexes with using kontur_boundaries.
+db/table/kontur_boundaries_hasc_codes_check: | db/table ## create if not exist table to store hascs that were missed in Kontur Boundaries
+	psql -c "drop table if exists kontur_boundaries_hasc_codes_check;"
+	psql -c "create table if not exists kontur_boundaries_hasc_codes_check (missed_hasc text, source_of_missed_hasc text, found_at TIMESTAMPTZ DEFAULT NOW());"
+	touch $@
+
+db/procedure/transform_hasc_to_h3: db/table/kontur_boundaries db/table/kontur_boundaries_hasc_codes_check | db/procedure ## Transform information with hasc codes to h3 indexes with using kontur_boundaries.
 	psql -f procedures/transform_hasc_to_h3.sql
 	touch $@
 

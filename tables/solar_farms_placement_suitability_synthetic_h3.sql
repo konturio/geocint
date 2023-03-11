@@ -63,7 +63,7 @@ with gsa_ghi as (select gsa.h3         as h3,
 
      constraint_population as (select pop.h3 as h3,
                                    case
-                                       when pop.poulation > 230 then 0
+                                       when pop.population > 230 then 0
                                        else 1 end constraint_population
                                from kontur_population_h3 pop),
 

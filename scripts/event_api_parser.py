@@ -3,6 +3,7 @@
 import argparse
 import copy
 import datetime
+import dateutil.parser
 import getpass
 import json
 import logging
@@ -104,12 +105,8 @@ def get_credentials(cli_args: argparse.Namespace) -> Credentials:
 
 
 def parse_datetime_from_iso8601(datetime_string: str) -> datetime.datetime:
-    try:
-        return datetime.datetime.strptime(datetime_string, '%Y-%m-%dT%H:%M:%S.%fZ')
-    except ValueError:
-        return datetime.datetime.strptime(datetime_string, '%Y-%m-%dT%H:%M:%SZ')
-
-
+    return  dateutil.parser.isoparse(datetime_string)
+    
 class FeedParser:
     logger = setup_logger()
 

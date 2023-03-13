@@ -2660,7 +2660,7 @@ data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_b
 	echo '```' >> $@__MISSED_HASCS_MESSAGE
 	psql -qXtc "select count(*) from kontur_boundaries_hasc_codes_check;" > $@__NUMBER_MISSED_HASCS
 	if [ 0 -lt $$(cat $@__NUMBER_MISSED_HASCS) ]; then cat $@__MISSED_HASCS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
-	rm -f $@__MISSED_HASCS $@__NUMBER_MISSED_HASCS
+	rm -f $@__MISSED_HASCS_MESSAGE $@__NUMBER_MISSED_HASCS
 	touch $@
 
 ### End Safety index layer ###

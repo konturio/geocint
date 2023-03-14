@@ -20,18 +20,18 @@ include runner_make osm_make
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv  ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -1980,8 +1980,8 @@ db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manag
 	psql -c "create index on global_rva_indexes using btree(hasc);"
 	touch $@
 
-db/table/global_rva_h3: db/table/kontur_boundaries db/table/global_rva_indexes db/procedure/generate_overviews | db/table ## Generation overviws of global rva indexes
-	psql -f tables/global_rva_h3.sql
+db/table/global_rva_h3: db/table/kontur_boundaries db/table/global_rva_indexes db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of global rva indexes
+	psql -c "call transform_hasc_to_h3('global_rva_indexes', 'global_rva_h3', 'hasc', '{mhe_index, vulnerability_index, coping_capacity_index, resilience_index, mhr_index}'::text[], 8);"
 	psql -c "call generate_overviews('global_rva_h3', '{mhe_index, vulnerability_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
 
@@ -1991,8 +1991,8 @@ db/table/ndpba_rva_indexes: | db/table ## NDPBA RVA indexes
 	cat static_data/pdc_bivariate_manager/ndpba_rva.csv | psql -c "copy ndpba_rva_indexes from stdin with csv header;"
 	touch $@
 
-db/table/ndpba_rva_h3: db/table/kontur_boundaries db/table/ndpba_rva_indexes db/procedure/generate_overviews | db/table ## Generation overviews of ndpba rva indexes
-	psql -f tables/ndpba_rva_h3.sql
+db/table/ndpba_rva_h3: db/table/kontur_boundaries db/table/ndpba_rva_indexes db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviews of ndpba rva indexes
+	psql -c "call transform_hasc_to_h3('ndpba_rva_indexes', 'ndpba_rva_h3', 'hasc', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], 8);"
 	psql -c "call generate_overviews('ndpba_rva_h3', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
 
@@ -2629,3 +2629,38 @@ db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx db/p
 	touch $@
 
 ### End existing Solar power panels layer ###
+
+### Safety index layer - Global Peace Index 2022 ###
+
+db/table/kontur_boundaries_hasc_codes_check: | db/table ## create if not exist table to store hascs that were missed in Kontur Boundaries
+	psql -c "drop table if exists kontur_boundaries_hasc_codes_check;"
+	psql -c "create table if not exists kontur_boundaries_hasc_codes_check (missed_hasc text, source_of_missed_hasc text, found_at TIMESTAMPTZ DEFAULT NOW());"
+	touch $@
+
+db/procedure/transform_hasc_to_h3: db/table/kontur_boundaries db/table/kontur_boundaries_hasc_codes_check | db/procedure ## Transform information with hasc codes to h3 indexes with using kontur_boundaries.
+	psql -f procedures/transform_hasc_to_h3.sql
+	touch $@
+
+db/table/safety_index_per_country: | db/table ## Get existing solar power panels layer
+	psql -c 'drop table if exists safety_index_per_country;'
+	psql -c 'create table safety_index_per_country (iso3 char(3), iso2 char(2), name text, safety_index float);'
+	cat static_data/mcda/global_safety_index_2008-2022.csv | psql -c "copy safety_index_per_country (iso3, iso2, name, safety_index) from stdin with csv header delimiter ',';"
+	touch $@
+
+db/table/safety_index_h3: db/table/safety_index_per_country db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## transform hasc codes to h3 indexes and generate overviews
+	psql -c "call transform_hasc_to_h3('safety_index_per_country', 'safety_index_h3', 'iso2', '{safety_index}'::text[], 8);"
+	psql -c "call generate_overviews('safety_index_h3', '{safety_index}'::text[], '{max}'::text[], 8);"
+	psql -c "create index on safety_index_h3 (h3);"
+	touch $@
+
+data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries db/table/safety_index_h3 db/table/global_rva_h3 db/table/ndpba_rva_h3 | data/out # Check if hasc codes were missed im kontur boundaries and send a message
+	echo 'List of 15 most frequent missed hasc-codes. Check kontur_boundaries_hasc_codes_check table for additional information.' > $@__MISSED_HASCS_MESSAGE
+	echo '```' >> $@__MISSED_HASCS_MESSAGE
+	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "select missed_hasc, count(*) from kontur_boundaries_hasc_codes_check group by 1 order by 2 desc limit 15;" >> $@__MISSED_HASCS_MESSAGE
+	echo '```' >> $@__MISSED_HASCS_MESSAGE
+	psql -qXtc "select count(*) from kontur_boundaries_hasc_codes_check;" > $@__NUMBER_MISSED_HASCS
+	if [ 0 -lt $$(cat $@__NUMBER_MISSED_HASCS) ]; then cat $@__MISSED_HASCS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@__MISSED_HASCS_MESSAGE $@__NUMBER_MISSED_HASCS
+	touch $@
+
+### End Safety index layer ###

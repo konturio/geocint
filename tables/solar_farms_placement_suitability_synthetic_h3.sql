@@ -79,23 +79,23 @@ with gsa_ghi as (select gsa.h3         as h3,
             slope.slope * 0.12 + 
             powerlines_prox.powl_prox * 0.2 + 
             powersubstations_prox.pwstat_prox * 0.13)
-                *constraint_temperatures.constraint_temperatures
-                *constraint_ghi.constraint_ghi
-                *constraint_slope.constraint_slope
-                *constraint_popprox.constraint_popprox
-                *constraint_powerlines.constraint_powerlines
-                *constraint_powersubstations.constraint_powersubstations              as solar_farms_placement_suitability
+            *constraint_temperatures.constraint_temperatures
+            *constraint_ghi.constraint_ghi
+            *constraint_slope.constraint_slope
+            *constraint_popprox.constraint_popprox
+            *constraint_powerlines.constraint_powerlines
+            *constraint_powersubstations.constraint_powersubstations                  as solar_farms_placement_suitability
 into solar_farms_placement_suitability_synthetic_h3
 from gsa_ghi
-         inner join slope on gsa_ghi.h3 = slope.h3
-         inner join powerlines_prox on gsa_ghi.h3 = powerlines_prox.h3
-         inner join powersubstations_prox on gsa_ghi.h3 = powersubstations_prox.h3
-         inner join constraint_temperatures on gsa_ghi.h3 = constraint_temperatures.h3
-         inner join constraint_ghi on gsa_ghi.h3 = constraint_ghi.h3
-         inner join constraint_slope on gsa_ghi.h3 = constraint_slope.h3
-         inner join constraint_popprox on gsa_ghi.h3 = constraint_popprox.h3
-         inner join constraint_powerlines on gsa_ghi.h3 = constraint_powerlines.h3
-         inner join constraint_powersubstations on gsa_ghi.h3 = constraint_powersubstations.h3
+     inner join slope on gsa_ghi.h3 = slope.h3
+     inner join powerlines_prox on gsa_ghi.h3 = powerlines_prox.h3
+     inner join powersubstations_prox on gsa_ghi.h3 = powersubstations_prox.h3
+     inner join constraint_temperatures on gsa_ghi.h3 = constraint_temperatures.h3
+     inner join constraint_ghi on gsa_ghi.h3 = constraint_ghi.h3
+     inner join constraint_slope on gsa_ghi.h3 = constraint_slope.h3
+     inner join constraint_popprox on gsa_ghi.h3 = constraint_popprox.h3
+     inner join constraint_powerlines on gsa_ghi.h3 = constraint_powerlines.h3
+     inner join constraint_powersubstations on gsa_ghi.h3 = constraint_powersubstations.h3
 
 where resolution = 8;
 

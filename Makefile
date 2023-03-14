@@ -2612,7 +2612,7 @@ db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/pop
 
 ### Synthetic solar farms placement layer ###
 
-db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/procedure/generate_overviews | db/table ## create a table with synthetic solar farms placement suitability (MCDA)
+db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## create a table with synthetic solar farms placement suitability (MCDA)
 	psql -f tables/solar_farms_placement_suitability_synthetic_h3.sql
 	psql -c "call generate_overviews('solar_farms_placement_suitability_synthetic_h3', '{solar_farms_placement_suitability}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on solar_farms_placement_suitability_synthetic_h3 (h3);"

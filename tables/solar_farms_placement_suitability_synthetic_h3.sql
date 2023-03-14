@@ -44,6 +44,7 @@ with gsa_ghi as (select gsa.h3         as h3,
 
      constraint_ghi as (select gsa.h3 as      h3,
                                case
+                                   when gsa.gsa_ghi < 2 then 0.2
                                    when gsa.gsa_ghi < 2 then 0
                                    else 1 end constraint_ghi
                         from global_solar_atlas_h3 gsa),
@@ -54,22 +55,29 @@ with gsa_ghi as (select gsa.h3         as h3,
                                      else 1 end constraint_slope
                           from gebco_2022_h3 gebco),
 
-     constraint_popprox as (select prox_tab.h3 as h3,
-                                   case
-                                       when prox_tab.populated_areas_proximity_m < 500 then 0
-                                       when prox_tab.populated_areas_proximity_m > 50000 then 0
-                                       else 1 end constraint_popprox
-                            from proximities_h3 prox_tab),
+     -- constraint_popprox as (select prox_tab.h3 as h3,
+     --                               case
+     --                                   when prox_tab.populated_areas_proximity_m < 500 then 0
+     --                                   when prox_tab.populated_areas_proximity_m > 50000 then 0
+     --                                   else 1 end constraint_popprox
+     --                        from proximities_h3 prox_tab),
+
+     constraint_population as (select pop.h3 as h3,
+                                      case
+                                          when pop.population > 800 then 0.2
+                                          when prox_tab.populated_areas_proximity_m > 3000 then 0.1
+                                      else 1 end constraint_population
+                            from kontur_population_h3 pop),
 
      constraint_powerlines as (select prox_tab.h3 as h3,
                                       case
-                                          when prox_tab.powerlines_proximity_m > 15000 then 0
+                                          when prox_tab.powerlines_proximity_m > 15000 then 0.2
                                           else 1 end      constraint_powerlines
                                from proximities_h3 prox_tab),
 
      constraint_powersubstations as (select prox_tab.h3 as h3,
                                             case
-                                                when prox_tab.power_substations_proximity_m > 50000 then 0
+                                                when prox_tab.power_substations_proximity_m > 50000 then 0.2
                                                 else 1 end        constraint_powersubstations
                                      from proximities_h3 prox_tab)
 
@@ -82,7 +90,8 @@ with gsa_ghi as (select gsa.h3         as h3,
             *constraint_temperatures.constraint_temperatures
             *constraint_ghi.constraint_ghi
             *constraint_slope.constraint_slope
-            *constraint_popprox.constraint_popprox
+            -- *constraint_popprox.constraint_popprox
+            *constraint_population.constraint_population
             *constraint_powerlines.constraint_powerlines
             *constraint_powersubstations.constraint_powersubstations                  as solar_farms_placement_suitability
 into solar_farms_placement_suitability_synthetic_h3
@@ -93,7 +102,8 @@ from gsa_ghi
      inner join constraint_temperatures on gsa_ghi.h3 = constraint_temperatures.h3
      inner join constraint_ghi on gsa_ghi.h3 = constraint_ghi.h3
      inner join constraint_slope on gsa_ghi.h3 = constraint_slope.h3
-     inner join constraint_popprox on gsa_ghi.h3 = constraint_popprox.h3
+     -- inner join constraint_popprox on gsa_ghi.h3 = constraint_popprox.h3
+     inner join constraint_population on gsa_ghi.h3 = constraint_population.h3
      inner join constraint_powerlines on gsa_ghi.h3 = constraint_powerlines.h3
      inner join constraint_powersubstations on gsa_ghi.h3 = constraint_powersubstations.h3
 

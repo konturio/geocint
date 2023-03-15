@@ -65,7 +65,7 @@ with gsa_ghi as (select gsa.h3         as h3,
      constraint_population as (select pop.h3 as h3,
                                       case
                                           when pop.population > 800 then 0.2
-                                          when prox_tab.populated_areas_proximity_m > 3000 then 0.1
+                                          when pop.population > 3000 then 0.1
                                       else 1 end constraint_population
                             from kontur_population_h3 pop),
 

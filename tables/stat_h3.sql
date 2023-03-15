@@ -571,8 +571,8 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(prox.populated_areas_proximity_m,0))::float as populated_areas_proximity_m,
            (coalesce(prox.power_substations_proximity_m,0))::float as power_substations_proximity_m,
            (coalesce(solar_suitability.solar_farms_placement_suitability,0))::float as solar_farms_placement_suitability,
-           (coalesce(solar_power_plants,0))::float as solar_power_plants,
-           (coalesce(safety_index,0))::float as safety_index,
+           (coalesce(solar_panels.solar_power_plants,0))::float as solar_power_plants,
+           (coalesce(sfty.safety_index,0))::float as safety_index,
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)

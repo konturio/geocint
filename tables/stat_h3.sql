@@ -520,7 +520,8 @@ create table stat_h3_in tablespace evo4tb as (
                     null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
-                    null::float as man_distance_to_charging_stations, waste_basket_coverage, solar_farms_placement_suitability, resolution
+                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
+                    solar_farms_placement_suitability, resolution
              from solar_farms_placement_suitability_synthetic_h3
         ) z
     group by 2, 1

@@ -100,7 +100,7 @@ with gsa_ghi as (select gsa.h3                                  as h3,
             *coalesce(constraint_population.constraint_population, 1)
             *constraint_powerlines.constraint_powerlines
             *constraint_powersubstations.constraint_powersubstations::float                  as solar_farms_placement_suitability
-into no_const_solar
+into solar_farms_placement_suitability_synthetic_h3
 from gsa_ghi
      inner join slope on gsa_ghi.h3 = slope.h3
      inner join powerlines_prox on gsa_ghi.h3 = powerlines_prox.h3

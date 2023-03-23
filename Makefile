@@ -2643,7 +2643,7 @@ db/procedure/transform_hasc_to_h3: db/table/kontur_boundaries db/table/kontur_bo
 
 db/table/safety_index_per_country: | db/table ## Get existing solar power panels layer
 	psql -c 'drop table if exists safety_index_per_country_in;'
-	psql -c 'create table safety_index_per_country_in (iso3 char(3), iso2 char(2), name text, safety_index_in float);'
+	psql -c 'create table safety_index_per_country_in (iso3 char(3), iso2 char(2), name text, safety_index float);'
 	cat static_data/mcda/global_safety_index_2008-2022.csv | psql -c "copy safety_index_per_country_in(iso3, iso2, name, safety_index) from stdin with csv header delimiter ',';"
 	psql -c 'drop table if exists safety_index_per_country;'
 	psql -c 'create table safety_index_per_country_test as (select iso3, iso2, name, p.maximum - safety_index as safety_index from safety_index_per_country_in, (select max(safety_index) maximum from safety_index_per_country_in) p);'

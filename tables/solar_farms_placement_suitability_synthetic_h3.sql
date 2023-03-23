@@ -37,18 +37,17 @@ with gsa_ghi as (select gsa.h3                                  as h3,
 
      constraint_temperatures as (select wc.h3 as       h3,
                                         case
-                                            -- -3 hexagons
                                             when wc.worldclim_max_temperature > 50 then 0
-                                            when wc.worldclim_max_temperature > 45 then 0.1
-                                            -- -1 hexagon
+                                            when wc.worldclim_max_temperature > 45 
+                                                then (1 - ((wc.worldclim_max_temperature - 45) * (0.2)))
                                             when wc.worldclim_min_temperature < -35 then 0
-                                            when wc.worldclim_min_temperature < -30 then 0.1
+                                            when wc.worldclim_min_temperature < -30 
+                                                then (1 - ((-35 - wc.worldclim_min_temperature) * (0.2)))
                                             else 1 end constraint_temperatures
                                  from worldclim_temperatures_h3 wc),
 
      constraint_ghi as (select gsa.h3 as      h3,
                                case
-                                   -- -8 hexagons
                                    when gsa.gsa_ghi < 2 then 0
                                    else 1 end constraint_ghi
                         from global_solar_atlas_h3 gsa),
@@ -56,8 +55,8 @@ with gsa_ghi as (select gsa.h3                                  as h3,
      constraint_slope as (select gebco.h3 as    h3,
                                  case
                                      when gebco.avg_slope_gebco_2022 < 5 then 1
-                                     when gebco.avg_slope_gebco_2022 < 6 then 0.8
-                                     when gebco.avg_slope_gebco_2022 < 7 then 0.4
+                                     when gebco.avg_slope_gebco_2022 < 6.8 
+                                         then (7 - gebco.avg_slope_gebco_2022) * (0.5)
                                      else 0.1 end constraint_slope
                           from gebco_2022_h3 gebco),
 
@@ -70,9 +69,10 @@ with gsa_ghi as (select gsa.h3                                  as h3,
 
      constraint_population as (select pop.h3 as h3,
                                       case
-                                          when pop.population > 800 then 0.2
-                                          when pop.population > 3000 then 0.1
-                                      else 1 end constraint_population
+                                          when pop.population < 800 then 1
+                                          when pop.population < 2780 
+                                              then ((3000 - pop.population)::float / (3000-800))
+                                      else 0.1 end constraint_population
                             from kontur_population_h3 pop),
 
      constraint_powerlines as (select prox_tab.h3 as h3,

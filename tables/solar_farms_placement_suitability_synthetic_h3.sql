@@ -55,6 +55,7 @@ with gsa_ghi as (select gsa.h3                                  as h3,
      constraint_slope as (select gebco.h3 as    h3,
                                  case
                                      when gebco.avg_slope_gebco_2022 < 5 then 1
+                                     -- set values from 1 to 0.1 by proportion
                                      when gebco.avg_slope_gebco_2022 < 6.8 
                                          then (7 - gebco.avg_slope_gebco_2022) * (0.5)
                                      else 0.1 end constraint_slope
@@ -70,6 +71,7 @@ with gsa_ghi as (select gsa.h3                                  as h3,
      constraint_population as (select pop.h3 as h3,
                                       case
                                           when pop.population < 800 then 1
+                                          -- set values from 1 to 0.1 by proportion
                                           when pop.population < 2780 
                                               then ((3000 - pop.population)::float / (3000-800))
                                       else 0.1 end constraint_population

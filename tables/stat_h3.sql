@@ -615,7 +615,6 @@ create table stat_h3 tablespace evo4tb as (
            (coalesce(prox.powerlines_proximity_m, 0))::float as powerlines_proximity_m,
            (coalesce(prox.populated_areas_proximity_m,0))::float as populated_areas_proximity_m,
            (coalesce(prox.power_substations_proximity_m,0))::float as power_substations_proximity_m,
-           --(coalesce(solar_suitability.solar_farms_placement_suitability,0))::float as solar_farms_placement_suitability,
            (coalesce(solar_panels.solar_power_plants,0))::float as solar_power_plants,
            (coalesce(sfty.safety_index,0))::float as safety_index,
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
@@ -632,7 +631,6 @@ create table stat_h3 tablespace evo4tb as (
          left join worldclim_temperatures_h3 wc_temp on (a.h3 = wc_temp.h3)
          left join mapswipe_hot_tasking_data_h3 ms on (a.h3 = ms.h3)
          left join proximities_h3 prox on (a.h3 = prox.h3)
-         --left join solar_farms_placement_suitability_synthetic_h3 solar_suitability on (a.h3 = solar_suitability.h3)
          left join existing_solar_power_panels_h3 solar_panels on (a.h3 = solar_panels.h3)
          left join safety_index_h3 sfty on (a.h3 = sfty.h3)
 );

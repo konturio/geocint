@@ -2036,7 +2036,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits db/procedure/generate_
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v4_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v4_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -2612,7 +2612,7 @@ db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/pop
 
 ### Synthetic solar farms placement layer ###
 
-db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/procedure/generate_overviews | db/table ## create a table with synthetic solar farms placement suitability (MCDA)
+db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## create a table with synthetic solar farms placement suitability (MCDA)
 	psql -f tables/solar_farms_placement_suitability_synthetic_h3.sql
 	psql -c "call generate_overviews('solar_farms_placement_suitability_synthetic_h3', '{solar_farms_placement_suitability}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on solar_farms_placement_suitability_synthetic_h3 (h3);"
@@ -2642,9 +2642,11 @@ db/procedure/transform_hasc_to_h3: db/table/kontur_boundaries db/table/kontur_bo
 	touch $@
 
 db/table/safety_index_per_country: | db/table ## Get existing solar power panels layer
+	psql -c 'drop table if exists safety_index_per_country_in;'
+	psql -c 'create table safety_index_per_country_in (iso3 char(3), iso2 char(2), name text, safety_index float);'
+	cat static_data/mcda/global_safety_index_2008-2022.csv | psql -c "copy safety_index_per_country_in(iso3, iso2, name, safety_index) from stdin with csv header delimiter ',';"
 	psql -c 'drop table if exists safety_index_per_country;'
-	psql -c 'create table safety_index_per_country (iso3 char(3), iso2 char(2), name text, safety_index float);'
-	cat static_data/mcda/global_safety_index_2008-2022.csv | psql -c "copy safety_index_per_country (iso3, iso2, name, safety_index) from stdin with csv header delimiter ',';"
+	psql -c 'create table safety_index_per_country as (select iso3, iso2, name, p.maximum - safety_index as safety_index from safety_index_per_country_in, (select max(safety_index) maximum from safety_index_per_country_in) p);'
 	touch $@
 
 db/table/safety_index_h3: db/table/safety_index_per_country db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## transform hasc codes to h3 indexes and generate overviews

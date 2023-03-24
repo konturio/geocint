@@ -204,6 +204,8 @@ select 12,
        false,
        E'This map shows the population density. \n\nLast updated  ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
-       '[{"id":"A1","color":"rgb(134,198,136)"},{"id":"A2","color":"rgb(87,164,103)"},{"id":"A3","color":"rgb(36,133,67)"}]',
+       '[{"id":"A1","color":"rgb(186,226,153)"},{"id":"A2","color":"rgb(90,200,127)"},{"id":"A3","color":"rgb(83,152,10)"},
+         {"id":"B1","color":"rgb(90,200,127)"},{"id":"B2","color":"rgb(90,200,127)"},{"id":"B3","color":"rgb(83,152,10)"},
+         {"id":"C1","color":"rgb(83,152,10)"},{"id":"C2","color":"rgb(83,152,10)"},{"id":"C3","color":"rgb(83,152,10)"}]',
        true
 from osm_meta;

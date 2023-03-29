@@ -728,11 +728,19 @@ db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundari
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
-data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: db/table/kontur_boundaries | data/out/kontur_boundaries  ## Kontur Boundaries (most recent) geopackage archive.
+data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: db/table/kontur_boundaries | data/out/kontur_boundaries  ## Kontur Boundaries (most recent) geopackage archive. Compare with previous version, if new one is smaller then send a msg into slack channel
+	find data/out/kontur_boundaries -name kontur_boundaries.gpkg.gz_* -delete
+	if [ -f $@ ]; then \
+		mv $@ $@_$$(date '+%Y%m%d'); \
+	fi
 	rm -f $@
 	rm -f data/out/kontur_boundaries/kontur_boundaries.gpkg
 	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
 	cd data/out/kontur_boundaries/; pigz kontur_boundaries.gpkg
+	if [ -f $@_$$(date '+%Y%m%d') ] && [ $$(stat -c%s $@) -lt $$(stat -c%s $@_$$(date '+%Y%m%d') ) ]; then \
+		echo "New kontur_boundaries.gpkg.gz smaller then previous one, difference is $$(expr $$(stat -c%s $@) - $$(stat -c%s $@_$$(date '+%Y%m%d')) ) bytes"; \
+			| python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; \
+	fi
 
 db/table/topology_boundaries: db/table/kontur_boundaries db/table/water_polygons_vector ## Create topology build of kontur boundaries
 	psql -f tables/topology_boundaries.sql

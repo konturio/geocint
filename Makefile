@@ -708,11 +708,11 @@ db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table
 data/in/gadm/gadm_410-levels.zip: | data/in ## Download GADM (Database of Global Administrative Areas) boundaries dataset.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/gadm_410-levels.zip $@ --profile geocint_pipeline_sender
 
-data/mid/gadm/gadm_410-levels.zip: data/in/gadm/gadm_410-levels.zip | data/mid/gadm ## Extract GADM (Database of Global Administrative Areas) boundaries.
+data/mid/gadm/gadm_410-levels.gpkg: data/in/gadm/gadm_410-levels.zip | data/mid/gadm ## Extract GADM (Database of Global Administrative Areas) boundaries.
 	unzip -o data/in/gadm/gadm_410-levels.zip -d data/mid/gadm/
 	touch $@
 
-db/table/gadm_boundaries: data/mid/gadm/gadm_410-levels.zip | db/table ## Load GADM boundaries for 0-3 administrative levels.
+db/table/gadm_boundaries: data/mid/gadm/gadm_410-levels.gpkg | db/table ## Load GADM boundaries for 0-3 administrative levels.
 	seq 0 3 | parallel --eta --progress 'ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=$$PGDATABASE" data/mid/gadm/gadm_410-levels.gpkg  -sql "select * from ADM_{}" -nln gadm_level_{} -nlt MULTIPOLYGON --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom'
 	psql -f tables/gadm_boundaries.sql
 	touch $@

@@ -705,7 +705,7 @@ db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table
 
 ### GADM 4.10 export block -- Database of Global Administrative Areas ###
 
-data/in/gadm/gadm_410-levels.zip: | data/in ## Download GADM (Database of Global Administrative Areas) boundaries dataset.
+data/in/gadm/gadm_410-levels.zip: | data/in/gadm ## Download GADM (Database of Global Administrative Areas) boundaries dataset.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/gadm_410-levels.zip $@ --profile geocint_pipeline_sender
 
 data/mid/gadm/gadm_410-levels.gpkg: data/in/gadm/gadm_410-levels.zip | data/mid/gadm ## Extract GADM (Database of Global Administrative Areas) boundaries.

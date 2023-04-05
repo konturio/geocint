@@ -2686,7 +2686,7 @@ data/in/ghsl_pop: db/procedure/insert_projection_54009 | data/in/ghsl
 	bash scripts/download_ghsl.sh
 	touch $@
 
-data/out/ghsl_pop: data/in/ghsl_pop db/function/h3_raster_sum_to_h3 | data/out/ghsl_india
+data/out/ghsl_pop: db/table/kontur_boundaries data/in/ghsl_pop db/function/h3_raster_sum_to_h3 | data/out/ghsl_india
 	bash scripts/export_ghsl_india.sh
 	touch $@
 ### End ghsl india snapshots

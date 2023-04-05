@@ -2674,3 +2674,19 @@ data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_b
 	touch $@
 
 ### End Safety index layer ###
+
+### ghsl india snapshots
+data/in/ghsl:
+	mkdir -p $@
+
+data/out/ghsl_india:
+	mkdir -p $@
+
+data/in/ghsl_pop: db/procedure/insert_projection_54009 | data/in/ghsl
+	bash scripts/download_ghsl.sh
+	touch $@
+
+data/out/ghsl_pop: data/in/ghsl_pop db/function/h3_raster_sum_to_h3 | data/out/ghsl_india
+	bash scripts/export_ghsl_india.sh
+	touch $@
+### End ghsl india snapshots

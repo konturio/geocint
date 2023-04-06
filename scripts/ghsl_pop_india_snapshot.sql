@@ -15,6 +15,6 @@ with cnt_clip as (select rid, rast
         from cnt_clip) as z
     group by 1
 )
-select resolution, CEIL(population) as population, 
+select h3, CEIL(population) as population, 
     h3_cell_to_boundary_geometry(h3) as geom
 from h3_r8;

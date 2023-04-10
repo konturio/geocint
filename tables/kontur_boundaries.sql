@@ -187,25 +187,17 @@ delete from kontur_boundaries_mid
 
 ------------ default language block ----------------
 
-drop table if exists boundaries_without_default_lang_1;
-create table boundaries_without_default_lang_1 as (
-    select distinct b.osm_id,
-                    ST_Area(b.geom) as area,
-                    b.geom
-    from kontur_boundaries_mid b,
-         default_language_relations d 
-    where not b.tags ? 'default_language'
-          and ST_Intersects(ST_PointOnSurface(b.geom), d.geom)
-);
-
 drop table if exists default_language_extrapolated_from_sub_country_relations;
 create table default_language_extrapolated_from_sub_country_relations as (
     select distinct on (b.osm_id) b.osm_id,
                                   d.default_language
-    from boundaries_without_default_lang_1 b,
+    from kontur_boundaries_mid b,
          default_language_relations d 
-    where b.area/d.area < 2
-    order by b.osm_id, ST_Area(ST_Intersection(b.geom,d.geom)) desc, 1 - abs(b.area/d.area) asc
+    where not b.tags ? 'default_language'
+          and ST_Intersects(ST_PointOnSurface(b.geom), d.geom)
+          and ST_Area(b.geom)/d.area < 2
+    order by b.osm_id, 
+             1 - abs(ST_Area(b.geom)/d.area) asc
 );
 
 drop table if exists default_language_extrapolated_from_country_relations;
@@ -243,7 +235,6 @@ create table kontur_boundaries as (
 );
 
 -- drop temporary tables
-drop table if exists boundaries_without_default_lang_1;
 drop table if exists default_language_extrapolated_from_sub_country_relations;
 drop table if exists default_language_extrapolated_from_country_relations;
 drop table if exists boundaries_with_default_language;

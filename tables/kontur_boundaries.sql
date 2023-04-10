@@ -137,8 +137,8 @@ order by b.osm_id, g.hasc is not null desc, g.iou desc;
 
 
 -- Join Wikidata HASC codes and population based on wikidata OSM tag
-drop table if exists kontur_boundaries;
-create table kontur_boundaries as
+drop table if exists kontur_boundaries_mid;
+create table kontur_boundaries_mid as
 select k.*, 
        w.hasc                    as hasc_wiki,
        round(p.population)       as wiki_population
@@ -154,28 +154,28 @@ drop table if exists osm_admin_boundaries_mid;
 drop table if exists kontur_boundaries_in;
 
 -- Special case for Soutern Federal District and Russia
-update kontur_boundaries
+update kontur_boundaries_mid
 set wiki_population = 14044580
 where osm_id = '1059500';
 
-update kontur_boundaries
+update kontur_boundaries_mid
 set wiki_population = 143666931
 where osm_id = '60189';
 
 -- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
 with ukraine_border as (
     select geom 
-    from kontur_boundaries
+    from kontur_boundaries_mid
     where osm_id = 60199
 )
-update kontur_boundaries k
+update kontur_boundaries_mid k
         set geom = ST_Multi(ST_Difference(k.geom, u.geom))
         from ukraine_border u
         where k.osm_id in ('60189', '1059500');
 
 -- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode' 
 -- first digit is 2 bcs all ukraineian postcode have 9 as first digit
-delete from kontur_boundaries 
+delete from kontur_boundaries_mid 
         where ((tags ->> 'addr:country' = 'RU' 
                 and admin_level::numeric > 3 )
                 or (tags ->> 'addr:postcode' like '2%')) 
@@ -183,6 +183,70 @@ delete from kontur_boundaries
                                                                   36.65 45.37, 36.51 45.27, 
                                                                   36.50 44.00, 32.00 44.00, 
                                                                   32.0 46.5 ))', 4326));
+
+
+------------ default language block ----------------
+
+drop table if exists boundaries_without_default_lang_1;
+create table boundaries_without_default_lang_1 as (
+    select distinct b.osm_id,
+                    ST_Area(b.geom) as area,
+                    b.geom
+    from kontur_boundaries_mid b,
+         default_language_relations d 
+    where not b.tags ? 'default_language'
+          and ST_Intersects(ST_PointOnSurface(b.geom), d.geom)
+);
+
+drop table if exists default_language_extrapolated_from_sub_country_relations;
+create table default_language_extrapolated_from_sub_country_relations as (
+    select distinct on (b.osm_id) b.osm_id,
+                                  d.default_language
+    from boundaries_without_default_lang_1 b,
+         default_language_relations d 
+    where b.area/d.area < 2
+    order by b.osm_id, ST_Area(ST_Intersection(b.geom,d.geom)) desc, 1 - abs(b.area/d.area) asc
+);
+
+drop table if exists default_language_extrapolated_from_country_relations;
+create table default_language_extrapolated_from_country_relations as (
+    select distinct b.osm_id,
+                    d.default_language
+    from kontur_boundaries_mid b,
+         default_language_relations_adm_2 d 
+    where not b.tags ? 'default_language'
+          and ST_Intersects(ST_PointOnSurface(b.geom), d.geom)
+          and b.osm_id not in (select osm_id from default_language_extrapolated_from_sub_country_relations)
+);
+
+drop table if exists boundaries_with_default_language;
+create table boundaries_with_default_language as (
+    select osm_id,
+           default_language
+    from default_language_relations_with_admin_level
+    union all 
+    select osm_id,
+           default_language
+    from default_language_relations_without_admin_level
+);
+
+drop table if exists kontur_boundaries;
+create table kontur_boundaries as (
+    select distinct on (b.osm_id) b.*,
+                             coalesce(p.lang, l.default_language, n.default_language, m.default_language, 'en'::text) as default_language
+    from kontur_boundaries_mid b
+         left join default_language_extrapolated_from_sub_country_relations n on b.osm_id = n.osm_id
+         left join default_language_extrapolated_from_country_relations m on b.osm_id = m.osm_id
+         left join boundaries_with_default_language l on b.osm_id = l.osm_id
+         left join default_languages_2_level p on b.osm_id = p.osm_id
+    order by osm_id
+);
+
+-- drop temporary tables
+drop table if exists boundaries_without_default_lang_1;
+drop table if exists default_language_extrapolated_from_sub_country_relations;
+drop table if exists default_language_extrapolated_from_country_relations;
+drop table if exists boundaries_with_default_language;
 
 -- Add index for join with using hasc
 create index on kontur_boundaries using btree(hasc_wiki);

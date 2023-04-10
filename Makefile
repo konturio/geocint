@@ -725,7 +725,29 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 
 ### End GADM 4.10 export block ###
 
-db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes db/table/wikidata_population db/table/osm | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
+### Kontur Boundaries block ###
+
+db/table/default_language_boundaries: db/table/osm_tags_idx | db/table ## select relations with existed default language
+	psql -c tables/default_language_boundaries.sql
+	touch $@
+
+db/table/default_languages_2_level: | db/table ## import data with default languages from csv file
+	psql -c "drop table if exists default_languages_2_level;"
+	psql -c "create table default_languages_2_level(a2 text, code text, hasc text, name text, wikicode text, osm_id integer, lang text, lang2 text);"
+	cat static_data/kontur_boundaries/default_language_2_level.csv | psql -c "copy prescale_to_osm(osm_type, osm_id, country, name, url, right_population, change_date) from stdin with csv header delimiter ',';"
+	touch $@
+
+data/in/default_languages_2_level_if_relations_exist_check: db/table/default_languages_2_level db/table/osm_admin_boundaries ## check if relations still be actual
+	echo 'List of osm relations from static_data/kontur_boundaries/default_language_2_level.csv, that were missed in osm_admin_boundaries table. Check relations and update osm or csv.' > $@__LOSTED_RELATIONS_MESSAGE
+	echo '```' >> $@__LOSTED_RELATIONS_MESSAGE
+	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "select missed_hasc, count(*) from kontur_boundaries_hasc_codes_check group by 1 order by 2 desc limit 15;" >> $@__LOSTED_RELATIONS_MESSAGE
+	echo '```' >> $@__LOSTED_RELATIONS_MESSAGE
+	psql -qXtc 'select count(*) from default_languages_2_level where osm_id not in (select osm_id from osm_admin_boundaries);' > $@__LOSTED_RELATIONS
+	if [ 0 -lt $$(cat $@__LOSTED_RELATIONS) ]; then cat $@__LOSTED_RELATIONS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@__LOSTED_RELATIONS_MESSAGE $@__LOSTED_RELATIONS
+	touch $@
+
+db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes db/table/wikidata_population db/table/default_language_boundaries db/table/osm data/in/default_languages_2_level_if_relations_exist_check | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
@@ -784,6 +806,19 @@ data/out/kontur_boundaries_per_country/export: db/table/hdx_boundaries data/out/
 	cat data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | parallel '{}'
 	psql -c "drop table if exists kontur_boundaries_export;"
 	touch $@
+
+data/out/kontur_boundaries.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in kcapi for Event-api enrichment - geocoding, DN boundary selector.
+	cp -vf $@ data/out/kontur_boundaries.geojson.gz_bak || true
+	rm -vf data/out/kontur_boundaries.geojson data/out/kontur_boundaries.geojson.gz
+	ogr2ogr -f GeoJSON data/out/kontur_boundaries.geojson PG:'dbname=gis' -sql "select osm_id, osm_type, boundary, admin_level, name, tags, geom from kontur_boundaries" -nln osm_admin_boundaries
+	pigz data/out/kontur_boundaries.geojson
+	touch $@
+
+deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3.
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/out/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
+
+### END Kontur Boundaries block ###
 
 db/table/osm_reports_list: db/table/osm_meta db/table/population_check_osm db/table/osm_population_inconsistencies db/table/osm_gadm_comparison db/table/osm_unmapped_places_report db/table/osm_missing_roads db/table/osm_missing_boundaries_report | db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
 	psql -f tables/osm_reports_list.sql
@@ -1902,17 +1937,6 @@ db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table ## 
 # db/table/hexagonify_boundaries: db/table/kontur_boundaries db/table/facebook_roads | db/table ## H3 hexagons from Kontur boundaries polygons for country level.
 # 	psql -f tables/hexagonify_boundaries.sql
 # 	touch $@
-
-data/out/kontur_boundaries.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in kcapi for Event-api enrichment - geocoding, DN boundary selector.
-	cp -vf $@ data/out/kontur_boundaries.geojson.gz_bak || true
-	rm -vf data/out/kontur_boundaries.geojson data/out/kontur_boundaries.geojson.gz
-	ogr2ogr -f GeoJSON data/out/kontur_boundaries.geojson PG:'dbname=gis' -sql "select osm_id, osm_type, boundary, admin_level, name, tags, geom from kontur_boundaries" -nln osm_admin_boundaries
-	pigz data/out/kontur_boundaries.geojson
-	touch $@
-
-deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3.
-	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/out/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
-	touch $@
 
 db/table/osm_buildings: db/table/osm db/function/parse_float db/function/parse_integer | db/table ## All the buildings (but not all the properties yet) extracted from OpenStreetMap dataset.
 	psql -f tables/osm_buildings.sql

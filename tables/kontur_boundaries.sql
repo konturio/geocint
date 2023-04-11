@@ -174,7 +174,7 @@ update kontur_boundaries_mid k
         where k.osm_id in ('60189', '1059500');
 
 -- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode' 
--- first digit is 2 bcs all ukraineian postcode have 9 as first digit
+-- first digit is 2 bcs all UA postcodes have 9 as first digit
 delete from kontur_boundaries_mid 
         where ((tags ->> 'addr:country' = 'RU' 
                 and admin_level::numeric > 3 )

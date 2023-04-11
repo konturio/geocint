@@ -3,33 +3,19 @@ drop table if exists osm_admin_boundaries_in;
 create table osm_admin_boundaries_in as
         select * from osm_admin_boundaries
         union all
-        -- Add 'Swalbard and Jan Mayen' and 'United States Minor Islands' boundary
-        select max(o.osm_id)+1          as osm_id,
-               null                     as osm_type,
-               'iso'                    as boundary,
-               null                     as admin_level,
-               'Svalbard and Jan Mayen' as name,
-               '{"name:en": "Svalbard and Jan Mayen", "wikidata": "Q842829", "ISO3166-2": "NO-SJ"}' as tags,
-               a.geom                   as geom,
-               null                     as kontur_admin_level
-        from osm_admin_boundaries o,
-             (select ST_Union(ST_Normalize(geog::geometry)) as geom from osm where osm_id in ('1337397','1337126') and osm_type = 'relation') a
-             group by a.geom
-        union all
-        select max(o.osm_id)+2                        as osm_id,
+        -- Add general border of 'State of Palestine'
+        select max(o.osm_id)+1                        as osm_id,
                null                                   as osm_type,
-               'iso'                                  as boundary,
+               'hdx'                                  as boundary,
                null                                   as admin_level,
-               'United States Minor Outlying Islands' as name,
-               '{"name:en": "United States Minor Outlying Islands", "wikidata": "Q16645", "ISO3166-2": "US-UM"}' as tags,
+               'State of Palestine'                   as name,
+               '{"name:en": "State of Palestine", "wikidata": "Q219060", "ISO3166-1": "PS"}' as tags,
                b.geom                                 as geom,
                null                                   as kontur_admin_level
         from osm_admin_boundaries o,
              (select ST_Union(ST_Normalize(geog::geometry)) as geom
-                  from osm where osm_id in ('8161698','6430384','7248458','12814070','7248454','7248460',
-                                            '7248461','7248459','7248455','5748709','11212373') 
-                                 and osm_type = 'relation') b
-             group by b.geom;
+                  from osm where osm_id in ('3791785','7391020','1703814') and osm_type = 'relation') b
+              group by b.geom;
 
 -- Prepare subdivided osm admin boundaries table with index for further queries
 drop table if exists osm_admin_subdivided_in;

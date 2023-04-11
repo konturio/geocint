@@ -8,15 +8,14 @@ create table osm_admin_boundaries as (
            tags,
            ST_Normalize(geog::geometry)         as geom
     from osm
-    where (
-            tags ? 'admin_level'
-        and tags @>
-            '{"boundary":"administrative"}'
-        and ST_Dimension(geog::geometry) = 2
-        and not (tags ->> 'name' is null and tags @> '{"admin_level":"2"}')
+    where (tags ? 'admin_level'
+           and tags @> '{"boundary":"administrative"}'
+           and ST_Dimension(geog::geometry) = 2
+           and not (tags ->> 'name' is null and tags @> '{"admin_level":"2"}')
     )
-       or tags @> '{"ISO3166-1":"PS"}' -- Special rule for Palestinian Territories - because of it's disputed status it often lacks admin_level key
-    order by osm_id
+           -- Special rule for Palestinian Territories - because of it's disputed status it often lacks admin_level key
+           -- also for 'Swalbard and Jan Mayen', 'United States Minor Islands' and 'Western Sahara' where admin_level doesn't exist
+           or tags ->> 'ISO3166-1' in ('PS','SJ','UM','EH') and osm_type = 'relation'
 );
 
 create index on osm_admin_boundaries using gist(geom);

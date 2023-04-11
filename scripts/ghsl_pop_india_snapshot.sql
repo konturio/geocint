@@ -10,11 +10,11 @@ with cnt_clip as (select rid, rast
     where rast && st_transform(geom, 54009) and
         st_intersects(rast, st_transform(geom, 54009))
         and b.osm_id = 304716)
-, h3_r8 as (select h3, 8 as resolution, sum(sum) as population
-    from (select (h3_raster_sum_to_h3(rast, 8)).* 
-        from cnt_clip) as z
-    group by 1
-)
-select h3, CEIL(population) as population, 
+, h3_r8 as (select (hs).h3, ((hs).stats).sum as population
+    from cnt_clip, 
+        lateral h3_raster_summary_centroids(rast, 8) as hs)
+select h3, floor(sum(floor(population))) as population, 
     h3_cell_to_boundary_geometry(h3) as geom
-from h3_r8;
+from h3_r8
+where floor(population) > 0
+group by h3;

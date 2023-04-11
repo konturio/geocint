@@ -8,7 +8,7 @@ create table default_language_relations_with_admin_level as (
            ST_Normalize(geog::geometry)            as geom
     from osm
     where tags ? 'default_language'  
-          --and (tags ->> 'admin_level')::float > 2 
+          and tags ->> 'admin_level' ~E'^\\d+$' 
           and not (tags @> '{"disputed":"yes"}' or tags @> '{"boundary":"disputed"}')
           and osm_type = 'relation'  
 );
@@ -24,7 +24,7 @@ create table default_language_relations_without_admin_level as (
     from osm
     where tags ? 'default_language'  
           and not tags ? 'admin_level' 
-          and not tags @> '{"disputed":"yes"}'
+          and not (tags @> '{"disputed":"yes"}' or tags @> '{"boundary":"disputed"}')
           and osm_type = 'relation'      
 );
 

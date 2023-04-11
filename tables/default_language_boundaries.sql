@@ -9,7 +9,7 @@ create table default_language_relations_with_admin_level as (
     from osm
     where tags ? 'default_language'  
           --and (tags ->> 'admin_level')::float > 2 
-          and not tags @> '{"disputed":"yes"}'
+          and not (tags @> '{"disputed":"yes"}' or tags @> '{"boundary":"disputed"}')
           and osm_type = 'relation'  
 );
 

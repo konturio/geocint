@@ -29,7 +29,7 @@ from (
                 null::text  gid_3,
                 0::smallint gadm_level,
                 null::text  hasc,                -- GADM level_0 doesn't have HASC codes
-                name_0      "name",
+                country     "name",
                 geom
          from gadm_level_0
          union all

@@ -7,7 +7,7 @@ create table osm_admin_boundaries_in as
         select max(o.osm_id)+1                        as osm_id,
                null                                   as osm_type,
                'hdx'                                  as boundary,
-               null                                   as admin_level,
+               '2'                                    as admin_level,
                'State of Palestine'                   as name,
                '{"name:en": "State of Palestine", "wikidata": "Q219060", "ISO3166-1": "PS"}' as tags,
                b.geom                                 as geom,
@@ -17,6 +17,17 @@ create table osm_admin_boundaries_in as
                   from osm where osm_id in ('3791785','7391020','1703814') and osm_type = 'relation') b
               group by b.geom;
 
+-- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
+with ukraine_border as (
+    select ST_Transform(geom, 3857) geom
+    from osm_admin_boundaries_in
+    where osm_id = 60199
+)
+update osm_admin_boundaries_in k
+        set geom = ST_Multi(ST_Difference(k.geom, u.geom))
+        from ukraine_border u
+        where k.osm_id in ('60189', '1059500');
+
 -- Prepare subdivided osm admin boundaries table with index for further queries
 drop table if exists osm_admin_subdivided_in;
 create table osm_admin_subdivided_in as
@@ -25,18 +36,6 @@ select
         ST_Subdivide(ST_Transform(geom, 3857)) as geom
 from osm_admin_boundaries_in;
 create index on osm_admin_subdivided_in using gist(geom);
-
--- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
--- To exclude Crimea population from Russia population calculation
-with ukraine_border as (
-    select ST_Transform(geom, 3857) geom
-    from osm_admin_boundaries_in
-    where osm_id = 60199
-)
-update osm_admin_subdivided_in k
-        set geom = ST_Multi(ST_Difference(k.geom, u.geom))
-        from ukraine_border u
-        where k.osm_id in ('60189', '1059500');
 
 -- Sum population from h3 to osm admin boundaries (rounding to integers)
 drop table if exists osm_admin_boundaries_mid;
@@ -61,11 +60,7 @@ select
         b.osm_id,
         b.osm_type,
         b.boundary,
-        case
-            -- Special rule for Palestinian Territories - because of it's disputed status it often lacks admin_level key:
-            when b.admin_level is null and b.tags @> '{"ISO3166-1":"PS"}' then '2'
-            else b.admin_level
-        end                                                             as admin_level,
+        b.admin_level                                                   as admin_level,
         b.kontur_admin_level,
         coalesce(b.name, b.tags ->> 'int_name', b.tags ->> 'name:en')   as "name",         -- boundary name with graceful fallback
         b.tags,
@@ -147,17 +142,6 @@ where osm_id = '1059500';
 update kontur_boundaries_mid
 set wiki_population = 143666931
 where osm_id = '60189';
-
--- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
-with ukraine_border as (
-    select geom 
-    from kontur_boundaries_mid
-    where osm_id = 60199
-)
-update kontur_boundaries_mid k
-        set geom = ST_Multi(ST_Difference(k.geom, u.geom))
-        from ukraine_border u
-        where k.osm_id in ('60189', '1059500');
 
 -- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode' 
 -- first digit is 2 bcs all UA postcodes have 9 as first digit

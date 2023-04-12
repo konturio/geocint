@@ -703,18 +703,17 @@ db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table
 	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-data/in/gadm/gadm36_levels_shp.zip: | data/in/gadm ## Download GADM (Database of Global Administrative Areas) boundaries dataset.
-	wget https://web.archive.org/web/20190829093806if_/https://data.biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip -O $@
+### GADM 4.10 export block -- Database of Global Administrative Areas ###
 
-data/mid/gadm/gadm36_shp_files: data/in/gadm/gadm36_levels_shp.zip | data/mid/gadm ## Extract GADM (Database of Global Administrative Areas) boundaries.
-	unzip -o data/in/gadm/gadm36_levels_shp.zip -d data/mid/gadm/
+data/in/gadm/gadm_410-levels.zip: | data/in/gadm ## Download GADM (Database of Global Administrative Areas) boundaries dataset.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/gadm_410-levels.zip $@ --profile geocint_pipeline_sender
+
+data/mid/gadm/gadm_410-levels.gpkg: data/in/gadm/gadm_410-levels.zip | data/mid/gadm ## Extract GADM (Database of Global Administrative Areas) boundaries.
+	unzip -o data/in/gadm/gadm_410-levels.zip -d data/mid/gadm/
 	touch $@
 
-db/table/gadm_boundaries: data/mid/gadm/gadm36_shp_files | db/table ## GADM (Database of Global Administrative Areas) boundaries dataset.
-	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_0 -nlt MULTIPOLYGON data/mid/gadm/gadm36_0.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
-	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_1 -nlt MULTIPOLYGON data/mid/gadm/gadm36_1.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
-	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_2 -nlt MULTIPOLYGON data/mid/gadm/gadm36_2.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
-	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_3 -nlt MULTIPOLYGON data/mid/gadm/gadm36_3.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
+db/table/gadm_boundaries: data/mid/gadm/gadm_410-levels.gpkg | db/table ## Load GADM boundaries for 0-3 administrative levels.
+	seq 0 3 | parallel --eta --progress 'ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=$$PGDATABASE" data/mid/gadm/gadm_410-levels.gpkg  -sql "select * from ADM_{}" -nln gadm_level_{} -nlt MULTIPOLYGON --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom'
 	psql -f tables/gadm_boundaries.sql
 	touch $@
 
@@ -723,6 +722,8 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 	psql -c "create table gadm_countries_boundary as select row_number() over() gid, gid_0, \"name\" name_0, geom from gadm_boundaries where gadm_level = 0;"
 	psql -c "alter table gadm_countries_boundary alter column geom type geometry(multipolygon, 3857) using ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
+
+### End GADM 4.10 export block ###
 
 db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes db/table/wikidata_population db/table/osm | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
 	psql -f tables/kontur_boundaries.sql

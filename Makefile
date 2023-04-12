@@ -741,6 +741,7 @@ data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_target: db/table/kontur_bou
 	if [ -f data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous ] && [ $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz) -lt $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous ) ]; then \
 		echo "New kontur_boundaries.gpkg.gz smaller then previous one, difference is $$(expr $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz) - $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous) ) bytes" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; \
 	fi
+	touch $@
 
 db/table/topology_boundaries: db/table/kontur_boundaries db/table/water_polygons_vector ## Create topology build of kontur boundaries
 	psql -f tables/topology_boundaries.sql

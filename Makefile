@@ -734,7 +734,7 @@ db/table/default_language_boundaries: db/index/osm_tags_idx | db/table ## select
 db/table/default_languages_2_level: | db/table ## import data with default languages from csv file
 	psql -c "drop table if exists default_languages_2_level;"
 	psql -c "create table default_languages_2_level(a2 text, code text, hasc text, name text, wikicode text, osm_id integer, lang text, lang2 text);"
-	cat static_data/kontur_boundaries/default_language_2_level.csv | psql -c "copy default_languages_2_level(osm_type, osm_id, country, name, url, right_population, change_date) from stdin with csv header delimiter ',';"
+	cat static_data/kontur_boundaries/default_language_2_level.csv | psql -c "copy default_languages_2_level(a2, code, hasc, name, wikicode, osm_id, lang, lang2) from stdin with csv header delimiter ',';"
 	touch $@
 
 data/in/default_languages_2_level_if_relations_exist_check: db/table/default_languages_2_level db/table/osm_admin_boundaries ## check if relations still be actual

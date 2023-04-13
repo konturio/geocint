@@ -740,7 +740,7 @@ db/table/default_languages_2_level: | db/table ## import data with default langu
 data/in/default_languages_2_level_if_relations_exist_check: db/table/default_languages_2_level db/table/osm_admin_boundaries ## check if relations still be actual
 	echo 'List of osm relations from static_data/kontur_boundaries/default_language_2_level.csv, that were missed in osm_admin_boundaries table. Check relations and update osm or csv.' > $@__LOSTED_RELATIONS_MESSAGE
 	echo '```' >> $@__LOSTED_RELATIONS_MESSAGE
-	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "select osm_id, name, wikicode from kontur_boundaries_hasc_codes_check group by 1 order by 2 desc limit 15;" >> $@__LOSTED_RELATIONS_MESSAGE
+	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "select osm_id, name, wikicode from default_languages_2_level where osm_id not in (select osm_id from osm_admin_boundaries) order by 1;" >> $@__LOSTED_RELATIONS_MESSAGE
 	echo '```' >> $@__LOSTED_RELATIONS_MESSAGE
 	psql -qXtc 'select count(*) from default_languages_2_level where osm_id not in (select osm_id from osm_admin_boundaries);' > $@__LOSTED_RELATIONS
 	if [ 0 -lt $$(cat $@__LOSTED_RELATIONS) ]; then cat $@__LOSTED_RELATIONS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi

@@ -728,7 +728,7 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 ### Kontur Boundaries block ###
 
 db/table/default_language_boundaries: db/index/osm_tags_idx | db/table ## select relations with existed default language
-	psql -c tables/default_language_boundaries.sql
+	psql -f tables/default_language_boundaries.sql
 	touch $@
 
 db/table/default_languages_2_level: | db/table ## import data with default languages from csv file

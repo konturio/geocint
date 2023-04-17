@@ -1,7 +1,6 @@
 -- Match high level kontur_boundaries with HASC codes by wikidata identifier
 drop table if exists hdx_boundaries;
-
-create table hdx_boundaries_i as (
+create table hdx_boundaries as (
     with input as (
         select distinct on (hdx.hasc)
                 hdx.hasc                          as hasc,

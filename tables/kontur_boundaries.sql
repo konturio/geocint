@@ -143,6 +143,13 @@ update kontur_boundaries_mid
 set wiki_population = 143666931
 where osm_id = '60189';
 
+-- Remove osm_id, that was created for State of Palestine and doesn't exists in osm
+-- We used it to be able to group data by osm_id and now should revert changes
+-- to be able to include osm_id into kontur_boundaries extraction
+update kontur_boundaries
+set osm_id = null
+where boundary = 'hdx' and tags = '{"name:en": "State of Palestine", "wikidata": "Q219060", "ISO3166-1": "PS"}';
+
 -- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode' 
 -- first digit is 2 bcs all UA postcodes have 9 as first digit
 delete from kontur_boundaries_mid 

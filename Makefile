@@ -2675,17 +2675,19 @@ data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_b
 ### End Safety index layer ###
 
 ### ghsl india snapshots
-data/in/ghsl:
+data/in/ghsl: ## create input dir
 	mkdir -p $@
 
-data/out/ghsl_india:
+data/out/ghsl_india: ## create output dir
 	mkdir -p $@
 
-data/in/ghsl_pop: db/procedure/insert_projection_54009 | data/in/ghsl
+data/in/ghsl_pop: db/procedure/insert_projection_54009 | data/in/ghsl ## download rasters and import into DB
 	bash scripts/download_ghsl.sh
 	touch $@
 
-data/out/ghsl_pop: db/table/kontur_boundaries data/in/ghsl_pop db/function/h3_raster_sum_to_h3 | data/out/ghsl_india
+data/out/ghsl_pop: db/table/kontur_boundaries data/in/ghsl_pop db/function/h3_raster_sum_to_h3 | data/out/ghsl_india ## generate population snapshots and upload to aws
 	bash scripts/export_ghsl_india.sh
+	cd data/out/ghsl_india; zip -r kontur_population_IN_$(date '+%Y-%m-%d').zip *
+	cd data/out/ghsl_india; aws s3 cp kontur_population_IN_$(date '+%Y-%m-%d').zip s3://geodata-eu-central-1-kontur-public/ghsl_india/ --profile geocint_pipeline_sender --acl public-read
 	touch $@
 ### End ghsl india snapshots

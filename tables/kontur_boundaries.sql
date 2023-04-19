@@ -13,13 +13,14 @@ create table osm_admin_boundaries_in as
                b.geom                                 as geom,
                null                                   as kontur_admin_level
         from osm_admin_boundaries o,
-             (select ST_Union(ST_Normalize(geog::geometry)) as geom
-                  from osm where osm_id in ('3791785','7391020','1703814') and osm_type = 'relation') b
+             (select ST_Union(geom) as geom
+                  from osm_admin_boundaries 
+                  where osm_id in ('3791785','7391020','1703814') and osm_type = 'relation') b
               group by b.geom;
 
 -- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
 with ukraine_border as (
-    select ST_Transform(geom, 3857) geom
+    select geom
     from osm_admin_boundaries_in
     where osm_id = 60199
 )

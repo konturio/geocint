@@ -753,7 +753,7 @@ data/out/required_relations_check: db/table/osm_admin_boundaries | data/out ## C
 	psql -c "create table required_relations as (select unnest(array[1703814, 2559126, 2185386, 3245620, 3791785, 7391020, 60189, 1059500]) osm_id);"	
 	echo 'Pipeine was interrupted because followed relations from list of osm relations that we access directly by osm_id in kontur_boundaries production were not found in osm_admin_boundaries table.' > $@__REQUIRED_RELATIONS_MESSAGE
 	echo '```' >> $@__REQUIRED_RELATIONS_MESSAGE
-	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "'select osm_id from required_relations where osm_id not in (select osm_id from osm_admin_boundaries);'" >> $@__REQUIRED_RELATIONS_MESSAGE
+	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "select osm_id from required_relations where osm_id not in (select osm_id from osm_admin_boundaries);" >> $@__REQUIRED_RELATIONS_MESSAGE
 	echo '```' >> $@__REQUIRED_RELATIONS_MESSAGE
 	psql -qXtc "select count(*) from required_relations where osm_id not in (select osm_id from osm_admin_boundaries);" > $@__NUMBER_MISSED_REQUIRED_RELATIONS
 	if [ 0 -lt $$(cat $@__NUMBER_MISSED_REQUIRED_RELATIONS) ]; then cat $@__REQUIRED_RELATIONS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi

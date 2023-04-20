@@ -8,7 +8,7 @@ create table osm_addresses_minsk as (
                   (
                       select geog::geometry
                       from osm
-                      where tags @> '{"name":"Минск", "boundary":"administrative"}'
+                      where tags @> '{"name:be":"Мінск", "boundary":"administrative"}'
                         and osm_id = 59195
                         and osm_type = 'relation'
                   ),

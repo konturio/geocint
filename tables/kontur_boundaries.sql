@@ -151,11 +151,10 @@ update kontur_boundaries
 set osm_id = null
 where boundary = 'hdx' and tags = '{"name:en": "State of Palestine", "wikidata": "Q219060", "ISO3166-1": "PS"}';
 
--- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode' 
+-- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode'
 -- first digit is 2 bcs all UA postcodes have 9 as first digit
 delete from kontur_boundaries_mid 
-        where ((tags ->> 'addr:country' = 'RU' 
-                and not admin_level::text in ('2','3')  
+        where ((tags ->> 'addr:country' = 'RU' and not admin_level::text in ('2','3'))
                 or (tags ->> 'addr:postcode' like '2%')) 
                 and ST_Intersects(geom, ST_GeomFromText('POLYGON((32.00 46.50, 36.50 46.50, 
                                                                   36.65 45.37, 36.51 45.27, 

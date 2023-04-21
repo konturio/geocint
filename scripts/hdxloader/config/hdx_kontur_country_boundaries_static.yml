@@ -1,0 +1,62 @@
+name: "kontur-boundaries-{country_name_lower}"
+title: "{country_name_capitalized}: Administrative Division with Aggregated Population"
+archived: False
+dataset_source: "kontur"
+dataset_contributor: "kontur"
+isopen: True
+license_id: "cc-by"
+license_title: "Creative Commons Attribution International"
+license_url: "http://www.opendefinition.org/licenses/cc-by"
+notes: "{country_name_capitalized} administrative division with aggregated population. Built from
+[Kontur Population: Global Population Density for 400m H3 Hexagons](https://data.humdata.org/dataset/kontur-population-dataset)
+on top of [OpenStreetMap](https://www.openstreetmap.org) administrative boundaries data.
+Enriched with HASC codes for regions taken from Wikidata.
+
+Gobal version of boundaries dataset:
+[Kontur Boundaries: Global administrative division with aggregated population](https://data.humdata.org/dataset/kontur-boundaries)"
+methodology: "Other"
+methodology_other: "Administrative boundaries extracted from OpenStreetMap data.
+They are filtered and enriched with aggregated population from
+[Kontur Population: Global Population Density for 400m H3 Hexagons](https://data.humdata.org/m/dataset/kontur-population-dataset) dataset.
+Non-integer population counts are rounded to integers.
+Enriched with HASC codes for regions taken from Wikidata.
+Administrative levels adjusted according to area of region to fix inconsistent display of the boundaries."
+caveats: "
+**Dataset codebook**:
+
+**fid**: record order in data upload.
+
+**admin_level**: administrative level of a feature within a government hierarchy in OSM. ''2'' is country level. Higher levels may be adjusted according to region area to look more consistent for different countries in the global version of the dataset.
+
+**name**: primary name of the feature in OSM
+https://wiki.openstreetmap.org/wiki/Key:name
+
+**name_en**: A common name in English language of the feature in OSM
+https://wiki.openstreetmap.org/wiki/Key:name:en
+
+**population**: total population of administrative boundary based on aggregated population from Kontur Population: Global Population Density for 400m H3 Hexagons dataset.
+
+**hasc**: HASC and iso-3166-1 alpha-2 codes of region taken from Wikidata by its connection with OSM feature using wikidata tag
+https://wiki.openstreetmap.org/wiki/Country_code
+https://wiki.openstreetmap.org/wiki/Key:wikidata
+
+
+**Global version of Kontur Boundaries** is available at
+[https://data.humdata.org/organization/kontur](https://data.humdata.org/organization/kontur).
+
+
+Land Information New Zealand (LINZ) NZ Building Outlines:
+sourced from the [LINZ Data Service](https://data.linz.govt.nz/)
+licensed for reuse under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
+OpenStreetMap:
+Some data (c) OpenStreetMap.org Contributors,
+Wikidata:
+[HASC](https://www.wikidata.org/wiki/Property:P8119)"
+private: False
+url: None
+state: "active"
+tags:
+  - name: "administrative boundaries-divisions"
+  - name: "baseline population"
+  - name: "geodata"

@@ -146,10 +146,10 @@ set     kontur_admin_level = u.kontur_admin_level
 from    osm_admin_lvls_in as u
 where   o.osm_id = u.osm_id;
 
--- update kontur_admin_level for countries
+-- update kontur_admin_level for countries and Western Sahara
 update  osm_admin_boundaries as o
 set     kontur_admin_level = 2
-where 	admin_level = '2';
+where 	admin_level = '2' or (osm_id = 2559126 and tags ->> 'ISO3166-1' in ('EH'));
 
 -- kontur_admin_level is null for all objects with errors in admin_level (f.e. text value in admin_level)
 -- i left this on purpose, it is discussable 

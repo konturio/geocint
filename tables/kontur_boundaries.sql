@@ -7,11 +7,11 @@ create table osm_admin_boundaries_in as
         select max(o.osm_id)+1                        as osm_id,
                null                                   as osm_type,
                'hdx'                                  as boundary,
-               '2'                                    as admin_level,
+               null                                   as admin_level,
                'State of Palestine'                   as name,
                '{"name:en": "State of Palestine", "wikidata": "Q219060", "ISO3166-1": "PS"}' as tags,
                b.geom                                 as geom,
-               null                                   as kontur_admin_level
+               2                                      as kontur_admin_level
         from osm_admin_boundaries o,
              (select ST_Union(geom) as geom
                   from osm_admin_boundaries 

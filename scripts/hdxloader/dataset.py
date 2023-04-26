@@ -10,6 +10,7 @@ class DatasetType(str, enum.Enum):
     CountryPopulationDensityFor400mH3Hexagons = 'country-population'
     GlobalAdministrativeDivisionWithAggregatedPopulation = 'global-boundaries'
     GlobalPopulationDensityFor400mH3Hexagons = 'global-population'
+    NoType = 'without-type'
 
     def __str__(self):
         return self.value

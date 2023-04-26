@@ -116,14 +116,14 @@ def get_datasets_for_dataset_type(dataset_type: DatasetType) -> Dict[str, Datase
         }
         expected_tags_for_type = {
             DatasetType.CountryAdministrativeDivisionWithAggregatedPopulation: {
-                'administrative divisions',
-                'baseline population',
-                'geodata',
+                  'baseline population', 
+                  'geodata', 
+                  'administrative boundaries-divisions'
             },
             DatasetType.CountryPopulationDensityFor400mH3Hexagons: {
-                'baseline population',
-                'distributions',
-                'geodata',
+                  'baseline population', 
+                  'geodata', 
+                  'population'
             },
         }
         skip_global = dataset_type in {

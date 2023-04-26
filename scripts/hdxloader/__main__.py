@@ -2,13 +2,14 @@ import argparse
 import logging
 import os
 import uuid
+import yaml
 
 from hdx.facades.keyword_arguments import facade
 from hdx.utilities.easy_logging import setup_logging
 from hdx.data.dataset import Dataset
 
 from hdxloader.dataset import DatasetType
-from hdxloader.loader import create_datasets_for_all_hdx_countries, Loader, SCRIPT_NAME
+from hdxloader.loader import create_datasets_for_all_hdx_countries, get_datasets_for_dataset_type, Loader, SCRIPT_NAME
 
 
 USER_AGENT = 'Kontur HDX Loader'
@@ -36,7 +37,7 @@ def parse_args() -> argparse.Namespace:
     parser_update.add_argument(
         '-i', '--identifier',
         help='Specify a dataset identifier.',
-        required=True,
+        required=False,
         type=str,
     )
     parser_update.add_argument(
@@ -60,6 +61,18 @@ def parse_args() -> argparse.Namespace:
     parser_update.add_argument(
         '--tag_value',
         help='new tag value',
+        required=False,
+        type=str,
+    )
+    parser_update.add_argument(
+        '--update_by_iso3',
+        action='store_true',
+        required=False,
+        help='Update by file with iso3 values.',
+    )
+    parser_update.add_argument(
+        '--iso3_file',
+        help='Yaml file with key(iso3 lovercase code) - value(yaml key-value properties) configuration for update by matching iso3 codes)',
         required=False,
         type=str,
     )
@@ -96,6 +109,7 @@ def parse_args() -> argparse.Namespace:
         sub_parser.add_argument(
             '-t', '--dataset-type',
             choices=list(DatasetType),
+            default=DatasetType('without-type'),
             help='Specify a type of dataset you want to work with.',
             required=False,
             type=DatasetType,
@@ -187,31 +201,78 @@ def create_datasets(
         for dataset in new_datasets:
             logging.info(dataset)
 
+# upfate existed datasets
 def update_dataset(
+        dataset_type: DatasetType,
         dataset_identifier: str,
         update_with_file: str,
         file_with_update: str = '',
         updated_tag: str = '',
         updated_tag_value: str = '',
+        iso3_file: str = '',
+        update_by_iso3: bool = False,
         no_dry_run: bool = False,
         **_kwargs
 ):
     # if True - do actual work, else - do nothing
-    if no_dry_run:
-        # get dataset by identifier
-        dataset_for_update = Dataset.read_from_hdx(dataset_identifier)
-        # update local version of dataset by one of several options
-        if update_with_file in ('json','yml','yaml','no_file'):
-            if update_with_file == 'json':
-                dataset_for_update.update_from_json(file_with_update)
-            elif update_with_file == 'yml' or update_with_file == 'yaml':
-                dataset_for_update.update_from_yaml(file_with_update)
-            elif update_with_file == 'no_file':
-                dataset_for_update.update({updated_tag : updated_tag_value})
-            # update dataset metadata on hdx server
-            dataset_for_update.update_in_hdx()
+    if no_dry_run:        
+
+        datasets_for_update = []
+
+        # If true - update all <dataset_type> datasets
+        if dataset_type.value != 'without-type':
+            datasets = get_datasets_for_dataset_type(dataset_type)            
+            datasets_for_update = [datasets[_id] for _id in datasets.keys()]  
+
+            assert len(datasets_for_update) > 0, \
+                'The number of datasets to update must be greater than 0.'
+            
+            for i in datasets_for_update:
+                print(i['groups'][0]['name'])
+                 
+        elif dataset_identifier:
+            # get dataset by identifier
+            datasets_for_update = [Dataset.read_from_hdx(dataset_identifier),]  
+
+            assert datasets_for_update != [None], \
+                'Request dataset by the dataset identifier returned None.'
         else:
-            print('Wrong value of --update-with-file attribute')
+            print('No right conditions provided, please set correct dataset_type or dataset_identifier')
+
+
+        if update_by_iso3:
+
+            assert iso3_file, \
+                'You use update by iso3 option but missed iso3_file argument.'
+            
+            with open(iso3_file, "r") as file:
+                iso3_values_dict = yaml.load(file, Loader=yaml.FullLoader)            
+            
+            for i in datasets_for_update:
+                i.update(iso3_values_dict[i['groups'][0]['name']])
+                i.update_in_hdx()
+
+        else:
+
+            # for i in datasets_for_update:
+            #     print(i)
+            
+            # update local version of dataset by one of several options
+            if update_with_file in ('json','yml','yaml','no_file'):
+                if update_with_file == 'json':
+                    for i in datasets_for_update:
+                        i.update_from_json(file_with_update)
+                elif update_with_file == 'yml' or update_with_file == 'yaml':
+                    for i in datasets_for_update:
+                        i.update_from_yaml(file_with_update)
+                elif update_with_file == 'no_file':
+                    for i in datasets_for_update:
+                        i.update({updated_tag : updated_tag_value})
+                # update dataset metadata on hdx server
+                for i in datasets_for_update:
+                    i.update_in_hdx()
+            else:
+                print('Wrong value of --update-with-file attribute')
 
 
 def main():
@@ -246,11 +307,14 @@ def main():
     elif args.mode == 'update':
         facade(
             update_dataset,
+            dataset_type=args.dataset_type,
             dataset_identifier=args.identifier,
             update_with_file=args.update_with_file,
             file_with_update=args.file_with_update,
             updated_tag=args.tag_name,
             updated_tag_value=args.tag_value,
+            update_by_iso3=args.update_by_iso3,
+            iso3_file=args.iso3_file,
             no_dry_run=args.no_dry_run,
             hdx_site=args.hdx_site,
             user_agent=USER_AGENT,

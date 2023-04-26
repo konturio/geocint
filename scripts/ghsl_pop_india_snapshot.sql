@@ -21,6 +21,31 @@ insert into :tab_temp(h3, population)
 select h3, population
 from h3_r8;
 
+-- there are hexagons outside india polygon
+-- delete hexagons outside
+with bad as (select h3
+    from :tab_temp
+    except
+    select h3
+    from :tab_temp as a,
+        kontur_boundaries as b
+    where st_within(h3_cell_to_geometry(h3), b.geom)
+        and b.osm_id = 304716)
+delete from :tab_temp
+where h3 in (select h3 from bad);
+
+-- there are duplicates in h3 (TODO investigeate why they are exists)
+-- delete duplicates and insert sum of their values
+with bad as (select h3, sum(population) as new_pop
+    from :tab_temp
+    group by h3
+    having count(*) > 1)
+, d as (delete from :tab_temp
+    where h3 in (select h3 from bad))
+insert into :tab_temp(h3, population)
+select h3, new_pop
+from bad;
+
 -- tab_result is required to insert values after dithering
 drop table if exists :tab_result;
 
@@ -41,13 +66,20 @@ DECLARE
     carry   float;
     cur_pop float;
     cur_row record;
+    max_pop float;
 begin
     carry := 0;
-    for cur_row in execute format('select h3, population from %s order by h3', tab_source) loop
+    max_pop := 46200;
+
+    for cur_row in execute format('select h3, population, ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0 as area_km2 from %s order by h3', tab_source) loop
         cur_pop := cur_row.population + carry;
 
         if cur_pop < 0 then
             cur_pop := 0;
+        end if;
+
+        if (cur_pop / cur_row.area_km2) > max_pop then
+            cur_pop := max_pop * cur_row.area_km2;
         end if;
 
         cur_pop := floor(cur_pop);

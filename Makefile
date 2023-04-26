@@ -725,7 +725,6 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 
 ### End GADM 4.10 export block ###
 
-<<<<<<< HEAD
 ### Kontur Boundaries block ###
 
 db/table/default_language_boundaries: db/index/osm_tags_idx | db/table ## select relations with existed default language

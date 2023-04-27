@@ -1,8 +1,10 @@
-with cte as (select osm_id, lang
-             from (select distinct
-                   on (p.osm_id) p.osm_id, tags, p.name, lang
-                   from planet_osm_point p join countries c
-                   on ST_Intersects(p.way, c.geom)
+with cte as (select osm_id, 
+                    lang
+             from (select distinct on (p.osm_id) p.osm_id, 
+                                                 p.tags, 
+                                                 p.name, 
+                                                 default_language as lang
+                   from planet_osm_point p join kontur_boundaries c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
                    order by p.osm_id, c.geom) t
              where not tags ? lang)
@@ -12,11 +14,13 @@ where cte.osm_id = planet_osm_point.osm_id;
 
 vacuum planet_osm_point;
 
-with cte as (select osm_id, lang
-             from (select distinct
-                   on (p.osm_id) p.osm_id, tags, p.name, lang
-                   from planet_osm_line p join countries c
-                   on ST_Intersects(p.way, c.geom)
+with cte as (select osm_id, 
+                    lang
+             from (select distinct on (p.osm_id) p.osm_id, 
+                                                 p.tags, 
+                                                 p.name, 
+                                                 default_language as lang
+                   from planet_osm_line p join kontur_boundaries c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
                    order by p.osm_id, c.geom) t
              where not tags ? lang)
@@ -27,10 +31,11 @@ where cte.osm_id = planet_osm_line.osm_id;
 vacuum planet_osm_line;
 
 with cte as (select osm_id, lang
-             from (select distinct
-                   on (p.osm_id) p.osm_id, tags, p.name, lang
-                   from planet_osm_polygon p join countries c
-                   on ST_Intersects(p.way, c.geom)
+             from (select distinct on (p.osm_id) p.osm_id, 
+                                                 p.tags, 
+                                                 p.name, 
+                                                 default_language as lang
+                   from planet_osm_polygon p join kontur_boundaries c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
                    order by p.osm_id, c.geom) t
              where not tags ? lang)

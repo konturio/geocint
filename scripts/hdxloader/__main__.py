@@ -72,7 +72,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser_update.add_argument(
         '--iso3_file',
-        help='Yaml file with key(iso3 lovercase code) - value(yaml key-value properties) configuration for update by matching iso3 codes)',
+        help='Yaml file with key(iso3 lowercase code) - value(yaml key-value properties) configuration for update by matching iso3 codes)',
         required=False,
         type=str,
     )
@@ -240,15 +240,19 @@ def update_dataset(
             print('No right conditions provided, please set correct dataset_type or dataset_identifier')
 
 
+        # if true - update datasets by iso3 code, else - update from yaml/json/command line attribute
         if update_by_iso3:
 
             assert iso3_file, \
                 'You use update by iso3 option but missed iso3_file argument.'
             
+            # read yaml file with key(iso3 lowercase code) - value(yaml key-value properties) configuration for update by matching iso3 codes
             with open(iso3_file, "r") as file:
                 iso3_values_dict = yaml.load(file, Loader=yaml.FullLoader)            
             
+            # update by matching iso3 codes
             for i in datasets_for_update:
+                # dataset['groups'][0]['name'] - name of group is an iso3 lowercase code
                 i.update(iso3_values_dict[i['groups'][0]['name']])
                 i.update_in_hdx()
 
@@ -262,7 +266,7 @@ def update_dataset(
                 if update_with_file == 'json':
                     for i in datasets_for_update:
                         i.update_from_json(file_with_update)
-                elif update_with_file == 'yml' or update_with_file == 'yaml':
+                elif update_with_file in ['yml','yaml']:
                     for i in datasets_for_update:
                         i.update_from_yaml(file_with_update)
                 elif update_with_file == 'no_file':

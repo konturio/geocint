@@ -121,10 +121,10 @@ licensed for reuse under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0
 
 OpenStreetMap: Some data (c) OpenStreetMap.org Contributors
 [Open Data Commons Open Database License](https://opendatacommons.org/licenses/odbl) (ODbL)"
-private: False
+private: True
 url: None
 state: "active"
 tags:
   - name: "baseline population"
-  - name: "distributions"
+  - name: "population"
   - name: "geodata"

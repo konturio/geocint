@@ -226,10 +226,7 @@ def update_dataset(
 
             assert len(datasets_for_update) > 0, \
                 'The number of datasets to update must be greater than 0.'
-            
-            # for i in datasets_for_update:
-            #     print(i['groups'][0]['name'])
-                 
+
         elif dataset_identifier:
             # get dataset by identifier
             datasets_for_update = [Dataset.read_from_hdx(dataset_identifier),]  

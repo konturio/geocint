@@ -43,7 +43,7 @@ def parse_args() -> argparse.Namespace:
     parser_update.add_argument(
         '-u', '--update_with_file',
         help='Specify a dataset identifier.',
-        required=True,
+        required=False,
         type=str,
     )
     parser_update.add_argument(
@@ -227,8 +227,8 @@ def update_dataset(
             assert len(datasets_for_update) > 0, \
                 'The number of datasets to update must be greater than 0.'
             
-            for i in datasets_for_update:
-                print(i['groups'][0]['name'])
+            # for i in datasets_for_update:
+            #     print(i['groups'][0]['name'])
                  
         elif dataset_identifier:
             # get dataset by identifier
@@ -250,17 +250,18 @@ def update_dataset(
             with open(iso3_file, "r") as file:
                 iso3_values_dict = yaml.load(file, Loader=yaml.FullLoader)            
             
+            # updated_datasets = []
+            keys = iso3_values_dict.keys()
+            print(keys)
+
             # update by matching iso3 codes
             for i in datasets_for_update:
-                # dataset['groups'][0]['name'] - name of group is an iso3 lowercase code
-                i.update(iso3_values_dict[i['groups'][0]['name']])
-                i.update_in_hdx()
+                if i['groups'][0]['name'] in keys:
+                    # dataset['groups'][0]['name'] - name of group is an iso3 lowercase code
+                    i.update(iso3_values_dict[i['groups'][0]['name']])
+                    i.update_in_hdx()
 
         else:
-
-            # for i in datasets_for_update:
-            #     print(i)
-            
             # update local version of dataset by one of several options
             if update_with_file in ('json','yml','yaml','no_file'):
                 if update_with_file == 'json':

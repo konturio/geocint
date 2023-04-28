@@ -57,6 +57,6 @@ private: False
 url: None
 state: "active"
 tags:
-  - name: "administrative divisions"
+  - name: "administrative boundaries-divisions"
   - name: "baseline population"
   - name: "geodata"

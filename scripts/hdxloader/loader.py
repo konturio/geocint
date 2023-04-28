@@ -20,7 +20,8 @@ from hdxloader.datasource import (
     Datasource,
 )
 
-
+# TO DO
+# Looks like we should move these variables to special configuration file
 ORGANIZATION_NAME = 'kontur'
 SCRIPT_NAME = 'HDX: Kontur Data Loader'
 
@@ -102,7 +103,8 @@ class Loader:
                 batch=self._uuid,
             )
 
-
+# TO DO
+# expected tags for type should be moved to separate config file, to avoid errors in case, when tasg were changed by HDX
 def get_datasets_for_dataset_type(dataset_type: DatasetType) -> Dict[str, Dataset]:
     def _is_dataset_ok_by_tags(
             dataset_: Dataset,
@@ -114,14 +116,14 @@ def get_datasets_for_dataset_type(dataset_type: DatasetType) -> Dict[str, Datase
         }
         expected_tags_for_type = {
             DatasetType.CountryAdministrativeDivisionWithAggregatedPopulation: {
-                'administrative divisions',
-                'baseline population',
-                'geodata',
+                  'baseline population', 
+                  'geodata', 
+                  'administrative boundaries-divisions'
             },
             DatasetType.CountryPopulationDensityFor400mH3Hexagons: {
-                'baseline population',
-                'distributions',
-                'geodata',
+                  'baseline population', 
+                  'geodata', 
+                  'population'
             },
         }
         skip_global = dataset_type in {
@@ -198,7 +200,7 @@ def create_datasets_for_all_hdx_countries(
         )
         dataset.set_organization(we_are['id'])
         dataset.set_maintainer(i_am['id'])
-        dataset.set_date_of_dataset(datetime.datetime.now())
+        dataset.update({'dataset_date':datetime.datetime.now()})
         dataset.set_expected_update_frequency('-2')
 
         new_datasets.append(dataset)

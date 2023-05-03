@@ -738,6 +738,10 @@ db/table/default_language_boundaries: db/table/default_languages_2_level db/inde
 	psql -f tables/default_language_boundaries.sql
 	touch $@
 
+db/table/default_language_boundaries: db/table/default_languages_2_level db/index/osm_tags_idx | db/table ## select relations with existed default language
+	psql -f tables/default_language_boundaries.sql
+	touch $@
+
 data/in/default_languages_2_level_if_relations_exist_check: db/table/default_languages_2_level db/table/osm_admin_boundaries ## check if relations still be actual
 	echo 'List of osm relations from static_data/kontur_boundaries/default_language_2_level.csv, that were missed in osm_admin_boundaries table. Check relations and update osm or csv.' > $@__LOSTED_RELATIONS_MESSAGE
 	echo '```' >> $@__LOSTED_RELATIONS_MESSAGE

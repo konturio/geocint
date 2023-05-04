@@ -86,16 +86,16 @@ db/table/kontur_topology_boundary: data/in/topology_boundaries.geojson | db/tabl
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" -a_srs EPSG:3857 data/in/topology_boundaries.geojson -nln kontur_topology_boundary -lco GEOMETRY_NAME=geom
 	touch $@
 
-data/in/kontur_boundaries_language.gpkg: | data/in
-	wget https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/kontur_boundaries_language.gpkg.gz -O data/in/kontur_boundaries_language.gpkg.gz
-	pigz -d data/in/kontur_boundaries.gpkg.gz
+data/in/kontur_default_languages.gpkg: | data/in
+	wget https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/kontur_default_languages.gpkg.gz -O data/in/kontur_default_languages.gpkg.gz
+	pigz -d data/in/kontur_default_languages.gpkg.gz
 
-db/table/kontur_boundaries_language: data/in/kontur_boundaries_language.gpkg | db/table
-	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -s_srs EPSG:4326 -t_srs EPSG:3857 data/in/kontur_boundaries_language.gpkg  -nln kontur_boundaries_language -nlt MULTIPOLYGON --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom
-	psql -c "create index on kontur_boundaries_language using gist(geom);"
+db/table/kontur_default_languages: data/in/kontur_default_languages.gpkg | db/table
+	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -s_srs EPSG:4326 -t_srs EPSG:3857 data/in/kontur_default_languages.gpkg  -nln kontur_default_languages -nlt MULTIPOLYGON --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom
+	psql -c "create index on kontur_default_languages using gist(geom);"
 	touch $@
 
-db/table/osm2pgsql: db/table/kontur_topology_boundary kontur_boundaries_language.gpkg data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
+db/table/osm2pgsql: db/table/kontur_topology_boundary kontur_default_languages.gpkg data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	psql -c "create extension if not exists hstore;"
 	osm2pgsql --style osm2pgsql_styles/basemap.lua --flat-nodes data/osm2pgsql_flat_nodes --slim --number-processes 32 --output=flex --create data/planet-latest.osm.pbf
 	touch $@

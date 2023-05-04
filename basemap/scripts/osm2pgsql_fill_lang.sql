@@ -4,7 +4,7 @@ with cte as (select osm_id,
                                                  p.tags, 
                                                  p.name, 
                                                  default_language as lang
-                   from planet_osm_point p join kontur_boundaries_language c on ST_Intersects(p.way, c.geom)
+                   from planet_osm_point p join kontur_default_languages c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
                          and c.is_extrapolated = 0
                    order by p.osm_id, c.geom) t
@@ -21,7 +21,7 @@ with cte as (select osm_id,
                                                  p.tags, 
                                                  p.name, 
                                                  default_language as lang
-                   from planet_osm_line p join kontur_boundaries_language c on ST_Intersects(p.way, c.geom)
+                   from planet_osm_line p join kontur_default_languages c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
                          and c.is_extrapolated = 0
                    order by p.osm_id, c.geom) t
@@ -37,7 +37,7 @@ with cte as (select osm_id, lang
                                                  p.tags, 
                                                  p.name, 
                                                  default_language as lang
-                   from planet_osm_polygon p join kontur_boundaries_language c on ST_Intersects(p.way, c.geom)
+                   from planet_osm_polygon p join kontur_default_languages c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
                          and c.is_extrapolated = 0
                    order by p.osm_id, c.geom) t

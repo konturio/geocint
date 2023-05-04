@@ -18,11 +18,7 @@ func_to_run_in_parallel(){
     psql -c "drop table if exists ${table_result};"
 }
 
+export -f func_to_run_in_parallel
 
-while IFS="," read -r country_code
-do
-    # run generating topology in parallel
-    func_to_run_in_parallel $country_code $(date '+%Y-%m-%d') &
-done < <( psql -X -q -t -F , -A -c "SELECT hasc FROM hdx_boundaries GROUP by 1")
-
-wait
+# get list of countries and generate topology boundaries in parallel
+psql -X -q -t -F , -A -c "SELECT hasc FROM hdx_boundaries GROUP by 1" | parallel func_to_run_in_parallel {} $(date '+%Y-%m-%d')

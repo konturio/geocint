@@ -2846,7 +2846,7 @@ data/out/kontur_topology_boundaries_per_country: | data/out ## Directory for per
 	mkdir -p $@
 
 data/out/kontur_topology_boundaries_per_country/export: db/table/water_polygons_vector db/table/hdx_boundaries db/table/kontur_boundaries | data/out/kontur_topology_boundaries_per_country ## Topology per country export
-	bash scripts/topology_boundaries_per_country_export.sh
+	bash scripts/topology_boundaries_per_country_export.sh $$(date '+%Y-%m-%d')
 	touch $@
 
 ### End Topology boundaries per country ###

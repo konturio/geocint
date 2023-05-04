@@ -21,4 +21,4 @@ func_to_run_in_parallel(){
 export -f func_to_run_in_parallel
 
 # get list of countries and generate topology boundaries in parallel
-psql -X -q -t -F , -A -c "SELECT hasc FROM hdx_boundaries GROUP by 1" | parallel func_to_run_in_parallel {} $(date '+%Y-%m-%d')
+psql -X -q -t -F , -A -c "SELECT hasc FROM hdx_boundaries GROUP by 1" | parallel func_to_run_in_parallel {} $1

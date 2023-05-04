@@ -759,7 +759,7 @@ data/out/required_relations_check: db/table/osm_admin_boundaries | data/out ## C
 	rm -f $@__REQUIRED_RELATIONS_MESSAGE $@__NUMBER_MISSED_REQUIRED_RELATIONS
 	touch $@
 
-db/table/kontur_boundaries: data/out/required_relations_check db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes db/table/wikidata_population db/table/osm data/in/default_languages_2_level_if_relations_exist_check | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
+db/table/kontur_boundaries: data/out/required_relations_check db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes db/table/wikidata_population db/table/osm data/in/default_languages_2_level_if_relations_exist_check db/table/default_language_boundaries | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 

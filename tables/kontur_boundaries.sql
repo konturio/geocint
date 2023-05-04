@@ -18,6 +18,9 @@ create table osm_admin_boundaries_in as
                   where osm_id in ('3791785','7391020','1703814') and osm_type = 'relation') b
               group by b.geom;
 
+-- Delete alternative Western Sahara border (Sahrawi Arab Democratic Republic), clippeped by Marocco border
+delete from osm_admin_boundaries_in where osm_id = 5441968;
+
 -- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
 with ukraine_border as (
     select geom

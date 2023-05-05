@@ -34,7 +34,7 @@ with bad as (select h3
 delete from :tab_temp
 where h3 in (select h3 from bad);
 
--- there are duplicates in h3 (TODO investigeate why they are exists)
+-- there are duplicates in h3 (TODO investigeate why they are exist)
 -- delete duplicates and insert sum of their values
 with bad as (select h3, sum(population) as new_pop
     from :tab_temp

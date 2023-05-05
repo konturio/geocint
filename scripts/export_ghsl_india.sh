@@ -8,10 +8,10 @@ export_zip_dir=data/out/ghsl_india
 
 mkdir -p $export_zip_dir
 
-for f in $ghsl_zip_dir/GHS_POP_*_GLOBE_R2022A_54009_100_V1_0.zip
-do
-    # example: "${f:13:41}" results in "GHS_POP_E1980_GLOBE_R2022A_54009_100_V1_0"
-    tab_name=${f:13:41}
+func_to_run_in_parallel(){
+    filename=$1
+    # example: "${filename:13:41}" results in "GHS_POP_E1980_GLOBE_R2022A_54009_100_V1_0"
+    tab_name=${filename:13:41}
     tab_temp="${tab_name}_temp"
     tab_result="${tab_name}_h3_r8_geom"
     # generating result table in db
@@ -20,4 +20,8 @@ do
     # and exporting table to gpkg
     file_export="kontur_population_IN_${tab_result:9:4}"
     ogr2ogr -overwrite -f GPKG $export_zip_dir/$tab_result.gpkg PG:'dbname=gis' $tab_result -nln $file_export -lco OVERWRITE=yes -sql "select * from ${tab_result}"
-done
+}
+
+export -f func_to_run_in_parallel
+
+ls $ghsl_zip_dir/*.zip | parallel func_to_run_in_parallel {}

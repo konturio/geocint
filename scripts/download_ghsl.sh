@@ -26,10 +26,16 @@ if [ -f $ghsl_zip_dir/_download-errors.log ]; then exit 1; fi
 # import into DB
 # import directly from zip file
 # example:
-# f=data/in/ghsl/GHS_POP_E1975_GLOBE_R2022A_54009_100_V1_0.zip
-# /vsizip/data/in/ghsl/GHS_POP_E1975_GLOBE_R2022A_54009_100_V1_0.zip/GHS_POP_E1975_GLOBE_R2022A_54009_100_V1_0.tif
+# input_file=data/in/ghsl/GHS_POP_E1975_GLOBE_R2022A_54009_100_V1_0.zip ->
+# raster_file=/vsizip/data/in/ghsl/GHS_POP_E1975_GLOBE_R2022A_54009_100_V1_0.zip/GHS_POP_E1975_GLOBE_R2022A_54009_100_V1_0.tif
 # TODO: raster2pgsql does not use parameter max_rows_per_copy, very slow
-for f in $ghsl_zip_dir/GHS_POP_*_GLOBE_R2022A_54009_100_V1_0.zip
-do
-    raster2pgsql -I -d -M -Y -s 54009 -t auto -e "/vsizip/${f}/${f:13:41}.tif" ${f:13:41}| psql -q
-done
+func_to_run_in_parallel(){
+    input_file=$1
+    raster_file="/vsizip/${input_file}/${input_file:13:41}.tif"
+    tabname="lgudyma.${input_file:13:41}"
+    raster2pgsql -d -M -Y -s 54009 -t auto -e $raster_file $tabname | psql -q;
+}
+
+export -f func_to_run_in_parallel
+
+ls $ghsl_zip_dir/*.zip | parallel func_to_run_in_parallel {}

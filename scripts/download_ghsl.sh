@@ -32,7 +32,7 @@ if [ -f $ghsl_zip_dir/_download-errors.log ]; then exit 1; fi
 func_to_run_in_parallel(){
     input_file=$1
     raster_file="/vsizip/${input_file}/${input_file:13:41}.tif"
-    tabname="lgudyma.${input_file:13:41}"
+    tabname="${input_file:13:41}"
     raster2pgsql -d -M -Y -s 54009 -t auto -e $raster_file $tabname | psql -q;
 }
 

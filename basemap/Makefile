@@ -91,8 +91,10 @@ data/in/kontur_default_languages.gpkg: | data/in
 	pigz -d data/in/kontur_default_languages.gpkg.gz
 
 db/table/kontur_default_languages: data/in/kontur_default_languages.gpkg | db/table
-	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -s_srs EPSG:4326 -t_srs EPSG:3857 data/in/kontur_default_languages.gpkg  -nln kontur_default_languages -nlt MULTIPOLYGON --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom
+	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -s_srs EPSG:4326 -t_srs EPSG:3857 data/in/kontur_default_languages.gpkg  -nln kontur_default_languages_in -nlt MULTIPOLYGON --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom
+	psql -c "create table kontur_default_languages as (select osm_id, default_language, is_extrapolated, ST_Subdivide(geom) from kontur_default_languages_in);"
 	psql -c "create index on kontur_default_languages using gist(geom);"
+	psql -c "drop table if exists kontur_default_languages_in;"
 	touch $@
 
 db/table/osm2pgsql: db/table/kontur_topology_boundary kontur_default_languages.gpkg data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).

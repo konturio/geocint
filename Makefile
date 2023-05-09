@@ -728,18 +728,40 @@ db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundari
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
-data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_target: db/table/kontur_boundaries | data/out/kontur_boundaries  ## Kontur Boundaries (most recent) geopackage archive. Compare with previous version, if new one is smaller then send a msg into slack channel
-	rm -f data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_*
-	if [ -f data/out/kontur_boundaries/kontur_boundaries.gpkg.gz ]; then \
-		mv data/out/kontur_boundaries/kontur_boundaries.gpkg.gz data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous; \
-	fi
-	rm -f data/out/kontur_boundaries/kontur_boundaries.gpkg.gz
-	rm -f data/out/kontur_boundaries/kontur_boundaries.gpkg
-	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
-	cd data/out/kontur_boundaries/; pigz kontur_boundaries.gpkg
-	if [ -f data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous ] && [ $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz) -lt $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous ) ]; then \
-		echo "New kontur_boundaries.gpkg.gz smaller then previous one, difference is $$(expr $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz) - $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous) ) bytes" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; \
-	fi
+data/in/kontur_boundaries_20220407: ## Directory for current latest kontur_boundaries
+	mkdir -p $@
+
+data/mid/kontur_boundaries_20220407: ## Directory for unzipped current latest kontur_boundaries
+	mkdir -p $@
+
+data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz: | data/in/kontur_boundaries_20220407 ## Download current latest kontur_boundaries archive
+	if [ ! -f $@ ]; then aws s3 cp s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_boundaries_20220407.gpkg.gz $@ --profile geocint_pipeline_sender; fi
+	aws s3 sync s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_boundaries_20220407.gpkg.gz $(@D) --exclude '*' --include $(@F) --profile geocint_pipeline_sender
+
+data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg: data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz | data/mid/kontur_boundaries_20220407 ## Unzip current latest kontur_boundaries
+	gzip -dck $< > $@
+
+data/out/kontur_boundaries/kontur_boundaries.gpkg: db/table/kontur_boundaries | data/out/kontur_boundaries ## Kontur Boundaries (most recent) geopackage
+	rm -rf $(@D)/*
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from lgudyma.kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
+
+data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg data/out/kontur_boundaries/kontur_boundaries.gpkg | data/out/reports ## Compare most recent geocint kontur boundaries to latest released and send bug reports to Kontur Slack (#geocint channel).
+	ogrinfo -so -al data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg | grep 'Feature Count:' | sed 's/Feature Count: //g' > $@__KONTUR_BOUNDARIES_DEPLOYED
+	ogrinfo -so -al data/out/kontur_boundaries/kontur_boundaries.gpkg | grep 'Feature Count:' | sed 's/Feature Count: //g' > $@__KONTUR_BOUNDARIES_CURRENT
+	if [ $$(cat $@__KONTUR_BOUNDARIES_CURRENT) -lt $$(cat $@__KONTUR_BOUNDARIES_DEPLOYED) ]; then echo "Current Kontur boundaries has less rows than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@__KONTUR_BOUNDARIES_CURRENT $@__KONTUR_BOUNDARIES_DEPLOYED
+	touch $@
+
+data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## Kontur Boundaries (most recent) geopackage archive
+	cd $(@D); pigz kontur_boundaries.gpkg
+
+data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_population_v4_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
+	psql -q -X -t -c 'select sum(population) from kontur_population_v4_h3 where resolution = 0' > $@__KONTUR_POP_V4
+	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4_1
+	if [ $$(cat $@__KONTUR_POP_V4_1) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	if [ $$(cat $@__KONTUR_POP_V4_1) -lt $$(cat $@__KONTUR_POP_V4) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@__KONTUR_POP_V4 $@__KONTUR_POP_V4_1
+	touch $@
 
 db/table/topology_boundaries: db/table/kontur_boundaries db/table/water_polygons_vector ## Create topology build of kontur boundaries
 	psql -f tables/topology_boundaries.sql

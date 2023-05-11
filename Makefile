@@ -2696,7 +2696,7 @@ db/table/ghsl: data/mid/ghsl/unzip ## Import into db population raster files in 
 	touch $@
 
 db/table/ghsl_h3: db/table/ghsl db/procedure/insert_projection_54009 ## Create table with h3 index and population from raster tables in parallel
-	ls data/mid/ghsl/*.tif | parallel psql -c "create table IF NOT EXISTS {/.}_h3 as select (hs).h3, ((hs).stats).sum as population from {/.}, lateral h3_raster_summary_centroids(rast, 8) as hs"
+	ls data/mid/ghsl/*.tif | parallel 'psql -f tables/population_raster_grid_h3_r8.sql -v population_raster={/.} -v population_raster_grid_h3_r8={/.}_h3'
 	touch $@
 
 ### End GHS population rasters import block

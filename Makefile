@@ -18,7 +18,7 @@ include runner_make osm_make
 
 ## ------------- CONTROL BLOCK -------------------------
 
-all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles data/out/ghsl_pop_india ## [FINAL] Meta-target on top of all other targets, or targets on parking.
+all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
 dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_target deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
@@ -2674,16 +2674,36 @@ data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_b
 
 ### End Safety index layer ###
 
-### ghsl india snapshots
-data/in/ghsl: ## create input dir
+### GHS population rasters import block
+
+data/in/ghsl: | data/in ## Directory for ghs population raster files
 	mkdir -p $@
 
+data/mid/ghsl: | data/mid ## Directory for ghs population unzipped raster files
+	mkdir -p $@
+
+data/in/ghsl/download: | data/in/ghsl ## Download population raster files in parallel
+	parallel -a static_data/ghsl/list-of-urls wget -nc -P $(@D) {} --rejected-log=$(@D)/_download-errors.log
+	if [ ! -f $(@D)/_download-errors.log ]; then touch $@; fi
+	rm -f $(@D)/_download-errors.log
+
+data/mid/ghsl/unzip: data/in/ghsl/download | data/mid/ghsl ## Unzip population raster files in parallel
+	ls data/in/ghsl/*.zip | parallel unzip -f {} {/.}.tif -d $(@D)
+	touch $@
+
+db/table/ghsl: data/mid/ghsl/unzip ## Import into db population raster files in parallel
+	ls data/mid/ghsl/*.tif | parallel "raster2pgsql -d -M -Y -s 54009 -t auto -e {} {/.} | psql -q"
+	touch $@
+
+db/table/ghsl_h3: db/table/ghsl db/procedure/insert_projection_54009 ## Create table with h3 index and population from raster tables in parallel
+	ls data/mid/ghsl/*.tif | parallel psql -c "create table IF NOT EXISTS {/.}_h3 as select (hs).h3, ((hs).stats).sum as population from {/.}, lateral h3_raster_summary_centroids(rast, 8) as hs"
+	touch $@
+
+### End GHS population rasters import block
+
+### ghsl india snapshots
 data/out/ghsl_india: ## create output dir
 	mkdir -p $@
-
-data/in/ghsl_pop: db/procedure/insert_projection_54009 | data/in/ghsl ## download rasters and import into DB
-	bash scripts/download_ghsl.sh
-	touch $@
 
 data/out/ghsl_pop_india: db/table/kontur_boundaries data/in/ghsl_pop db/function/h3_raster_sum_to_h3 | data/out/ghsl_india ## generate population snapshots for india and upload to aws
 	bash scripts/export_ghsl_india.sh

@@ -20,11 +20,11 @@ include runner_make osm_make
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_target deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -763,19 +763,32 @@ db/table/kontur_boundaries: data/out/required_relations_check db/table/osm_admin
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
-data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_target: db/table/kontur_boundaries | data/out/kontur_boundaries  ## Kontur Boundaries (most recent) geopackage archive. Compare with previous version, if new one is smaller then send a msg into slack channel
-	rm -f data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_*
-	if [ -f data/out/kontur_boundaries/kontur_boundaries.gpkg.gz ]; then \
-		mv data/out/kontur_boundaries/kontur_boundaries.gpkg.gz data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous; \
-	fi
-	rm -f data/out/kontur_boundaries/kontur_boundaries.gpkg.gz
-	rm -f data/out/kontur_boundaries/kontur_boundaries.gpkg
-	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
-	cd data/out/kontur_boundaries/; pigz kontur_boundaries.gpkg
-	if [ -f data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous ] && [ $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz) -lt $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous ) ]; then \
-		echo "New kontur_boundaries.gpkg.gz smaller then previous one, difference is $$(expr $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz) - $$(stat -c%s data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_previous) ) bytes" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; \
-	fi
+data/in/kontur_boundaries_20220407: ## Directory for current latest kontur_boundaries
+	mkdir -p $@
+
+data/mid/kontur_boundaries_20220407: ## Directory for unzipped current latest kontur_boundaries
+	mkdir -p $@
+
+data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz: | data/in/kontur_boundaries_20220407 ## Download current latest kontur_boundaries archive
+	if [ ! -f $@ ]; then aws s3 cp s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_boundaries_20220407.gpkg.gz $@ --profile geocint_pipeline_sender; fi
+	aws s3 sync s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_boundaries_20220407.gpkg.gz $(@D) --exclude '*' --include $(@F) --profile geocint_pipeline_sender
+
+data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg: data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz | data/mid/kontur_boundaries_20220407 ## Unzip current latest kontur_boundaries
+	gzip -dck $< > $@
+
+data/out/kontur_boundaries/kontur_boundaries.gpkg: db/table/kontur_boundaries | data/out/kontur_boundaries ## Kontur Boundaries (most recent) geopackage
+	rm -rf $(@D)/*
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
+
+data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg data/out/kontur_boundaries/kontur_boundaries.gpkg | data/out/reports ## Compare most recent geocint kontur boundaries to latest released and send bug reports to Kontur Slack (#geocint channel).
+	ogrinfo -so -al data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg | grep 'Feature Count:' | sed 's/Feature Count: //g' > $@__KONTUR_BOUNDARIES_DEPLOYED
+	ogrinfo -so -al data/out/kontur_boundaries/kontur_boundaries.gpkg | grep 'Feature Count:' | sed 's/Feature Count: //g' > $@__KONTUR_BOUNDARIES_CURRENT
+	if [ $$(cat $@__KONTUR_BOUNDARIES_CURRENT) -lt $$(cat $@__KONTUR_BOUNDARIES_DEPLOYED) ]; then echo "Current Kontur boundaries has less rows than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@__KONTUR_BOUNDARIES_CURRENT $@__KONTUR_BOUNDARIES_DEPLOYED
 	touch $@
+
+data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## Kontur Boundaries (most recent) geopackage archive
+	cd $(@D); pigz -k kontur_boundaries.gpkg
 
 db/table/topology_boundaries: db/table/kontur_boundaries db/table/water_polygons_vector ## Create topology build of kontur boundaries
 	psql -f tables/topology_boundaries.sql

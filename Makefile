@@ -788,7 +788,7 @@ data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: data/mid/kontur_b
 	touch $@
 
 data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## Kontur Boundaries (most recent) geopackage archive
-	cd $(@D); pigz kontur_boundaries.gpkg
+	cd $(@D); pigz -k kontur_boundaries.gpkg
 
 db/table/topology_boundaries: db/table/kontur_boundaries db/table/water_polygons_vector ## Create topology build of kontur boundaries
 	psql -f tables/topology_boundaries.sql

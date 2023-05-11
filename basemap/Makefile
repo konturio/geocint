@@ -97,7 +97,7 @@ db/table/kontur_default_languages: data/in/kontur_default_languages.gpkg | db/ta
 	psql -c "drop table if exists kontur_default_languages_in;"
 	touch $@
 
-db/table/osm2pgsql: db/table/kontur_topology_boundary kontur_default_languages.gpkg data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
+db/table/osm2pgsql: db/table/kontur_topology_boundary db/table/kontur_default_languages data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	psql -c "create extension if not exists hstore;"
 	osm2pgsql --style osm2pgsql_styles/basemap.lua --flat-nodes data/osm2pgsql_flat_nodes --slim --number-processes 32 --output=flex --create data/planet-latest.osm.pbf
 	touch $@
@@ -106,7 +106,7 @@ db/table/osm2pgsql_fill_lang: db/table/osm2pgsql | db/table ## fill missing name
 	psql -f scripts/osm2pgsql_fill_lang.sql
 	touch $@
 
-db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql_with_boundaries | db/table
+db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql_fill_lang db/table/kontur_topology_boundary | db/table
 	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, maritime, way, tags) select -osm_id as osm_id, 'administrative' as boundary, admin_level, nullif(maritime, false), geom as way, hstore(default_language, null::text) as tags from kontur_topology_boundary;"
 	psql -c 'vacuum planet_osm_line;'
 	touch $@

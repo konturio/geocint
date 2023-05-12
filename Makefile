@@ -2753,7 +2753,7 @@ data/mid/ghsl/unzip: data/in/ghsl/download | data/mid/ghsl ## Unzip population r
 	ls data/in/ghsl/*.zip | parallel unzip -f {} {/.}.tif -d $(@D)
 	touch $@
 
-db/table/ghsl: data/mid/ghsl/unzip ## Import into db population raster files in parallel
+db/table/ghsl: data/mid/ghsl/unzip db/procedure/insert_projection_54009 ## Import into db population raster files in parallel
 	ls data/mid/ghsl/*.tif | parallel "raster2pgsql -d -M -Y -s 54009 -t auto -e {} {/.} | psql -q"
 	touch $@
 
@@ -2761,16 +2761,27 @@ db/table/ghsl_h3: db/table/ghsl db/procedure/insert_projection_54009 ## Create t
 	ls data/mid/ghsl/*.tif | parallel psql -c "create table IF NOT EXISTS {/.}_h3 as select (hs).h3, ((hs).stats).sum as population from {/.}, lateral h3_raster_summary_centroids(rast, 8) as hs"
 	touch $@
 
+db/function/ghs_pop_dither_per_country: ## Dithers ghs population per country
+	psql -f functions/ghs_pop_dither_per_country.sql
+	# touch $@
+
 ### End GHS population rasters import block
 
 ### ghsl india snapshots
-data/out/ghsl_india: ## create output dir
-	mkdir -p $@
 
-data/out/ghsl_pop_india: db/table/kontur_boundaries data/in/ghsl_pop db/function/h3_raster_sum_to_h3 | data/out/ghsl_india ## generate population snapshots for india and upload to aws
-	bash scripts/export_ghsl_india.sh
-	cd data/out/ghsl_india; zip -r kontur_population_IN_$(date '+%Y-%m-%d').zip *
-	cd data/out/ghsl_india; aws s3 cp kontur_population_IN_$(date '+%Y-%m-%d').zip s3://geodata-eu-central-1-kontur-public/ghsl_india/ --profile geocint_pipeline_sender --acl public-read
+db/table/ghsl_h3_IN: db/table/ghsl_h3 ## Create tables for every ghs_pop_year for India, hasc='IN'
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "drop table if exists {/.}_h3_IN; create table {/.}_h3_IN(h3 h3index, population integer, geom geometry(geometry,4326));"'
+	touch $@
+
+db/table/export_ghsl_h3_IN: db/table/ghsl_h3_IN db/function/ghs_pop_dither_per_country ## Dither and insert results in tables for India, hasc='IN'
+	ls data/mid/ghsl/*.tif | parallel -q psql -c "select ghs_pop_dither_per_country('{/.}_h3', '{/.}_h3_IN', 'IN')"
+
+data/out/ghsl_IN: | data/out ## Directory for ghs population gpkg for India, hasc='IN'
+	mkdir -p $@
+	touch $@
+
+data/out/ghsl_IN/export_gpkg: db/table/export_ghsl_h3_IN | data/out/ghsl_IN ## Exports gpkg for India, hasc='IN' from tables
+	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' {/.}_h3_IN -nln {/.}_h3_IN -lco OVERWRITE=yes"
 	touch $@
 
 db/table/ghsl_h3: db/table/ghsl ## Create table with h3 index and population from raster tables in parallel

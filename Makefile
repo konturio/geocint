@@ -20,7 +20,7 @@ include runner_make osm_make
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_target deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz_target deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check db/table/ghsl_h3 ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -2691,23 +2691,36 @@ data/mid/ghsl/unzip: data/in/ghsl/download | data/mid/ghsl ## Unzip population r
 	ls data/in/ghsl/*.zip | parallel unzip -f {} {/.}.tif -d $(@D)
 	touch $@
 
-db/table/ghsl: data/mid/ghsl/unzip ## Import into db population raster files in parallel
+db/table/ghsl: data/mid/ghsl/unzip db/procedure/insert_projection_54009 ## Import into db population raster files in parallel
 	ls data/mid/ghsl/*.tif | parallel "raster2pgsql -d -M -Y -s 54009 -t auto -e {} {/.} | psql -q"
 	touch $@
 
-db/table/ghsl_h3: db/table/ghsl db/procedure/insert_projection_54009 ## Create table with h3 index and population from raster tables in parallel
+db/table/ghsl_h3: db/table/ghsl ## Create table with h3 index and population from raster tables in parallel
 	ls data/mid/ghsl/*.tif | parallel 'psql -f tables/population_raster_grid_h3_r8.sql -v population_raster={/.} -v population_raster_grid_h3_r8={/.}_h3'
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "create index on {/.}_h3 using gist(h3_cell_to_geometry(h3))"'
 	touch $@
+
+db/function/ghs_pop_dither_per_country: ## Dithers ghs population per country
+	psql -f functions/ghs_pop_dither_per_country.sql
+	# touch $@
 
 ### End GHS population rasters import block
 
 ### ghsl india snapshots
-data/out/ghsl_india: ## create output dir
-	mkdir -p $@
 
-data/out/ghsl_pop_india: db/table/kontur_boundaries data/in/ghsl_pop db/function/h3_raster_sum_to_h3 | data/out/ghsl_india ## generate population snapshots for india and upload to aws
-	bash scripts/export_ghsl_india.sh
-	cd data/out/ghsl_india; zip -r kontur_population_IN_$(date '+%Y-%m-%d').zip *
-	cd data/out/ghsl_india; aws s3 cp kontur_population_IN_$(date '+%Y-%m-%d').zip s3://geodata-eu-central-1-kontur-public/ghsl_india/ --profile geocint_pipeline_sender --acl public-read
+db/table/ghsl_h3_IN: db/table/ghsl_h3 ## Create tables for every ghs_pop_year for India, hasc='IN'
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "drop table if exists {/.}_h3_IN; create table {/.}_h3_IN(h3 h3index, population integer, geom geometry(geometry,4326));"'
 	touch $@
+
+db/table/export_ghsl_h3_IN: db/table/ghsl_h3_IN db/function/ghs_pop_dither_per_country ## Dither and insert results in tables for India, hasc='IN'
+	ls data/mid/ghsl/*.tif | parallel -q psql -c "select ghs_pop_dither_per_country('{/.}_h3', '{/.}_h3_IN', 'IN')"
+
+data/out/ghsl_IN: | data/out ## Directory for ghs population gpkg for India, hasc='IN'
+	mkdir -p $@
+	touch $@
+
+data/out/ghsl_IN/export_gpkg: db/table/export_ghsl_h3_IN | data/out/ghsl_IN ## Exports gpkg for India, hasc='IN' from tables
+	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' {/.}_h3_IN -nln {/.}_h3_IN -lco OVERWRITE=yes"
+	touch $@
+
 ### End ghsl india snapshots

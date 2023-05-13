@@ -63,7 +63,7 @@ data/planet-latest.osm.pbf: | data ## Download latest planet OSM pbf extraction 
 	touch $@
 
 data/in/daylight_coastlines.tgz: | data/in ## daylightmap.org/coastlines.html
-	wget https://daylight-map-distribution.s3.us-west-1.amazonaws.com/release/v1.6/coastlines-v1.6.tgz -O $@
+	wget -q https://daylight-map-distribution.s3.us-west-1.amazonaws.com/release/v1.6/coastlines-v1.6.tgz -O $@
 
 data/mid/daylight_coastlines: | data/mid ## Directory for unpacked Daylight Coastlines shapefiles
 	mkdir -p $@
@@ -78,21 +78,23 @@ db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | 
 	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"
 	touch $@
 
-data/in/topology_boundaries.geojson: | data/in
-	wget https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/topology_boundaries.geojson.gz -O data/in/topology_boundaries.geojson.gz
+data/in/topology_boundaries.geojson: | data/in ## download kontur topology boundaries
+	wget -q https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/topology_boundaries.geojson.gz -O data/in/topology_boundaries.geojson.gz
 	pigz -d data/in/topology_boundaries.geojson.gz
 
-db/table/kontur_topology_boundary: data/in/topology_boundaries.geojson | db/table
+db/table/kontur_topology_boundary: data/in/topology_boundaries.geojson | db/table ## load kontur topology boundaries to database
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" -a_srs EPSG:3857 data/in/topology_boundaries.geojson -nln kontur_topology_boundary -lco GEOMETRY_NAME=geom
 	touch $@
 
-data/in/kontur_default_languages.gpkg: | data/in
-	wget https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/kontur_default_languages.gpkg.gz -O data/in/kontur_default_languages.gpkg.gz
+data/in/kontur_default_languages.gpkg: | data/in ## Download kontur default languages
+	wget -q https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/kontur_default_languages.gpkg.gz -O data/in/kontur_default_languages.gpkg.gz
 	pigz -d data/in/kontur_default_languages.gpkg.gz
 
-db/table/kontur_default_languages: data/in/kontur_default_languages.gpkg | db/table
+db/table/kontur_default_languages: data/in/kontur_default_languages.gpkg | db/table ## load kontur default languages to database
+	psql -c "drop table if exists kontur_default_languages_in;"
+	psql -c "drop table if exists kontur_default_languages;"
 	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -s_srs EPSG:4326 -t_srs EPSG:3857 data/in/kontur_default_languages.gpkg  -nln kontur_default_languages_in -nlt MULTIPOLYGON --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom
-	psql -c "create table kontur_default_languages as (select osm_id, default_language, is_extrapolated, ST_Subdivide(geom) from kontur_default_languages_in);"
+	psql -c "create table kontur_default_languages as (select osm_id, default_language, is_extrapolated, ST_Subdivide(geom) as geom from kontur_default_languages_in where is_extrapolated = 0);"
 	psql -c "create index on kontur_default_languages using gist(geom);"
 	psql -c "drop table if exists kontur_default_languages_in;"
 	touch $@
@@ -106,7 +108,7 @@ db/table/osm2pgsql_fill_lang: db/table/osm2pgsql | db/table ## fill missing name
 	psql -f scripts/osm2pgsql_fill_lang.sql
 	touch $@
 
-db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql_fill_lang db/table/kontur_topology_boundary | db/table
+db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql_fill_lang db/table/kontur_topology_boundary | db/table ## insert kontur topology boundaries into planet_osm_line
 	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, maritime, way, tags) select -osm_id as osm_id, 'administrative' as boundary, admin_level, nullif(maritime, false), geom as way, hstore(default_language, null::text) as tags from kontur_topology_boundary;"
 	psql -c 'vacuum planet_osm_line;'
 	touch $@

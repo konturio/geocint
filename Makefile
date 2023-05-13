@@ -778,7 +778,7 @@ data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg: data/in/kon
 
 data/out/kontur_boundaries/kontur_boundaries.gpkg: db/table/kontur_boundaries | data/out/kontur_boundaries ## Kontur Boundaries (most recent) geopackage
 	rm -rf $(@D)/*
-	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select admin_level, name, name_en, population, hasc, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
 
 data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg data/out/kontur_boundaries/kontur_boundaries.gpkg | data/out/reports ## Compare most recent geocint kontur boundaries to latest released and send bug reports to Kontur Slack (#geocint channel).
 	ogrinfo -so -al data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg | grep 'Feature Count:' | sed 's/Feature Count: //g' > $@__KONTUR_BOUNDARIES_DEPLOYED
@@ -821,7 +821,7 @@ data/out/kontur_boundaries_per_country: | data/out ## Directory for per country 
 data/out/kontur_boundaries_per_country/gpkg_export_commands.txt: | data/out/kontur_boundaries_per_country ## Create file with per country extraction commands
 	cat static_data/kontur_boundaries/hdx_locations.csv | \
 		parallel --colsep ';' \
-			'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}"_$(current_date).gpkg PG:*dbname=gis* -sql *select admin_level, name, name_en, population, hasc, geom from kontur_boundaries_export where location = %"{3}"% order by admin_level;* -nln boundaries -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
+			'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}"_$(current_date).gpkg PG:*dbname=gis* -sql *select admin_level, osm_admin_level, name, name_en, population, hasc, geom from kontur_boundaries_export where location = %"{3}"% order by admin_level;* -nln boundaries -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
 
 	sed -i '1d' $@
 

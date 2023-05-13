@@ -24,7 +24,7 @@ dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump dep
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/geocint/global_fires_h3_r8_13months.csv.gz deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -727,14 +727,15 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 
 ### Kontur Boundaries block ###
 
-db/table/default_language_boundaries: db/index/osm_tags_idx | db/table ## select relations with existed default language
-	psql -f tables/default_language_boundaries.sql
+db/table/default_languages_2_level: db/table/osm | db/table ## import data with default languages from csv file
+	psql -c "drop table if exists default_languages_2_level;"
+	psql -c "create table default_languages_2_level(a2 text, code text, hasc text, name text, wikicode text, osm_id integer, lang text, lang2 text, geom geometry);"
+	cat static_data/kontur_boundaries/default_language_2_level.csv | psql -c "copy default_languages_2_level(a2, code, hasc, name, wikicode, osm_id, lang, lang2) from stdin with csv header delimiter ',';"
+	psql -c "update default_languages_2_level p set geom = ST_Normalize(k.geog::geometry) from osm k where p.osm_id = k.osm_id;"
 	touch $@
 
-db/table/default_languages_2_level: | db/table ## import data with default languages from csv file
-	psql -c "drop table if exists default_languages_2_level;"
-	psql -c "create table default_languages_2_level(a2 text, code text, hasc text, name text, wikicode text, osm_id integer, lang text, lang2 text);"
-	cat static_data/kontur_boundaries/default_language_2_level.csv | psql -c "copy default_languages_2_level(a2, code, hasc, name, wikicode, osm_id, lang, lang2) from stdin with csv header delimiter ',';"
+db/table/default_language_boundaries: db/table/default_languages_2_level db/index/osm_tags_idx | db/table ## select relations with existed default language
+	psql -f tables/default_language_boundaries.sql
 	touch $@
 
 data/in/default_languages_2_level_if_relations_exist_check: db/table/default_languages_2_level db/table/osm_admin_boundaries ## check if relations still be actual
@@ -790,6 +791,20 @@ data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: data/mid/kontur_b
 data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## Kontur Boundaries (most recent) geopackage archive
 	cd $(@D); pigz -k kontur_boundaries.gpkg
 
+db/table/kontur_default_languages: db/table/kontur_boundaries db/table/default_language_boundaries db/table/default_languages_2_level | db/table ## create kontur_default_languages dataset (administartive boundaries with default language (initial + extrapolated) + non-administrative like a language province)
+	psql -f tables/kontur_default_languages.sql
+	touch $@
+
+data/out/kontur_default_languages.gpkg.gz: db/table/kontur_default_languages db/table/kontur_boundaries | data/out ## Extract kontur_default_languages table to gpkg file and zip 	
+	rm -f $@	
+	ogr2ogr -f GPKG data/out/kontur_default_languages.gpkg PG:'dbname=gis' -sql "select * from kontur_default_languages order by osm_id" -lco "SPATIAL_INDEX=NO" -nln kontur_default_languages
+	cd data/out/; pigz kontur_default_languages.gpkg
+	touch $@
+
+deploy/s3/kontur_default_languages.gpkg.gz: data/out/kontur_default_languages.gpkg.gz # deploy kontur default languages dataset to s3
+	aws s3 cp data/out/kontur_default_languages.gpkg.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_default_languages.gpkg.gz --profile geocint_pipeline_sender --acl public-read
+	touch $@
+
 db/table/topology_boundaries: db/table/kontur_boundaries db/table/water_polygons_vector ## Create topology build of kontur boundaries
 	psql -f tables/topology_boundaries.sql
 	touch $@
@@ -839,7 +854,7 @@ data/out/kontur_boundaries.geojson.gz: db/table/kontur_boundaries | data/out ## 
 	pigz data/out/kontur_boundaries.geojson
 	touch $@
 
-deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3.
+deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3 - we use this extraction in kcapi/boundary_selector.
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/out/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
@@ -1680,6 +1695,8 @@ data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson
 data/out/morocco: data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data/out ## Flag all Morocco buildings output datasets are exported.
 	touch $@
 
+## start Abu Dhabi block
+
 db/table/abu_dhabi_admin_boundaries: db/table/osm db/index/osm_tags_idx db/table/gadm_countries_boundary | db/table ## Abu Dhabi admin boundaries extracted from GADM (Database of Global Administrative Areas).
 	psql -f tables/abu_dhabi_admin_boundaries.sql
 	touch $@
@@ -1738,6 +1755,8 @@ data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson: db/table/abu_dhabi_pds_b
 
 data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson ## Make sure all Abu Dhabi datasets have been exported.
 	touch $@
+
+## end Abu Dhabi block
 
 data/out/aoi_boundary.geojson: db/table/kontur_boundaries | data/out ## Get boundaries of Belarus, UAE, Kosovo.
 	psql -q -X -c "\copy (select ST_AsGeoJSON(aoi) from (select ST_Union(geom) as polygon from kontur_boundaries where tags ->> 'name:en' in ('Belarus', 'Kosovo', 'United Arab Emirates') and gadm_level = 0) aoi) to stdout" | jq -c . > $@

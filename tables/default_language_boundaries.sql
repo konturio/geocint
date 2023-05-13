@@ -72,4 +72,31 @@ create table default_language_relations_adm_2 as (
     where admin_level = 2
 );
 
+-- update default languages for countries from static csv table to avoid errors during extrapolation
+update default_language_relations_adm_2 p
+    set default_language = k.lang
+    from default_languages_2_level k
+    where p.osm_id = k.osm_id;
+
 create index on default_language_relations_adm_2 using gist(geom);
+
+drop table if exists boundaries_with_default_language;
+create table boundaries_with_default_language as (
+    select osm_id,
+           default_language,
+           geom
+    from default_language_relations_with_admin_level
+    where osm_id not in (select osm_id from default_languages_2_level)
+    union all 
+    select osm_id,
+           default_language,
+           geom
+    from default_language_relations_without_admin_level
+    where osm_id not in (select osm_id from default_languages_2_level)
+    union all
+    select osm_id,
+           lang as default_language,
+           geom
+    from default_languages_2_level
+);
+

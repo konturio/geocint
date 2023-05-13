@@ -7,7 +7,7 @@ create table water_polygons_vector_4326 as (
 
 create index on water_polygons_vector_4326 using gist(geom);
 
--- Crea te temporary table with geometry and population from osm
+-- Create temporary table with geometry and population from osm
 drop table if exists prescale_to_osm_geom_in;
 create table prescale_to_osm_geom_in as (
     select p.osm_id                                as osm_id, 

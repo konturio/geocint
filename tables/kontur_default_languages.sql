@@ -18,6 +18,6 @@ create table kontur_default_languages as (
 	       0 as is_extrapolated, 
 	       geom 
 	from boundaries_with_default_languag 
-	where osm_id not in (select osm_id from kontur_boundaries);
+	where osm_id not in (select osm_id from kontur_boundaries));
 
 vacuum analyze kontur_default_languages;

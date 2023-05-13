@@ -99,3 +99,4 @@ create table boundaries_with_default_language as (
            geom
     from default_languages_2_level
 );
+

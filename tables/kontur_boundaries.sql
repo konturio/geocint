@@ -191,33 +191,20 @@ create table default_language_extrapolated_from_country_relations as (
           and b.osm_id not in (select osm_id from default_language_extrapolated_from_sub_country_relations)
 );
 
-drop table if exists boundaries_with_default_language;
-create table boundaries_with_default_language as (
-    select osm_id,
-           default_language
-    from default_language_relations_with_admin_level
-    union all 
-    select osm_id,
-           default_language
-    from default_language_relations_without_admin_level
-);
-
 drop table if exists kontur_boundaries;
 create table kontur_boundaries as (
     select distinct on (b.osm_id) b.*,
-                             coalesce(p.lang, l.default_language, n.default_language, m.default_language, 'en'::text) as default_language
+                             coalesce(l.default_language, n.default_language, m.default_language, 'en'::text) as default_language
     from kontur_boundaries_mid b
          left join default_language_extrapolated_from_sub_country_relations n on b.osm_id = n.osm_id
          left join default_language_extrapolated_from_country_relations m on b.osm_id = m.osm_id
          left join boundaries_with_default_language l on b.osm_id = l.osm_id
-         left join default_languages_2_level p on b.osm_id = p.osm_id
     order by osm_id
 );
 
 -- drop temporary tables
 drop table if exists default_language_extrapolated_from_sub_country_relations;
 drop table if exists default_language_extrapolated_from_country_relations;
-drop table if exists boundaries_with_default_language;
 
 -- Add index for join with using hasc
 create index on kontur_boundaries using btree(hasc_wiki);

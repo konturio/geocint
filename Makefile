@@ -791,7 +791,6 @@ data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: data/mid/kontur_b
 data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## Kontur Boundaries (most recent) geopackage archive
 	cd $(@D); pigz -k kontur_boundaries.gpkg
 
-
 db/table/kontur_default_languages: db/table/kontur_boundaries db/table/default_language_boundaries db/table/default_languages_2_level | db/table ## create kontur_default_languages dataset (administartive boundaries with default language (initial + extrapolated) + non-administrative like a language province)
 	psql -f tables/kontur_default_languages.sql
 	touch $@
@@ -802,7 +801,7 @@ data/out/kontur_default_languages.gpkg.gz: db/table/kontur_default_languages db/
 	cd data/out/; pigz kontur_default_languages.gpkg
 	touch $@
 
-deploy/s3/kontur_default_languages.gpkg.gz: db/table/default_language_boundaries
+deploy/s3/kontur_default_languages.gpkg.gz: data/out/kontur_default_languages.gpkg.gz # deploy kontur default languages dataset to s3
 	aws s3 cp data/out/kontur_default_languages.gpkg.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_default_languages.gpkg.gz --profile geocint_pipeline_sender --acl public-read
 	touch $@
 

@@ -83,6 +83,7 @@ data/in/topology_boundaries.geojson: | data/in ## download kontur topology bound
 	pigz -d data/in/topology_boundaries.geojson.gz
 
 db/table/kontur_topology_boundary: data/in/topology_boundaries.geojson | db/table ## load kontur topology boundaries to database
+	psql -c "drop table if exists kontur_topology_boundary;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" -a_srs EPSG:3857 data/in/topology_boundaries.geojson -nln kontur_topology_boundary -lco GEOMETRY_NAME=geom
 	touch $@
 

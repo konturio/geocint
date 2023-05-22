@@ -777,7 +777,7 @@ data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz: | data/in
 data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg: data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz | data/mid/kontur_boundaries_20220407 ## Unzip current latest kontur_boundaries
 	gzip -dck $< > $@
 
-data/out/kontur_boundaries/kontur_boundaries.gpkg: db/table/kontur_boundaries | data/out/kontur_boundaries ## Kontur Boundaries (most recent) geopackage
+data/out/kontur_boundaries/kontur_boundaries.gpkg: db/table/kontur_boundaries data/out/kontur_boundaries | data/out ## Kontur Boundaries (most recent) geopackage
 	rm -rf $(@D)/*
 	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select admin_level, name, name_en, population, hasc, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
 

@@ -764,10 +764,10 @@ db/table/kontur_boundaries: data/out/required_relations_check db/table/osm_admin
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
-data/in/kontur_boundaries_20220407: ## Directory for current latest kontur_boundaries
+data/in/kontur_boundaries_20220407: | data/in ## Directory for current latest kontur_boundaries
 	mkdir -p $@
 
-data/mid/kontur_boundaries_20220407: ## Directory for unzipped current latest kontur_boundaries
+data/mid/kontur_boundaries_20220407: | data/mid ## Directory for unzipped current latest kontur_boundaries
 	mkdir -p $@
 
 data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz: | data/in/kontur_boundaries_20220407 ## Download current latest kontur_boundaries archive
@@ -777,9 +777,13 @@ data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz: | data/in
 data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg: data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz | data/mid/kontur_boundaries_20220407 ## Unzip current latest kontur_boundaries
 	gzip -dck $< > $@
 
-data/out/kontur_boundaries/kontur_boundaries.gpkg: db/table/kontur_boundaries data/out/kontur_boundaries | data/out ## Kontur Boundaries (most recent) geopackage
-	rm -rf $(@D)/*
+data/out/kontur_boundaries/kontur_boundaries.gpkg: db/table/kontur_boundaries | data/out/kontur_boundaries ## Kontur Boundaries (most recent) geopackage
+	rm -f $@
 	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select admin_level, name, name_en, population, hasc, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
+
+data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/kontur_boundaries/kontur_boundaries.gpkg ## Kontur Boundaries (most recent) geopackage archive
+	rm -f $@
+	cd data/out/kontur_boundaries; pigz -k kontur_boundaries.gpkg
 
 data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg data/out/kontur_boundaries/kontur_boundaries.gpkg | data/out/reports ## Compare most recent geocint kontur boundaries to latest released and send bug reports to Kontur Slack (#geocint channel).
 	ogrinfo -so -al data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg | grep 'Feature Count:' | sed 's/Feature Count: //g' > $@__KONTUR_BOUNDARIES_DEPLOYED
@@ -787,9 +791,6 @@ data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: data/mid/kontur_b
 	if [ $$(cat $@__KONTUR_BOUNDARIES_CURRENT) -lt $$(cat $@__KONTUR_BOUNDARIES_DEPLOYED) ]; then echo "Current Kontur boundaries has less rows than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
 	rm -f $@__KONTUR_BOUNDARIES_CURRENT $@__KONTUR_BOUNDARIES_DEPLOYED
 	touch $@
-
-data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/kontur_boundaries/kontur_boundaries.gpkg ## Kontur Boundaries (most recent) geopackage archive
-	cd $(@D); pigz -k kontur_boundaries.gpkg
 
 db/table/kontur_default_languages: db/table/kontur_boundaries db/table/default_language_boundaries db/table/default_languages_2_level | db/table ## create kontur_default_languages dataset (administartive boundaries with default language (initial + extrapolated) + non-administrative like a language province)
 	psql -f tables/kontur_default_languages.sql

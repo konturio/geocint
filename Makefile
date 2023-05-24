@@ -780,10 +780,12 @@ data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg: data/in/kon
 data/out/kontur_boundaries/kontur_boundaries.gpkg: db/table/kontur_boundaries | data/out/kontur_boundaries ## Kontur Boundaries (most recent) geopackage
 	rm -f $@
 	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select admin_level, name, name_en, population, hasc, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
+	touch $@
 
-data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/kontur_boundaries/kontur_boundaries.gpkg ## Kontur Boundaries (most recent) geopackage archive
+data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## Kontur Boundaries (most recent) geopackage archive
 	rm -f $@
 	cd data/out/kontur_boundaries; pigz -k kontur_boundaries.gpkg
+	touch $@
 
 data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg data/out/kontur_boundaries/kontur_boundaries.gpkg | data/out/reports ## Compare most recent geocint kontur boundaries to latest released and send bug reports to Kontur Slack (#geocint channel).
 	ogrinfo -so -al data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg | grep 'Feature Count:' | sed 's/Feature Count: //g' > $@__KONTUR_BOUNDARIES_DEPLOYED

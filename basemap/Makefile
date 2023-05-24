@@ -95,7 +95,7 @@ db/table/kontur_default_languages: data/in/kontur_default_languages.gpkg | db/ta
 	psql -c "drop table if exists kontur_default_languages_in;"
 	psql -c "drop table if exists kontur_default_languages;"
 	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -s_srs EPSG:4326 -t_srs EPSG:3857 data/in/kontur_default_languages.gpkg  -nln kontur_default_languages_in -nlt MULTIPOLYGON --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom
-	psql -c "create table kontur_default_languages as (select osm_id, default_language, is_extrapolated, ST_Subdivide(geom) as geom from kontur_default_languages_in where is_extrapolated = 0);"
+	psql -c "create table kontur_default_languages as (select osm_id, admin_level, name, default_language, is_extrapolated, ST_Subdivide(geom) as geom from kontur_default_languages_in where is_extrapolated = 0);"
 	psql -c "create index on kontur_default_languages using gist(geom);"
 	psql -c "drop table if exists kontur_default_languages_in;"
 	touch $@
@@ -110,7 +110,7 @@ db/table/osm2pgsql_fill_lang: db/table/osm2pgsql | db/table ## fill missing name
 	touch $@
 
 db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql_fill_lang db/table/kontur_topology_boundary | db/table ## insert kontur topology boundaries into planet_osm_line
-	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, maritime, way, tags) select -osm_id as osm_id, 'administrative' as boundary, admin_level, nullif(maritime, false), geom as way, hstore(default_language, null::text) as tags from kontur_topology_boundary;"
+	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, maritime, way, tags) select -osm_id as osm_id, 'administrative' as boundary, admin_level, nullif(maritime, false), geom as way, hstore('name:'||default_language, name) as tags from kontur_topology_boundary;"
 	psql -c 'vacuum planet_osm_line;'
 	touch $@
 

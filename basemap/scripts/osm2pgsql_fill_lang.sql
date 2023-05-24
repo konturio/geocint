@@ -1,3 +1,6 @@
+drop trigger if exists planet_osm_line_osm2pgsql_valid on planet_osm_line;
+drop trigger if exists planet_osm_polygon_osm2pgsql_valid on planet_osm_polygon;
+
 with cte as (select osm_id, 
                     lang
              from (select distinct on (p.osm_id) p.osm_id, 
@@ -6,8 +9,7 @@ with cte as (select osm_id,
                                                  default_language as lang
                    from planet_osm_point p join kontur_default_languages c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
-                         and c.is_extrapolated = 0
-                   order by p.osm_id, c.geom) t
+                   order by p.osm_id, c.admin_level desc) t
              where not tags ? lang)
 update planet_osm_point
 set tags = tags || hstore(cte.lang, name) from cte
@@ -23,8 +25,7 @@ with cte as (select osm_id,
                                                  default_language as lang
                    from planet_osm_line p join kontur_default_languages c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
-                         and c.is_extrapolated = 0
-                   order by p.osm_id, c.geom) t
+                   order by p.osm_id, c.admin_level desc) t
              where not tags ? lang)
 update planet_osm_line
 set tags = tags || hstore(cte.lang, name) from cte
@@ -39,8 +40,7 @@ with cte as (select osm_id, lang
                                                  default_language as lang
                    from planet_osm_polygon p join kontur_default_languages c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
-                         and c.is_extrapolated = 0
-                   order by p.osm_id, c.geom) t
+                   order by p.osm_id, c.admin_level desc) t
              where not tags ? lang)
 update planet_osm_polygon
 set tags = tags || hstore(cte.lang, name)

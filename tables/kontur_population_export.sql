@@ -1,7 +1,7 @@
 drop table if exists kontur_population_export;
 
 create table kontur_population_export as (
-    select
+    select distinct on (pop.h3)
         pop.h3,
         pop.population,
         hdx.hasc as location,
@@ -11,6 +11,7 @@ create table kontur_population_export as (
     where
         pop.resolution = 8
         and ST_Intersects(pop.geom, ST_Transform(hdx.geom, 3857))
+    order by 1
 );
 
 create index on kontur_population_export (location);

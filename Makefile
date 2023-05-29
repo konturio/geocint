@@ -2120,7 +2120,7 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 	psql -f tables/stat_h3.sql
 	touch $@
 
-db/table/stat_h3_data_quality_check: db/table/stat_h3 | db/table ## check if all h3 values in stat_h3 are unique and not null
+db/table/stat_h3_data_quality_check: db/table/stat_h3 | db/table ## check if all h3 values in stat_h3 are unique and not null and control that there is no indicators in stat_h3 where all values on 8th resolution are zeros.
 	psql -qXc "copy (select column_name::text FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'stat_h3' and column_name not in ('h3', 'geom', 'zoom', 'resolution')) to stdout with csv;" | parallel "bash scripts/psql_query_number_of_records_at_stat_h3.sh {}" | xargs -I {} bash scripts/check_value_is_not_zero_with_description.sh {}
 	rm -f $@__STAT_H3_NULLS
 	psql -q -X -t -c 'select count(*) from stat_h3 where h3 is null;' > $@__STAT_H3_NULLS	

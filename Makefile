@@ -2120,20 +2120,18 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 	psql -f tables/stat_h3.sql
 	touch $@
 
-db/table/stat_h3_zeros_check: db/table/stat_h3 | db/table ## control that there is no indicators in stat_h3 where all values on 8th resolution are zeros.
-	psql -qXc "copy (select column_name::text FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'stat_h3' and column_name not in ('h3', 'geom', 'zoom', 'resolution')) to stdout with csv;" | parallel "bash scripts/psql_query_number_of_records_at_stat_h3.sh {}" | xargs -I {} bash scripts/check_value_is_not_zero_with_description.sh {}
-	touch $@
-
 db/table/stat_h3_data_quality_check: db/table/stat_h3 | db/table ## check if all h3 values in stat_h3 are unique and not null
-	rm -f $@__STAT_H3_NULLS $@__STAT_H3_DUPLICATES
-	psql -q -X -t -c 'select count(*) from stat_h3 where h3 is null;' > $@__STAT_H3_NULLS
-	psql -q -X -t -c 'select count(h3) - count(distinct h3) as diff from stat_h3;' > $@__STAT_H3_DUPLICATES
+	psql -qXc "copy (select column_name::text FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'stat_h3' and column_name not in ('h3', 'geom', 'zoom', 'resolution')) to stdout with csv;" | parallel "bash scripts/psql_query_number_of_records_at_stat_h3.sh {}" | xargs -I {} bash scripts/check_value_is_not_zero_with_description.sh {}
+	rm -f $@__STAT_H3_NULLS
+	psql -q -X -t -c 'select count(*) from stat_h3 where h3 is null;' > $@__STAT_H3_NULLS	
 	if [ 0 -lt $$(cat $@__STAT_H3_NULLS) ]; then echo "Table stat_h3 contains null h3 indexes. Execution was interrupted." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	rm -f $@__STAT_H3_DUPLICATES
+	psql -q -X -t -c 'select count(h3) - count(distinct h3) as diff from stat_h3;' > $@__STAT_H3_DUPLICATES
 	if [ 0 -lt $$(cat $@__STAT_H3_DUPLICATES) ]; then echo "Table stat_h3 contains duplicated h3 indexes. Execution was interrupted." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
 	rm -f $@__STAT_H3_NULLS $@__STAT_H3_DUPLICATES
 	touch $@
 
-db/table/stat_h3_quality: db/table/stat_h3 db/table/stat_h3_zeros_check db/table/stat_h3_data_quality_check | db/table ## summarized statistics aggregated on H3 hexagons between resolutions.
+db/table/stat_h3_quality: db/table/stat_h3 db/table/stat_h3_data_quality_check | db/table ## summarized statistics aggregated on H3 hexagons between resolutions.
 	psql -f tables/stat_h3_quality.sql
 	touch $@
 

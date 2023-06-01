@@ -5,4 +5,5 @@ create table osm_road_segments_h3 tablespace evo4tb as (
         h3_lat_lng_to_cell(ST_StartPoint(seg_geom)::point, 8) as h3,
         sum(length) as highway_length
     from osm_road_segments
+    where seg_geom is not null
     group by h3);

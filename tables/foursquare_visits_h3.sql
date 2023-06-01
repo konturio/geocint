@@ -4,5 +4,6 @@ create table foursquare_visits_h3 as (
            count(*) as foursquare_visits_count,
            8        as resolution
     from foursquare_visits
+    where h3_r8 is not null
     group by 1
 );

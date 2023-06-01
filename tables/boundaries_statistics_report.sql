@@ -1,0 +1,27 @@
+drop table if exists boundaries_statistics_report_in;
+create table boundaries_statistics_report_in as (
+	select coalesce(name, name_en) as name,
+	       osm_admin_level         as admin_level,
+	       osm_id,
+	       osm_type,
+	       location,
+	       population,
+	       geom
+	from kontur_boundaries_export
+	where osm_admin_level >= 4
+	order by location, osm_admin_level
+);
+
+drop table if exists boundaries_statistics_report;
+create table boundaries_statistics_report as (
+	select 
+	        -- Mark start of the string with subrow_ prefix if needed:
+            case when admin_level = '2' then '' else 'subrow_' end ||
+            -- Generate link to object properties on osm.org:
+            coalesce('href_[' || name || '](https://www.openstreetmap.org/' ||
+            osm_type || '/' || osm_id || ')', '')                               as "Name",
+            admin_level                                                         as "Admin level",
+            population                                                          as "Population"
+    from boundaries_statistics_report_in
+    order by location, osm_admin_level
+);

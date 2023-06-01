@@ -8,6 +8,8 @@ select k.kontur_admin_level as admin_level,
        k.population,
        h.hasc as location,
        k.hasc_wiki as hasc,
+       k.osm_id,
+       k.osm_type,
        k.geom
 from kontur_boundaries k,
      hdx_boundaries h

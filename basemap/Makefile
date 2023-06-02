@@ -111,7 +111,9 @@ db/table/osm2pgsql_fill_lang: db/table/osm2pgsql | db/table ## fill missing name
 
 db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql_fill_lang db/table/kontur_topology_boundary | db/table ## insert kontur topology boundaries into planet_osm_line
 	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, maritime, way, tags) select -osm_id as osm_id, 'administrative' as boundary, admin_level, nullif(maritime, false), geom as way, hstore('name:'||default_language, name) as tags from kontur_topology_boundary;"
+	psql -c "set max_parallel_maintenance_workers = 0;"
 	psql -c 'vacuum planet_osm_line;'
+	psql -c "set max_parallel_maintenance_workers = 2;"
 	touch $@
 
 db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql_with_boundaries | db/index ## index for basemap low zoom queries

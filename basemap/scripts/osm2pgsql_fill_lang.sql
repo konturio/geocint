@@ -15,7 +15,9 @@ update planet_osm_point
 set tags = tags || hstore(cte.lang, name) from cte
 where cte.osm_id = planet_osm_point.osm_id;
 
+set max_parallel_maintenance_workers = 0;
 vacuum planet_osm_point;
+set max_parallel_maintenance_workers = 2;
 
 with cte as (select osm_id, 
                     lang
@@ -31,8 +33,6 @@ update planet_osm_line
 set tags = tags || hstore(cte.lang, name) from cte
 where cte.osm_id = planet_osm_line.osm_id;
 
-vacuum planet_osm_line;
-
 with cte as (select osm_id, lang
              from (select distinct on (p.osm_id) p.osm_id, 
                                                  p.tags, 
@@ -47,4 +47,6 @@ set tags = tags || hstore(cte.lang, name)
 from cte
 where cte.osm_id = planet_osm_polygon.osm_id;
 
+set max_parallel_maintenance_workers = 0;
 vacuum planet_osm_polygon;
+set max_parallel_maintenance_workers = 2;

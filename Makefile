@@ -2767,3 +2767,20 @@ data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_b
 	touch $@
 
 ### End Safety index layer ###
+
+### HOT projects block ###
+
+data/in/hot_projects: | data/in ## input directory for hot projects data
+	mkdir -p $@
+
+data/in/hot_projects/hot_projects.geojson: data/in/hot_projects | data/in ## Download hot projects data
+	wget -c -nc 'https://api.kontur.io/layers/collections/hotProjects/items?status=PUBLISHED' -O $@
+
+db/table/hot_projects: data/in/hot_projects/hot_projects.geojson | db/table ##load hot projects data to table
+	psql -c "drop table if exists hot_projects;"
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/hot_projects/hot_projects.geojson -nln hot_projects
+	psql -c "alter table morocco_buildings_manual_roofprints rename column wkb_geometry to geom;"
+	psql -c "create index on hot_projects using gist(geom);"
+	touch $@
+
+### End HOT projects block

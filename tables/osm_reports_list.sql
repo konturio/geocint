@@ -128,6 +128,7 @@ select 'boundaries_statistics_report',
         '/boundaries_statistics_report.csv',
         json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
         'A list of boundaries with precalculated statistics.',
+        'A list of boundaries with precalculated statistics.',
         false,
         '{0}',
         false

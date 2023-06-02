@@ -897,7 +897,7 @@ db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/k
 	touch $@
 
 data/out/reports/boundaries_statistics_report.csv: db/table/boundaries_statistics_report | data/out/reports ## Export MVP boundaries statistics report
-	psql -qXc "copy (select \"Name\", \"Admin level\", \"Population\" from boundaries_statistics_report order by location, osm_admin_level) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
+	psql -qXc "copy (select \"Name\", \"Admin level\", \"Population\" from boundaries_statistics_report order by location, admin_level) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
 
 data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison db/table/osm_meta | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Admin level\", \"OSM name\", \"GADM name\" from osm_gadm_comparison order by id limit 10000) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g'  > $@
@@ -931,7 +931,7 @@ data/out/reports/osm_reports_list_prod.json: db/table/osm_reports_list | data/ou
 	touch $@
 
 deploy/geocint/reports/boundaries_statistics_report.csv: data/out/reports/boundaries_statistics_report.csv | deploy/geocint/reports ## Copy MVP boundaries statistics report to public_html folder to make it available online.
-	mkdir -p ~/public_html/reports && cp data/out/reports/osm_gadm_comparison.csv ~/public_html/reports/osm_gadm_comparison.csv
+	mkdir -p ~/public_html/reports && cp data/out/reports/boundaries_statistics_report.csv ~/public_html/reports/boundaries_statistics_report.csv
 	touch $@
 
 deploy/geocint/reports/osm_gadm_comparison.csv: data/out/reports/osm_gadm_comparison.csv | deploy/geocint/reports ## Copy OSM-GADM comparison report to public_html folder to make it available online.

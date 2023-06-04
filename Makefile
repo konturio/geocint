@@ -868,7 +868,7 @@ db/table/osm_reports_list: db/table/osm_meta db/table/population_check_osm db/ta
 	psql -f tables/osm_reports_list.sql
 	touch $@
 
-db/table/boundaries_statistics_report: db/table/stat_h3 data/out/kontur_boundaries_per_country/export | db/table ## MVP boundaries statistics report
+db/table/boundaries_statistics_report: db/table/stat_h3 data/out/kontur_boundaries_per_country/export db/table/hot_projects | db/table ## MVP boundaries statistics report
 	psql -f tables/boundaries_statistics_report.sql
 	touch $@
 

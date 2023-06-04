@@ -128,7 +128,7 @@ select 'boundaries_statistics_report',
         '/boundaries_statistics_report.csv',
         json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
         'A list of boundaries with precalculated statistics.',
-        'A list of boundaries with precalculated statistics.',
+        'A list of boundaries with precalculated statistics. Click the following link to download: [https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_reports@@@@@/boundaries_statistics_report.csv](https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_reports@@@@@/boundaries_statistics_report.csv)',
         false,
         '{0}',
         false

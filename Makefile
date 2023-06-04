@@ -897,7 +897,7 @@ db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/k
 	touch $@
 
 data/out/reports/boundaries_statistics_report.csv: db/table/boundaries_statistics_report | data/out/reports ## Export MVP boundaries statistics report
-	psql -qXc "copy (select \"Name\", \"Admin level\", \"Population\" from boundaries_statistics_report order by location, admin_level) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
+	psql -qXc "copy (select \"Name\", \"Admin level\", \"Population\", \"People with no OSM buildings\", \"People with no OSM roads\", \"People with no OSM objects\",\"Populated area km2\",\"Populated area with no OSM objects km2\",\"Populated area with no OSM buildings km2\",\"Populated area with no OSM roads km2\",\"Hazardous days count\",\"HOT Projects\" from boundaries_statistics_report order by location, admin_level) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
 
 data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison db/table/osm_meta | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Admin level\", \"OSM name\", \"GADM name\" from osm_gadm_comparison order by id limit 10000) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g'  > $@
@@ -2773,13 +2773,16 @@ data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_b
 data/in/hot_projects: | data/in ## input directory for hot projects data
 	mkdir -p $@
 
-data/in/hot_projects/hot_projects.geojson: data/in/hot_projects | data/in ## Download hot projects data
-	wget -c -nc 'https://api.kontur.io/layers/collections/hotProjects/items?status=PUBLISHED' -O $@
+data/in/hot_projects/hot_projects: data/in/hot_projects | data/in ## Download hot projects data
+	seq 0 2000 12000 | parallel --eta 'wget -O data/in/hot_projects/hot_projects_{}.geojson "https://api.kontur.io/layers/collections/hotProjects/items?limit=2000&offset={}"'
+	touch $@
 
 db/table/hot_projects: data/in/hot_projects/hot_projects.geojson | db/table ##load hot projects data to table
 	psql -c "drop table if exists hot_projects;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/hot_projects/hot_projects.geojson -nln hot_projects
-	psql -c "alter table morocco_buildings_manual_roofprints rename column wkb_geometry to geom;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/in/hot_projects/hot_projects_0.geojson -sql 'select * from hot_projects_0 limit 0' -nln hot_projects --config PG_USE_COPY YES -lco GEOMETRY_NAME=geom
+	psql -c "alter table hot_projects drop column mappingtypes;"
+	psql -c "alter table hot_projects add column mappingtypes character varying[];"
+	ls -S data/in/hot_projects/hot_projects_*.geojson | parallel -j 1 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln hot_projects --config PG_USE_COPY YES'
 	psql -c "create index on hot_projects using gist(geom);"
 	touch $@
 

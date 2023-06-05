@@ -13,9 +13,6 @@ create table boundaries_statistics_report_in as (
 	group by 1,2,3,4,5,6,8
 );
 
-
-<a href="http://example.com/">http://example.com/</a>
-
 drop table if exists boundaries_geom_prepared;
 create table boundaries_geom_prepared as (
     select osm_id,

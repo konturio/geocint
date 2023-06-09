@@ -121,3 +121,15 @@ select 'osm_missing_boundaries_report',
         '{3}',
         false
 from osm_meta;
+
+insert into osm_reports_list (id, name, link, last_updated, description_brief, description_full, sortable, searchable_columns_indexes, public_access)
+select 'boundaries_statistics_report',
+        'Administrative boundaries with statistics',
+        '/boundaries_statistics_report.csv',
+        json_extract_path_text(meta::json, 'data', 'timestamp', 'last'),
+        'A list of boundaries with precalculated statistics.',
+        'A list of boundaries with precalculated statistics. Click the following link to download: [https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_reports@@@@@/boundaries_statistics_report.csv](https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_reports@@@@@/boundaries_statistics_report.csv)',
+        false,
+        '{0}',
+        true
+from osm_meta;

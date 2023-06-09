@@ -31,7 +31,7 @@ prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/clea
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check data/in/hot_projects/hot_projects
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -847,7 +847,6 @@ data/out/kontur_boundaries_per_country/export: db/table/hdx_boundaries data/out/
 	psql -f tables/kontur_boundaries_export.sql
 	rm -f data/out/kontur_boundaries_per_country/*.gpkg*
 	cat data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | parallel '{}'
-	psql -c "drop table if exists kontur_boundaries_export;"
 	touch $@
 
 data/out/kontur_boundaries.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in kcapi for Event-api enrichment - geocoding, DN boundary selector.
@@ -863,8 +862,14 @@ deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 #
 
 ### END Kontur Boundaries block ###
 
+### Disaster Ninja Reports block ###
+
 db/table/osm_reports_list: db/table/osm_meta db/table/population_check_osm db/table/osm_population_inconsistencies db/table/osm_gadm_comparison db/table/osm_unmapped_places_report db/table/osm_missing_roads db/table/osm_missing_boundaries_report | db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
 	psql -f tables/osm_reports_list.sql
+	touch $@
+
+db/table/boundaries_statistics_report: db/table/stat_h3 data/out/kontur_boundaries_per_country/export db/table/hot_projects | db/table ## MVP boundaries statistics report
+	psql -f tables/boundaries_statistics_report.sql
 	touch $@
 
 db/table/population_check_osm: db/table/kontur_boundaries db/table/hdx_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
@@ -890,6 +895,9 @@ db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries | db/
 db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
 	psql -f tables/osm_missing_boundaries_report.sql
 	touch $@
+
+data/out/reports/boundaries_statistics_report.csv: db/table/boundaries_statistics_report | data/out/reports ## Export MVP boundaries statistics report
+	psql -qXc "copy (select \"Name\", \"Admin level\", \"Population\", \"People with no OSM buildings\", \"People with no OSM roads\", \"People with no OSM objects\",\"Populated area km2\",\"Populated area with no OSM objects %\",\"Populated area with no OSM buildings %\",\"Populated area with no OSM roads %\",\"Hazardous days count\",\"HOT Projects\" from boundaries_statistics_report order by location, admin_level) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
 
 data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison db/table/osm_meta | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Admin level\", \"OSM name\", \"GADM name\" from osm_gadm_comparison order by id limit 10000) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g'  > $@
@@ -920,6 +928,10 @@ data/out/reports/osm_reports_list_dev.json: db/table/osm_reports_list | data/out
 
 data/out/reports/osm_reports_list_prod.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (production version)
 	psql -qXc 'copy (select jsonb_agg(row) from (select * from osm_reports_list) row where public_access is true) to stdout;' | sed 's/\@\@\@\@\@//g' | sed 's=\\=@@=g' | sed 's/\@\@\@\@/\\/g'> $@
+	touch $@
+
+deploy/geocint/reports/boundaries_statistics_report.csv: data/out/reports/boundaries_statistics_report.csv | deploy/geocint/reports ## Copy MVP boundaries statistics report to public_html folder to make it available online.
+	mkdir -p ~/public_html/reports && cp data/out/reports/boundaries_statistics_report.csv ~/public_html/reports/boundaries_statistics_report.csv
 	touch $@
 
 deploy/geocint/reports/osm_gadm_comparison.csv: data/out/reports/osm_gadm_comparison.csv | deploy/geocint/reports ## Copy OSM-GADM comparison report to public_html folder to make it available online.
@@ -958,19 +970,19 @@ deploy/geocint/reports/osm_reports_list_prod.json: data/out/reports/osm_reports_
 	mkdir -p ~/public_html/reports && cp data/out/reports/osm_reports_list_prod.json ~/public_html/reports/osm_reports_list_prod.json
 	touch $@
 
-deploy/geocint/reports/test/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/osm_reports_list_test.json | deploy/geocint/reports/test  ## OSM quality reports (most recent) testing archive.
+deploy/geocint/reports/test/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/boundaries_statistics_report.csv deploy/geocint/reports/osm_reports_list_test.json | deploy/geocint/reports/test  ## OSM quality reports (most recent) testing archive.
 	rm -f ~/public_html/test/reports.tar.gz
-	cd ~/public_html/reports; tar --transform='flags=r;s|list_test|list|' -cf test_reports.tar.gz -I pigz osm_reports_list_test.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv
+	cd ~/public_html/reports; tar --transform='flags=r;s|list_test|list|' -cf test_reports.tar.gz -I pigz osm_reports_list_test.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv boundaries_statistics_report.csv
 	touch $@
 
-deploy/geocint/reports/dev/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/osm_reports_list_dev.json | deploy/geocint/reports/dev  ## OSM quality reports (most recent) dev archive.
+deploy/geocint/reports/dev/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/boundaries_statistics_report.csv deploy/geocint/reports/osm_reports_list_dev.json | deploy/geocint/reports/dev  ## OSM quality reports (most recent) dev archive.
 	rm -f ~/public_html/dev/reports.tar.gz
-	cd ~/public_html/reports; tar --transform='flags=r;s|list_dev|list|' -cf dev_reports.tar.gz -I pigz osm_reports_list_dev.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv
+	cd ~/public_html/reports; tar --transform='flags=r;s|list_dev|list|' -cf dev_reports.tar.gz -I pigz osm_reports_list_dev.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv boundaries_statistics_report.csv
 	touch $@
 
-deploy/geocint/reports/prod/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/osm_reports_list_prod.json | deploy/geocint/reports/prod  ## OSM quality reports (most recent) production archive.
+deploy/geocint/reports/prod/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/boundaries_statistics_report.csv deploy/geocint/reports/osm_reports_list_prod.json | deploy/geocint/reports/prod  ## OSM quality reports (most recent) production archive.
 	rm -f ~/public_html/prod/reports.tar.gz
-	cd ~/public_html/reports; tar --transform='flags=r;s|list_prod|list|' -cf prod_reports.tar.gz -I pigz osm_reports_list_prod.json population_check_osm.csv osm_gadm_comparison.csv osm_population_inconsistencies.csv  osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv
+	cd ~/public_html/reports; tar --transform='flags=r;s|list_prod|list|' -cf prod_reports.tar.gz -I pigz osm_reports_list_prod.json population_check_osm.csv osm_gadm_comparison.csv osm_population_inconsistencies.csv  osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv boundaries_statistics_report.csv
 	touch $@
 
 deploy/s3/test/reports/reports.tar.gz: deploy/geocint/reports/test/reports.tar.gz | deploy/s3/test/reports ## Putting reports archive to AWS test reports folder in private bucket. Before it we backup the previous reports archive.
@@ -1033,6 +1045,8 @@ deploy/prod/reports: deploy/s3/prod/reports/reports.tar.gz | deploy/prod ## Gett
 	ansible lima_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
 	ansible lima_disaster_ninja -m file -a 'path=$$HOME/reports/reports.tar.gz state=absent'
 	touch $@
+
+### End Disaster Ninja Reports block ###
 
 data/in/iso_codes.csv: | data/in ## Download ISO codes for countries from wikidata.
 	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
@@ -2753,3 +2767,23 @@ data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_b
 	touch $@
 
 ### End Safety index layer ###
+
+### HOT projects block ###
+
+data/in/hot_projects: | data/in ## input directory for hot projects data
+	mkdir -p $@
+
+data/in/hot_projects/hot_projects: data/in/hot_projects | data/in ## Download hot projects data
+	seq 0 2000 12000 | parallel --eta 'wget -O data/in/hot_projects/hot_projects_{}.geojson "https://api.kontur.io/layers/collections/hotProjects/items?limit=2000&offset={}"'
+	touch $@
+
+db/table/hot_projects: data/in/hot_projects/hot_projects.geojson | db/table ##load hot projects data to table
+	psql -c "drop table if exists hot_projects;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/in/hot_projects/hot_projects_0.geojson -sql 'select * from hot_projects_0 limit 0' -nln hot_projects --config PG_USE_COPY YES -lco GEOMETRY_NAME=geom
+	psql -c "alter table hot_projects drop column mappingtypes;"
+	psql -c "alter table hot_projects add column mappingtypes character varying[];"
+	ls -S data/in/hot_projects/hot_projects_*.geojson | parallel -j 1 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln hot_projects --config PG_USE_COPY YES'
+	psql -c "create index on hot_projects using gist(geom);"
+	touch $@
+
+### End HOT projects block

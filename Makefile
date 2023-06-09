@@ -2812,27 +2812,27 @@ db/table/ghsl_h3: db/table/ghsl ## Create table with h3 index and population fro
 	ls data/mid/ghsl/*.tif | parallel 'psql -c "create index on {/.}_h3 using gist(h3_cell_to_geometry(h3))"'
 	touch $@
 
-db/function/ghs_pop_dither_per_country: ## Function to dithers ghs population per country
-	psql -f functions/ghs_pop_dither_per_country.sql
+db/function/ghs_pop_dither: ## Function to dithers ghs population per country
+	psql -f functions/ghs_pop_dither.sql
 	touch $@
 
 ### End GHS population rasters import block
 
 ### ghsl india snapshots
 
-db/table/ghsl_h3_IN: db/table/ghsl_h3 ## Create tables for every ghs_pop_year for India, hasc='IN'
+db/table/ghsl_h3_IN: db/table/ghsl_h3 ## Create tables for every ghs_pop_year for India, hasc equal IN
 	ls data/mid/ghsl/*.tif | parallel 'psql -c "drop table if exists {/.}_h3_IN; create table {/.}_h3_IN(h3 h3index, population integer, geom geometry(geometry,4326));"'
 	touch $@
 
-db/table/export_ghsl_h3_IN: db/table/hdx_boundaries db/table/ghsl_h3_IN db/function/ghs_pop_dither_per_country ## Take India polygon from hdx_boundaries and dither and insert results in tables for India, hasc='IN'
-	ls data/mid/ghsl/*.tif | parallel -q psql -c "select ghs_pop_dither_per_country('{/.}_h3', '{/.}_h3_IN', 'IN')"
+db/table/export_ghsl_h3_IN: db/table/hdx_boundaries db/table/ghsl_h3_IN db/function/ghs_pop_dither ## Take India polygon from hdx_boundaries and dither and insert results in tables for India, hasc equal IN
+	ls data/mid/ghsl/*.tif | parallel -q psql -c "select ghs_pop_dither('{/.}_h3', '{/.}_h3_IN', 'IN')"
 	touch $@
 
-data/out/ghsl_IN: | data/out ## Directory for ghs population gpkg for India, hasc='IN'
+data/out/ghsl_IN: | data/out ## Directory for ghs population gpkg for India, hasc equal IN
 	mkdir -p $@
 
-data/out/ghsl_IN/export_gpkg: db/table/export_ghsl_h3_IN | data/out/ghsl_IN ## Exports gpkg for India, hasc='IN' from tables
-	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' {/.}_h3_IN -nln {/.}_h3_IN -lco OVERWRITE=yes"
+data/out/ghsl_IN/export_gpkg: db/table/export_ghsl_h3_IN | data/out/ghsl_IN ## Exports gpkg for India, hasc equal IN from tables
+	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' -sql 'select distinct h3, population,geom from {/.}_h3_IN as a, hdx_boundaries as b where b.hasc ='IN' and ST_Intersects(a.geom,b.geom)' -nln {/.}_h3_IN -lco OVERWRITE=yes"
 	touch $@
 
 ### End ghsl india snapshots

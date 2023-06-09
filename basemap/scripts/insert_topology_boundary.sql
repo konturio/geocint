@@ -9,7 +9,7 @@ insert into planet_osm_line (osm_id,
            admin_level, 
            nullif(maritime, false), 
            geom as way, 
-           hstore('name:'||default_language, name) as tags limit 5
+           hstore('name:'||default_language, name) as tags
     from kontur_topology_boundary;
 
 set max_parallel_maintenance_workers = 0;

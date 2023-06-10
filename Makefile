@@ -240,9 +240,7 @@ db/table/covid19_h3: db/table/covid19_population_h3_r8 db/table/covid19_us_count
 	touch $@
 
 db/table/us_counties_boundary: data/mid/gadm/gadm36_shp_files | db/table ## USA counties boundaries extracted from GADM (Database of Global Administrative Areas) admin_level_2 dataset.
-	psql -c 'drop table if exists gadm_us_counties_boundary;'
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/mid/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
-	ogr2ogr -append -f PostgreSQL PG:"dbname='gis'" data/mid/gadm/gadm36_1.shp -sql "select name_0 as name_1, name_1 as name_2, gid_1 as gid_2, hasc_1 as hasc_2 from gadm36_1 where gid_0 = 'PRI'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
+	psql -f tables/gadm_us_counties_boundary.sql
 	psql -c 'drop table if exists us_counties_fips_codes;'
 	psql -c 'create table us_counties_fips_codes (state text, county text, hasc_code text, fips_code text);'
 	cat static_data/counties_fips_hasc.csv | psql -c "copy us_counties_fips_codes (state, county, hasc_code, fips_code) from stdin with csv header delimiter ',';"

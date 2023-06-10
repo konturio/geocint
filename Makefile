@@ -239,7 +239,7 @@ db/table/covid19_h3: db/table/covid19_population_h3_r8 db/table/covid19_us_count
 	psql -c "call generate_overviews('covid19_h3', '{date, population, total_population, confirmed, recovered, dead}'::text[], '{max, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
 
-db/table/us_counties_boundary: data/mid/gadm/gadm36_shp_files | db/table ## USA counties boundaries extracted from GADM (Database of Global Administrative Areas) admin_level_2 dataset.
+db/table/us_counties_boundary: db/table/gadm_boundaries | db/table ## USA counties boundaries extracted from GADM (Database of Global Administrative Areas) admin_level_2 dataset.
 	psql -f tables/gadm_us_counties_boundary.sql
 	psql -c 'drop table if exists us_counties_fips_codes;'
 	psql -c 'create table us_counties_fips_codes (state text, county text, hasc_code text, fips_code text);'

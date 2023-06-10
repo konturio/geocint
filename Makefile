@@ -2777,7 +2777,7 @@ data/in/hot_projects/hot_projects: data/in/hot_projects | data/in ## Download ho
 	seq 0 2000 12000 | parallel --eta 'wget -O data/in/hot_projects/hot_projects_{}.geojson "https://api.kontur.io/layers/collections/hotProjects/items?limit=2000&offset={}"'
 	touch $@
 
-db/table/hot_projects: data/in/hot_projects/hot_projects.geojson | db/table ##load hot projects data to table
+db/table/hot_projects: data/in/hot_projects/hot_projects | db/table ##load hot projects data to table
 	psql -c "drop table if exists hot_projects;"
 	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" data/in/hot_projects/hot_projects_0.geojson -sql 'select * from hot_projects_0 limit 0' -nln hot_projects --config PG_USE_COPY YES -lco GEOMETRY_NAME=geom
 	psql -c "alter table hot_projects drop column mappingtypes;"

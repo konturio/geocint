@@ -2834,7 +2834,7 @@ data/out/ghsl_IN: | data/out ## Directory for ghs population gpkg for India, has
 	mkdir -p $@
 
 data/out/ghsl_IN/export_gpkg: db/table/export_ghsl_h3_IN | data/out/ghsl_IN ## Exports gpkg for India, hasc equal IN from tables
-	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' -sql 'select distinct h3, population,geom from {/.}_h3_IN as a, hdx_boundaries as b where b.hasc ='IN' and ST_Intersects(a.geom,b.geom)' -nln {/.}_h3_IN -lco OVERWRITE=yes"
+	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' -sql 'select distinct h3, population,geom from {/.}_h3_IN as a, hdx_boundaries as b where b.hasc ='\''IN'\'' and ST_Intersects(a.geom,b.geom)' -nln {/.}_h3_IN -lco OVERWRITE=yes"
 	touch $@
 
 ### End ghsl india snapshots

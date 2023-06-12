@@ -2823,7 +2823,8 @@ db/function/ghs_pop_dither: ## Function to dithers ghs population per country
 ### ghsl india snapshots
 
 db/table/ghsl_h3_IN: db/table/ghsl_h3 ## Create tables for every ghs_pop_year for India, hasc equal IN
-	ls data/mid/ghsl/*.tif | parallel 'psql -c "drop table if exists {/.}_h3_IN; create table {/.}_h3_IN(h3 h3index, population integer, geom geometry(geometry,4326));"'
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "drop table if exists {/.}_h3_IN;"'
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "create table {/.}_h3_IN(h3 h3index, population integer, geom geometry(geometry,4326));"'
 	touch $@
 
 db/table/export_ghsl_h3_IN: db/table/hdx_boundaries db/table/ghsl_h3_IN db/function/ghs_pop_dither ## Take India polygon from hdx_boundaries and dither and insert results in tables for India, hasc equal IN

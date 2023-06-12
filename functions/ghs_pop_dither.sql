@@ -3,7 +3,7 @@
 -- dithers ghs population (makes values integer and checks that density per hexagon is < 46200)
 -- saves results to tab_result
 
-CREATE OR REPLACE FUNCTION ghs_pop_dither(tab_source text, tab_result text, hasc_code text)
+CREATE OR REPLACE FUNCTION ghs_pop_dither(tab_source text, tab_result text)
 RETURNS void AS
 $BODY$
 DECLARE
@@ -19,7 +19,7 @@ begin
                                           population, 
                                           ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0 as area_km2 
                                    from %s 
-                                   order by h3', tab_source, hasc_code) loop
+                                   order by h3', tab_source) loop
         cur_pop := cur_row.population + carry;
 
         if cur_pop < 0 then

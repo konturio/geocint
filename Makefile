@@ -2800,7 +2800,9 @@ data/in/ghsl/download: | data/in/ghsl ## Download population raster files in par
 	rm -f $(@D)/_download-errors.log
 
 data/mid/ghsl/unzip: data/in/ghsl/download | data/mid/ghsl ## Unzip population raster files in parallel
-	ls data/in/ghsl/*.zip | parallel unzip -f {} {/.}.tif -d $(@D)
+	rm data/mid/ghsl/*
+	ls data/in/ghsl/*.zip | parallel "unzip -o {} -d data/mid/ghsl/"
+	rm data/mid/ghsl/*.tif.ovr
 	touch $@
 
 db/table/ghsl: data/mid/ghsl/unzip db/procedure/insert_projection_54009 ## Import into db population raster files in parallel

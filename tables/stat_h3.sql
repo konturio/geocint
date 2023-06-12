@@ -1,6 +1,6 @@
 set enable_hashagg = off;
 drop table if exists stat_h3_in;
-create table stat_h3_in tablespace evo4tb as (
+create table stat_h3_in  as (
     select h3,
            resolution,
            resolution as zoom,
@@ -529,7 +529,7 @@ create table stat_h3_in tablespace evo4tb as (
 
 
 drop table if exists stat_h3;
-create table stat_h3 tablespace evo4tb as (
+create table stat_h3  as (
     select a.h3,
            a.zoom,
            a.population,

@@ -2827,14 +2827,14 @@ db/table/ghsl_h3_dither: db/table/ghsl_h3 ## Create tables for every ghs_pop_yea
 	ls data/mid/ghsl/*.tif | parallel 'psql -c "create table {/.}_h3_dither(h3 h3index, population integer, geom geometry(geometry,4326));"'
 	touch $@
 
-db/table/export_ghsl_h3_IN: db/table/hdx_boundaries db/table/ghsl_h3_dither db/function/ghs_pop_dither ## Dither and insert results in tables
+db/table/export_ghsl_h3_dither: db/table/hdx_boundaries db/table/ghsl_h3_dither db/function/ghs_pop_dither ## Dither and insert results in tables
 	ls data/mid/ghsl/*.tif | parallel -q psql -c "select ghs_pop_dither('{/.}_h3', '{/.}_h3_dither')"
 	touch $@
 
 data/out/ghsl_output: | data/out ## Directory for ghs population gpkg for India, hasc equal IN
 	mkdir -p $@
 
-data/out/ghsl_output/export_gpkg: db/table/export_ghsl_h3_dither | data/out/ghsl_IN ## Exports gpkg for India, hasc equal IN from tables
+data/out/ghsl_output/export_gpkg: db/table/export_ghsl_h3_dither | data/out/ghsl_output ## Exports gpkg for India, hasc equal IN from tables
 	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' -sql 'select distinct a.h3, a.population, a.geom from {/.}_h3_dither as a, hdx_boundaries as b where b.hasc ='\''IN'\'' and ST_Intersects(a.geom,b.geom)' -nln {/.}_h3_IN -lco OVERWRITE=yes"
 	touch $@
 

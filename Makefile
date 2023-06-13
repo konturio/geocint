@@ -18,7 +18,7 @@ include runner_make osm_make
 
 ## ------------- CONTROL BLOCK -------------------------
 
-all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_IN/export_gpkg ## [FINAL] Meta-target on top of all other targets, or targets on parking.
+all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
 dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
@@ -2822,20 +2822,20 @@ db/function/ghs_pop_dither: ## Function to dithers ghs population per country
 
 ### ghsl india snapshots
 
-db/table/ghsl_h3_IN: db/table/ghsl_h3 ## Create tables for every ghs_pop_year for India, hasc equal IN
-	ls data/mid/ghsl/*.tif | parallel 'psql -c "drop table if exists {/.}_h3_IN;"'
-	ls data/mid/ghsl/*.tif | parallel 'psql -c "create table {/.}_h3_IN(h3 h3index, population integer, geom geometry(geometry,4326));"'
+db/table/ghsl_h3_dither: db/table/ghsl_h3 ## Create tables for every ghs_pop_year
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "drop table if exists {/.}_h3_dither;"'
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "create table {/.}_h3_dither(h3 h3index, population integer, geom geometry(geometry,4326));"'
 	touch $@
 
-db/table/export_ghsl_h3_IN: db/table/hdx_boundaries db/table/ghsl_h3_IN db/function/ghs_pop_dither ## Take India polygon from hdx_boundaries and dither and insert results in tables for India, hasc equal IN
-	ls data/mid/ghsl/*.tif | parallel -q psql -c "select ghs_pop_dither('{/.}_h3', '{/.}_h3_IN')"
+db/table/export_ghsl_h3_IN: db/table/hdx_boundaries db/table/ghsl_h3_dither db/function/ghs_pop_dither ## Dither and insert results in tables
+	ls data/mid/ghsl/*.tif | parallel -q psql -c "select ghs_pop_dither('{/.}_h3', '{/.}_h3_dither')"
 	touch $@
 
-data/out/ghsl_IN: | data/out ## Directory for ghs population gpkg for India, hasc equal IN
+data/out/ghsl_output: | data/out ## Directory for ghs population gpkg for India, hasc equal IN
 	mkdir -p $@
 
-data/out/ghsl_IN/export_gpkg: db/table/export_ghsl_h3_IN | data/out/ghsl_IN ## Exports gpkg for India, hasc equal IN from tables
-	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' -sql 'select distinct a.h3, a.population, a.geom from {/.}_h3_IN as a, hdx_boundaries as b where b.hasc ='\''IN'\'' and ST_Intersects(a.geom,b.geom)' -nln {/.}_h3_IN -lco OVERWRITE=yes"
+data/out/ghsl_output/export_gpkg: db/table/export_ghsl_h3_dither | data/out/ghsl_IN ## Exports gpkg for India, hasc equal IN from tables
+	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' -sql 'select distinct a.h3, a.population, a.geom from {/.}_h3_dither as a, hdx_boundaries as b where b.hasc ='\''IN'\'' and ST_Intersects(a.geom,b.geom)' -nln {/.}_h3_IN -lco OVERWRITE=yes"
 	touch $@
 
 ### End ghsl india snapshots

@@ -52,6 +52,7 @@ group by osm_id, admin_level, maritime;
 drop table if exists topology_boundary;
 create table topology_boundary as
     select t.osm_id,
+           k.name,
            t.admin_level,
            t.maritime,
            k.default_language,

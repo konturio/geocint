@@ -43,7 +43,7 @@ delete from default_language_relations_without_admin_level
 update default_language_relations_without_admin_level
     set admin_level = (select max(admin_level)+1 from default_language_relations_with_admin_level);
 
--- union relation where admin_level < 2
+-- union relation where admin_level less than 2
 drop table if exists default_language_relations;
 create table default_language_relations as (
     select osm_id,
@@ -52,7 +52,7 @@ create table default_language_relations as (
            geom,
            ST_Area(geom) as area
     from default_language_relations_with_admin_level
-    where admin_level < 2
+    where admin_level > 2
     union all 
     select osm_id,
            admin_level,
@@ -64,7 +64,7 @@ create table default_language_relations as (
 
 create index on default_language_relations using gist(geom);
 
--- union relation where admin_level > 2
+-- union relation where admin_level = 2
 drop table if exists default_language_relations_adm_2;
 create table default_language_relations_adm_2 as (
     select * 
@@ -83,18 +83,21 @@ create index on default_language_relations_adm_2 using gist(geom);
 drop table if exists boundaries_with_default_language;
 create table boundaries_with_default_language as (
     select osm_id,
+           admin_level,
            default_language,
            geom
     from default_language_relations_with_admin_level
     where osm_id not in (select osm_id from default_languages_2_level)
     union all 
     select osm_id,
+           admin_level,
            default_language,
            geom
     from default_language_relations_without_admin_level
     where osm_id not in (select osm_id from default_languages_2_level)
     union all
     select osm_id,
+           2 as admin_level,
            lang as default_language,
            geom
     from default_languages_2_level

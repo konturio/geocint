@@ -9,8 +9,8 @@ RUN apt-get install libssl-dev openssl make cmake g++ \
     && wget https://www.python.org/ftp/python/2.7.5/Python-2.7.5.tgz \
     && tar xzvf Python-2.7.5.tgz \
     && cd Python-2.7.5 \
-    && ./configure
-    && make 
+    && ./configure \
+    && make \
     && make install
 
 # install osm2pgsql dependencies

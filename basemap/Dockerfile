@@ -9,7 +9,7 @@ RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-k
 RUN apt-get update && apt-get install -y pigz postgresql-client-15 pspg aria2 gdal-bin golang python-is-python3 2to3 awscli git \
   make cmake g++ \
   libboost-dev libboost-system-dev \
-  libldap-2.4-2 libssl1.1 \ 
+  libldap-common libssl1.1 \ 
   libboost-filesystem-dev libexpat1-dev zlib1g-dev \
   libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc npm
 

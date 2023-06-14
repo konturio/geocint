@@ -1,4 +1,4 @@
-FROM debian:stable-20230522-slim
+FROM debian:bullseye-slim
 
 # postgresql-client is required to use psql from Makefile
 RUN apt-get update && apt-get -y install wget gnupg2

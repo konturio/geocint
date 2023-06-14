@@ -5,7 +5,7 @@ RUN apt-get update && apt-get -y install wget gnupg2
 RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
-RUN apt-get update && apt-get install -y libssl-dev openssl make cmake g++ libldap-2.4-2 \
+RUN apt-get update && apt-get install -y libssl-dev openssl make cmake g++ libldap-dev \
     && wget https://www.python.org/ftp/python/2.7.5/Python-2.7.5.tgz \
     && tar xzvf Python-2.7.5.tgz \
     && cd Python-2.7.5 \

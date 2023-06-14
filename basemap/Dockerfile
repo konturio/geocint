@@ -5,7 +5,7 @@ RUN apt-get update && apt-get -y install wget gnupg2
 RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
-RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | sudo tee /etc/apt/sources.list.d/focal-security.list \
+RUN echo "deb http://security.ubuntu.com/ubuntu focal-security main" | tee /etc/apt/sources.list.d/focal-security.list \
     && apt-get update && apt-get install -y libldap-common libssl1.1 postgresql-client-15 pspg libpq-dev
 
 # install osm2pgsql dependencies

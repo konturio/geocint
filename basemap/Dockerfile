@@ -6,7 +6,7 @@ RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main"
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
 # install osm2pgsql dependencies
-RUN apt-get update && apt-get install -y pigz postgresql-client-14 aria2 gdal-bin golang python-is-python3 2to3 awscli git \
+RUN apt-get update && apt-get install -y pigz postgresql-client-15 pspg aria2 gdal-bin golang python-is-python3 2to3 awscli git \
   make cmake g++ \
   libboost-dev libboost-system-dev \
   libboost-filesystem-dev libexpat1-dev zlib1g-dev \
@@ -27,6 +27,7 @@ COPY styles /styles
 COPY tile_generator /tile_generator
 COPY Makefile /Makefile
 COPY start.sh /start.sh
+COPY .psqlrc /.psqlrc
 
 RUN chmod +x /start.sh
 

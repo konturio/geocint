@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y pigz postgresql-client-15 pspg aria2 gd
   make cmake g++ \
   libboost-dev libboost-system-dev \
   libboost-filesystem-dev libexpat1-dev zlib1g-dev \
-  libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc python npm
+  libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc npm
 
 # build and install osm2pgsql
 RUN git clone https://github.com/openstreetmap/osm2pgsql.git \

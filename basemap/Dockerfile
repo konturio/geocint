@@ -6,10 +6,9 @@ RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main"
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
 # install osm2pgsql dependencies
-RUN apt-get update && apt-get install -y pigz postgresql-client-15 pspg aria2 gdal-bin golang python-is-python3 2to3 awscli git \
+RUN apt-get update && apt-get install -y pigz postgresql-client-14 pspg aria2 gdal-bin golang python-is-python3 2to3 awscli git \
   make cmake g++ \
   libboost-dev libboost-system-dev \
-  libldap-common libssl1.1 \ 
   libboost-filesystem-dev libexpat1-dev zlib1g-dev \
   libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc npm
 

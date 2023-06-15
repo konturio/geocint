@@ -18,7 +18,7 @@ include runner_make osm_make
 
 ## ------------- CONTROL BLOCK -------------------------
 
-all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles ## [FINAL] Meta-target on top of all other targets, or targets on parking.
+all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
 dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
@@ -2785,3 +2785,57 @@ db/table/hot_projects: data/in/hot_projects/hot_projects | db/table ##load hot p
 	touch $@
 
 ### End HOT projects block
+
+### GHS population rasters import block
+
+data/in/ghsl: | data/in ## Directory for ghs population raster files
+	mkdir -p $@
+
+data/mid/ghsl: | data/mid ## Directory for ghs population unzipped raster files
+	mkdir -p $@
+
+data/in/ghsl/download: | data/in/ghsl ## Download population raster files in parallel
+	parallel -a static_data/ghsl/list-of-urls wget -nc -P $(@D) {} --rejected-log=$(@D)/_download-errors.log
+	if [ ! -f $(@D)/_download-errors.log ]; then touch $@; fi
+	rm -f $(@D)/_download-errors.log
+
+data/mid/ghsl/unzip: data/in/ghsl/download | data/mid/ghsl ## Unzip population raster files in parallel
+	rm data/mid/ghsl/*
+	ls data/in/ghsl/*.zip | parallel "unzip -o {} -d data/mid/ghsl/"
+	rm data/mid/ghsl/*.tif.ovr
+	touch $@
+
+db/table/ghsl: data/mid/ghsl/unzip db/procedure/insert_projection_54009 ## Import into db population raster files in parallel
+	ls data/mid/ghsl/*.tif | parallel "raster2pgsql -d -M -Y -s 54009 -t auto -e {} {/.} | psql -q"
+	touch $@
+
+db/table/ghsl_h3: db/table/ghsl ## Create table with h3 index and population from raster tables in parallel
+	ls data/mid/ghsl/*.tif | parallel 'psql -f tables/population_raster_grid_h3_r8.sql -v population_raster={/.} -v population_raster_grid_h3_r8={/.}_h3'
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "create index on {/.}_h3 using gist(h3_cell_to_geometry(h3))"'
+	touch $@
+
+db/function/ghs_pop_dither: ## Function to dithers ghs population per country
+	psql -f functions/ghs_pop_dither.sql
+	touch $@
+
+### End GHS population rasters import block
+
+### ghsl india snapshots
+
+db/table/ghsl_h3_dither: db/table/ghsl_h3 ## Create tables for every ghs_pop_year
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "drop table if exists {/.}_h3_dither;"'
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "create table {/.}_h3_dither(h3 h3index, population integer, geom geometry(geometry,4326));"'
+	touch $@
+
+db/table/export_ghsl_h3_dither: db/table/hdx_boundaries db/table/ghsl_h3_dither db/function/ghs_pop_dither ## Dither and insert results in tables
+	ls data/mid/ghsl/*.tif | parallel -q psql -c "select ghs_pop_dither('{/.}_h3', '{/.}_h3_dither')"
+	touch $@
+
+data/out/ghsl_output: | data/out ## Directory for ghs population gpkg for India, hasc equal IN
+	mkdir -p $@
+
+data/out/ghsl_output/export_gpkg: db/table/export_ghsl_h3_dither | data/out/ghsl_output ## Exports gpkg for India, hasc equal IN from tables
+	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' -sql 'select distinct a.h3, a.population, a.geom from {/.}_h3_dither as a, hdx_boundaries as b where b.hasc ='\''IN'\'' and ST_Intersects(a.geom,b.geom)' -nln {/.}_h3_IN -lco OVERWRITE=yes"
+	touch $@
+
+### End ghsl india snapshots

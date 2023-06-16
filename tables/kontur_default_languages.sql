@@ -15,7 +15,10 @@ create table kontur_default_languages as (
 	select  osm_id, 
 	        default_language,
 	        name,
-	        admin_level, 
+	        case 
+	            when admin_level ~E'^\\d+$' then  admin_level::integer
+	            else null
+	        end as admin_level, 
 	        case 
 	            when osm_id in (select osm_id from boundaries_with_default_language) then 0 
 	            else 1 

@@ -2772,7 +2772,7 @@ data/in/hot_projects: | data/in ## input directory for hot projects data
 	mkdir -p $@
 
 data/in/hot_projects/hot_projects: data/in/hot_projects | data/in ## Download hot projects data
-	seq 0 2000 12000 | parallel --eta 'wget -O data/in/hot_projects/hot_projects_{}.geojson "https://api.kontur.io/layers/collections/hotProjects/items?limit=2000&offset={}"'
+	seq 0 2000 12000 | parallel -j 1 'wget -q -O data/in/hot_projects/hot_projects_{}.geojson "https://api.kontur.io/layers/collections/hotProjects/items?limit=2000&offset={}"'
 	touch $@
 
 db/table/hot_projects: data/in/hot_projects/hot_projects | db/table ##load hot projects data to table

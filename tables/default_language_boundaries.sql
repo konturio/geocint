@@ -3,9 +3,9 @@ drop table if exists default_language_relations_with_admin_level;
 create table default_language_relations_with_admin_level as (    
     select osm_id,
            -- process non-integer admin levels
-           round((tags ->> 'admin_level')::float)  as admin_level,
-           tags ->> 'default_language'             as default_language,
-           ST_Normalize(geog::geometry)            as geom
+           round((tags ->> 'admin_level')::float)::integer  as admin_level,
+           tags ->> 'default_language'                      as default_language,
+           ST_Normalize(geog::geometry)                     as geom
     from osm
     where tags ? 'default_language'  
           and tags ->> 'admin_level' ~E'^\\d+$' 

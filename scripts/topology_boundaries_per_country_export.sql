@@ -8,7 +8,7 @@ create table :tab_temp as (
     select  row_number() OVER () as id,
             k.kontur_admin_level as admin_level,
             false as maritime,
-            (ST_dumpsegments(ST_Transform(ST_Boundary((ST_DumpRings((ST_Dump(k.geom)).geom)).geom), 3857))).geom
+            (ST_dumpsegments(ST_Transform(ST_Boundary((ST_DumpRings((ST_Dump(k.geom)).geom)).geom), 3857))).geom as geom
     from kontur_boundaries k,
          hdx_boundaries h
     where kontur_admin_level is not null

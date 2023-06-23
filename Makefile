@@ -2835,7 +2835,7 @@ data/out/ghsl_output: | data/out ## Directory for ghs population gpkg for India,
 	mkdir -p $@
 
 data/out/ghsl_output/export_gpkg: db/table/export_ghsl_h3_dither | data/out/ghsl_output ## Exports gpkg for India, hasc equal IN from tables
-	seq 1975 5 2020 | parallel "ogr2ogr -overwrite -f GPKG kontur_historical_population_density_for_{}_IN_20230623.gpkg PG:'dbname=gis' -sql 'select distinct a.h3, a.population, a.geom from ghs_pop_e{}_globe_r2022a_54009_100_v1_0_h3_dither as a, kontur_boundaries as b where b.osm_id =2088990 and ST_Intersects(a.geom,b.geom)' -nln kontur_historical_population_density_for_{}_IN_20230623 -lco OVERWRITE=yes"
+	seq 1975 5 2020 | parallel "echo $$(date '+%Y%m%d') {}" | parallel "ogr2ogr -overwrite -f GPKG data/out/ghsl_output/kontur_historical_population_density_for_{1}_IN_{2}.gpkg PG:'dbname=gis' -sql 'select distinct a.h3, a.population, a.geom from ghs_pop_e{1}_globe_r2022a_54009_100_v1_0_h3_dither as a, hdx_boundaries as b where b.hasc ='\''IN'\'' and ST_Intersects(a.geom,b.geom)' -nln kontur_historical_population_density_for_{1}_IN_{2} -lco OVERWRITE=yes"
 	touch $@
 
 ### End ghsl india snapshots

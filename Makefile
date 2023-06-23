@@ -2772,7 +2772,7 @@ data/in/hot_projects: | data/in ## input directory for hot projects data
 	mkdir -p $@
 
 data/in/hot_projects/hot_projects: data/in/hot_projects | data/in ## Download hot projects data
-	seq 0 2000 12000 | parallel -j 1 'wget -q -O data/in/hot_projects/hot_projects_{}.geojson "https://api.kontur.io/layers/collections/hotProjects/items?limit=2000&offset={}"'
+	seq 0 2000 12000 | parallel 'wget -q -O data/in/hot_projects/hot_projects_{}.geojson "https://api.kontur.io/layers/v2/collections/hotProjects_outlines/items?limit=2000&offset={}"'
 	touch $@
 
 db/table/hot_projects: data/in/hot_projects/hot_projects | db/table ##load hot projects data to table
@@ -2835,7 +2835,7 @@ data/out/ghsl_output: | data/out ## Directory for ghs population gpkg for India,
 	mkdir -p $@
 
 data/out/ghsl_output/export_gpkg: db/table/export_ghsl_h3_dither | data/out/ghsl_output ## Exports gpkg for India, hasc equal IN from tables
-	ls data/mid/ghsl/*.tif | parallel "ogr2ogr -overwrite -f GPKG $(@D)/{/.}_h3_IN.gpkg PG:'dbname=gis' -sql 'select distinct a.h3, a.population, a.geom from {/.}_h3_dither as a, hdx_boundaries as b where b.hasc ='\''IN'\'' and ST_Intersects(a.geom,b.geom)' -nln {/.}_h3_IN -lco OVERWRITE=yes"
+	seq 1975 5 2020 | parallel "ogr2ogr -overwrite -f GPKG kontur_historical_population_density_for_{}_IN_20230623.gpkg PG:'dbname=gis' -sql 'select distinct a.h3, a.population, a.geom from ghs_pop_e{}_globe_r2022a_54009_100_v1_0_h3_dither as a, kontur_boundaries as b where b.osm_id =2088990 and ST_Intersects(a.geom,b.geom)' -nln kontur_historical_population_density_for_{}_IN_20230623 -lco OVERWRITE=yes"
 	touch $@
 
 ### End ghsl india snapshots

@@ -2850,7 +2850,7 @@ data/out/kontur_topology_boundaries_per_country/export: db/table/water_polygons_
 	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_tmp_{};'"
 	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
 	cat $@__HASCS_LIST | parallel "psql -v tab_temp=topology_tmp_{} -v tab_result=topology_boundaries_{} -v cnt_code={} -f scripts/topology_boundaries_per_country_export.sql"
-	cat $@__HASCS_LIST | parallel "echo $$(date '+%Y%m%d') {}" | parallel --colsep ' ' "ogr2ogr -overwrite -f GPKG data/out/kontur_topology_boundaries_per_country/topology_boundaries_{2}_{1}.gpkg PG:'dbname=gis' topology_boundaries_{2} -nln topology_boundaries_{2}_{1} -lco OVERWRITE=yes"
+	cat $@__HASCS_LIST | parallel "echo $$(date '+%Y%m%d') {}" | parallel --colsep ' ' "ogr2ogr -overwrite -f GPKG data/out/kontur_topology_boundaries_per_country/kontur_topology_boundaries_{2}_{1}.gpkg PG:'dbname=gis' topology_boundaries_{2} -nln kontur_topology_boundaries_{2}_{1} -lco OVERWRITE=yes"
 	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
 	rm -f $@__HASCS_LIST
 	touch $@

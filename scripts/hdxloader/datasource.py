@@ -170,7 +170,7 @@ class CountryPopulationDensityFor400mH3Hexagons(CountryDatasource):
 
 
 class CountryAdministrativeDivisionWithAggregatedPopulation(CountryDatasource):
-    FILENAMEREGEX = re.compile(r'.*kontur_boundaries_(?P<alpha2>[A-Z]{2})_(?P<date>\d{8})\.gpkg')
+    FILENAMEREGEX = re.compile(r'.*kontur(_topology_|_)boundaries_(?P<alpha2>[A-Z]{2})_(?P<date>\d{8})\.gpkg')
 
     def __repr__(self):
         return f'CountryAdministrativeDivisionWithAggregatedPopulation("{self._dataset_path}")'

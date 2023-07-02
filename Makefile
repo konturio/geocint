@@ -19,7 +19,7 @@ include runner_make osm_make
 
 ## ------------- CONTROL BLOCK -------------------------
 
-all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export deploy/kontur_boundaries_new_release_on_hdx ## [FINAL] Meta-target on top of all other targets, or targets on parking.
+all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
 dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
@@ -2872,3 +2872,44 @@ data/out/ghsl_output/export_gpkg: db/table/export_ghsl_h3_dither | data/out/ghsl
 	touch $@
 
 ### End ghsl india snapshots
+
+### Topology boundaries per country ###
+
+data/out/kontur_topology_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_topolgy_boundaries
+	mkdir -p $@
+	
+data/out/kontur_topology_boundaries_per_country/export: db/table/water_polygons_vector db/table/hdx_boundaries db/table/kontur_boundaries | data/out/kontur_topology_boundaries_per_country ## Topology per country export
+	psql -X -q -t -F , -A -c "SELECT hasc FROM hdx_boundaries GROUP by 1" > $@__HASCS_LIST
+	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_tmp_{};'"
+	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
+	cat $@__HASCS_LIST | parallel "psql -v tab_temp=topology_tmp_{} -v tab_result=topology_boundaries_{} -v cnt_code={} -f scripts/topology_boundaries_per_country_export.sql"
+	cat $@__HASCS_LIST | parallel "echo $$(date '+%Y%m%d') {}" | parallel --colsep ' ' "ogr2ogr -overwrite -f GPKG data/out/kontur_topology_boundaries_per_country/topology_boundaries_{2}_{1}.gpkg PG:'dbname=gis' topology_boundaries_{2} -nln topology_boundaries_{2}_{1} -lco OVERWRITE=yes"
+	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
+	rm -f $@__HASCS_LIST
+	touch $@
+
+### End Topology boundaries per country ###
+
+### Update customviz using hdxloader ###
+data/out/hdxloader: | data/in ## Directory for yml files for updates
+	mkdir -p $@
+
+db/table/hdx_boundaries_iso3_bigest_polygon: db/table/hdx_boundaries db/table/hdx_locations_with_wikicodes | db/table ## Prepare table with iso3 code and bbox
+	psql -f tables/hdx_boundaries_iso3_bigest_polygon.sql
+	touch $@
+
+data/out/hdxloader/hdxloader_update_customviz_boundaries.yml: db/table/hdx_boundaries_iso3_bigest_polygon | data/out/hdxloader ## Generate yml files
+	$(eval URL := $(shell echo "https://apps.disaster.ninja/active/?map=2.000/30.000/0.100&app=f70488c2-055c-4599-a080-ded10c47730f&feed=kontur-public&layers=kontur_lines&"))
+	psql -t -A -X -F ";" -c "select * from hdx_boundaries_iso3_bigest_polygon;" | awk -F ";" -v url=$${URL} 'BEGIN { print "{" } { printf "\x27%s\x27: {\x27customviz\x27: [{\x27url\x27: \x27%s%s\x27}]},\n", $$1, url, $$2 } ' | sed '$$ s/\(.*\),)*/\1\n}/' > $@
+
+data/out/hdxloader/hdxloader_update_customviz_population.yml: db/table/hdx_boundaries_iso3_bigest_polygon | data/out/hdxloader ## Generate yml files
+	$(eval URL := $(shell echo "https://apps.disaster.ninja/active/?map=2.000/30.000/0.100&app=f70488c2-055c-4599-a080-ded10c47730f&feed=kontur-public&layers=kontur_zmrok%2Cpopulation_density&"))
+	psql -t -A -X -F ";" -c "select * from hdx_boundaries_iso3_bigest_polygon;" | awk -F ";" -v url=$${URL} 'BEGIN { print "{" } { printf "\x27%s\x27: {\x27customviz\x27: [{\x27url\x27: \x27%s%s\x27}]},\n", $$1, url, $$2 } ' | sed '$$ s/\(.*\),)*/\1\n}/' > $@
+
+data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_update_customviz_boundaries.yml data/out/hdxloader/hdxloader_update_customviz_population.yml | data/out/hdxloader ## Do actual update
+	[ -z $$HDX_API_TOKEN ] && { echo "HDX_API_TOKEN is empty, please set it before running"; exit 1; } || echo "HDX_API_TOKEN is set - OK"
+	python3 -m hdxloader update -t country-boundaries --update_by_iso3 --iso3_file data/out/hdxloader/hdxloader_update_customviz_boundaries.yml --hdx-site prod -k $$HDX_API_TOKEN --no-dry-run
+	python3 -m hdxloader update -t country-population --update_by_iso3 --iso3_file data/out/hdxloader/hdxloader_update_customviz_population.yml --hdx-site prod -k $$HDX_API_TOKEN --no-dry-run
+	psql -c "drop table if exists hdx_boundaries_iso3_bigest_polygon;"
+	touch $@
+### End update customviz using hdxloader ###

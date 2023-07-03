@@ -49,6 +49,8 @@ SLACK_BOT_NAME="Geocint Nightly build"
 SLACK_BOT_EMOJI=cat
 # this is a slack integration token, replace 'your_slack_key' with your slack integration key
 SLACK_KEY=----------
+# this is a HDX API token, You can generate this token on https://data.humdata.org/user/kontur-hdx-robot/api-tokens
+HDX_API_TOKEN=
 
 # duplicate files
 # this variable contains filenames, that may be duplicated

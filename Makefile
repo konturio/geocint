@@ -2898,13 +2898,11 @@ db/table/hdx_boundaries_iso3_bigest_polygon: db/table/hdx_boundaries db/table/hd
 	psql -f tables/hdx_boundaries_iso3_bigest_polygon.sql
 	touch $@
 
-data/out/hdxloader/hdxloader_update_customviz_boundaries.yml: db/table/hdx_boundaries_iso3_bigest_polygon | data/out/hdxloader ## Generate yml files
-	$(eval URL := $(shell echo "https://apps.disaster.ninja/active/?map=2.000/30.000/0.100&app=f70488c2-055c-4599-a080-ded10c47730f&feed=kontur-public&layers=kontur_lines&"))
-	psql -t -A -X -F ";" -c "select * from hdx_boundaries_iso3_bigest_polygon;" | awk -F ";" -v url=$${URL} 'BEGIN { print "{" } { printf "\x27%s\x27: {\x27customviz\x27: [{\x27url\x27: \x27%s%s\x27}]},\n", $$1, url, $$2 } ' | sed '$$ s/\(.*\),)*/\1\n}/' > $@
+data/out/hdxloader/hdxloader_update_customviz_boundaries.yml: db/table/hdx_boundaries_iso3_bigest_polygon | data/out/hdxloader ## Generate yml files to update custoviz for country_boundaries datasets
+	psql -t -A -X -F ";" -c "select * from hdx_boundaries_iso3_bigest_polygon;" | awk -F ";" 'BEGIN { print "{" } { printf "\x27%s\x27: {\x27customviz\x27: [{\x27url\x27: \x27https://apps.disaster.ninja/active/?map=2.000/30.000/0.100&app=f70488c2-055c-4599-a080-ded10c47730f&feed=kontur-public&layers=kontur_lines&%s\x27}]},\n", $$1, $$2 } ' | sed '$$ s/\(.*\),)*/\1\n}/' > $@
 
-data/out/hdxloader/hdxloader_update_customviz_population.yml: db/table/hdx_boundaries_iso3_bigest_polygon | data/out/hdxloader ## Generate yml files
-	$(eval URL := $(shell echo "https://apps.disaster.ninja/active/?map=2.000/30.000/0.100&app=f70488c2-055c-4599-a080-ded10c47730f&feed=kontur-public&layers=kontur_zmrok%2Cpopulation_density&"))
-	psql -t -A -X -F ";" -c "select * from hdx_boundaries_iso3_bigest_polygon;" | awk -F ";" -v url=$${URL} 'BEGIN { print "{" } { printf "\x27%s\x27: {\x27customviz\x27: [{\x27url\x27: \x27%s%s\x27}]},\n", $$1, url, $$2 } ' | sed '$$ s/\(.*\),)*/\1\n}/' > $@
+data/out/hdxloader/hdxloader_update_customviz_population.yml: db/table/hdx_boundaries_iso3_bigest_polygon | data/out/hdxloader ## Generate yml files to update custoviz for country_population datasets
+	psql -t -A -X -F ";" -c "select * from hdx_boundaries_iso3_bigest_polygon;" | awk -F ";" 'BEGIN { print "{" } { printf "\x27%s\x27: {\x27customviz\x27: [{\x27url\x27: \x27https://apps.disaster.ninja/active/?map=2.000/30.000/0.100&app=f70488c2-055c-4599-a080-ded10c47730f&feed=kontur-public&layers=kontur_zmrok%2Cpopulation_density&%s\x27}]},\n", $$1, $$2 } ' | sed '$$ s/\(.*\),)*/\1\n}/' > $@
 
 data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_update_customviz_boundaries.yml data/out/hdxloader/hdxloader_update_customviz_population.yml | data/out/hdxloader ## Do actual update
 	[ -z $$HDX_API_TOKEN ] && { echo "HDX_API_TOKEN is empty, please set it before running"; exit 1; } || echo "HDX_API_TOKEN is set - OK"

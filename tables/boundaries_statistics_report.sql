@@ -9,7 +9,8 @@ create table boundaries_statistics_report_in as (
 	       string_agg('href_['||h.id::text||'](https://tasks.hotosm.org/projects/'||h.id::text||')',', ') as projects,
 	       st_transform(c.geom, 3857)                                                               as geom
 	from kontur_boundaries_export c left join hot_projects h on st_intersects(c.geom, h.geom)
-	where c.osm_admin_level::integer <= 5
+	where c.osm_admin_level ~E'^\\d+$' 
+	      and c.osm_admin_level::integer <= 5
 	group by 1,2,3,4,5,6,8
 );
 

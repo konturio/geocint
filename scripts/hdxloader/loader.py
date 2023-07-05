@@ -7,6 +7,7 @@ from typing import Dict, Set, Union
 from hdx.data.organization import Organization
 from hdx.data.dataset import Dataset
 from hdx.location.country import Country
+from hdx.data.user import User
 from slugify import slugify
 
 from hdxloader.dataset import (
@@ -165,7 +166,7 @@ def create_datasets_for_all_hdx_countries(
     we_are = Organization.read_from_hdx(identifier=ORGANIZATION_NAME)
     i_might_be = [
         _user
-        for _user in we_are.get_users()
+        for _user in User.get_all_users()
         if _user['name'] == owner
     ]
     assert i_might_be and len(i_might_be) == 1, f'No matching user found: {owner}'

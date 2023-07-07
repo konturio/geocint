@@ -161,7 +161,10 @@ def get_datasets_for_dataset_type(dataset_type: DatasetType) -> Dict[str, Datase
 
 def create_datasets_for_all_hdx_countries(
         dataset_type: DatasetType,
-        owner: str
+        owner: str,
+        create_from_hasc_code: bool,
+        hasc_list: str,
+        create_private: bool
 ):
     we_are = Organization.read_from_hdx(identifier=ORGANIZATION_NAME)
     i_might_be = [
@@ -186,6 +189,25 @@ def create_datasets_for_all_hdx_countries(
         if _country_iso3 not in countries_with_dataset
     }
 
+    # check if we should use create_from_hasc_code mod instead of creating all non-existing datasets
+    if create_from_hasc_code:
+        
+        assert hasc_list and len(hasc_list) >= 2, \
+            '--hasc-list should contains at least 1 valid hasc code (use comma to separate multiple codes; do not put comma at the end)'
+        
+        hascs = [x.upper() for x in hasc_list.split(',')]
+
+        # modify list of countries to include only what you need
+        countries_without_dataset = {
+            _country_iso3: _country
+            for _country_iso3, _country in countries_without_dataset.items()
+            if _country['#country+code+v_iso2'] in hascs
+        }
+
+    assert countries_without_dataset and len(hasc_list) > 0, \
+            'there is no countries without dataset for selected dataset type'
+
+
     new_datasets = []
 
     for country_iso3, country in countries_without_dataset.items():
@@ -201,8 +223,11 @@ def create_datasets_for_all_hdx_countries(
         )
         dataset.set_organization(we_are['id'])
         dataset.set_maintainer(i_am['id'])
-        dataset.update({'dataset_date':datetime.datetime.now()})
+        dataset.update({'dataset_date':"[{0}T00:00:00 TO {0}T23:59:59]".format(datetime.datetime.today().strftime('%Y-%m-%d'))})
         dataset.set_expected_update_frequency('-2')
+        
+        if create_private:
+            dataset.update({'private':True})
 
         new_datasets.append(dataset)
 

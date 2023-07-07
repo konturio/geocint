@@ -102,6 +102,25 @@ def parse_args() -> argparse.Namespace:
         required=True,
         type=str,
     )
+    parser_create.add_argument(
+        '--create-from-hasc-code',
+        action='store_true',
+        required=False,
+        help='Create datasets only for hascs from list.',
+    )
+    parser_create.add_argument(
+        '--hasc-list',
+        help='List of commaseparated hascs of new datasets, that should be created.',
+        required=False,
+        type=str,
+    )
+    parser_create.add_argument(
+        '--create-private',
+        action='store_true',
+        required=False,
+        help='New datasets will be private by default.',
+    )
+
     modes_parsers = [parser_create, parser_load, parser_update]
 
     # Add general arguments to all modes
@@ -181,11 +200,17 @@ def create_datasets(
         dataset_type: DatasetType,
         owner: str,
         no_dry_run: bool = False,
+        create_from_hasc_code: bool = False,
+        hasc_list: str = '',
+        create_private: bool = False,
         **_kwargs
 ):
     new_datasets = create_datasets_for_all_hdx_countries(
         dataset_type,
         owner,
+        create_from_hasc_code,
+        hasc_list,
+        create_private,
     )
     unique_id = str(uuid.uuid4())
     if no_dry_run:
@@ -300,7 +325,10 @@ def main():
             create_datasets,
             dataset_type=args.dataset_type,
             owner=args.owner,
+            hasc_list=args.hasc_list,
             no_dry_run=args.no_dry_run,
+            create_from_hasc_code=args.create_from_hasc_code,
+            create_private=args.create_private,
             hdx_site=args.hdx_site,
             user_agent=USER_AGENT,
             hdx_read_only=False,

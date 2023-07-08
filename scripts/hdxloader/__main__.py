@@ -10,6 +10,7 @@ from hdx.data.dataset import Dataset
 
 from hdxloader.dataset import DatasetType
 from hdxloader.loader import create_datasets_for_all_hdx_countries, get_datasets_for_dataset_type, Loader, SCRIPT_NAME
+from hdxloader.inforeader import get_available_keys
 
 
 USER_AGENT = 'Kontur HDX Loader'
@@ -90,6 +91,31 @@ def parse_args() -> argparse.Namespace:
         type=str,
     )
 
+    # Add special parser for "info" mode
+    parser_info = sub_parsers.add_parser(
+        "info",
+        help="load information about datasets",
+        parents=[parent_parser],
+    )
+    parser_info.add_argument(
+        '--show-available-keys',
+        action='store_true',
+        required=False,
+        help='Show list of metadata keys, that available for selected datasets.',
+    )
+    parser_info.add_argument(
+        '--show-full-metadata',
+        action='store_true',
+        required=False,
+        help='Show full metadata for selected datasets.',
+    )
+    parser_info.add_argument(
+        '--keys-list',
+        help='Specify a list of key, that should be retourned in key-value format.',
+        required=False,
+        type=str,
+    )
+
     # Add special parser for "create" mode
     parser_create = sub_parsers.add_parser(
         "create",
@@ -121,7 +147,7 @@ def parse_args() -> argparse.Namespace:
         help='New datasets will be private by default.',
     )
 
-    modes_parsers = [parser_create, parser_load, parser_update]
+    modes_parsers = [parser_create, parser_load, parser_update, parser_info]
 
     # Add general arguments to all modes
     for sub_parser in modes_parsers:
@@ -226,6 +252,25 @@ def create_datasets(
         for dataset in new_datasets:
             logging.info(dataset)
 
+# get info about datasets
+def get_datasets_info(
+        dataset_type: DatasetType,
+        no_dry_run: bool = False,
+        show_available_keys: bool = False,
+        show_full_metadata: bool = False,
+        keys_list: str = '',
+        **_kwargs
+):
+    if no_dry_run:
+        get_available_keys(
+            dataset_type,
+            show_available_keys,
+            show_full_metadata,
+            keys_list,
+        )
+    else:
+        logging.info('just do nothing!')
+    
 # upfate existed datasets
 def update_dataset(
         dataset_type: DatasetType,
@@ -346,6 +391,19 @@ def main():
             update_by_iso3=args.update_by_iso3,
             iso3_file=args.iso3_file,
             no_dry_run=args.no_dry_run,
+            hdx_site=args.hdx_site,
+            user_agent=USER_AGENT,
+            hdx_read_only=False,
+            hdx_key=args.key or get_hdx_key_from_env(),
+        )
+    elif args.mode == 'info':
+        facade(
+            get_datasets_info,
+            dataset_type=args.dataset_type,
+            no_dry_run=args.no_dry_run,
+            show_available_keys=args.show_available_keys,
+            show_full_metadata=args.show_full_metadata,
+            keys_list=args.keys_list,
             hdx_site=args.hdx_site,
             user_agent=USER_AGENT,
             hdx_read_only=False,

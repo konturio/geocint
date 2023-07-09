@@ -11,7 +11,7 @@
 # $10 - layer coverage ("World")
 # $11 - layer update frequency ("daily")
 # $12 - layer unit_id ("n")
-# if properly runned, we have EVENTAPI_USERNAME and EVENTAPI_PASSWORD variable in environment
+# $13 - layer last_updated
 # define endpoints
 case $1 in
 prod)
@@ -24,7 +24,7 @@ test)
   ;;
 dev)
   upload_endpoint="https://dev-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload"
-  auth_endpoint="https://keycloak01.konturlabs.com/auth/realms/dev/protocol/openid-connect/token"
+  auth_endpoint="https://dev-keycloak.k8s-01.konturlabs.com/auth/realms/dev/protocol/openid-connect/token"
   ;;
 *)
   echo "Error. Unsupported realm"
@@ -33,7 +33,10 @@ dev)
 esac
 
 # Get token
-token_request_content=$(curl -d "client_id=kontur_platform&username=${EVENTAPI_USERNAME}&password=${EVENTAPI_PASSWORD}&grant_type=password" -H "Content-Type: application/x-www-form-urlencoded" -X POST ${auth_endpoint})
+token_request_content=$(curl -d "client_id=kontur_platform&username=${DN_USERNAME}&grant_type=password" \
+                        --data-urlencode "password=${DN_PASSWORD}" \
+                        -H "Content-Type: application/x-www-form-urlencoded" \
+                        -X POST ${auth_endpoint})
 token=$(jq -r '.access_token // empty' <<<"$token_request_content")
 if [[ -z "$token" ]]; then
   echo "Error. Impossible to get auth token"
@@ -55,8 +58,9 @@ layer_description="\"$9\""
 layer_coverage="\"${10}\""
 layer_update_freq="\"${11}\""
 layer_unit_id="\"${12}\""
+layer_last_updated="\"${13}\""
 
-parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}}"
+parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}, \"lastUpdated\": ${layer_last_updated}}"
 curl_request="curl -w "\":::\"%{http_code}" --location --request POST ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$2\"'"
 
 # Upload file

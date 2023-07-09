@@ -12,6 +12,7 @@
 # $11 - layer update frequency ("daily")
 # $12 - layer unit_id ("n")
 # $13 - layer last_updated
+
 # define endpoints
 case $1 in
 prod)

@@ -2882,6 +2882,7 @@ data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_upda
 
 ### End update customviz using hdxloader ###
 
+## Previous option
 ### CSV Imports ###
 
 data/out/csv/osm_object_count_h3.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## CSV export of OSM objects count
@@ -2903,20 +2904,35 @@ data/out/csv/elevation_h3.csv: db/table/gebco_2022_h3 | data/out/csv ## CSV expo
 ### DEV - CSV Uploads ###
 
 deploy/dev/uploads/osm_object_count_h3: data/out/csv/osm_object_count_h3.csv | deploy/dev/uploads ## Upload OSM objects count to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_object_count_h3.csv "count" "OSM: objects count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World", "daily", "n"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_object_count_h3.csv "count" "OSM: objects count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy/dev/uploads/population_h3: data/out/csv/population_h3.csv | deploy/dev/uploads ## Upload Kontur population dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population_h3.csv "population" "Population" "[["unimportant"], ["important"]]" true true "[\"© Kontur https://kontur.io\",\"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps\",\"Dataset: Schiavina, Marcello; Freire, Sergio; MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio; MacManus, Kytt; Pesaresi, Martino; Doxsey-Whitfield, Erin; Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World; Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\",\"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\",\"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\",\"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz\",\"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\",\"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org\",\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data. The datasets detailed methodology is available here: https://data.humdata.org/dataset/kontur-population-dataset" "World" "daily" "ppl"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population_h3.csv "population" "Population" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io\",\"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps\",\"Dataset: Schiavina, Marcello; Freire, Sergio; MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio; MacManus, Kytt; Pesaresi, Martino; Doxsey-Whitfield, Erin; Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World; Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\",\"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\",\"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\",\"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz\",\"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\",\"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org\",\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data. The datasets detailed methodology is available here: https://data.humdata.org/dataset/kontur-population-dataset" "World" "daily" "ppl" "$(date -r db/table/kontur_population_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy/dev/uploads/highway_length_h3: data/out/csv/highway_length_h3.csv | deploy/dev/uploads ## Upload OSM highway length dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_h3.csv "highway_length" "OSM: road length" "[[\"bad\"], [\"good\"]]" true true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total length of roads in a given area according to OpenStreetMap." "World" "daily" "km"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_h3.csv "highway_length" "OSM: road length" "[[\"bad\"], [\"good\"]]" true true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total length of roads in a given area according to OpenStreetMap." "World" "daily" "km" "$(date -r db/table/osm_road_segments_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy/dev/uploads/elevation_h3: data/out/csv/elevation_h3.csv | deploy/dev/uploads ## Upload Gebco elevation dataset to Insights API
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_h3.csv "avg_elevation_gebco_2022" "Elevation (avg)" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface elevation in meters." "World" "static" "m"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_h3.csv "avg_elevation_gebco_2022" "Elevation (avg)" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface elevation in meters." "World" "static" "m" "$(date -r db/table/gebco_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy/dev/uploads/upload_dev: deploy/dev/uploads/osm_object_count_h3 deploy/dev/uploads/population_h3 deploy/dev/uploads/highway_length_h3 deploy/dev/uploads/elevation_h3 | deploy/dev/uploads ## Control of layer uplodings to Insigths API for DEV
 	touch $@
+
+## Actual option
+
+data/out/csv/export_all_indicators: db/table/stat_h3 | data/out/csv ## CSV export of OSM objects count
+	cat static_data/indicators_upload/indicators_full_not_from_stat_h3.csv | parallel {}
+	touch $@
+
+deploy/dev/uploads/upload_all_indicators: data/out/csv/export_all_indicators | deploy/dev/uploads ## Generate command and upload all dataset to Insights API
+	psql -qXtc "select param_id || '.csv', param_id, param_label, direction, case when is_base = TRUE then 'true' else 'false' end as is_base, \
+		case when is_public = TRUE then 'true' else 'false' end as is_public, copyrights, description, coverage, update_frequency, \
+		unit_id from bivariate_indicators where param_id != 'one';" \
+		| sed 's/ \+ /\t/g'| sed "s/\"/\\\\\"/g" | sed "s/ |\t| /\" \"/g" | sed "s/\t| /\" \"/g" | sed "s/\t|/\" \"/g" | sed "s/ | /\" \"/g" | sed "s/\t/ /g" \
+		| sed "s/.csv\"/.csv/" | sed "s/\"true\"/true/g" | sed "s/\"false\"/false/g" | sed "s/$$/\"/" | sed -r '/^.{,3}$$/d' \
+		| sed 's/^ *//' | sed 's/^/bash scripts\/upload_csv_to_insights_api.sh dev data\/out\/csv\//' \
+		| parallel echo '{} \"$$(date -r db/table/stat_h3 +%Y-%m-%dT%H:%M:%SZ)\"' | parallel {}

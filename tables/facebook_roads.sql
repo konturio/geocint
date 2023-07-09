@@ -16,7 +16,7 @@ create table osm_roads_increment as (
 );
 create index on osm_roads_increment using gist (geom);
 
-create table if not exists facebook_roads tablespace evo4tb as (
+create table if not exists facebook_roads  as (
     select geom
     from facebook_roads_in
 );

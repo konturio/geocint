@@ -9,7 +9,7 @@ create table tile_stats_bf2402 as (
 );
 
 drop table if exists tile_stats_z17_bf2402;
-create table tile_stats_z17_bf2402 tablespace evo4tb as (
+create table tile_stats_z17_bf2402  as (
     select 17                               as z,
            nx                               as x,
            ny                               as y,

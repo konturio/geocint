@@ -1,6 +1,6 @@
 set timezone to utc;
 
-create table if not exists global_fires (like global_fires_in) tablespace evo4tb;
+create table if not exists global_fires (like global_fires_in) ;
 
 drop table if exists global_fires_new;
 create table global_fires_new as (

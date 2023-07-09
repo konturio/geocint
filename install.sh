@@ -6,3 +6,5 @@ sudo apt install -y postgresql-$pg_version-pgrouting
 
 # postgresql http binding installation
 sudo pgxn install http
+sudo apt install -y ansible
+sudo apt install -y awscli

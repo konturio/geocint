@@ -1,5 +1,5 @@
 drop table if exists osm_buildings;
-create table osm_buildings tablespace evo4tb as (
+create table osm_buildings  as (
     select osm_type,
            osm_id,
            geog::geometry as geom,

@@ -8,6 +8,7 @@ export SLACK_CHANNEL = $(shell sed -n -e '/^SLACK_CHANNEL/p' ${file} | cut -d "=
 export SLACK_BOT_NAME = $(shell sed -n -e '/^SLACK_BOT_NAME/p' ${file} | cut -d "=" -f 2)
 export SLACK_BOT_EMOJI = $(shell sed -n -e '/^SLACK_BOT_EMOJI/p' ${file} | cut -d "=" -f 2)
 export SLACK_KEY = $(shell sed -n -e '/^SLACK_KEY/p' ${file} | cut -d "=" -f 2)
+export HDX_API_TOKEN = $(shell sed -n -e '/^HDX_API_TOKEN/p' ${file} | cut -d "=" -f 2)
 
 current_date:=$(shell date '+%Y%m%d')
 
@@ -18,7 +19,7 @@ include runner_make osm_make
 
 ## ------------- CONTROL BLOCK -------------------------
 
-all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export  ## [FINAL] Meta-target on top of all other targets, or targets on parking.
+all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export deploy/kontur_boundaries_new_release_on_hdx ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
 dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
@@ -831,6 +832,19 @@ db/table/hdx_boundaries: db/table/hdx_locations_with_wikicodes db/table/kontur_b
 	psql -f tables/hdx_boundaries.sql
 	touch $@
 
+data/out/kontur_boundaries.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in kcapi for Event-api enrichment - geocoding, DN boundary selector.
+	cp -vf $@ data/out/kontur_boundaries.geojson.gz_bak || true
+	rm -vf data/out/kontur_boundaries.geojson data/out/kontur_boundaries.geojson.gz
+	ogr2ogr -f GeoJSON data/out/kontur_boundaries.geojson PG:'dbname=gis' -sql "select osm_id, osm_type, boundary, admin_level, name, tags, geom from kontur_boundaries" -nln osm_admin_boundaries
+	pigz data/out/kontur_boundaries.geojson
+	touch $@
+
+deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3 - we use this extraction in kcapi/boundary_selector.
+	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/out/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
+
+## Kontur Boundaries new version release block 
+
 data/out/kontur_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_boundaries
 	mkdir -p $@
 
@@ -845,18 +859,39 @@ data/out/kontur_boundaries_per_country/export: db/table/hdx_boundaries data/out/
 	psql -f tables/kontur_boundaries_export.sql
 	rm -f data/out/kontur_boundaries_per_country/*.gpkg*
 	cat data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | parallel '{}'
+	ogrinfo data/out/kontur_boundaries_per_country/kontur_boundaries_EH_20230628.gpkg -sql "delete from boundaries where admin_level > 2"
 	touch $@
 
-data/out/kontur_boundaries.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in kcapi for Event-api enrichment - geocoding, DN boundary selector.
-	cp -vf $@ data/out/kontur_boundaries.geojson.gz_bak || true
-	rm -vf data/out/kontur_boundaries.geojson data/out/kontur_boundaries.geojson.gz
-	ogr2ogr -f GeoJSON data/out/kontur_boundaries.geojson PG:'dbname=gis' -sql "select osm_id, osm_type, boundary, admin_level, name, tags, geom from kontur_boundaries" -nln osm_admin_boundaries
-	pigz data/out/kontur_boundaries.geojson
+data/out/kontur_topology_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_topolgy_boundaries
+	mkdir -p $@
+	
+data/out/kontur_topology_boundaries_per_country/export: db/table/water_polygons_vector db/table/hdx_boundaries db/table/kontur_boundaries | data/out/kontur_topology_boundaries_per_country ## Topology per country export
+	psql -X -q -t -F , -A -c "SELECT hasc FROM hdx_boundaries GROUP by 1" > $@__HASCS_LIST
+	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_tmp_{};'"
+	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
+	cat $@__HASCS_LIST | parallel "psql -v tab_temp=topology_tmp_{} -v tab_result=topology_boundaries_{} -v cnt_code={} -f scripts/topology_boundaries_per_country_export.sql"
+	cat $@__HASCS_LIST | parallel "echo $$(date '+%Y%m%d') {}" | parallel --colsep ' ' "ogr2ogr -overwrite -f GPKG data/out/kontur_topology_boundaries_per_country/kontur_topology_boundaries_{2}_{1}.gpkg PG:'dbname=gis' topology_boundaries_{2} -nln kontur_topology_boundaries_{2}_{1} -lco OVERWRITE=yes"
+	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
+	ogrinfo data/out/kontur_topology_boundaries_per_country/kontur_topology_boundaries_EH_20230628.gpkg -sql "delete from kontur_topology_boundaries_EH_20230628 where admin_level > 2"
+	rm -f $@__HASCS_LIST
 	touch $@
 
-deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3 - we use this extraction in kcapi/boundary_selector.
-	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/out/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+data/out/kontur_boundaries/new_world_boundaries_export: db/table/kontur_boundaries | data/out/kontur_boundaries ## Extract new kontur boundaries world release
+	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries_$(current_date).gpkg PG:"dbname=gis" -sql "select kontur_admin_level as admin_level, admin_level as osm_admin_level, name, name_en, population, hasc_wiki as hasc, geom from kontur_boundaries order by admin_level;" -nln boundaries -lco "SPATIAL_INDEX=NO"
 	touch $@
+	
+deploy/kontur_boundaries_per_country_on_hdx: data/out/kontur_boundaries_per_country/export ## Deploy new kontur boundaries per country release on hdx
+	cd scripts/; python3 -m hdxloader load -t country-boundaries -s prod -k $$HDX_API_TOKEN -d /data/out/kontur_boundaries_per_country/ --no-dry-run
+	touch $@
+
+deploy/kontur_topology_boundaries_per_country_on_hdx: data/out/kontur_topology_boundaries_per_country/export ## Deploy new kontur topology boundaries per country release on hdx
+	cd scripts/; python3 -m hdxloader load -t country-boundaries -s prod -k $$HDX_API_TOKEN -d /data/out/kontur_topology_boundaries_per_country/ --no-dry-run
+	touch $@
+
+deploy/kontur_boundaries_new_release_on_hdx: data/out/kontur_boundaries/new_world_boundaries_export deploy/kontur_boundaries_per_country_on_hdx deploy/kontur_topology_boundaries_per_country_on_hdx ## new kontur boundaries release final target
+	touch $@
+
+## End Kontur Boundaries new version release block 
 
 ### END Kontur Boundaries block ###
 
@@ -2839,20 +2874,3 @@ data/out/ghsl_output/export_gpkg: db/table/export_ghsl_h3_dither | data/out/ghsl
 	touch $@
 
 ### End ghsl india snapshots
-
-### Topology boundaries per country ###
-
-data/out/kontur_topology_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_topolgy_boundaries
-	mkdir -p $@
-	
-data/out/kontur_topology_boundaries_per_country/export: db/table/water_polygons_vector db/table/hdx_boundaries db/table/kontur_boundaries | data/out/kontur_topology_boundaries_per_country ## Topology per country export
-	psql -X -q -t -F , -A -c "SELECT hasc FROM hdx_boundaries GROUP by 1" > $@__HASCS_LIST
-	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_tmp_{};'"
-	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
-	cat $@__HASCS_LIST | parallel "psql -v tab_temp=topology_tmp_{} -v tab_result=topology_boundaries_{} -v cnt_code={} -f scripts/topology_boundaries_per_country_export.sql"
-	cat $@__HASCS_LIST | parallel "echo $$(date '+%Y%m%d') {}" | parallel --colsep ' ' "ogr2ogr -overwrite -f GPKG data/out/kontur_topology_boundaries_per_country/kontur_topology_boundaries_{2}_{1}.gpkg PG:'dbname=gis' topology_boundaries_{2} -nln kontur_topology_boundaries_{2}_{1} -lco OVERWRITE=yes"
-	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
-	rm -f $@__HASCS_LIST
-	touch $@
-
-### End Topology boundaries per country ###

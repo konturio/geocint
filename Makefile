@@ -859,7 +859,6 @@ data/out/kontur_boundaries_per_country/export: db/table/hdx_boundaries data/out/
 	psql -f tables/kontur_boundaries_export.sql
 	rm -f data/out/kontur_boundaries_per_country/*.gpkg*
 	cat data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | parallel '{}'
-	ogrinfo data/out/kontur_boundaries_per_country/kontur_boundaries_EH_20230628.gpkg -sql "delete from boundaries where admin_level > 2"
 	touch $@
 
 data/out/kontur_topology_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_topolgy_boundaries
@@ -872,7 +871,6 @@ data/out/kontur_topology_boundaries_per_country/export: db/table/water_polygons_
 	cat $@__HASCS_LIST | parallel "psql -v tab_temp=topology_tmp_{} -v tab_result=topology_boundaries_{} -v cnt_code={} -f scripts/topology_boundaries_per_country_export.sql"
 	cat $@__HASCS_LIST | parallel "echo $$(date '+%Y%m%d') {}" | parallel --colsep ' ' "ogr2ogr -overwrite -f GPKG data/out/kontur_topology_boundaries_per_country/kontur_topology_boundaries_{2}_{1}.gpkg PG:'dbname=gis' topology_boundaries_{2} -nln kontur_topology_boundaries_{2}_{1} -lco OVERWRITE=yes"
 	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
-	ogrinfo data/out/kontur_topology_boundaries_per_country/kontur_topology_boundaries_EH_20230628.gpkg -sql "delete from kontur_topology_boundaries_EH_20230628 where admin_level > 2"
 	rm -f $@__HASCS_LIST
 	touch $@
 
@@ -888,7 +886,7 @@ deploy/kontur_topology_boundaries_per_country_on_hdx: data/out/kontur_topology_b
 	cd scripts/; python3 -m hdxloader load -t country-boundaries -s prod -k $$HDX_API_TOKEN -d /data/out/kontur_topology_boundaries_per_country/ --no-dry-run
 	touch $@
 
-deploy/kontur_boundaries_new_release_on_hdx: data/out/kontur_boundaries/new_world_boundaries_export deploy/kontur_boundaries_per_country_on_hdx deploy/kontur_topology_boundaries_per_country_on_hdx ## new kontur boundaries release final target
+deploy/kontur_boundaries_new_release_on_hdx: data/out/kontur_boundaries/new_world_boundaries_export deploy/kontur_boundaries_per_country_on_hdx deploy/kontur_topology_boundaries_per_country_on_hdx ## Kontur Boundaries new hdx release final target
 	touch $@
 
 ## End Kontur Boundaries new version release block 

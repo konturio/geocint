@@ -874,7 +874,7 @@ data/out/kontur_topology_boundaries_per_country/export: db/table/water_polygons_
 	rm -f $@__HASCS_LIST
 	touch $@
 
-data/out/kontur_boundaries/new_world_boundaries_export: db/table/kontur_boundaries | data/out/kontur_boundaries ## Extract new kontur boundaries world release
+data/out/kontur_boundaries/hdx_world_extraction_export: db/table/kontur_boundaries | data/out/kontur_boundaries ## Extract new kontur boundaries world release
 	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries_$(current_date).gpkg PG:"dbname=gis" -sql "select kontur_admin_level as admin_level, admin_level as osm_admin_level, name, name_en, population, hasc_wiki as hasc, geom from kontur_boundaries order by admin_level;" -nln boundaries -lco "SPATIAL_INDEX=NO"
 	touch $@
 	
@@ -886,7 +886,7 @@ deploy/kontur_topology_boundaries_per_country_on_hdx: data/out/kontur_topology_b
 	cd scripts/; python3 -m hdxloader load -t country-boundaries -s prod -k $$HDX_API_TOKEN -d /data/out/kontur_topology_boundaries_per_country/ --no-dry-run
 	touch $@
 
-deploy/kontur_boundaries_new_release_on_hdx: data/out/kontur_boundaries/new_world_boundaries_export deploy/kontur_boundaries_per_country_on_hdx deploy/kontur_topology_boundaries_per_country_on_hdx ## Kontur Boundaries new hdx release final target
+deploy/kontur_boundaries_new_release_on_hdx: data/out/kontur_boundaries/hdx_world_extraction_export deploy/kontur_boundaries_per_country_on_hdx deploy/kontur_topology_boundaries_per_country_on_hdx ## Kontur Boundaries new hdx release final target
 	touch $@
 
 ## End Kontur Boundaries new version release block 

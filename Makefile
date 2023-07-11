@@ -763,34 +763,17 @@ db/table/kontur_boundaries: data/out/required_relations_check db/table/osm_admin
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
-data/in/kontur_boundaries_20220407: | data/in ## Directory for current latest kontur_boundaries
-	mkdir -p $@
-
-data/mid/kontur_boundaries_20220407: | data/mid ## Directory for unzipped current latest kontur_boundaries
-	mkdir -p $@
-
-data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz: | data/in/kontur_boundaries_20220407 ## Download current latest kontur_boundaries archive
-	if [ ! -f $@ ]; then aws s3 cp s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_boundaries_20220407.gpkg.gz $@ --profile geocint_pipeline_sender; fi
-	aws s3 sync s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_boundaries_20220407.gpkg.gz $(@D) --exclude '*' --include $(@F) --profile geocint_pipeline_sender
-
-data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg: data/in/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg.gz | data/mid/kontur_boundaries_20220407 ## Unzip current latest kontur_boundaries
-	gzip -dck $< > $@
-
-data/out/kontur_boundaries/kontur_boundaries.gpkg: db/table/kontur_boundaries | data/out/kontur_boundaries ## Kontur Boundaries (most recent) geopackage
-	rm -f $@
-	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select admin_level, name, name_en, population, hasc, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
+data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: db/table/kontur_boundaries_v4 db/table/kontur_boundaries | data/out/reports ## Compare most recent geocint kontur boundaries to latest released and send bug reports to Kontur Slack (#geocint channel).
+	psql -qXtc "select count(*) from kontur_boundaries_v4;" > $@__KONTUR_BOUNDARIES_DEPLOYED
+	psql -qXtc "select count(*) from kontur_boundaries;" > $@__KONTUR_BOUNDARIES_CURRENT
+	if [ $$(cat $@__KONTUR_BOUNDARIES_CURRENT) -lt $$(cat $@__KONTUR_BOUNDARIES_DEPLOYED) ]; then echo "Current Kontur boundaries has less rows than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@__KONTUR_BOUNDARIES_CURRENT $@__KONTUR_BOUNDARIES_DEPLOYED
 	touch $@
 
 data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## Kontur Boundaries (most recent) geopackage archive
 	rm -f $@
+	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, hasc, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
 	cd data/out/kontur_boundaries; pigz -k kontur_boundaries.gpkg
-	touch $@
-
-data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg data/out/kontur_boundaries/kontur_boundaries.gpkg | data/out/reports ## Compare most recent geocint kontur boundaries to latest released and send bug reports to Kontur Slack (#geocint channel).
-	ogrinfo -so -al data/mid/kontur_boundaries_20220407/kontur_boundaries_20220407.gpkg | grep 'Feature Count:' | sed 's/Feature Count: //g' > $@__KONTUR_BOUNDARIES_DEPLOYED
-	ogrinfo -so -al data/out/kontur_boundaries/kontur_boundaries.gpkg | grep 'Feature Count:' | sed 's/Feature Count: //g' > $@__KONTUR_BOUNDARIES_CURRENT
-	if [ $$(cat $@__KONTUR_BOUNDARIES_CURRENT) -lt $$(cat $@__KONTUR_BOUNDARIES_DEPLOYED) ]; then echo "Current Kontur boundaries has less rows than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
-	rm -f $@__KONTUR_BOUNDARIES_CURRENT $@__KONTUR_BOUNDARIES_DEPLOYED
 	touch $@
 
 db/table/kontur_default_languages: db/table/kontur_boundaries db/table/default_language_boundaries db/table/default_languages_2_level | db/table ## create kontur_default_languages dataset (administartive boundaries with default language (initial + extrapolated) + non-administrative like a language province)
@@ -891,6 +874,24 @@ deploy/kontur_boundaries_new_release_on_hdx: data/out/kontur_boundaries/hdx_worl
 
 ## End Kontur Boundaries new version release block 
 
+data/in/kontur_boundaries_previous_release: | data/in ## Kontur Boundaries previous release input.
+	mkdir -p $@
+
+data/mid/kontur_boundaries_previous_release: | data/mid ## Kontur Boundaries previous release mid data.
+	mkdir -p $@
+
+data/in/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg.gz: | data/in/kontur_boundaries_previous_release ## Download Kontur Boundaries previous release gzip to geocint.
+	rm -rf $@
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/kontur_boundaries_v4.gpkg.gz $@ --profile geocint_pipeline_sender
+
+data/mid/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg: data/in/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg.gz | data/mid/kontur_boundaries_previous_release ## Unzip Kontur Boundaries previous release geopackage archive.
+	gzip -dck data/in/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg.gz > $@
+
+db/table/kontur_boundaries_v4: data/mid/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg ## Import Kontur Boundaries previous release into database.
+	psql -c "drop table if exists kontur_boundaries_v4;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg -t_srs EPSG:4326 -nln kontur_boundaries_v2 -lco GEOMETRY_NAME=geom
+	touch $@
+
 ### END Kontur Boundaries block ###
 
 ### Disaster Ninja Reports block ###
@@ -923,7 +924,7 @@ db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries | db/
 	psql -f tables/osm_missing_roads.sql
 	touch $@
 
-db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
+db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v4 | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
 	psql -f tables/osm_missing_boundaries_report.sql
 	touch $@
 
@@ -1525,25 +1526,6 @@ data/out/kontur_population_per_country/export: data/out/kontur_population_per_co
 
 data/in/kontur_population_v4: | data/in ## Kontur Population v4 (input).
 	mkdir -p $@
-
-data/in/kontur_boundaries_v2: | data/in ## Kontur Boundaries v2 (input).
-	mkdir -p $@
-
-data/mid/kontur_boundaries_v2: | data/mid ## Kontur Boundaries v2 dataset.
-	mkdir -p $@
-
-data/in/kontur_boundaries_v2/kontur_boundaries_v2.gpkg.gz: | data/in/kontur_boundaries_v2 ## Download Kontur Boundaries v2 gzip to geocint.
-	rm -rf $@
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/kontur_boundaries_v2.gpkg.gz $@ --profile geocint_pipeline_sender
-
-data/mid/kontur_boundaries_v2/kontur_boundaries_v2.gpkg: data/in/kontur_boundaries_v2/kontur_boundaries_v2.gpkg.gz | data/mid/kontur_boundaries_v2 ## Unzip Kontur Boundaries v2 geopackage archive.
-	gzip -dck data/in/kontur_boundaries_v2/kontur_boundaries_v2.gpkg.gz > $@
-
-db/table/kontur_boundaries_v2: data/mid/kontur_boundaries_v2/kontur_boundaries_v2.gpkg ## Import Kontur Boundaries v2 into database.
-	psql -c "drop table if exists kontur_boundaries_v2;"
-	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_boundaries_v2/kontur_boundaries_v2.gpkg -t_srs EPSG:4326 -nln kontur_boundaries_v2 -lco GEOMETRY_NAME=geom
-	touch $@
-
 
 data/in/kontur_population_v4/kontur_population_20220630.gpkg.gz: | data/in/kontur_population_v4 ## Download Kontur Population v4 gzip to geocint.
 	rm -rf $@

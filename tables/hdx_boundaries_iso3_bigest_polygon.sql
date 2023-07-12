@@ -1,20 +1,24 @@
 -- possible problem with such method
 -- for island country extent will show only the biggest island
 
-drop table if exists hdx_boundaries_iso3_bigest_polygon;
+drop table if exists hdx_boundaries_iso3_bbox;
 
+drop table if exists hdx_boundaries_iso3_bbox;
 create table hdx_boundaries_iso3_bigest_polygon as
-with cnt_polygons as (select code, hasc_wiki, st_union(geom) as geom
-    from hdx_boundaries as h,
-        hdx_locations_with_wikicodes as hc
-        where hasc_wiki = hc.hasc
-    group by 1,2)
-, dmp as (select code, (st_dump(geom)).geom
-    from cnt_polygons)
-, bigest_polygon as (select distinct on (code) code, geom
-    from dmp
-    order by code, st_area(geom) desc)
-select code, replace(replace(replace(replace(st_extent(ST_QuantizeCoordinates(geom,1))::box2d::text,
-    '(','='),')',''), 'BOX', 'bbox'),' ',',') as bbox
-from bigest_polygon
-group by 1;
+with cnt_polygons as (select  code,
+                              hasc_wiki,
+                                st_union(geom) as geom
+                        from hdx_boundaries,
+                             hdx_locations_with_wikicodes as hc
+                        where hasc_wiki = hc.hasc
+                        group by code, hasc_wiki)
+
+select code,
+       replace(replace(replace(replace((case when st_length(ST_LongestLine(st_envelope(geom),st_envelope(geom))) > 
+                                             st_length(ST_LongestLine(st_shiftlongitude(st_envelope(geom)),st_shiftlongitude(st_envelope(geom))))
+                                             and code != 'fra'
+                                then box2d(st_shiftlongitude(geom))
+                                else box2d(geom)
+                end)::text,'(','='),')',''), 'BOX', 'bbox'),' ',',') as bbox
+from cnt_polygons
+group by 1,geom;

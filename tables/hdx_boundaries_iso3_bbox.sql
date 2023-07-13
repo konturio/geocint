@@ -12,7 +12,6 @@ with cnt_polygons as (select  code,
                            hdx_locations_with_wikicodes as hc
                       where hasc_wiki = hc.hasc
                       group by code, hasc_wiki)
-
 select  code,
         replace(
             replace(

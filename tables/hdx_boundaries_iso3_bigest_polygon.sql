@@ -4,7 +4,7 @@
 drop table if exists hdx_boundaries_iso3_bbox;
 
 drop table if exists hdx_boundaries_iso3_bbox;
-create table hdx_boundaries_iso3_bigest_polygon as
+create table hdx_boundaries_iso3_bbox as
 with cnt_polygons as (select  code,
                               hasc_wiki,
                                 st_union(geom) as geom

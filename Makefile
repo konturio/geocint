@@ -889,7 +889,7 @@ data/mid/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg: data/in/k
 
 db/table/kontur_boundaries_v4: data/mid/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg ## Import Kontur Boundaries previous release into database.
 	psql -c "drop table if exists kontur_boundaries_v4;"
-	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg -t_srs EPSG:4326 -nln kontur_boundaries_v2 -lco GEOMETRY_NAME=geom
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg -t_srs EPSG:4326 -nln kontur_boundaries_v4 -lco GEOMETRY_NAME=geom
 	touch $@
 
 ### END Kontur Boundaries block ###

@@ -130,8 +130,7 @@ Logs for every build are stored in `/home/gis/geocint/logs`
 This command can show lastN {*Total times in ms*} for some {*tablename*} ordered by date
 
 ```bash
-cd /home/gis/geocint/logs
-find . -type f -regex ".*/db/table/osm_admin_boundaries/log.txt" -mtime -50 -printf "%T+ %p; " -exec awk '/Time:/ {sum += $4} END {print sum/60000 " min"}' '{}' \; | sort
+find /home/gis/geocint/logs -type f -regex ".*/db/table/osm_admin_boundaries/log.txt" -mtime -50 -printf "%T+ %p; " -exec awk '/Time:/ {sum += $4} END {print sum/60000 " min"}' '{}' \; | sort
 ```
 
 `-mtime -50` - collects every row from 50 days ago to now

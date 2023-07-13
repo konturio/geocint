@@ -2873,23 +2873,6 @@ data/out/ghsl_output/export_gpkg: db/table/export_ghsl_h3_dither | data/out/ghsl
 
 ### End ghsl india snapshots
 
-### Topology boundaries per country ###
-
-data/out/kontur_topology_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_topolgy_boundaries
-	mkdir -p $@
-	
-data/out/kontur_topology_boundaries_per_country/export: db/table/water_polygons_vector db/table/hdx_boundaries db/table/kontur_boundaries | data/out/kontur_topology_boundaries_per_country ## Topology per country export
-	psql -X -q -t -F , -A -c "SELECT hasc FROM hdx_boundaries GROUP by 1" > $@__HASCS_LIST
-	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_tmp_{};'"
-	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
-	cat $@__HASCS_LIST | parallel "psql -v tab_temp=topology_tmp_{} -v tab_result=topology_boundaries_{} -v cnt_code={} -f scripts/topology_boundaries_per_country_export.sql"
-	cat $@__HASCS_LIST | parallel "echo $$(date '+%Y%m%d') {}" | parallel --colsep ' ' "ogr2ogr -overwrite -f GPKG data/out/kontur_topology_boundaries_per_country/topology_boundaries_{2}_{1}.gpkg PG:'dbname=gis' topology_boundaries_{2} -nln topology_boundaries_{2}_{1} -lco OVERWRITE=yes"
-	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
-	rm -f $@__HASCS_LIST
-	touch $@
-
-### End Topology boundaries per country ###
-
 ### Update customviz using hdxloader ###
 
 data/out/hdxloader: | data/in ## Directory for yml files for updates
@@ -2911,5 +2894,5 @@ data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_upda
 	python3 -m hdxloader update -t country-population --update_by_iso3 --iso3_file data/out/hdxloader/hdxloader_update_customviz_population.yml --hdx-site prod -k $$HDX_API_TOKEN --no-dry-run
 	psql -c "drop table if exists hdx_boundaries_iso3_bbox;"
 	touch $@
-	
+
 ### End update customviz using hdxloader ###

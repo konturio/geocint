@@ -47,7 +47,7 @@ https://wiki.openstreetmap.org/wiki/Country_code, https://wiki.openstreetmap.org
 [https://data.humdata.org/organization/kontur](https://data.humdata.org/organization/kontur).
 
 
-**Dataset codebook for topology build extraction**:
+**Dataset codebook for topology build**:
 
 **fid**: (integer) record order in data upload.
 

@@ -551,7 +551,7 @@ data/in/mapswipe/projects_old_update: data/in/mapswipe/projects_new.csv data/in/
 
 db/table/mapswipe_projects_new: data/in/mapswipe/projects_new.csv | db/table ## Loading new mapswipe overview data to database.
 	psql -c "drop table if exists mapswipe_projects_new;"
-	psql -c "create table mapswipe_projects_new (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
+	psql -c "create table mapswipe_projects_new (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, image_url text, created timestamp, custom_options text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
 	cat data/in/mapswipe/projects_new.csv | psql -c "copy mapswipe_projects_new from stdin with csv header;"
 	touch $@
 

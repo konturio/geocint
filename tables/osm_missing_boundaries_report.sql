@@ -11,7 +11,7 @@ drop table if exists osm_missing_boundaries_report;
 create table osm_missing_boundaries_report as (
     with missing_boundaries as (
         select k2.*
-        from kontur_boundaries_v2 k2
+        from kontur_boundaries_v4 k2
         left join osm_admin_boundaries k using (osm_id)
         where k.osm_id is null
      ) ,
@@ -19,12 +19,7 @@ create table osm_missing_boundaries_report as (
     -- In most cases that means valid change to e.g. boundary = historic or boundary = unofficial. So we filter out those cases:
     missing_boundaries_filtered as (
         select b.*
-        from (
-            select k2.*
-            from kontur_boundaries_v2 k2
-            left join osm_admin_boundaries k using (osm_id)
-            where k.osm_id is null
-         ) b
+        from missing_boundaries b
         left join osm o
             on b.osm_id = o.osm_id
                 and o.tags ? 'boundary'

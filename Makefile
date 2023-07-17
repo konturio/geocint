@@ -2912,7 +2912,7 @@ data/out/csv/count.csv: db/table/stat_h3 | data/out/csv ## extract count to csv 
 	touch $@
 
 data/out/csv/populated_area_km2.csv: db/table/stat_h3 | data/out/csv ## extract populated_area_km2 to csv file 
-	psql -q -X -c "copy (select h3, populated_area / 1000000.0 as populated_area_km2 from kontur_population_h3 where h3 is not null and populated_area_km2 is not null) to stdout with delimiter ',' csv;" > data/out/csv/populated_area_km2.csv
+	psql -q -X -c "copy (select h3, populated_area / 1000000.0 as populated_area_km2 from kontur_population_h3 where h3 is not null and populated_area is not null) to stdout with delimiter ',' csv;" > data/out/csv/populated_area_km2.csv
 	touch $@
 
 data/out/csv/building_count.csv: db/table/stat_h3 | data/out/csv ## extract building_count to csv file 
@@ -2940,7 +2940,7 @@ data/out/csv/avgmax_ts.csv: db/table/stat_h3 | data/out/csv ## extract avgmax_ts
 	touch $@
 
 data/out/csv/man_distance_to_fire_brigade.csv: db/table/stat_h3 | data/out/csv ## extract man_distance_to_fire_brigade to csv file 
-	psql -q -X -c "copy (select h3, man_distance as man_distance_to_fire_brigade from isodist_fire_stations_h3 where h3 is not null and man_distance_to_fire_brigade is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_fire_brigade.csv
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_fire_brigade from isodist_fire_stations_h3 where h3 is not null and man_distance is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_fire_brigade.csv
 	touch $@
 
 data/out/csv/view_count_bf2402.csv: db/table/stat_h3 | data/out/csv ## extract view_count_bf2402 to csv file 
@@ -2952,7 +2952,7 @@ data/out/csv/days_mintemp_above_25c_1c.csv: db/table/stat_h3 | data/out/csv ## e
 	touch $@
 
 data/out/csv/total_building_count.csv: db/table/stat_h3 | data/out/csv ## extract total_building_count to csv file 
-	psql -q -X -c "copy (select h3, building_count as total_building_count from building_count_grid_h3 where h3 is not null and total_building_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/total_building_count.csv
+	psql -q -X -c "copy (select h3, building_count as total_building_count from building_count_grid_h3 where h3 is not null and building_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/total_building_count.csv
 	touch $@
 
 data/out/csv/count_6_months.csv: db/table/stat_h3 | data/out/csv ## extract count_6_months to csv file 
@@ -2992,11 +2992,11 @@ data/out/csv/wildfires.csv: db/table/stat_h3 | data/out/csv ## extract wildfires
 	touch $@
 
 data/out/csv/covid19_confirmed.csv: db/table/stat_h3 | data/out/csv ## extract covid19_confirmed to csv file 
-	psql -q -X -c "copy (select h3, confirmed as covid19_confirmed from covid19_h3 where h3 is not null and covid19_confirmed is not null) to stdout with delimiter ',' csv;" > data/out/csv/covid19_confirmed.csv
+	psql -q -X -c "copy (select h3, confirmed as covid19_confirmed from covid19_h3 where h3 is not null and confirmed is not null) to stdout with delimiter ',' csv;" > data/out/csv/covid19_confirmed.csv
 	touch $@
 
 data/out/csv/population_prev.csv: db/table/stat_h3 | data/out/csv ## extract population_prev to csv file 
-	psql -q -X -c "copy (select h3, population as population_prev from kontur_population_v4_h3 where h3 is not null and population_prev is not null) to stdout with delimiter ',' csv;" > data/out/csv/population_prev.csv
+	psql -q -X -c "copy (select h3, population as population_prev from kontur_population_v4_h3 where h3 is not null and population is not null) to stdout with delimiter ',' csv;" > data/out/csv/population_prev.csv
 	touch $@
 
 data/out/csv/industrial_area.csv: db/table/stat_h3 | data/out/csv ## extract industrial_area to csv file 
@@ -3032,15 +3032,15 @@ data/out/csv/pop_without_car.csv: db/table/stat_h3 | data/out/csv ## extract pop
 	touch $@
 
 data/out/csv/man_distance_to_hospital.csv: db/table/stat_h3 | data/out/csv ## extract man_distance_to_hospital to csv file 
-	psql -q -X -c "copy (select h3, man_distance as man_distance_to_hospital from isodist_hospitals_h3 where h3 is not null and man_distance_to_hospital is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_hospital.csv
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_hospital from isodist_hospitals_h3 where h3 is not null and man_distance is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_hospital.csv
 	touch $@
 
 data/out/csv/man_distance_to_bomb_shelters.csv: db/table/stat_h3 | data/out/csv ## extract man_distance_to_bomb_shelters to csv file 
-	psql -q -X -c "copy (select h3, man_distance as man_distance_to_bomb_shelters from isodist_bomb_shelters_h3 where h3 is not null and man_distance_to_bomb_shelters is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_bomb_shelters.csv
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_bomb_shelters from isodist_bomb_shelters_h3 where h3 is not null and man_distance is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_bomb_shelters.csv
 	touch $@
 
 data/out/csv/man_distance_to_charging_stations.csv: db/table/stat_h3 | data/out/csv ## extract man_distance_to_charging_stations to csv file 
-	psql -q -X -c "copy (select h3, man_distance as man_distance_to_charging_stations from isodist_charging_stations_h3 where h3 is not null and man_distance_to_charging_stations is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_charging_stations.csv
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_charging_stations from isodist_charging_stations_h3 where h3 is not null and man_distance is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_charging_stations.csv
 	touch $@
 
 data/out/csv/foursquare_places_count.csv: db/table/stat_h3 | data/out/csv ## extract foursquare_places_count to csv file 
@@ -3068,7 +3068,7 @@ data/out/csv/solar_farms_placement_suitability.csv: db/table/stat_h3 | data/out/
 	touch $@
 
 data/out/csv/mapswipe_area_km2.csv: db/table/stat_h3 | data/out/csv ## extract mapswipe_area_km2 to csv file 
-	psql -q -X -c "copy (select h3, mapswipe_area as mapswipe_area_km2 from mapswipe_hot_tasking_data_h3 where h3 is not null and mapswipe_area_km2 is not null) to stdout with delimiter ',' csv;" > data/out/csv/mapswipe_area_km2.csv
+	psql -q -X -c "copy (select h3, mapswipe_area as mapswipe_area_km2 from mapswipe_hot_tasking_data_h3 where h3 is not null and mapswipe_area is not null) to stdout with delimiter ',' csv;" > data/out/csv/mapswipe_area_km2.csv
 	touch $@
 
 data/out/csv/avg_slope_gebco_2022.csv: db/table/stat_h3 | data/out/csv ## extract avg_slope_gebco_2022 to csv file 
@@ -3080,7 +3080,7 @@ data/out/csv/avg_elevation_gebco_2022.csv: db/table/stat_h3 | data/out/csv ## ex
 	touch $@
 
 data/out/csv/forest.csv: db/table/stat_h3 | data/out/csv ## extract forest to csv file 
-	psql -q -X -c "copy (select h3, forest_area as forest from copernicus_forest_h3 where h3 is not null and forest is not null) to stdout with delimiter ',' csv;" > data/out/csv/forest.csv
+	psql -q -X -c "copy (select h3, forest_area as forest from copernicus_forest_h3 where h3 is not null and forest_area is not null) to stdout with delimiter ',' csv;" > data/out/csv/forest.csv
 	touch $@
 
 data/out/csv/evergreen_needle_leaved_forest.csv: db/table/stat_h3 | data/out/csv ## extract evergreen_needle_leaved_forest to csv file 
@@ -3180,7 +3180,7 @@ data/out/csv/powerlines.csv: db/table/stat_h3 | data/out/csv ## extract powerlin
 	touch $@
 
 data/out/csv/night_lights_intensity.csv: db/table/stat_h3 | data/out/csv ## extract night_lights_intensity to csv file 
-	psql -q -X -c "copy (select h3, intensity as night_lights_intensity from night_lights_h3 where h3 is not null and night_lights_intensity is not null) to stdout with delimiter ',' csv;" > data/out/csv/night_lights_intensity.csv
+	psql -q -X -c "copy (select h3, intensity as night_lights_intensity from night_lights_h3 where h3 is not null and intensity is not null) to stdout with delimiter ',' csv;" > data/out/csv/night_lights_intensity.csv
 	touch $@
 
 data/out/csv/gsa_ghi.csv: db/table/stat_h3 | data/out/csv ## extract gsa_ghi to csv file 

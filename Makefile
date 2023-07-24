@@ -1181,7 +1181,7 @@ db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescal
 	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm(osm_type, osm_id, country, name, url, right_population, change_date) from stdin with csv header delimiter ',';"
 	touch $@
 
-db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm db/table/water_polygons_vector | db/table ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
+db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm_admin_boundaries db/table/water_polygons_vector | db/table ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
 	psql -f tables/prescale_to_osm_boundaries.sql
 	touch $@
 

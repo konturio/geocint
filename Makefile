@@ -1372,25 +1372,6 @@ deploy/geocint/global_fires_h3_r8_13months.csv.gz: data/out/global_fires/global_
 	cp -vp data/out/global_fires/global_fires_h3_r8_13months.csv.gz ~/public_html/global_fires_h3_r8_13months.csv.gz
 	touch $@
 
-data/in/morocco_buildings: | data/in ## morocco_buildings input data.
-	mkdir -p $@
-
-data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg: | data/in/morocco_buildings ## morocco_urban_pixel_mask downloaded.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_urban_pixel_mask.gpkg $@ --profile geocint_pipeline_sender
-	touch $@
-
-db/table/morocco_urban_pixel_mask: data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg | db/table ## Morocco rough urban territories vector layer from Geoalert.
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg
-	touch $@
-
-db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Morocco urban pixel mask aggregated count on H3 hexagons grid.
-	psql -f tables/morocco_urban_pixel_mask_h3.sql
-	touch $@
-
-db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
-	psql -f tables/count_items_in_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
-	touch $@
-
 data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset (input).
 	mkdir -p $@
 
@@ -1588,6 +1569,29 @@ data/out/kontur_population_v4_r4.csv: db/table/kontur_population_v4_h3 | data/ou
 	psql -qXc 'copy (select "h3", "population" from kontur_population_v4_h3 where resolution=4 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
 	touch $@
 
+data/in/morocco_buildings: | data/in ## morocco_buildings input data.
+	mkdir -p $@
+
+data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg: | data/in/morocco_buildings ## morocco_urban_pixel_mask downloaded.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_urban_pixel_mask.gpkg $@ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/morocco_urban_pixel_mask: data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg | db/table ## Morocco rough urban territories vector layer from Geoalert.
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg
+	touch $@
+
+db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Morocco urban pixel mask aggregated count on H3 hexagons grid.
+	psql -f tables/morocco_urban_pixel_mask_h3.sql
+	touch $@
+
+data/in/morocco_buildings/morocco_meta_all.sql: | data/in/morocco_buildings ## morocco_meta_all table dump download.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_meta_all.sql $@ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/morocco_meta_all: data/in/morocco_buildings/morocco_meta_all.sql | db/table ## restore morocco_meta_all from dump
+	psql < data/in/morocco_buildings/morocco_meta_all.sql
+	touch $@
+
 db/table/morocco_buildings_manual_roofprints: static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
 	psql -c "drop table if exists morocco_buildings_manual_roofprints;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson -nln morocco_buildings_manual_roofprints
@@ -1608,10 +1612,15 @@ data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg: | data/in/morocco_build
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/geoalert_morocco_stage_3.gpkg $@ --profile geocint_pipeline_sender
 	touch $@
 
-db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
+db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg db/table/morocco_meta_all | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
 	psql -c "drop table if exists morocco_buildings;"
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
+	touch $@
+
+
+db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz: db/table/morocco_buildings | data/out/morocco_buildings ## Export to GEOJSON and archive Geoalert building dataset for Morocco (Phase 3).

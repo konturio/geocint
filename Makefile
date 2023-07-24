@@ -1569,6 +1569,8 @@ data/out/kontur_population_v4_r4.csv: db/table/kontur_population_v4_h3 | data/ou
 	psql -qXc 'copy (select "h3", "population" from kontur_population_v4_h3 where resolution=4 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
 	touch $@
 
+### Morocco data block ###
+
 data/in/morocco_buildings: | data/in ## morocco_buildings input data.
 	mkdir -p $@
 
@@ -1617,7 +1619,6 @@ db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.g
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
 	touch $@
-
 
 db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
 	psql -f tables/count_items_in_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
@@ -1733,6 +1734,8 @@ data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson
 
 data/out/morocco: data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data/out ## Flag all Morocco buildings output datasets are exported.
 	touch $@
+
+### END Morocco Data block ###
 
 ## start Abu Dhabi block
 

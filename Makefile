@@ -2894,7 +2894,7 @@ deploy/dev/uploads/upload_all_indicators: data/out/csv/export_all_indicators | d
 		unit_id from bivariate_indicators where param_id != 'one';" \
 		| sed 's/ \+ /\t/g'| sed "s/\"/\\\\\"/g" | sed "s/ |\t| /\" \"/g" | sed "s/\t| /\" \"/g" | sed "s/\t|/\" \"/g" | sed "s/ | /\" \"/g" | sed "s/\t/ /g" \
 		| sed "s/.csv\"/.csv/" | sed "s/\"true\"/true/g" | sed "s/\"false\"/false/g" | sed "s/$$/\"/" | sed -r '/^.{,3}$$/d' \
-		| sed 's/^ *//' | sed 's/^/bash scripts\/upload_csv_to_insights_api.sh dev data\/out\/csv\//' \
+		| sed 's/^ *//' | sed "s/;/.,/g" | sed 's/^/bash scripts\/upload_csv_to_insights_api.sh dev data\/out\/csv\//' \
 		| parallel echo '{} \"$$(date -r db/table/stat_h3 +%Y-%m-%dT%H:%M:%SZ)\"' | parallel {}
 
 ## Independent loading

@@ -87,5 +87,5 @@ fi
 
 layer_uuid=${request_result::-6}
 
-echo "Layer uploaded succefully. UUID: $layer_uuid"
+echo "Layer uploaded successfully. UUID: $layer_uuid"
 exit 0

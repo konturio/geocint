@@ -278,8 +278,8 @@ db/function/osm_way_nodes_to_segments: | db/function ## Function to segmentize p
 	psql -f functions/osm_way_nodes_to_segments.sql
 	touch $@
 
-db/function/h3: | db/function ## Custom SQL functions to work with H3 hexagons grid (ST_HexagonFromH3, ST_Safe_HexagonFromH3, ST_H3Bucket) used in target SQL queries more than ones.
-	psql -f functions/h3.sql
+db/function/h3: | db/function ## Custom SQL functions to work with H3 hexagons grid (ST_H3Bucket) used in target SQL queries more than ones.
+	psql -f functions/st_h3bucket.sql
 	touch $@
 
 db/function/parse_float: | db/function ## Converts text into a float or a NULL.

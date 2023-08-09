@@ -13,6 +13,8 @@ create table stat_h3_quality as (
                 avg(a.highway_length_6_months) as agg_highway_length_6_months,
                 avg(a.osm_users) as agg_osm_users,
                 avg(a.population) as agg_population,
+                avg(a.ghs_population) as agg_ghs_population,
+                avg(a.hrsl_population) as agg_hrsl_population,
                 avg(a.residential) as agg_residential,
                 avg(a.gdp) as agg_gdp,
                 avg(a.min_ts) as agg_min_ts,

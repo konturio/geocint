@@ -13,6 +13,8 @@ create table stat_h3_in  as (
            coalesce(sum(highway_length_6_months), 0) as highway_length_6_months,
            coalesce(sum(osm_users), 0) as osm_users,
            coalesce(sum(population), 0) as population,
+           coalesce(sum(ghs_population),0) as ghs_population,
+           coalesce(sum(hrsl_population),0) as hrsl_population,
            coalesce(sum(residential), 0) as residential,
            coalesce(sum(gdp), 0) as gdp,
            max(min_ts) as min_ts,
@@ -51,7 +53,8 @@ create table stat_h3_in  as (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
                     building_count_6_months as building_count_6_months,  null::float as total_building_count,
                     null::float as highway_length, null::float as highway_length_6_months, osm_users as osm_users,
-                    null::float as population, null::float as residential, null::float as gdp, min_ts as min_ts, max_ts as max_ts,
+                    null::float as population, null::float as ghs_population, null::float as hrsl_population, 
+                    null::float as residential, null::float as gdp, min_ts as min_ts, max_ts as max_ts,
                     avgmax_ts as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
                     null::float as population_prev, null::float as industrial_area, null::float as volcanos_count,
@@ -67,7 +70,8 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, population as population,
+                    null::float as highway_length_6_months, null::float as osm_users, 
+                    population as population, null::float as ghs_population, null::float as hrsl_population,
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -82,9 +86,46 @@ create table stat_h3_in  as (
                     null::float as solar_farms_placement_suitability, resolution
              from kontur_population_h3
              union all
+             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
+                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
+                    null::float as highway_length_6_months, null::float as osm_users, 
+                    null::float as population, population as ghs_population, null::float as hrsl_population,
+                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
+                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
+                    null::float as wildfires, null::float as covid19_confirmed,
+                    null::float as population_prev, null::float as industrial_area, null::float as volcanos_count,
+                    null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
+                    null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
+                    null::float as total_road_length, null::float as foursquare_places_count,
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
+                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
+                    null::float as solar_farms_placement_suitability, resolution
+             from ghs_globe_population_grid_h3_r8
+             union all
+             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
+                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
+                    null::float as highway_length_6_months, null::float as osm_users, 
+                    null::float as population, null::float as ghs_population, population as hrsl_population,
+                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
+                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
+                    null::float as wildfires, null::float as covid19_confirmed,
+                    null::float as population_prev, null::float as industrial_area, null::float as volcanos_count,
+                    null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
+                    null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
+                    null::float as total_road_length, null::float as foursquare_places_count,
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
+                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
+                    null::float as solar_farms_placement_suitability, resolution
+             from hrsl_population_grid_h3_r8
+             union all
              select h3, null::float as count, null::float as count_6_months,null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, 
+                    null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, gdp::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -101,7 +142,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, local_hours as local_hours, total_hours as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -118,7 +159,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -135,7 +176,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, view_count::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -152,7 +193,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, building_count as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -169,7 +210,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     wildfires::float as wildfires, null::float as covid19_confirmed,
@@ -187,7 +228,7 @@ create table stat_h3_in  as (
              /*
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, vaccine_value as covid19_vaccines, null::float as covid19_confirmed,
@@ -205,7 +246,7 @@ create table stat_h3_in  as (
               */
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, confirmed as covid19_confirmed,
@@ -222,7 +263,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -239,7 +280,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -256,7 +297,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -273,7 +314,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -289,7 +330,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -306,7 +347,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -323,7 +364,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -340,7 +381,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -357,7 +398,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -374,7 +415,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -391,7 +432,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -408,7 +449,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    highway_length_6_months, null::float as osm_users, null::float as population,
+                    highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -425,7 +466,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -442,7 +483,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -459,7 +500,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -476,7 +517,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -493,7 +534,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -509,7 +550,7 @@ create table stat_h3_in  as (
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population, null::float as ghs_population, null::float as hrsl_population, 
                     null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
                     null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
                     null::float as wildfires, null::float as covid19_confirmed,
@@ -533,6 +574,8 @@ create table stat_h3  as (
     select a.h3,
            a.zoom,
            a.population,
+           a.ghs_population,
+           a.hrsl_population,
            ST_Area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0 as area_km2,
            a.view_count,
            a.count,
@@ -671,5 +714,5 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      powerlines_proximity_m, waste_basket_coverage_area_km2,
                                                      populated_areas_proximity_m, power_substations_proximity_m,
                                                      solar_farms_placement_suitability, solar_power_plants,
-                                                     safety_index
+                                                     safety_index, ghs_population, hrsl_population
     );

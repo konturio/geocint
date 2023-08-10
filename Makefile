@@ -456,6 +456,7 @@ db/table/hrsl_population_raster: data/in/raster/hrsl_cogs/download | db/table ##
 
 db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r8=hrsl_population_grid_h3_r8
+	psql -c "call generate_overviews('hrsl_population_grid_h3_r8', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 db/table/hrsl_population_boundary: db/table/gadm_countries_boundary db/table/hrsl_population_raster | db/table ## Boundaries where HRSL data is available.
@@ -469,6 +470,7 @@ db/table/osm_unpopulated: db/index/osm_tags_idx | db/table ## Unpopulated areas 
 db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r8=ghs_globe_population_grid_h3_r8
 	psql -c "delete from ghs_globe_population_grid_h3_r8 where population = 0;"
+	psql -c "call generate_overviews('ghs_globe_population_grid_h3_r8', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip: | data/in/raster ## Download GHS (Global Human Settlement) population grid dataset archive.

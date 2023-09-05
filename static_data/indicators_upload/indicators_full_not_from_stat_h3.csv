@@ -1,4 +1,5 @@
 psql -q -X -c "copy (select h3, population from kontur_population_h3 where h3 is not null and population is not null) to stdout with delimiter ',' csv;" > data/out/csv/population.csv
+psql -q -X -c "copy (select h3, one from stat_h3 where h3 is not null and one is not null) to stdout with delimiter ',' csv;" > data/out/csv/one.csv
 psql -q -X -c "copy (select h3, area_km2 from stat_h3 where h3 is not null and area_km2 is not null) to stdout with delimiter ',' csv;" > data/out/csv/area_km2.csv
 psql -q -X -c "copy (select h3, view_count from tile_logs_h3 where h3 is not null and view_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/view_count.csv
 psql -q -X -c "copy (select h3, count from osm_object_count_grid_h3 where h3 is not null and count is not null) to stdout with delimiter ',' csv;" > data/out/csv/count.csv

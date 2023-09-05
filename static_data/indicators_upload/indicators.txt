@@ -80,4 +80,4 @@ populated_areas_proximity_m
 power_substations_proximity_m
 solar_power_plants
 safety_index
-
+one

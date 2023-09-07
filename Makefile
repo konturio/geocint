@@ -3554,7 +3554,7 @@ deploy/dev/uploads/area_km2_upload: data/out/csv/area_km2.csv | data/out/csv ## 
 	touch $@
 
 deploy/dev/uploads/one_upload: data/out/csv/one.csv | data/out/csv ## upload one to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/one.csv "one" "1" "[[\"neutral\"], [\"neutral\"]]" true false "[\"Numbers © Muḥammad ibn Mūsā al-Khwārizmī\"]" "" "World" "static"  "$(date -r db/table/stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/one.csv "one" "1" "[[\"neutral\"], [\"neutral\"]]" true false "[\"Numbers © Muḥammad ibn Mūsā al-Khwārizmī\"]" "" "World" "static" "" "$(date -r db/table/stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy/dev/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | data/out/csv ## upload solar_farms_placement_suitability to insight-api

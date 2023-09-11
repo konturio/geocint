@@ -1586,12 +1586,16 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Moroc
 	psql -f tables/morocco_urban_pixel_mask_h3.sql
 	touch $@
 
-data/in/morocco_buildings/morocco_meta_all.sql: | data/in/morocco_buildings ## morocco_meta_all table dump download.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_meta_all.sql $@ --profile geocint_pipeline_sender
-	touch $@
+data/in/morocco_buildings/morocco_all_tables.sql.gz: | data/in/morocco_buildings ## morocco tables dump download.
+	rm -f $@
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_all_tables.sql.gz $@ --profile geocint_pipeline_sender	
 
-db/table/morocco_meta_all: data/in/morocco_buildings/morocco_meta_all.sql | db/table ## restore morocco_meta_all from dump
-	psql < data/in/morocco_buildings/morocco_meta_all.sql
+data/in/morocco_buildings/morocco_all_tables.sql: data/in/morocco_buildings/morocco_all_tables.sql.gz ## morocco all table dump download.
+	rm -f $@
+	gzip -dck data/in/morocco_buildings/morocco_meta_all.sql.gz > $@
+
+db/table/morocco_all_tables: data/in/morocco_buildings/morocco_meta_all.sql | db/table ## restore all morocco tables from dump
+	psql < data/in/morocco_buildings/morocco_all_tables.sql
 	touch $@
 
 db/table/morocco_buildings_manual_roofprints: static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).

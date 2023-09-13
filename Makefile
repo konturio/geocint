@@ -517,10 +517,10 @@ db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table 
 	psql -f tables/copernicus_builtup_h3.sql
 	touch $@
 
-db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area | db/table ## Forest area in km2 by types from land cover raster into h3 hexagons on 8 resolution.
-	psql -f tables/copernicus_forest_h3.sql
-	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('copernicus_forest_h3_in', 'copernicus_forest_h3', '{forest_area, evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest}'::text[], 8);"
-	psql -c "drop table if exists copernicus_forest_h3_in;"
+db/table/copernicus_forest_cropland_h3: db/table/copernicus_landcover_raster db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area | db/table ## Forest area in km2 by types from land cover raster into h3 hexagons on 8 resolution.
+	psql -f tables/copernicus_forest_cropland_h3.sql
+	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('copernicus_forest_cropland_h3_in', 'copernicus_forest_cropland_h3', '{forest_area, evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest, cropland}'::text[], 8);"
+	psql -c "drop table if exists copernicus_forest_cropland_h3_in;"
 	touch $@
 
 db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
@@ -2139,7 +2139,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits db/procedure/generate_
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v4_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_cropland_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v4_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 

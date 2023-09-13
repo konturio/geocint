@@ -586,6 +586,7 @@ create table stat_h3  as (
            (coalesce(cf.shrubs, 0))::float as shrubs,
            (coalesce(cf.herbage, 0))::float as herbage,
            (coalesce(cf.unknown_forest, 0))::float as unknown_forest,
+           (coalesce(cf.cropland, 0))::float as cropland,
            (coalesce(nd.avg_ndvi, 0))::float as avg_ndvi,
            (coalesce(pf.days_maxtemp_over_32c_1c, 0))::float as days_maxtemp_over_32c_1c,
            (coalesce(pf.days_maxtemp_over_32c_2c, 0))::float as days_maxtemp_over_32c_2c,
@@ -671,5 +672,5 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      powerlines_proximity_m, waste_basket_coverage_area_km2,
                                                      populated_areas_proximity_m, power_substations_proximity_m,
                                                      solar_farms_placement_suitability, solar_power_plants,
-                                                     safety_index
+                                                     safety_index, cropland
     );

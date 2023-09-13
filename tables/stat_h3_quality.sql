@@ -45,6 +45,7 @@ create table stat_h3_quality as (
                 avg(a.shrubs) as agg_shrubs,
                 avg(a.herbage) as agg_herbage,
                 avg(a.unknown_forest) as agg_unknown_forest,
+                avg(a.cropland) as agg_cropland,
                 avg(a.days_maxtemp_over_32c_1c) as agg_days_maxtemp_over_32c_1c,
                 avg(a.days_maxtemp_over_32c_2c) as agg_days_maxtemp_over_32c_2c,
                 avg(a.days_mintemp_above_25c_1c) as agg_days_mintemp_above_25c_1c,

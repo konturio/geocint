@@ -76,16 +76,16 @@ response_status=$(sed 's/.*:::\(.*\)/\1/' <<< $request_result)
 response_status_length=${#response_status}
 
 if [ $response_status_length != 3 ]; then
-  echo "Error. Failed to upload layer. Message: $response_status"
+  echo "$(date '+%F %H:%M:%S') Error. Failed to upload layer. $layer_label $layer_id Message: $response_status"
   exit 1
 fi
 
 if [ $response_status != 200 ]; then
-  echo "Error. Failed to upload layer. Status code: $response_status"
+  echo "$(date '+%F %H:%M:%S') Error. Failed to upload layer. $layer_label $layer_id Status code: $response_status"
   exit 1
 fi
 
 layer_uuid=${request_result::-6}
 
-echo "Layer uploaded successfully. UUID: $layer_uuid"
+echo "$(date '+%F %H:%M:%S') Layer uploaded successfully. UUID: $layer_uuid"
 exit 0

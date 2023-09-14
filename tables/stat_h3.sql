@@ -621,7 +621,7 @@ create table stat_h3  as (
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
-         left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
+         left join copernicus_forest_cropland_h3 cf on (a.h3 = cf.h3)
          left join pf_maxtemp_h3 pf on (a.h3 = pf.h3)
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)
          left join global_rva_h3 rva on (a.h3 = rva.h3)

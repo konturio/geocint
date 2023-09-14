@@ -87,5 +87,5 @@ fi
 
 layer_uuid=${request_result::-6}
 
-echo "$(date '+%F %H:%M:%S') Layer uploaded successfully. UUID: $layer_uuid"
+echo "$(date '+%F %H:%M:%S') Layer uploaded successfully. $layer_label $layer_id UUID: $layer_uuid"
 exit 0

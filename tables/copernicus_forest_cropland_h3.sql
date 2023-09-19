@@ -15,13 +15,13 @@ create table copernicus_forest_cropland_h3_in as (
                     coalesce(sum(cell_area) filter (where p.val = 20), 0)                as shrubs,
                     coalesce(sum(cell_area) filter (where p.val = 30), 0)                as herbage,
                     coalesce(sum(cell_area) filter (where p.val in (116, 126)), 0)       as unknown_forest,
-                    coalesce(sum(cell_area) filter (where p.val not in (20, 30, 50)), 0) as forest_area,
-                    coalesce(sum(cell_area) filter (where p.val = 50), 0)                as cropland
+                    coalesce(sum(cell_area) filter (where p.val not in (20, 30, 40)), 0) as forest_area,
+                    coalesce(sum(cell_area) filter (where p.val = 40), 0)                as cropland
              from copernicus_landcover_raster c,
                   ST_PixelAsPolygons(rast) p,
                   h3_lat_lng_to_cell(p.geom::box::point, 8) as p_h3,
                   ST_Area(p.geom::geography) as cell_area
-             where p.val in (20, 30, 50, 111, 113, 112, 114, 115, 116, 121, 123, 122, 124, 125, 126)
+             where p.val in (20, 30, 40, 111, 113, 112, 114, 115, 116, 121, 123, 122, 124, 125, 126)
              group by 1
          ) x
 );

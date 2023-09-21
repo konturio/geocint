@@ -586,6 +586,13 @@ create table stat_h3  as (
            (coalesce(cf.shrubs, 0))::float as shrubs,
            (coalesce(cf.herbage, 0))::float as herbage,
            (coalesce(cf.unknown_forest, 0))::float as unknown_forest,
+           (coalesce(cf.cropland, 0))::float as cropland,
+           (coalesce(cf.wetland, 0))::float as wetland,
+           (coalesce(cf.moss_lichen, 0))::float as moss_lichen,
+           (coalesce(cf.bare_vegetation, 0))::float as bare_vegetation,
+           (coalesce(cf.builtup, 0))::float as builtup,
+           (coalesce(cf.snow_ice, 0))::float as snow_ice,
+           (coalesce(cf.permanent_water, 0))::float as permanent_water,
            (coalesce(nd.avg_ndvi, 0))::float as avg_ndvi,
            (coalesce(pf.days_maxtemp_over_32c_1c, 0))::float as days_maxtemp_over_32c_1c,
            (coalesce(pf.days_maxtemp_over_32c_2c, 0))::float as days_maxtemp_over_32c_2c,
@@ -620,7 +627,7 @@ create table stat_h3  as (
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
-         left join copernicus_forest_h3 cf on (a.h3 = cf.h3)
+         left join copernicus_landcover_h3 cf on (a.h3 = cf.h3)
          left join pf_maxtemp_h3 pf on (a.h3 = pf.h3)
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)
          left join global_rva_h3 rva on (a.h3 = rva.h3)
@@ -671,5 +678,6 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      powerlines_proximity_m, waste_basket_coverage_area_km2,
                                                      populated_areas_proximity_m, power_substations_proximity_m,
                                                      solar_farms_placement_suitability, solar_power_plants,
-                                                     safety_index
+                                                     safety_index, cropland, wetland, moss_lichen, bare_vegetation, 
+                                                     builtup, snow_ice, permanent_water
     );

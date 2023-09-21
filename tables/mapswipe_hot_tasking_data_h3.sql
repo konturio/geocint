@@ -31,7 +31,7 @@ create table mapswipe_hot_tasking_data_h3_in as (
 drop table if exists mapswipe_hot_tasking_data_subdivide;
 drop table if exists land_polygons_h3_r8_4326;
 
--- generate overviews and dithering from copernicus_forest_h3.sql
+-- generate overviews and dithering from copernicus_landover_h3.sql
 
 -- generate overviews
 -- TODO: rewrite generated_overviews() procedure to receive expression to "method" parameter for column

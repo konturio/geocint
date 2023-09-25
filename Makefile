@@ -836,7 +836,7 @@ data/out/kontur_boundaries_for_boundary_selector.geojson.gz: db/table/kontur_bou
 	touch $@
 
 deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz: data/out/kontur_boundaries_for_boundary_selector | deploy/s3 ## Deploy Kontur admin boundaries for boundary selector dataset to Amazon S3 - we use this extraction in LayersDB/boundary_selector.
-	aws s3 cp data/out/kontur_boundaries_for_boundary_selector s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_boundaries_for_boundary_selector --profile geocint_pipeline_sender --acl public-read
+	aws s3 cp data/out/kontur_boundaries_for_boundary_selector.geojson.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_boundaries_for_boundary_selector.geojson.gz --profile geocint_pipeline_sender --acl public-read
 	touch $@
 
 ## Kontur Boundaries new version release block 

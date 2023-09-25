@@ -831,7 +831,7 @@ deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 #
 data/out/kontur_boundaries_for_boundary_selector.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in LayersDB for Event-api enrichment - geocoding, DN boundary selector.
 	cp -vf $@ data/out/kontur_boundaries_for_boundary_selector.geojson.gz_bak || true
 	rm -vf data/out/kontur_boundaries_for_boundary_selector.geojson data/out/kontur_boundaries_for_boundary_selector.geojson.gz
-	ogr2ogr -f GeoJSON data/out/kontur_boundaries_for_boundary_selector.geojson PG:'dbname=gis' -sql "select to_json((select d from (select k.osm_id, k.osm_type, h.code, k.boundary, k.admin_level, k.name, k.tags) d)) as properties, geom from kontur_boundaries k, hdx_locations_with_wikicodes h where k.hasc_wiki = h.hasc" -nln osm_admin_boundaries
+	ogr2ogr -f GeoJSON data/out/kontur_boundaries_for_boundary_selector.geojson PG:'dbname=gis' -sql "select to_json((select d from (select k.osm_id, k.osm_type, h.code as iso3countrycode, k.boundary, k.admin_level, k.name, k.tags) d)) as properties, geom from kontur_boundaries k, hdx_locations_with_wikicodes h where k.hasc_wiki = h.hasc" -nln osm_admin_boundaries
 	pigz data/out/kontur_boundaries_for_boundary_selector.geojson
 	touch $@
 

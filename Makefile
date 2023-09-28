@@ -25,7 +25,7 @@ dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump dep
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -815,6 +815,8 @@ db/table/hdx_boundaries: db/table/hdx_locations_with_wikicodes db/table/kontur_b
 	psql -f tables/hdx_boundaries.sql
 	touch $@
 
+## Kontur Boundaries for boundaries selector block
+
 data/out/kontur_boundaries.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in kcapi for Event-api enrichment - geocoding, DN boundary selector.
 	cp -vf $@ data/out/kontur_boundaries.geojson.gz_bak || true
 	rm -vf data/out/kontur_boundaries.geojson data/out/kontur_boundaries.geojson.gz
@@ -824,6 +826,17 @@ data/out/kontur_boundaries.geojson.gz: db/table/kontur_boundaries | data/out ## 
 
 deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3 - we use this extraction in kcapi/boundary_selector.
 	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/out/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
+	touch $@
+
+data/out/kontur_boundaries_for_boundary_selector.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in LayersDB for Event-api enrichment - geocoding, DN boundary selector.
+	cp -vf $@ data/out/kontur_boundaries_for_boundary_selector.geojson.gz_bak || true
+	rm -vf data/out/kontur_boundaries_for_boundary_selector.geojson data/out/kontur_boundaries_for_boundary_selector.geojson.gz
+	ogr2ogr -f GeoJSON data/out/kontur_boundaries_for_boundary_selector.geojson PG:'dbname=gis' -sql "select to_json((select d from (select k.osm_id, k.osm_type, h.code as iso3countrycode, k.boundary, k.admin_level, k.name, k.tags) d)) as properties, (json_extract_path_text(o.meta::json, 'data', 'timestamp', 'last'))::timestamp with time zone as last_updated, geom from kontur_boundaries k join osm_meta o on true left join hdx_locations_with_wikicodes h on k.hasc_wiki = h.hasc" -nln osm_admin_boundaries
+	pigz data/out/kontur_boundaries_for_boundary_selector.geojson
+	touch $@
+
+deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz: data/out/kontur_boundaries_for_boundary_selector.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries for boundary selector dataset to Amazon S3 - we use this extraction in LayersDB/boundary_selector.
+	aws s3 cp data/out/kontur_boundaries_for_boundary_selector.geojson.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_boundaries_for_boundary_selector.geojson.gz --profile geocint_pipeline_sender --acl public-read
 	touch $@
 
 ## Kontur Boundaries new version release block 

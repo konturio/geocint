@@ -28,6 +28,14 @@ where
 
 update bivariate_axis
 set
+    label = 'OSM Building completeness',
+    max = 1.01
+where
+      numerator = 'building_count'
+  and denominator = 'total_building_count';
+
+update bivariate_axis
+set
     label = 'Edits by active locals (h/km²)'
 where
       numerator = 'local_hours'

@@ -1592,7 +1592,7 @@ data/in/morocco_buildings/morocco_all_tables.sql.gz: | data/in/morocco_buildings
 
 data/in/morocco_buildings/morocco_all_tables.sql: data/in/morocco_buildings/morocco_all_tables.sql.gz ## morocco all table dump download.
 	rm -f $@
-	gzip -dck data/in/morocco_buildings/morocco_meta_all.sql.gz > $@
+	gzip -dck data/in/morocco_buildings/morocco_all_tables.sql.gz > $@
 
 db/table/morocco_all_tables: data/in/morocco_buildings/morocco_meta_all.sql | db/table ## restore all morocco tables from dump
 	psql < data/in/morocco_buildings/morocco_all_tables.sql
@@ -1618,7 +1618,7 @@ data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg: | data/in/morocco_build
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/geoalert_morocco_stage_3.gpkg $@ --profile geocint_pipeline_sender
 	touch $@
 
-db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg db/table/morocco_meta_all | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
+db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg db/table/morocco_all_tables | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
 	psql -c "drop table if exists morocco_buildings;"
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql

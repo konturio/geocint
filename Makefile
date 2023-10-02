@@ -1594,7 +1594,7 @@ data/in/morocco_buildings/morocco_all_tables.sql: data/in/morocco_buildings/moro
 	rm -f $@
 	gzip -dck data/in/morocco_buildings/morocco_all_tables.sql.gz > $@
 
-db/table/morocco_all_tables: data/in/morocco_buildings/morocco_meta_all.sql | db/table ## restore all morocco tables from dump
+db/table/morocco_all_tables: data/in/morocco_buildings/morocco_all_tables.sql | db/table ## restore all morocco tables from dump
 	psql < data/in/morocco_buildings/morocco_all_tables.sql
 	touch $@
 

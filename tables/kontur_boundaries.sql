@@ -150,7 +150,7 @@ where osm_id = '60189';
 -- Remove osm_id, that was created for State of Palestine and doesn't exists in osm
 -- We used it to be able to group data by osm_id and now should revert changes
 -- to be able to include osm_id into kontur_boundaries extraction
-update kontur_boundaries
+update kontur_boundaries_mid
 set osm_id = null
 where boundary = 'hdx' and tags = '{"name:en": "State of Palestine", "wikidata": "Q219060", "ISO3166-1": "PS"}';
 

@@ -770,7 +770,7 @@ data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: db/table/kontur_b
 	rm -f $@__KONTUR_BOUNDARIES_CURRENT $@__KONTUR_BOUNDARIES_DEPLOYED
 	touch $@
 
-data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## Kontur Boundaries (most recent) geopackage archive
+data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx | data/out/kontur_boundaries ## Kontur Boundaries (most recent) geopackage archive
 	rm -f $@
 	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, hasc, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
 	cd data/out/kontur_boundaries; pigz -k kontur_boundaries.gpkg

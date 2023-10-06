@@ -33,13 +33,13 @@ from osm_meta;
 
 insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors, is_public)
 select 2,
-       'Kontur OpenStreetMap Building Quantity',
+       'Kontur OpenStreetMap Building Completeness',
        'building_count',
-       'area_km2',
+       'total_building_count',
        'population',
        'area_km2',
        false,
-       E'This map shows whether all populated houses are mapped in OpenStreetMap. \n\nLast updated  ' ||
+       E'This map shows whether all buildings are mapped in OpenStreetMap. Building completeness is calculated as the ratio of OpenStreetMap building count to AI estimated total building count (OpenStreetMap + Microsofot + Copernicus + Geoalert + Kontur). \n\nLast updated  ' ||
        json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
        '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},
          {"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},
@@ -191,21 +191,5 @@ select 11,
        '[{"id":"A1","color":"rgb(103,176,100)"},{"id":"A2","color":"rgb(103,176,100)"},{"id":"A3","color":"rgb(103,176,100)"},
          {"id":"B1","color":"rgb(232,232,157)"},{"id":"B2","color":"rgb(228,185,129)"},{"id":"B3","color":"rgb(228,127,129)"},
          {"id":"C1","color":"rgb(232,232,157)"},{"id":"C2","color":"rgb(229,154,55)"},{"id":"C3","color":"rgb(228,26,28)"}]',
-       true
-from osm_meta;
-
-insert into bivariate_overlays (ord, name, x_numerator, x_denominator, y_numerator, y_denominator, active, description, colors, is_public)
-select 12,
-       'Kontur OpenStreetMap Building Completeness',
-       'building_count',
-       'total_building_count',
-       'population',
-       'area_km2',
-       false,
-       E'This map shows whether all buildings are mapped in OpenStreetMap. Building completeness is calculated as the ratio of OpenStreetMap building count to AI estimated total building count (OpenStreetMap + Microsofot + Copernicus + Geoalert + Kontur). \n\nLast updated  ' ||
-       json_extract_path_text(meta::json, 'data', 'timestamp', 'last') || E' \n\n',
-       '[{"id":"A1","color":"rgb(232,232,157)"},{"id":"A2","color":"rgb(239,163,127)"},{"id":"A3","color":"rgb(228,26,28)"},
-         {"id":"B1","color":"rgb(186,226,153)"},{"id":"B2","color":"rgb(161,173,88)"},{"id":"B3","color":"rgb(191,108,63)"},
-         {"id":"C1","color":"rgb(90,200,127)"},{"id":"C2","color":"rgb(112,186,128)"},{"id":"C3","color":"rgb(83,152,106)"}]',
        true
 from osm_meta;

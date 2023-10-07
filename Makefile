@@ -770,7 +770,7 @@ data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: db/table/kontur_b
 	rm -f $@__KONTUR_BOUNDARIES_CURRENT $@__KONTUR_BOUNDARIES_DEPLOYED
 	touch $@
 
-data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## Kontur Boundaries (most recent) geopackage archive
+data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx | data/out/kontur_boundaries ## Kontur Boundaries (most recent) geopackage archive
 	rm -f $@
 	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, hasc, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
 	cd data/out/kontur_boundaries; pigz -k kontur_boundaries.gpkg
@@ -1194,7 +1194,7 @@ db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescal
 	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm(osm_type, osm_id, country, name, url, right_population, change_date) from stdin with csv header delimiter ',';"
 	touch $@
 
-db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm db/table/water_polygons_vector | db/table ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
+db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm_admin_boundaries db/table/water_polygons_vector | db/table ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
 	psql -f tables/prescale_to_osm_boundaries.sql
 	touch $@
 
@@ -1380,25 +1380,6 @@ db/table/global_fires_stat_h3: deploy/s3/global_fires ## Aggregate active fire d
 	touch $@
 
 ### END Global Fires block ###
-
-data/in/morocco_buildings: | data/in ## morocco_buildings input data.
-	mkdir -p $@
-
-data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg: | data/in/morocco_buildings ## morocco_urban_pixel_mask downloaded.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_urban_pixel_mask.gpkg $@ --profile geocint_pipeline_sender
-	touch $@
-
-db/table/morocco_urban_pixel_mask: data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg | db/table ## Morocco rough urban territories vector layer from Geoalert.
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg
-	touch $@
-
-db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Morocco urban pixel mask aggregated count on H3 hexagons grid.
-	psql -f tables/morocco_urban_pixel_mask_h3.sql
-	touch $@
-
-db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
-	psql -f tables/count_items_in_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
-	touch $@
 
 data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset (input).
 	mkdir -p $@
@@ -1597,6 +1578,35 @@ data/out/kontur_population_v4_r4.csv: db/table/kontur_population_v4_h3 | data/ou
 	psql -qXc 'copy (select "h3", "population" from kontur_population_v4_h3 where resolution=4 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
 	touch $@
 
+### Morocco data block ###
+
+data/in/morocco_buildings: | data/in ## morocco_buildings input data.
+	mkdir -p $@
+
+data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg: | data/in/morocco_buildings ## morocco_urban_pixel_mask downloaded.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_urban_pixel_mask.gpkg $@ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/morocco_urban_pixel_mask: data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg | db/table ## Morocco rough urban territories vector layer from Geoalert.
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg
+	touch $@
+
+db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Morocco urban pixel mask aggregated count on H3 hexagons grid.
+	psql -f tables/morocco_urban_pixel_mask_h3.sql
+	touch $@
+
+data/in/morocco_buildings/morocco_all_tables.sql.gz: | data/in/morocco_buildings ## morocco tables dump download.
+	rm -f $@
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_all_tables.sql.gz $@ --profile geocint_pipeline_sender	
+
+data/in/morocco_buildings/morocco_all_tables.sql: data/in/morocco_buildings/morocco_all_tables.sql.gz ## morocco all table dump download.
+	rm -f $@
+	gzip -dck data/in/morocco_buildings/morocco_all_tables.sql.gz > $@
+
+db/table/morocco_all_tables: data/in/morocco_buildings/morocco_all_tables.sql | db/table ## restore all morocco tables from dump
+	psql < data/in/morocco_buildings/morocco_all_tables.sql
+	touch $@
+
 db/table/morocco_buildings_manual_roofprints: static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
 	psql -c "drop table if exists morocco_buildings_manual_roofprints;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson -nln morocco_buildings_manual_roofprints
@@ -1617,10 +1627,14 @@ data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg: | data/in/morocco_build
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/geoalert_morocco_stage_3.gpkg $@ --profile geocint_pipeline_sender
 	touch $@
 
-db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
+db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg db/table/morocco_all_tables | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
 	psql -c "drop table if exists morocco_buildings;"
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
+	touch $@
+
+db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
 	touch $@
 
 data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz: db/table/morocco_buildings | data/out/morocco_buildings ## Export to GEOJSON and archive Geoalert building dataset for Morocco (Phase 3).
@@ -1733,6 +1747,8 @@ data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson
 
 data/out/morocco: data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data/out ## Flag all Morocco buildings output datasets are exported.
 	touch $@
+
+### END Morocco Data block ###
 
 ## start Abu Dhabi block
 

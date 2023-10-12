@@ -1220,6 +1220,7 @@ data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4_1
 	if [ $$(cat $@__KONTUR_POP_V4_1) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
 	if [ $$(cat $@__KONTUR_POP_V4_1) -lt $$(cat $@__KONTUR_POP_V4) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	echo "Actual Kontur Population total is $$(cat $@__KONTUR_POP_V4_1)" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 	rm -f $@__KONTUR_POP_V4 $@__KONTUR_POP_V4_1
 	touch $@
 

@@ -1,0 +1,5 @@
+https://filebrowser.aeronetlab.space/s/TUVKmq2pwNwy4WH/download Open-UM-Geoalert-Russia-Chechnya.zip
+https://filebrowser.aeronetlab.space/s/znbuMiaZlsrh6NT/download Open-UM-Geoalert-Tyva.zip
+https://filebrowser.aeronetlab.space/s/q8vri4GTILLivv8/download Open-UM-Geoalert-Mos-region.zip
+https://minio-production.mapflow.ai/public/data/Tashkent_buildings_Mapflow.gpkg.zip?Content-Disposition=attachment%3B%20filename%3D%22data%2FTashkent_buildings_Mapflow.gpkg.zip Open-UM-Geoalert-Tashkent-buildings-Mapflow.zip
+https://minio-production.mapflow.ai/public/data/4cities%28Bukhara_Samarkand_Navoi_Chirchiq%29_Mapflow.gpkg.zip?Content-Disposition=attachment%3B%20filename%3D%22data%2F4cities%28Bukhara_Samarkand_Navoi_Chirchiq%29_Mapflow.gpkg.zip Open-UM-Geoalert-Bukhara-Samarkand-Navoi-Chirchiq-Mapflow.zip

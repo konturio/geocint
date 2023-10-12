@@ -29,6 +29,7 @@ where
 update bivariate_axis
 set
     label = 'OSM Building completeness',
+    p75 = 0.9,
     max = 1.01
 where
       numerator = 'building_count'

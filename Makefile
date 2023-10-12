@@ -2805,6 +2805,7 @@ db/table/hot_projects: data/in/hot_projects/hot_projects | db/table ##load hot p
 	psql -c "alter table hot_projects drop column mappingtypes;"
 	psql -c "alter table hot_projects add column mappingtypes character varying[];"
 	ls -S data/in/hot_projects/hot_projects_*.geojson | parallel -j 1 'ogr2ogr -append -f PostgreSQL -s_srs EPSG:3857 -t_srs EPSG:4326 PG:"dbname=gis" {} -nln hot_projects --config PG_USE_COPY YES'
+	psql -c "update hot_projects set geom = st_makevalid(geom);"
 	psql -c "create index on hot_projects using gist(geom);"
 	touch $@
 

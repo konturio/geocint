@@ -1220,6 +1220,7 @@ data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4_1
 	if [ $$(cat $@__KONTUR_POP_V4_1) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
 	if [ $$(cat $@__KONTUR_POP_V4_1) -lt $$(cat $@__KONTUR_POP_V4) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	echo "Actual Kontur Population total is $$(cat $@__KONTUR_POP_V4_1)" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 	rm -f $@__KONTUR_POP_V4 $@__KONTUR_POP_V4_1
 	touch $@
 
@@ -2821,6 +2822,7 @@ db/table/hot_projects: data/in/hot_projects/hot_projects | db/table ##load hot p
 	psql -c "alter table hot_projects drop column mappingtypes;"
 	psql -c "alter table hot_projects add column mappingtypes character varying[];"
 	ls -S data/in/hot_projects/hot_projects_*.geojson | parallel -j 1 'ogr2ogr -append -f PostgreSQL -s_srs EPSG:3857 -t_srs EPSG:4326 PG:"dbname=gis" {} -nln hot_projects --config PG_USE_COPY YES'
+	psql -c "update hot_projects set geom = st_makevalid(geom);"
 	psql -c "create index on hot_projects using gist(geom);"
 	touch $@
 

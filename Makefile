@@ -466,23 +466,23 @@ db/table/osm_unpopulated: db/index/osm_tags_idx | db/table ## Unpopulated areas 
 	psql -f tables/osm_unpopulated.sql
 	touch $@
 
+data/in/raster/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.zip: | data/in/raster ## Download GHS (Global Human Settlement) population grid dataset archive.
+	wget https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023A/GHS_POP_E2020_GLOBE_R2023A_54009_100/V1-0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.zip -O $@
+	touch $@
+
+data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.tif: data/in/raster/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.zip | data/mid  ## GHS (Global Human Settlement) population grid dataset extracted.
+	mkdir -p data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0
+	unzip -o data/in/raster/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.zip -d data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/
+	touch $@
+
+db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.tif | db/table  ## GHS (Global Human Settlement) population grid dataset imported into database (technical details - ghsl.jrc.ec.europa.eu/ghs_pop2023.php).
+	psql -c "drop table if exists ghs_globe_population_raster"
+	raster2pgsql -M -Y -s 54009 data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.tif -t auto ghs_globe_population_raster | psql -q
+	touch $@
+
 db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r8=ghs_globe_population_grid_h3_r8
 	psql -c "delete from ghs_globe_population_grid_h3_r8 where population = 0;"
-	touch $@
-
-data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip: | data/in/raster ## Download GHS (Global Human Settlement) population grid dataset archive.
-	wget http://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_MT_GLOBE_R2019A/GHS_POP_E2015_GLOBE_R2019A_54009_250/V1-0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip -O $@
-	touch $@
-
-data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif: data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip | data/mid  ## GHS (Global Human Settlement) population grid dataset extracted.
-	mkdir -p data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0
-	unzip -o data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip -d data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/
-	touch $@
-
-db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif | db/table  ## GHS (Global Human Settlement) population grid dataset imported into database (technical details - ghsl.jrc.ec.europa.eu/ghs_pop2019.php).
-	psql -c "drop table if exists ghs_globe_population_raster"
-	raster2pgsql -M -Y -s 54009 data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif -t auto ghs_globe_population_raster | psql -q
 	touch $@
 
 data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data/in/raster  ## Download GHS-SMOD (Global Human Settlement Model) grid dataset archive.

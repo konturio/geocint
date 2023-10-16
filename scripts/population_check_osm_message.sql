@@ -88,7 +88,34 @@ select '[
          "elements": [
            {
              "type": "mrkdwn",
-             "text": "For more details see <https://disaster.ninja/active/reports/population_tag_check|:arrow_upper_right:>"
+             "text": "<https://disaster.ninja/active/reports/population_tag_check|For more details see :arrow_upper_right:>"
+           }
+         ]
+       }'::jsonb ||
+       '{
+         "type": "context",
+         "elements": [
+           {
+             "type": "mrkdwn",
+             "text": "<https://miro.com/welcomeonboard/Q1VPZFM5RVJUbnBWOGd4d3lpdXBYZURrZ0dndTVnTXdiWjBGdHdadkxVQUJGS1FaSzhMaFFNNmx2aHlOSmw0bHwzMDc0NDU3MzUwNDczMzUzODgz?share_link_id=56903510427|How to improve the population dataset (EN) :people_holding_hands:>"
+           }
+         ]
+       }'::jsonb ||
+       '{
+         "type": "context",
+         "elements": [
+           {
+             "type": "mrkdwn",
+             "text": "<https://miro.com/welcomeonboard/emtJYnhnQ2tTWU40NGo0UGZOM1h1bU9qSU1WRHYydGxyM1UzTzVzNmc4TEtzN0hCS1RGSlR3ZDNaMWlkc0xSRHwzMDc0NDU3MzUwNDczMzUzODgz?share_link_id=990225038023|Как улучшить датасет населения (RU) :people_holding_hands:>"
+           }
+         ]
+       }'::jsonb ||
+       '{
+         "type": "context",
+         "elements": [
+           {
+             "type": "mrkdwn",
+             "text": "<https://docs.google.com/spreadsheets/d/1-XuFA8c3sweMhCi52tdfhepGXavimUWA7vPc3BoQb1c|Prescale to OSM mastertable :spiral_note_pad:>"
            }
          ]
        }'::jsonb

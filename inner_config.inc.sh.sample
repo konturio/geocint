@@ -9,7 +9,7 @@ PGUSER=gis
 PGPASSWORD=gis
 # list of extensions that should be created in PostgreSQL database
 # to create uuid-ossp run CREATE EXTENSION "uuid-ossp"; manually after database creation
-INSTALL_POSTGRESQL_EXTENSIONS=postgis,postgis_raster,postgis_sfcgal,postgis_topology,h3,h3_postgis,adminpack,btree_gist,citext,fuzzystrmatch,hstore,pg_freespacemap,pg_trgm,pgrowlocks
+INSTALL_POSTGRESQL_EXTENSIONS=postgis,postgis_raster,postgis_sfcgal,postgis_topology,h3,h3_postgis,adminpack,btree_gist,citext,fuzzystrmatch,hstore,pg_freespacemap,pg_trgm,pgrowlocks,http
 
 # set to true to check installation scripts before each run
 CHECK_INSTALLATIONS_BEFORE_RUN=false

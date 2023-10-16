@@ -31,12 +31,12 @@ create table water_area_4326 as (
 
 drop table if exists prescale_to_osm_boundaries_in;
 create table prescale_to_osm_boundaries_in as (
-    select p.osm_type                                                as osm_type,
-           p.osm_id                                                  as osm_id, 
-           p.name                                                    as name,
-           p.right_population                                        as right_population,
-           g.geom                                                    as geom,
-           g.actual_osm_pop                                          as actual_osm_pop
+    select p.osm_type          as osm_type,
+           p.osm_id            as osm_id, 
+           p.name              as name,
+           p.right_population  as right_population,
+           g.geom              as geom,
+           g.actual_osm_pop    as actual_osm_pop
     from prescale_to_osm_geom_in g,
          prescale_to_osm p
     where g.osm_id = p.osm_id           
@@ -106,5 +106,22 @@ create table prescale_to_osm_boundaries as (
     union all
     select * from prep
 );
+
+-- Add polygon to scale sum popualtion in hexagons within 10km Chornobyl Nuclear Power Plant to 0
+-- and sum popualtion in hexagons betwen 10 and 30 km within Chornobyl Nuclear Power Plant to 1500
+insert into prescale_to_osm_boundaries 
+    select  ST_Buffer(ST_SetSRID(ST_Point(30.0985005,51.3894223),4326)::geography, 10000)::geometry as geom,
+            max(osm_id)+1                                                                           as osm_id,
+            0                                                                                       as population,
+            24::integer                                                                             as admin_level,
+            false                                                                                   as isdeg,
+            null::float                                                                             as pop_ulevel
+    union all
+    select  ST_Buffer(ST_SetSRID(ST_Point(30.0985005,51.3894223),4326)::geography, 30000)::geometry as geom,
+            max(osm_id)+2                                                                           as osm_id,
+            1500                                                                                    as population,
+            23::integer                                                                             as admin_level,
+            false                                                                                   as isdeg,
+            null::float                                                                             as pop_ulevel;
 
 create index on prescale_to_osm_boundaries using gist (geom, ST_PointOnSurface(geom));

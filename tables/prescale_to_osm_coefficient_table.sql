@@ -37,6 +37,7 @@ create table prescale_to_osm_coefficient_table as (
 
 drop table if exists prescale_to_osm_boundaries_subdivide;
 
+-- Create subdivide coefficient table
 drop table if exists prescale_to_osm_coefficient_table_subdivide;
 create table prescale_to_osm_coefficient_table_subdivide as (
         select ST_Subdivide(geom, 100) as geom,
@@ -47,7 +48,7 @@ create table prescale_to_osm_coefficient_table_subdivide as (
 
 create index on prescale_to_osm_coefficient_table_subdivide using gist(geom);
 
--- Create subdivide coefficient table
+-- Scale population_grid_h3_r8 
 drop table if exists population_grid_h3_r8_osm_scaled_in;
 create table population_grid_h3_r8_osm_scaled_in as (
         select p.h3,
@@ -64,6 +65,7 @@ create table population_grid_h3_r8_osm_scaled_in as (
 drop table if exists prescale_to_osm_coefficient_table_subdivide;
 create index on population_grid_h3_r8_osm_scaled_in using btree (h3);
 
+-- Combine scaled and raw data to final population grid
 drop table if exists population_grid_h3_r8_osm_scaled;
 create table population_grid_h3_r8_osm_scaled as (
         select *

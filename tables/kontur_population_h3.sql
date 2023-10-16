@@ -54,6 +54,20 @@ where ST_Intersects(
               )
           );
 
+-- remove hexagons within 10km Chornobyl Nuclear Power Plant Zone of Alienation restricted area
+delete from kontur_boundaries_mid
+where ST_Intersects(
+              geom,
+              (select ST_Transform(
+                        ST_Buffer(
+                            ST_SetSRID(
+                                ST_Point(30.0985005,51.3894223)
+                            ,4326)::geography
+                        , 10000)::geometry
+                    ,3857)
+              )
+);
+
 -- generate table with zero populated h3 hexagons
 drop table if exists zero_pop_h3;
 create table zero_pop_h3 as (

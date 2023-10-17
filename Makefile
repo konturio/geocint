@@ -1214,8 +1214,8 @@ db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/presca
 	seq 2 1 26 | xargs -I {} psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level={}
 	touch $@
 
-db/table/prescale_to_osm_coefficient_table: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries db/table/population_grid_h3_r8 | db/table ## Create h3 r8 table with hexs with population
-	psql -f tables/prescale_to_osm_coefficient_table.sql
+db/table/population_grid_h3_r8_osm_scaled: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries db/table/population_grid_h3_r8 | db/table ## Create h3 r8 table with hexs with population
+	psql -f tables/population_grid_h3_r8_osm_scaled.sql
 	touch $@
 
 data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_population_v4_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
@@ -1447,7 +1447,7 @@ db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table #
 	psql -f tables/count_items_in_h3.sql -v table=geoalert_urban_mapping -v table_h3=geoalert_urban_mapping_h3 -v item_count=building_count
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/table/prescale_to_osm_coefficient_table | db/table  ## Kontur Population (most recent).
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/table/population_grid_h3_r8_osm_scaled | db/table  ## Kontur Population (most recent).
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 

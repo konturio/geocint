@@ -10,8 +10,8 @@ create table prescale_to_osm_boundaries_subdivide as (
 create index on prescale_to_osm_boundaries_subdivide using gist(geom);
 
 -- Calculate Kontur population for each boundary
-drop table if exists prescale_to_osm_coefficient_table;
-create table prescale_to_osm_coefficient_table as (
+drop table if exists prescale_to_osm_boundary_with_population;
+create table prescale_to_osm_boundary_with_population as (
         with sum_population as (
                 select
                         b.osm_id,
@@ -43,7 +43,7 @@ create table prescale_to_osm_coefficient_table_subdivide as (
         select ST_Subdivide(geom, 100) as geom,
                osm_id,
                boundary_population::float / grid_population::float as coefficient
-        from prescale_to_osm_coefficient_table
+        from prescale_to_osm_boundary_with_population
 );
 
 create index on prescale_to_osm_coefficient_table_subdivide using gist(geom);

@@ -110,9 +110,9 @@ create table prescale_to_osm_boundaries as (
 -- Add polygon to scale sum popualtion in hexagons within 10km Chornobyl Nuclear Power Plant to 0
 -- and sum population in hexagons betwen 10 and 30 km within Chornobyl Nuclear Power Plant to 1500
 insert into prescale_to_osm_boundaries    
-    select  ST_Buffer(ST_SetSRID(ST_Point(30.0985005,51.3894223),4326)::geography, 10000)::geometry as geom,
+    select  ST_Buffer(ST_SetSRID(ST_Point(30.0985005,51.3894223),4326)::geography, 11000)::geometry as geom,
             max(osm_id)+1                                                                           as osm_id,
-            1500                                                                                    as population,
+            0                                                                                       as population,
             24::integer                                                                             as admin_level,
             false                                                                                   as isdeg,
             null::float                                                                             as pop_ulevel
@@ -120,7 +120,7 @@ insert into prescale_to_osm_boundaries
     union all
     select  ST_Normalize(geog::geometry)                                                            as geom,    
             osm_id                                                                                  as osm_id,
-            0                                                                                       as population,
+            1500                                                                                    as population,
             23::integer                                                                             as admin_level,
             false                                                                                   as isdeg,
             null::float                                                                             as pop_ulevel

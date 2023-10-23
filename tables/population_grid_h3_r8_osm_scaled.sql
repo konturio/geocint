@@ -93,7 +93,7 @@ create index on building_count_grid_h3_scaled using brin (h3);
 -- Scale population_grid_h3_r8 
 drop table if exists population_grid_h3_r8_osm_scaled_in;
 create table population_grid_h3_r8_osm_scaled_in as (
-        select p.h3,
+        select distinct on (p.h3) p.h3,
                p.geom,
                p.resolution,
                p.population * b.coefficient as population,
@@ -107,27 +107,18 @@ create table population_grid_h3_r8_osm_scaled_in as (
 drop table if exists prescale_to_osm_coefficient_table_subdivide;
 create index on population_grid_h3_r8_osm_scaled_in using btree (h3);
 
+
 -- Combine scaled and raw data to final population grid
 drop table if exists population_grid_h3_r8_osm_scaled;
 create table population_grid_h3_r8_osm_scaled as (
-        select p.h3,
-               p.geom,
-               p.resolution,
-               p.population,
-               p.ghs_pop,
-               p.hrsl_pop,
-               null::boolean as is_scaled
-        from population_grid_h3_r8 p
-        where h3 not in (select h3 from population_grid_h3_r8_osm_scaled_in)
-        union all
-        select distinct p.h3,
-                        p.geom,
-                        p.resolution,
-                        p.population,
-                        p.ghs_pop,
-                        p.hrsl_pop,
-                        true as is_scaled
-        from population_grid_h3_r8_osm_scaled_in p
+        select coalesce(g.h3, p.h3)                 as h3,
+               coalesce(g.geom, p.geom)             as geom,
+               8                                    as resolution,
+               coalesce(g.population, p.population) as population,               
+               (g.h3 is not null) or null::boolean     as is_scaled
+        from population_grid_h3_r8_osm_scaled_in g 
+             full outer join population_grid_h3_r8 p
+             on p.h3 = g.h3
 );
 
 create index on population_grid_h3_r8_osm_scaled using gist (geom, population);

@@ -71,46 +71,22 @@ create index on prescale_to_osm_boundaries_in using gist(geom);
 -- Get boundaries with admin_level for objects from prescale_to_osm
 drop table if exists prescale_to_osm_boundaries;
 create table prescale_to_osm_boundaries as (
-    with prep as (
-        select  p.geom                                                                    as geom,
-                p.osm_id                                                                  as osm_id, 
-                (case
-                    when (tags ->> 'population') ~ E'^[[:digit:]]+([.][[:digit:]]+)?$'
-                        then (tags ->> 'population')::float
-                    else null
-                end)                                                                      as population,
-                o.kontur_admin_level                                                      as admin_level,
-                false                                                                     as isdeg,
-                null::float                                                               as pop_ulevel
+        select  p.geom                 as geom,
+                p.osm_id               as osm_id, 
+                p.right_population     as population,
+                o.kontur_admin_level   as admin_level,
+                false                  as isdeg,
+                null::float            as pop_ulevel
             from osm_admin_boundaries as o
             join prescale_to_osm_boundaries_in  as p
             on o.osm_id = p.osm_id
             where p.geom is not null
-    )
-    select  o.geom                                                                    as geom,
-            o.osm_id                                                                  as osm_id, 
-            (case
-                when (tags ->> 'population') ~ E'^[[:digit:]]+([.][[:digit:]]+)?$'
-                    then (tags ->> 'population')::float
-                else null
-            end)                                                                      as population,
-            o.kontur_admin_level                                                      as admin_level,
-            false                                                                     as isdeg,
-            null::float                                                               as pop_ulevel
-    from osm_admin_boundaries o 
-    join prep p
-        on ST_Intersects(p.geom, ST_PointOnSurface(o.geom))
-        where o.kontur_admin_level > p.admin_level
-        and tags ? 'population'
-        and tags ->> 'population' is not null
-    union all
-    select * from prep
-);
+    );
 
 -- Add polygon to scale sum popualtion in hexagons within 10km Chornobyl Nuclear Power Plant to 0
 -- and sum population in hexagons betwen 10 and 30 km within Chornobyl Nuclear Power Plant to 1500
 insert into prescale_to_osm_boundaries    
-    select  ST_Buffer(ST_SetSRID(ST_Point(30.0985005,51.3894223),4326)::geography, 11000)::geometry as geom,
+    select  ST_Buffer(ST_SetSRID(ST_Point(30.0985005,51.3894223),4326)::geography, 10000)::geometry as geom,
             max(osm_id)+1                                                                           as osm_id,
             0                                                                                       as population,
             24::integer                                                                             as admin_level,

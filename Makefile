@@ -1407,13 +1407,13 @@ db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Coun
 data/in/new_zealand_buildings: | data/in ## New Zealand's buildings dataset from LINZ (Land Information New Zealand).
 	mkdir -p $@
 
-data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg: | data/in/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg $@ --profile geocint_pipeline_sender
-	touch $@
+data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg: | data/in/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg.gz data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg.gz --profile geocint_pipeline_sender
+	pigz -d data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg.gz
 
-db/table/new_zealand_buildings: data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg | db/table ## Create table with New Zealand buildings.
+db/table/new_zealand_buildings: data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg | db/table ## Create table with New Zealand buildings.
 	psql -c "drop table if exists new_zealand_buildings;"
-	time ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
+	time ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
 	touch $@
 
 db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings ## Count amount of New Zealand buildings at hexagons.
@@ -1424,9 +1424,7 @@ data/in/geoalert_urban_mapping: | data/in ## Geoalert Urban mapping datasets.
 	mkdir -p $@
 
 data/in/geoalert_urban_mapping/download: | data/in/geoalert_urban_mapping  ## Download Geoalert Urban mapping datasets.
-	cd data/in/geoalert_urban_mapping; wget https://filebrowser.aeronetlab.space/s/TUVKmq2pwNwy4WH/download -O Open_UM_Geoalert-Russia-Chechnya.zip
-	cd data/in/geoalert_urban_mapping; wget https://filebrowser.aeronetlab.space/s/znbuMiaZlsrh6NT/download -O Open_UM_Geoalert-Tyva.zip
-	cd data/in/geoalert_urban_mapping; wget https://filebrowser.aeronetlab.space/s/q8vri4GTILLivv8/download -O Open-UM_Geoalert-Mos_region.zip
+	cat geoalert_buildings/url_filename.txt | parallel --colsep ' ' "wget -q {1} -O data/in/geoalert_urban_mapping/{2}"
 	touch $@
 
 data/mid/geoalert_urban_mapping: | data/mid  ## Geoalert Urban mapping datasets processed.

@@ -85,6 +85,8 @@ create table prescale_to_osm_boundaries as (
 
 -- Add polygon to scale sum popualtion in hexagons within 10km Chornobyl Nuclear Power Plant to 0
 -- and sum population in hexagons betwen 10 and 30 km within Chornobyl Nuclear Power Plant to 1500
+-- last case is a palestinian territories that doesn't have a general border and we should use this
+-- trick to be able to get right total
 insert into prescale_to_osm_boundaries    
     select  ST_Buffer(ST_SetSRID(ST_Point(30.0985005,51.3894223),4326)::geography, 10000)::geometry as geom,
             max(osm_id)+1                                                                           as osm_id,
@@ -101,6 +103,16 @@ insert into prescale_to_osm_boundaries
             false                                                                                   as isdeg,
             null::float                                                                             as pop_ulevel
     from osm
-    where osm_id = 3311547;
+    where osm_id = 3311547
+    union all
+    select  b.geom                                                                                  as geom,
+            1703814                                                                                 as osm_id,
+            5371230                                                                                 as population,
+            2::integer                                                                              as admin_level,
+            false                                                                                   as isdeg,
+            null::float                                                                             as pop_ulevel
+        from (select ST_Union(ST_Normalize(geog::geometry)) as geom
+                  from osm 
+                  where osm_id in ('3791785','7391020','1703814') and osm_type = 'relation') b;
 
 create index on prescale_to_osm_boundaries using gist (geom, ST_PointOnSurface(geom));

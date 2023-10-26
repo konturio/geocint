@@ -199,24 +199,16 @@ create index on kontur_population_grid_h3_r8_in_scaled using btree (h3);
 -- Combine scaled and raw data to final population grid
 drop table if exists kontur_population_grid_h3_r8_mid;
 create table kontur_population_grid_h3_r8_mid as (
-        select p.h3,
-               p.probably_unpopulated,
-               p.building_count,
-               p.population,
-               null          as osm_id,
-               null::boolean as is_scaled,
-               area_km2
-        from kontur_population_grid_h3_r8_in p
-        where h3 not in (select h3 from kontur_population_grid_h3_r8_in_scaled)
-        union all
-        select distinct p.h3,
-                        p.probably_unpopulated,
-                        p.building_count,
-                        p.population,
-                        p.osm_id,
-                        true as is_scaled,
-                        area_km2
-        from kontur_population_grid_h3_r8_in_scaled p
+    select  coalesce(g.h3, p.h3)                                     as h3,
+            coalesce(g.probably_unpopulated, p.probably_unpopulated) as probably_unpopulated,
+            coalesce(g.building_count, p.building_count)             as building_count,
+            coalesce(g.population, p.population)                     as population,
+            osm_id                                                   as osm_id,
+            (g.h3 is not null) or null::boolean                      as is_scaled,
+            coalesce(g.area_km2, p.area_km2)                         as area_km2
+    from kontur_population_grid_h3_r8_in_scaled g 
+         full outer join kontur_population_grid_h3_r8_in p
+         on p.h3 = g.h3
 );
 
 --create index on kontur_population_grid_h3_r8_mid using gist (geom, population);

@@ -32,7 +32,6 @@ values ('populated_area_km2', 'Populated area', jsonb_build_array(
         'Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
         'NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/',
         'Geoalert Urban Mapping: Chechnya, Moscow region, Tyva, Tashkent, Bukhara, Samarkand, Navoi, Chirchiq - https://github.com/Geoalert/urban-mapping',
-        'Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["unimportant"], ["important"]]'::jsonb, '', 'World', 'daily', 'km2', FALSE);
 
@@ -157,7 +156,6 @@ values ('population', 'Population', jsonb_build_array(
         'Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
         'NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/',
         'Geoalert Urban Mapping: Chechnya, Moscow region, Tyva, Tashkent, Bukhara, Samarkand, Navoi, Chirchiq - https://github.com/Geoalert/urban-mapping',
-        'Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["unimportant"], ["important"]]'::jsonb, 'Number of people living in a given area according to Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data. The datasets detailed methodology is available here: https://data.humdata.org/dataset/kontur-population-dataset', 'World', 'daily', 'ppl', TRUE);
 
@@ -170,7 +168,6 @@ values ('population_prev', 'Population (previous version)', jsonb_build_array(
         'Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).',
         'NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/',
         'Geoalert Urban Mapping: Chechnya, Moscow region, Tyva, Tashkent, Bukhara, Samarkand, Navoi, Chirchiq - https://github.com/Geoalert/urban-mapping',
-        'Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["unimportant"], ["important"]]'::jsonb, '', 'World', 'daily', 'ppl', FALSE);
 

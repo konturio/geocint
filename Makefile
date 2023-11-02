@@ -1196,6 +1196,9 @@ db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescal
 
 db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm_admin_boundaries db/table/water_polygons_vector | db/table ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
 	psql -f tables/prescale_to_osm_boundaries.sql
+	psql -q -X -t -c 'select count(*) from prescale_to_osm_boundaries where osm_id = 3311547;' > $@__IS_CHERNOBYL_AREA_EXIST
+	if [ $$(cat $@__IS_CHERNOBYL_AREA_EXIST) -lt 1 ]; then echo "Chornobyl Nuclear Power Plant Zone of Alienation (osm_id 3311547) was missed. Population in 30km zome may be inaccurate. Stop pipeline." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	rm -f $@__IS_CHERNOBYL_AREA_EXIST
 	touch $@
 
 db/table/prescale_to_osm_check_changes: db/table/prescale_to_osm_boundaries | db/table ## Check the number of object with nonactual osm population
@@ -1211,14 +1214,14 @@ db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/presca
 	seq 2 1 26 | xargs -I {} psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level={}
 	touch $@
 
-db/table/prescale_to_osm_coefficient_table: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries db/table/population_grid_h3_r8 | db/table ## Create h3 r8 table with hexs with population
-	psql -f tables/prescale_to_osm_coefficient_table.sql
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table  ## Kontur Population (most recent).
+	psql -f tables/kontur_population_h3.sql
 	touch $@
 
 data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_population_v4_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
 	psql -q -X -t -c 'select sum(population) from kontur_population_v4_h3 where resolution = 0' > $@__KONTUR_POP_V4
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4_1
-	if [ $$(cat $@__KONTUR_POP_V4_1) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	if [ $$(cat $@__KONTUR_POP_V4_1) -lt 8000000000 ]; then echo "*Kontur population is broken*\nless than 8 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
 	if [ $$(cat $@__KONTUR_POP_V4_1) -lt $$(cat $@__KONTUR_POP_V4) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
 	echo "Actual Kontur Population total is $$(cat $@__KONTUR_POP_V4_1)" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 	rm -f $@__KONTUR_POP_V4 $@__KONTUR_POP_V4_1
@@ -1442,10 +1445,6 @@ db/table/geoalert_urban_mapping: data/mid/geoalert_urban_mapping/unzip | db/tabl
 
 db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table ## Amount of Geoalert buildings at H3 hexagons.
 	psql -f tables/count_items_in_h3.sql -v table=geoalert_urban_mapping -v table_h3=geoalert_urban_mapping_h3 -v item_count=building_count
-	touch $@
-
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/table/prescale_to_osm_coefficient_table | db/table  ## Kontur Population (most recent).
-	psql -f tables/kontur_population_h3.sql
 	touch $@
 
 data/out/kontur_population.gpkg.gz: db/table/kontur_population_h3 | data/out  ## Kontur Population (most recent) geopackage archive.

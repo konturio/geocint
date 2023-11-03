@@ -1220,12 +1220,12 @@ db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/populat
 	touch $@
 
 data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_population_v5_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
-	psql -q -X -t -c 'select sum(population) from kontur_population_v5_h3 where resolution = 0' > $@__KONTUR_POP_V4
-	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4_1
-	if [ $$(cat $@__KONTUR_POP_V4_1) -lt 8000000000 ]; then echo "*Kontur population is broken*\nless than 8 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
-	if [ $$(cat $@__KONTUR_POP_V4_1) -lt $$(cat $@__KONTUR_POP_V4) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
-	echo "Actual Kontur Population total is $$(cat $@__KONTUR_POP_V4_1)" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
-	rm -f $@__KONTUR_POP_V4 $@__KONTUR_POP_V4_1
+	psql -q -X -t -c 'select sum(population) from kontur_population_v5_h3 where resolution = 0' > $@__KONTUR_POP_V5
+	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V5_1
+	if [ $$(cat $@__KONTUR_POP_V5_1) -lt 8000000000 ]; then echo "*Kontur population is broken*\nless than 8 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	if [ $$(cat $@__KONTUR_POP_V5_1) -lt $$(cat $@__KONTUR_POP_V5) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	echo "Actual Kontur Population total is $$(cat $@__KONTUR_POP_V5_1)" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+	rm -f $@__KONTUR_POP_V5 $@__KONTUR_POP_V5_1
 	touch $@
 
 data/out/reports/population_check: data/out/reports/population_check_osm.csv data/out/reports/population_check_world | data/out/reports ## Common target of population checks.

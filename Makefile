@@ -21,7 +21,7 @@ include runner_make osm_make
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v4_r4.gpkg.gz data/out/kontur_population_v4_r6.gpkg.gz data/out/kontur_population_v4_r4.csv data/out/kontur_population_v4_r6.csv data/out/kontur_population_v4.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -1219,8 +1219,8 @@ db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/populat
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 
-data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_population_v4_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
-	psql -q -X -t -c 'select sum(population) from kontur_population_v4_h3 where resolution = 0' > $@__KONTUR_POP_V4
+data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_population_v5_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
+	psql -q -X -t -c 'select sum(population) from kontur_population_v5_h3 where resolution = 0' > $@__KONTUR_POP_V4
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4_1
 	if [ $$(cat $@__KONTUR_POP_V4_1) -lt 8000000000 ]; then echo "*Kontur population is broken*\nless than 8 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
 	if [ $$(cat $@__KONTUR_POP_V4_1) -lt $$(cat $@__KONTUR_POP_V4) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
@@ -1513,68 +1513,68 @@ data/out/kontur_population_per_country/export: data/out/kontur_population_per_co
 	psql -c "drop table if exists kontur_population_export;"
 	touch $@
 
-data/in/kontur_population_v4: | data/in ## Kontur Population v4 (input).
+data/in/kontur_population_v5: | data/in ## Kontur Population v5 (input).
 	mkdir -p $@
 
-data/in/kontur_population_v4/kontur_population_20220630.gpkg.gz: | data/in/kontur_population_v4 ## Download Kontur Population v4 gzip to geocint.
+data/in/kontur_population_v5/kontur_population_20231101.gpkg.gz: | data/in/kontur_population_v5 ## Download Kontur Population v5 gzip to geocint.
 	rm -rf $@
-	wget -c -nc https://geodata-eu-central-1-kontur-public.s3.amazonaws.com/kontur_datasets/kontur_population_20220630.gpkg.gz -O $@
+	wget -c -nc https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/kontur_population_20231101.gpkg.gz -O $@
 
-data/mid/kontur_population_v4: | data/mid ## Kontur Population v4 dataset.
+data/mid/kontur_population_v5: | data/mid ## Kontur Population v5 dataset.
 	mkdir -p $@
 
-data/mid/kontur_population_v4/kontur_population_20220630.gpkg: data/in/kontur_population_v4/kontur_population_20220630.gpkg.gz | data/mid/kontur_population_v4 ## Unzip Kontur Population v4 geopackage archive.
-	gzip -dck data/in/kontur_population_v4/kontur_population_20220630.gpkg.gz > $@
+data/mid/kontur_population_v5/kontur_population_20231101.gpkg: data/in/kontur_population_v5/kontur_population_20231101.gpkg.gz | data/mid/kontur_population_v5 ## Unzip Kontur Population v4 geopackage archive.
+	gzip -dck data/in/kontur_population_v5/kontur_population_20231101.gpkg.gz > $@
 
-db/table/kontur_population_v4: data/mid/kontur_population_v4/kontur_population_20220630.gpkg | db/table ## Import population v4 into database.
-	psql -c "drop table if exists kontur_population_v4;"
-	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_population_v4/kontur_population_20220630.gpkg -t_srs EPSG:4326 -nln kontur_population_v4 -lco GEOMETRY_NAME=geom
+db/table/kontur_population_v5: data/mid/kontur_population_v5/kontur_population_20231101.gpkg | db/table ## Import population v5 into database.
+	psql -c "drop table if exists kontur_population_v5;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_population_v5/kontur_population_20231101.gpkg -t_srs EPSG:4326 -nln kontur_population_v5 -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/kontur_population_v4_h3: db/table/kontur_population_v4 db/procedure/generate_overviews | db/table ## Generate h3 hexagon for population v4.
-	psql -f tables/kontur_population_v4_h3.sql
-	psql -c "call generate_overviews('kontur_population_v4_h3', '{population}'::text[], '{sum}'::text[], 8);"
+db/table/kontur_population_v5_h3: db/table/kontur_population_v5 db/procedure/generate_overviews | db/table ## Generate h3 hexagon for population v5.
+	psql -f tables/kontur_population_v5_h3.sql
+	psql -c "call generate_overviews('kontur_population_v5_h3', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-data/out/kontur_population_v4_r6.gpkg.gz: db/table/kontur_population_v4_h3 | data/out  ## Kontur Population v4 geopackage archive at 6th resolution.
+data/out/kontur_population_v5_r6.gpkg.gz: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v4 geopackage archive at 6th resolution.
 	rm -f $@
-	rm -f data/out/kontur_population_v4_r6.gpkg
+	rm -f data/out/kontur_population_v5_r6.gpkg
 	ogr2ogr \
 		-f GPKG \
-		-sql "select h3, population, st_transform(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v4_h3 where population > 0 and resolution = 6 order by h3" \
+		-sql "select h3, population, st_transform(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v5_h3 where population > 0 and resolution = 6 order by h3" \
 		-lco "SPATIAL_INDEX=YES" \
 		-nln population \
 		-gt 65536 \
-		data/out/kontur_population_v4_r6.gpkg \
+		data/out/kontur_population_v5_r6.gpkg \
 		PG:'dbname=gis'
-	pigz data/out/kontur_population_v4_r6.gpkg
+	pigz data/out/kontur_population_v5_r6.gpkg
 
-data/out/kontur_population_v4_r4.gpkg.gz: db/table/kontur_population_v4_h3 | data/out  ## Kontur Population v4 geopackage archive at 4th resolution.
+data/out/kontur_population_v5_r4.gpkg.gz: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v4 geopackage archive at 4th resolution.
 	rm -f $@
-	rm -f data/out/kontur_population_v4_r4.gpkg
+	rm -f data/out/kontur_population_v5_r4.gpkg
 	ogr2ogr \
 		-f GPKG \
-		-sql "select h3, population, st_transform(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v4_h3 where population > 0 and resolution = 4 order by h3" \
+		-sql "select h3, population, st_transform(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v5_h3 where population > 0 and resolution = 4 order by h3" \
 		-lco "SPATIAL_INDEX=YES" \
 		-nln population \
 		-gt 65536 \
-		data/out/kontur_population_v4_r4.gpkg \
+		data/out/kontur_population_v5_r4.gpkg \
 		PG:'dbname=gis'
-	pigz data/out/kontur_population_v4_r4.gpkg
+	pigz data/out/kontur_population_v5_r4.gpkg
 
-data/out/kontur_population_v4.csv: db/table/kontur_population_v4_h3 | data/out  ## Kontur Population v4 csv at 8th resolution.
+data/out/kontur_population_v5.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v4 csv at 8th resolution.
 	rm -f $@
-	psql -qXc 'copy (select "h3", "population" from kontur_population_v4_h3 where resolution=8 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
+	psql -qXc 'copy (select "h3", "population" from kontur_population_v5_h3 where resolution=8 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
 	touch $@
 
-data/out/kontur_population_v4_r6.csv: db/table/kontur_population_v4_h3 | data/out  ## Kontur Population v4 csv at 6th resolution.
+data/out/kontur_population_v5_r6.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v4 csv at 6th resolution.
 	rm -f $@
-	psql -qXc 'copy (select "h3", "population" from kontur_population_v4_h3 where resolution=6 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
+	psql -qXc 'copy (select "h3", "population" from kontur_population_v5_h3 where resolution=6 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
 	touch $@
 
-data/out/kontur_population_v4_r4.csv: db/table/kontur_population_v4_h3 | data/out  ## Kontur Population v4 csv at 4th resolution.
+data/out/kontur_population_v5_r4.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v4 csv at 4th resolution.
 	rm -f $@
-	psql -qXc 'copy (select "h3", "population" from kontur_population_v4_h3 where resolution=4 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
+	psql -qXc 'copy (select "h3", "population" from kontur_population_v5_h3 where resolution=4 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
 	touch $@
 
 ### Morocco data block ###
@@ -2167,7 +2167,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits db/procedure/generate_
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v4_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 

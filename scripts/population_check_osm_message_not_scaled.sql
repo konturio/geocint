@@ -123,7 +123,7 @@ select '[
          "elements": [
            {
              "type": "mrkdwn",
-             "text": "<https://kontur.fibery.io/Tasks/document/Population-totals-improvement-1353|How to use this message :spiral_note_pad:>"
+             "text": "<https://kontur.fibery.io/Tasks/document/Population-totals-improvement-1353|How to use this message to improve population :spiral_note_pad:>"
            }
          ]
        }'::jsonb

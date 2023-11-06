@@ -30,6 +30,14 @@ with sections as (
                                                    'text', 'Open in Google'
                                                ),
                                            'url', 'https://google.com/search?q=' || urlencode(coalesce(name_en, name_boundaries))
+                                       ),
+                                   jsonb_build_object(
+                                           'type', 'button',
+                                           'text', jsonb_build_object(
+                                                   'type', 'plain_text',
+                                                   'text', 'Open on Wikidata'
+                                               ),
+                                           'url', wikidata_link
                                        )
                                )
                        ),
@@ -47,6 +55,14 @@ with sections as (
                                        ),
                                    '{
                                      "type": "plain_text",
+                                     "text": "Expected population"
+                                   }'::jsonb,
+                                   jsonb_build_object(
+                                           'type', 'plain_text',
+                                           'text', to_char("Expected population", '99G999G999G999')
+                                       ),
+                                   '{
+                                     "type": "plain_text",
                                      "text": "OSM population"
                                    }'::jsonb,
                                    jsonb_build_object(
@@ -55,7 +71,15 @@ with sections as (
                                        ),
                                    '{
                                      "type": "plain_text",
-                                     "text": "Difference"
+                                     "text": "Wikidata population"
+                                   }'::jsonb,
+                                   jsonb_build_object(
+                                           'type', 'plain_text',
+                                           'text', to_char("Wikidata population", '99G999G999G999')
+                                       ),
+                                   '{
+                                     "type": "plain_text",
+                                     "text": "OSM-Kontur Population difference"
                                    }'::jsonb,
                                    jsonb_build_object(
                                            'type', 'plain_text',
@@ -68,6 +92,7 @@ with sections as (
                    }'::jsonb
                ) j
     from population_check_osm
+    where "Expected population" is not null
     order by abs("OSM-Kontur Population difference") desc
     limit 5
 )
@@ -76,7 +101,7 @@ select '[
     "type": "section",
     "text": {
       "type": "mrkdwn",
-      "text": "Top 5 boundaries with population different from OSM"
+      "text": "Top 5 scaled boundaries with population different from OSM"
     }
   },
   {
@@ -88,7 +113,25 @@ select '[
          "elements": [
            {
              "type": "mrkdwn",
-             "text": "For more details see <https://disaster.ninja/active/reports/population_tag_check|:arrow_upper_right:>"
+             "text": "<https://disaster.ninja/active/reports/population_tag_check|For more details see :arrow_upper_right:>"
+           }
+         ]
+       }'::jsonb ||
+       '{
+         "type": "context",
+         "elements": [
+           {
+             "type": "mrkdwn",
+             "text": "<https://docs.google.com/spreadsheets/d/1-XuFA8c3sweMhCi52tdfhepGXavimUWA7vPc3BoQb1c|Prescale to OSM mastertable :spiral_note_pad:>"
+           }
+         ]
+       }'::jsonb ||
+       '{
+         "type": "context",
+         "elements": [
+           {
+             "type": "mrkdwn",
+             "text": "<https://kontur.fibery.io/Tasks/document/Population-totals-improvement-1353|How to use this message to improve population :spiral_note_pad:>"
            }
          ]
        }'::jsonb

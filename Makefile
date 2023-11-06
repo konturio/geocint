@@ -950,9 +950,10 @@ data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison db/table/
 data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | data/out/reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Name\", \"Admin level\", \"Population\", \"Population date\", \"Population source\", \"SUM subregions population\", \"Population difference value\", \"Population difference %\" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
 
-data/out/reports/population_check_osm.csv: db/table/population_check_osm db/table/osm_meta | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
+data/out/reports/population_check_osm.csv: db/table/population_check_osm db/table/osm_meta | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results (scaled and not scaled) to Kontur Slack (#geocint channel).
 	psql -qXc "copy (select \"OSM id\", \"Country\", \"Name\", \"OSM population date\", \"OSM population\", \"Kontur population\", \"Wikidata population\", \"OSM-Kontur Population difference\", \"Wikidata-Kontur Population difference\" from population_check_osm order by abs(\"OSM-Kontur Population difference\") desc limit 1000) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
-	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+	psql -qXtf scripts/population_check_osm_message_scaled.sql | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+	psql -qXtf scripts/population_check_osm_message_not_scaled.sql | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | data/out/reports ## Export report to CSV
 	psql -qXc "copy (select h3 as \"H3 index\", \"Country\", population as \"Kontur population\", view_count as \"osm.org view count\", \"Place bounding box\" from osm_unmapped_places_report order by id) to stdout with (format csv, header true, delimiter ';');" > $@

@@ -30,6 +30,14 @@ with sections as (
                                                    'text', 'Open in Google'
                                                ),
                                            'url', 'https://google.com/search?q=' || urlencode(coalesce(name_en, name_boundaries))
+                                       ),
+                                   jsonb_build_object(
+                                           'type', 'button',
+                                           'text', jsonb_build_object(
+                                                   'type', 'plain_text',
+                                                   'text', 'Open on Wikidata'
+                                               ),
+                                           'url', wikidata_link
                                        )
                                )
                        ),
@@ -55,11 +63,43 @@ with sections as (
                                        ),
                                    '{
                                      "type": "plain_text",
+                                     "text": "OSM population"
+                                   }'::jsonb,
+                                   jsonb_build_object(
+                                           'type', 'plain_text',
+                                           'text', to_char("Expected population", '99G999G999G999')
+                                       ),
+                                   '{
+                                     "type": "plain_text",
+                                     "text": "OSM population"
+                                   }'::jsonb,
+                                   jsonb_build_object(
+                                           'type', 'plain_text',
+                                           'text', to_char("Wikidata population", '99G999G999G999')
+                                       ),
+                                   '{
+                                     "type": "plain_text",
                                      "text": "Difference"
                                    }'::jsonb,
                                    jsonb_build_object(
                                            'type', 'plain_text',
-                                           'text', to_char("OSM-Kontur Population difference", '99G999G999G999')
+                                           'text', to_char("OSM-Kontur difference percent", '99G999G999G999')
+                                       ),
+                                   '{
+                                     "type": "plain_text",
+                                     "text": "Difference"
+                                   }'::jsonb,
+                                   jsonb_build_object(
+                                           'type', 'plain_text',
+                                           'text', to_char("Expected-Kontur difference percent", '99G999G999G999')
+                                       ),
+                                   '{
+                                     "type": "plain_text",
+                                     "text": "Difference"
+                                   }'::jsonb,
+                                   jsonb_build_object(
+                                           'type', 'plain_text',
+                                           'text', to_char("Wikidata-Kontur difference percent", '99G999G999G999')
                                        )
                                )
                        ),
@@ -68,6 +108,7 @@ with sections as (
                    }'::jsonb
                ) j
     from population_check_osm
+    where "Expected population" is not null
     order by abs("OSM-Kontur Population difference") desc
     limit 5
 )
@@ -76,7 +117,7 @@ select '[
     "type": "section",
     "text": {
       "type": "mrkdwn",
-      "text": "Top 5 boundaries with population different from OSM"
+      "text": "Top 5 scaled boundaries with population different from OSM"
     }
   },
   {
@@ -89,24 +130,6 @@ select '[
            {
              "type": "mrkdwn",
              "text": "<https://disaster.ninja/active/reports/population_tag_check|For more details see :arrow_upper_right:>"
-           }
-         ]
-       }'::jsonb ||
-       '{
-         "type": "context",
-         "elements": [
-           {
-             "type": "mrkdwn",
-             "text": "<https://miro.com/welcomeonboard/Q1VPZFM5RVJUbnBWOGd4d3lpdXBYZURrZ0dndTVnTXdiWjBGdHdadkxVQUJGS1FaSzhMaFFNNmx2aHlOSmw0bHwzMDc0NDU3MzUwNDczMzUzODgz?share_link_id=56903510427|How to improve the population dataset (EN) :people_holding_hands:>"
-           }
-         ]
-       }'::jsonb ||
-       '{
-         "type": "context",
-         "elements": [
-           {
-             "type": "mrkdwn",
-             "text": "<https://miro.com/welcomeonboard/emtJYnhnQ2tTWU40NGo0UGZOM1h1bU9qSU1WRHYydGxyM1UzTzVzNmc4TEtzN0hCS1RGSlR3ZDNaMWlkc0xSRHwzMDc0NDU3MzUwNDczMzUzODgz?share_link_id=990225038023|Как улучшить датасет населения (RU) :people_holding_hands:>"
            }
          ]
        }'::jsonb ||

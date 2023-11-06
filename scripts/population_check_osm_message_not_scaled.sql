@@ -63,7 +63,7 @@ with sections as (
                                        ),
                                    '{
                                      "type": "plain_text",
-                                     "text": "OSM population"
+                                     "text": "Wikidata population"
                                    }'::jsonb,
                                    jsonb_build_object(
                                            'type', 'plain_text',
@@ -115,6 +115,15 @@ select '[
            {
              "type": "mrkdwn",
              "text": "<https://docs.google.com/spreadsheets/d/1-XuFA8c3sweMhCi52tdfhepGXavimUWA7vPc3BoQb1c|Prescale to OSM mastertable :spiral_note_pad:>"
+           }
+         ]
+       }'::jsonb ||
+       '{
+         "type": "context",
+         "elements": [
+           {
+             "type": "mrkdwn",
+             "text": "<https://kontur.fibery.io/Tasks/document/Population-totals-improvement-1353|How to use this message :spiral_note_pad:>"
            }
          ]
        }'::jsonb

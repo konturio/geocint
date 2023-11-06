@@ -71,27 +71,11 @@ with sections as (
                                        ),
                                    '{
                                      "type": "plain_text",
-                                     "text": "Difference"
+                                     "text": "OSM-Kontur Population difference"
                                    }'::jsonb,
                                    jsonb_build_object(
                                            'type', 'plain_text',
                                            'text', to_char("OSM-Kontur Population difference", '99G999G999G999')
-                                       ),
-                                   '{
-                                     "type": "plain_text",
-                                     "text": "Difference"
-                                   }'::jsonb,
-                                   jsonb_build_object(
-                                           'type', 'plain_text',
-                                           'text', to_char("OSM-Kontur difference percent", '99G999G999G999')
-                                       ),
-                                   '{
-                                     "type": "plain_text",
-                                     "text": "Difference"
-                                   }'::jsonb,
-                                   jsonb_build_object(
-                                           'type', 'plain_text',
-                                           'text', to_char("Wikidata-Kontur difference percent", '99G999G999G999')
                                        )
                                )
                        ),

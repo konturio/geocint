@@ -1523,7 +1523,7 @@ data/in/kontur_population_v5/kontur_population_20231101.gpkg.gz: | data/in/kontu
 data/mid/kontur_population_v5: | data/mid ## Kontur Population v5 dataset.
 	mkdir -p $@
 
-data/mid/kontur_population_v5/kontur_population_20231101.gpkg: data/in/kontur_population_v5/kontur_population_20231101.gpkg.gz | data/mid/kontur_population_v5 ## Unzip Kontur Population v4 geopackage archive.
+data/mid/kontur_population_v5/kontur_population_20231101.gpkg: data/in/kontur_population_v5/kontur_population_20231101.gpkg.gz | data/mid/kontur_population_v5 ## Unzip Kontur Population v5 geopackage archive.
 	gzip -dck data/in/kontur_population_v5/kontur_population_20231101.gpkg.gz > $@
 
 db/table/kontur_population_v5: data/mid/kontur_population_v5/kontur_population_20231101.gpkg | db/table ## Import population v5 into database.
@@ -1536,7 +1536,7 @@ db/table/kontur_population_v5_h3: db/table/kontur_population_v5 db/procedure/gen
 	psql -c "call generate_overviews('kontur_population_v5_h3', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-data/out/kontur_population_v5_r6.gpkg.gz: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v4 geopackage archive at 6th resolution.
+data/out/kontur_population_v5_r6.gpkg.gz: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v5 geopackage archive at 6th resolution.
 	rm -f $@
 	rm -f data/out/kontur_population_v5_r6.gpkg
 	ogr2ogr \
@@ -1549,7 +1549,7 @@ data/out/kontur_population_v5_r6.gpkg.gz: db/table/kontur_population_v5_h3 | dat
 		PG:'dbname=gis'
 	pigz data/out/kontur_population_v5_r6.gpkg
 
-data/out/kontur_population_v5_r4.gpkg.gz: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v4 geopackage archive at 4th resolution.
+data/out/kontur_population_v5_r4.gpkg.gz: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v5 geopackage archive at 4th resolution.
 	rm -f $@
 	rm -f data/out/kontur_population_v5_r4.gpkg
 	ogr2ogr \
@@ -1562,17 +1562,17 @@ data/out/kontur_population_v5_r4.gpkg.gz: db/table/kontur_population_v5_h3 | dat
 		PG:'dbname=gis'
 	pigz data/out/kontur_population_v5_r4.gpkg
 
-data/out/kontur_population_v5.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v4 csv at 8th resolution.
+data/out/kontur_population_v5.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v5 csv at 8th resolution.
 	rm -f $@
 	psql -qXc 'copy (select "h3", "population" from kontur_population_v5_h3 where resolution=8 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
 	touch $@
 
-data/out/kontur_population_v5_r6.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v4 csv at 6th resolution.
+data/out/kontur_population_v5_r6.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v5 csv at 6th resolution.
 	rm -f $@
 	psql -qXc 'copy (select "h3", "population" from kontur_population_v5_h3 where resolution=6 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
 	touch $@
 
-data/out/kontur_population_v5_r4.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v4 csv at 4th resolution.
+data/out/kontur_population_v5_r4.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v5 csv at 4th resolution.
 	rm -f $@
 	psql -qXc 'copy (select "h3", "population" from kontur_population_v5_h3 where resolution=4 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
 	touch $@

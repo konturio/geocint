@@ -23,6 +23,9 @@ insert into bivariate_unit (id, type, measurement, is_base)
 values ('days', 'generic', 'time', FALSE);
 
 insert into bivariate_unit (id, type, measurement, is_base)
+values ('years', 'generic', 'time', FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
 values ('deg', 'generic', 'plane_angle', TRUE);
 
 insert into bivariate_unit (id, type, measurement, is_base)

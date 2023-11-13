@@ -23,6 +23,9 @@ insert into bivariate_unit_localization (unit_id, language, short_name, long_nam
 values ('days', 'en', 'days', 'days');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('years', 'en', 'years', 'years');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('deg', 'en', '°', 'degrees');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)

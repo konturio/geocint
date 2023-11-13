@@ -91,7 +91,7 @@ create table stat_h3_quality as (
                 avg(a.solar_farms_placement_suitability::float) as agg_solar_farms_placement_suitability,
                 avg(a.solar_power_plants::float) as agg_solar_power_plants,
                 avg(a.safety_index::float) as agg_safety_index,
-                                avg(a.raw_mhe_pop_scaled) as agg_raw_mhe_pop_scaled,
+                avg(a.raw_mhe_pop_scaled) as agg_raw_mhe_pop_scaled,
                 avg(a.raw_mhe_cap_scaled) as agg_raw_mhe_cap_scaled,
                 avg(a.raw_mhe_index) as agg_raw_mhe_index,
                 avg(a.relative_mhe_pop_scaled) as agg_relative_mhe_pop_scaled,

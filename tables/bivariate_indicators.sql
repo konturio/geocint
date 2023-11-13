@@ -379,36 +379,6 @@ values ('powerlines', 'Medium-voltage powerlines distribution (predictive)', jso
         '©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps'),
         '[["bad"], ["good"]]'::jsonb, 'Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure.', 'World', 'static', 'other', FALSE);
 
--- We use unimportant - important+bad for Multi-hazard risk, Multi-hazard exposure and Vulnerability 
--- because PDC does something only about regions that are under disasters
--- Also for this reason we use important+bad - good for Coping capacity and Resilience
--- We used https://test.pdc.org/risk-and-vulnerability/ as example in index estimation process
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
-values ('mhr_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
-        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
-values ('mhe_index', 'PDC GRVA Multi-hazard exposure', jsonb_build_array(
-        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
-values ('coping_capacity_index', 'PDC GRVA Coping сapacity', jsonb_build_array(
-        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["good"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
-values ('resilience_index', 'PDC GRVA Resilience', jsonb_build_array(
-        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["good"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
-values ('vulnerability_index', 'PDC GRVA Vulnerability', jsonb_build_array(
-        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
-
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('night_lights_intensity', 'Nighttime lights intensity', jsonb_build_array(
         'Earth Observation Group © 2021. https://eogdata.mines.edu/products/vnl/#reference',
@@ -498,6 +468,539 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('safety_index', 'Safety (Global Peace Index 2022)', jsonb_build_array(
         '© The Institute for Economics and Peace Limited 2022 https://www.visionofhumanity.org/'),
         '[["bad"], ["good"]]'::jsonb, 'The Global Peace Index covers 99.7% of the world’s population, and is calculated using 23 qualitative and quantitative indicators from highly respected sources, and measures the state of peace across three domains: the level of Societal Safety and Security, the extent of Ongoing Domestic and International Conflict, and the degree of Militarisation.', 'World', 'static', 'index', TRUE);
+
+
+
+
+
+-- We use unimportant - important+bad for Multi-hazard risk, Multi-hazard exposure and Vulnerability 
+-- because PDC does something only about regions that are under disasters
+-- Also for this reason we use important+bad - good for Coping capacity and Resilience
+-- We used https://test.pdc.org/risk-and-vulnerability/ as example in index estimation process
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('mhr_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('mhe_index', 'PDC GRVA Multi-hazard exposure', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('coping_capacity_index', 'PDC GRVA Coping сapacity', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["important", "bad"], ["good"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('resilience_index', 'PDC GRVA Resilience', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["important", "bad"], ["good"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('vulnerability_index', 'PDC GRVA Vulnerability', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+
+
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('raw_mhe_pop_scaled', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('raw_mhe_cap_scaled', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('raw_mhe_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('relative_mhe_pop_scaled', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('relative_mhe_cap_scaled', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('relative_mhe_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('mhe_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('life_expectancy_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\n'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('infant_mortality_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('maternal_mortality_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('prevalence_undernourished_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('vulnerable_health_status_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('pop_wout_improved_sanitation_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('pop_wout_improved_water_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('clean_water_access_vulnerability_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('adult_illiteracy_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('gross_enrollment_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('years_of_schooling_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('pop_wout_internet_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('info_access_vulnerability_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('export_minus_import_percent_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('average_inflation_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('economic_dependency_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('economic_constraints_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('female_govt_seats_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('female_male_secondary_enrollment_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('female_male_labor_ratio_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('gender_inequality_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('max_political_discrimination_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('max_economic_discrimination_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('ethnic_discrimination_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('marginalization_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('population_change_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('urban_population_change_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('population_pressures_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('freshwater_withdrawals_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('forest_area_change_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('ruminant_density_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('environmental_stress_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('recent_disaster_losses_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('recent_disaster_deaths_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('recent_disaster_impacts_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('recent_conflict_deaths_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('displaced_populations_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('conflict_impacts_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('vulnerability_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('voice_and_accountability_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('rule_of_law_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('political_stability_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('govt_effectiveness_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('control_of_corruption_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('governance_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('gni_per_capita_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('reserves_per_capita_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('economic_capacity_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('fixed_phone_access_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('mobile_phone_access_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('internet_server_access_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('communications_capacity_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('port_rnwy_density_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('road_rr_density_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('transportation_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('hospital_bed_density_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('nurses_midwives_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('physicians_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('health_care_capacity_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('infrastructure_capacity_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('biome_protection_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('marine_protected_area_scale', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('environmental_capacity_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('coping_capacity_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('resilience_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('mhr_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('raw_population_exposure_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('raw_economic_exposure', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('relative_population_exposure_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('relative_economic_exposure', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('poverty', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('economic_dependency', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('maternal_mortality', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('infant_mortality', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('malnutrition', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('population_change', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('urban_pop_change', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('school_enrollment', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('years_of_schooling', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('fem_to_male_labor', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('proportion_of_female_seats_in_government', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('life_expectancy', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('protected_area', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('physicians_per_10000_persons', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('nurse_midwife_per_10k', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('distance_to_hospital', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('hbeds_per_10000_persons', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('distance_to_port', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('road_density', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('households_with_fixed_phone', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('households_with_cell_phone', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('voter_participation', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["unimportant"], ["important", "bad"]]'::jsonb, '', 'World', 'static', 'index', FALSE);
+
 
 -- set indicator is_base to become denominators
 update bivariate_indicators

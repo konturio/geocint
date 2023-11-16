@@ -44,6 +44,9 @@ insert into bivariate_unit (id, type, measurement, is_base)
 values ('USD', 'generic', 'money', NULL);
 
 insert into bivariate_unit (id, type, measurement, is_base)
+values ('billions_USD', 'generic', 'money', NULL);
+
+insert into bivariate_unit (id, type, measurement, is_base)
 values ('index', 'generic', NULL, NULL);
 
 insert into bivariate_unit (id, type, measurement, is_base)

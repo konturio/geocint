@@ -44,6 +44,9 @@ insert into bivariate_unit_localization (unit_id, language, short_name, long_nam
 values ('USD', 'en', 'USD', 'United States dollar');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('billions_USD', 'en', 'billions_USD', 'billions of the United States dollar');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('index', 'en', 'index', 'index');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)

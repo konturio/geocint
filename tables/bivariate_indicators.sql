@@ -528,7 +528,7 @@ Maternal mortality ratio is the number of women who die from pregnancy-related c
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('prevalence_undernourished_scale', 'PDC GRVA Prevalence undernourished scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Prevalence of undernourishments is the percentage of the population whose habitual food consumption is insufficient to provide the dietary energy levels that are required to maintain a normal active and healthy life. Data showing as 2.5 may signify a prevalence of undernourishment below 2.5%. https://tradingeconomics.com/el-salvador/prevalence-of-undernourishment-percent-of-population-wb-data.html#:~:text=Prevalence%20of%20undernourishment%20(%25%20of%20population)%20in%20El%20Salvador%20was,compiled%20from%20officially%20recognized%20sources.', 'World', 'static', 'index', FALSE);
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Prevalence undernourished scaled.', 'World', 'static', 'index', FALSE);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('vulnerable_health_status_index', 'PDC GRVA Vulnerable health status index', jsonb_build_array(
@@ -623,7 +623,7 @@ values ('max_political_discrimination_scale', 'PDC GRVA Max political discrimina
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('max_economic_discrimination_scale', 'PDC GRVA Max economic discrimination scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Max Economic Discrimination 0-4.', 'World', 'static', 'index', FALSE);
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Max Economic Discrimination rank 0-4.', 'World', 'static', 'index', FALSE);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('ethnic_discrimination_index', 'PDC GRVA Ethnic discrimination index', jsonb_build_array(
@@ -708,17 +708,17 @@ values ('vulnerability_index', 'PDC GRVA Vulnerability index', jsonb_build_array
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('voice_and_accountability_scale', 'PDC GRVA Voice and accountability scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["good"]]'::jsonb, 'The index for Voice and Accountability captures perceptions of the extent to which the citizens are able to participate in selecting their government, as well as freedom of expression, freedom of association, and a free media. https://www.theglobaleconomy.com/El-Salvador/wb_voice_accountability/', 'World', 'static', 'index', FALSE);
+        '[["important", "bad"], ["good"]]'::jsonb, 'Voice and accountability scaled.', 'World', 'static', 'index', FALSE);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('rule_of_law_scale', 'PDC GRVA Rule of law scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["good"]]'::jsonb, 'The index for Rule of Law captures perceptions of the extent to which agents have confidence in and abide by the rules of society, and in particular the quality of contract enforcement, property rights, the police, and the courts, as well as the likelihood of crime and violence. https://www.theglobaleconomy.com/El-Salvador/wb_ruleoflaw/', 'World', 'static', 'index', FALSE);
+        '[["important", "bad"], ["good"]]'::jsonb, 'Rule of law scaled.', 'World', 'static', 'index', FALSE);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('political_stability_scale', 'PDC GRVA Political stability scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["good"]]'::jsonb, 'The index of Political Stability and Absence of Violence/Terrorism measures perceptions of the likelihood that the government will be destabilized or overthrown by unconstitutional or violent means, including politically-motivated violence and terrorism. The index is an average of several other indexes from the Economist Intelligence Unit, the World Economic Forum, and the Political Risk Services, among others. https://www.theglobaleconomy.com/El-Salvador/wb_political_stability/', 'World', 'static', 'index', FALSE);
+        '[["important", "bad"], ["good"]]'::jsonb, 'Political stability scaled.', 'World', 'static', 'index', FALSE);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('govt_effectiveness_scale', 'PDC GRVA Governement effectiveness scaled', jsonb_build_array(
@@ -728,7 +728,7 @@ values ('govt_effectiveness_scale', 'PDC GRVA Governement effectiveness scaled',
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('control_of_corruption_scale', 'PDC GRVA Control of corruption scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["good"]]'::jsonb, 'The index for Control of Corruption captures perceptions of the extent to which public power is exercised for private gain, including both petty and grand forms of corruption, as well as capture of the state by elites and private interests. https://www.theglobaleconomy.com/El-Salvador/wb_corruption/', 'World', 'static', 'index', FALSE);
+        '[["important", "bad"], ["good"]]'::jsonb, 'Control of corruption scaled.', 'World', 'static', 'index', FALSE);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('governance_index', 'PDC GRVA Governance index', jsonb_build_array(
@@ -737,11 +737,8 @@ values ('governance_index', 'PDC GRVA Governance index', jsonb_build_array(
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('gni_per_capita_scale', 'PDC GRVA GNI per capita scaled', jsonb_build_array(
-        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/',
-        'International Comparison Program, World Bank', 
-        'World Development Indicators database, World Bank',
-        'Eurostat-OECD PPP Programme.'),
-        '[["important", "bad"], ["good"]]'::jsonb, 'GNI per capita, PPP (current international $). This indicator provides per capita values for gross national income (GNI. Formerly GNP) expressed in current international dollars converted by purchasing power parity (PPP) conversion factor. GNI is the sum of value added by all resident producers plus any product taxes (less subsidies) not included in the valuation of output plus net receipts of primary income (compensation of employees and property income) from abroad. PPP conversion factor is a spatial price deflator and currency converter that eliminates the effects of the differences in price levels between countries. https://data.worldbank.org/indicator/NY.GNP.PCAP.PP.CD', 'World', 'static', 'USD', FALSE);
+        '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
+        '[["important", "bad"], ["good"]]'::jsonb, 'GNI per capita scaled', 'World', 'static', 'USD', FALSE);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
 values ('reserves_per_capita_scale', 'PDC GRVA Reserves per capita scaled', jsonb_build_array(

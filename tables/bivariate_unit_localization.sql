@@ -23,6 +23,9 @@ insert into bivariate_unit_localization (unit_id, language, short_name, long_nam
 values ('days', 'en', 'days', 'days');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('years', 'en', 'years', 'years');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('deg', 'en', '°', 'degrees');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
@@ -39,6 +42,9 @@ values ('W_m2', 'en', 'W/m²', 'watt per square metre');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('USD', 'en', 'USD', 'United States dollar');
+
+insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
+values ('billions_USD', 'en', 'B USD', 'billions of the United States dollar');
 
 insert into bivariate_unit_localization (unit_id, language, short_name, long_name)
 values ('index', 'en', 'index', 'index');

@@ -23,6 +23,9 @@ insert into bivariate_unit (id, type, measurement, is_base)
 values ('days', 'generic', 'time', FALSE);
 
 insert into bivariate_unit (id, type, measurement, is_base)
+values ('years', 'generic', 'time', FALSE);
+
+insert into bivariate_unit (id, type, measurement, is_base)
 values ('deg', 'generic', 'plane_angle', TRUE);
 
 insert into bivariate_unit (id, type, measurement, is_base)
@@ -39,6 +42,9 @@ values ('W_m2', 'generic', 'irradiance', NULL);
 
 insert into bivariate_unit (id, type, measurement, is_base)
 values ('USD', 'generic', 'money', NULL);
+
+insert into bivariate_unit (id, type, measurement, is_base)
+values ('billions_USD', 'generic', 'money', NULL);
 
 insert into bivariate_unit (id, type, measurement, is_base)
 values ('index', 'generic', NULL, NULL);

@@ -1,6 +1,6 @@
 -- commented out WorldPop population dataset
 drop table if exists population_grid_h3_r10_in;
-create table population_grid_h3_r8_in as (
+create table population_grid_h3_r10_in as (
     select h3,
            h3::geometry              as geom,
            10                        as resolution,

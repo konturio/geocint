@@ -14,7 +14,7 @@ create table building_count_grid_h3 as (
              from microsoft_buildings_h3
              union all
              select h3, building_count
-             from osm_building_count_grid_h3_r8
+             from osm_building_count_grid_h3_r10
              union all
              select h3, 1::int as building_count
              from copernicus_builtup_h3

@@ -1,7 +1,7 @@
 drop table if exists building_count_grid_h3;
 create table building_count_grid_h3 as (
     select h3,
-           8                   as resolution,
+           10                  as resolution,
            max(building_count) as building_count
     from (
              select h3, 1::int as building_count

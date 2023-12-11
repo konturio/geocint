@@ -2892,39 +2892,17 @@ db/table/area_km2_and_one_h3: db/table/land_polygons_h3_r8 ## Create table with 
 	psql -c "create table area_km2_and_one_in as select h3, 1::float as one, 8::int as resolution from land_polygons_h3_r8;"
 	psql -c "call generate_overviews('area_km2_and_one_in', '{one}'::text[], '{min}'::text[], 8);"
 	psql -c "drop table if exists area_km2_and_one_h3;"
-	psql -c "create table area_km2_and_one_in as select h3, 1::float as one, 8::int as resolution from land_polygons_h3_r8;"
+	psql -c "create table area_km2_and_one_h3 as select h3, ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0 as area_km2, 1::float as one, 8::int as resolution from area_km2_and_one_in;"
 	touch $@
-
-data/out/csv/export_all_indicators: db/table/stat_h3 | data/out/csv ## CSV export of OSM objects count
-	cat static_data/indicators_upload/indicators_full_not_from_stat_h3.csv | parallel {}
-	touch $@
-
-deploy/dev/uploads/upload_all_indicators: data/out/csv/export_all_indicators | deploy/dev/uploads ## Generate command and upload all dataset to Insights API
-	psql -qXtc "select param_id || '.csv', param_id, param_label, direction, case when is_base = TRUE then 'true' else 'false' end as is_base, \
-		case when is_public = TRUE then 'true' else 'false' end as is_public, copyrights, description, coverage, update_frequency, \
-		unit_id from bivariate_indicators where param_id != 'one';" \
-		| sed 's/ \+ /\t/g'| sed "s/\"/\\\\\"/g" | sed "s/ |\t| /\" \"/g" | sed "s/\t| /\" \"/g" | sed "s/\t|/\" \"/g" | sed "s/ | /\" \"/g" | sed "s/\t/ /g" \
-		| sed "s/.csv\"/.csv/" | sed "s/\"true\"/true/g" | sed "s/\"false\"/false/g" | sed "s/$$/\"/" | sed -r '/^.{,3}$$/d' \
-		| sed 's/^ *//' | sed "s/;/.,/g" | sed 's/^/bash scripts\/upload_csv_to_insights_api.sh dev data\/out\/csv\//' \
-		| parallel echo '{} \"$$(date -r db/table/stat_h3 +%Y-%m-%dT%H:%M:%SZ)\"' | parallel {}
-
-deploy/test/uploads/upload_all_indicators: data/out/csv/export_all_indicators | deploy/test/uploads ## Generate command and upload all dataset to Insights API
-	psql -qXtc "select param_id || '.csv', param_id, param_label, direction, case when is_base = TRUE then 'true' else 'false' end as is_base, \
-		case when is_public = TRUE then 'true' else 'false' end as is_public, copyrights, description, coverage, update_frequency, \
-		unit_id from bivariate_indicators;" \
-		| sed 's/ \+ /\t/g'| sed "s/\"/\\\\\"/g" | sed "s/ |\t| /\" \"/g" | sed "s/\t| /\" \"/g" | sed "s/\t|/\" \"/g" | sed "s/ | /\" \"/g" | sed "s/\t/ /g" \
-		| sed "s/.csv\"/.csv/" | sed "s/\"true\"/true/g" | sed "s/\"false\"/false/g" | sed "s/$$/\"/" | sed -r '/^.{,3}$$/d' \
-		| sed 's/^ *//' | sed "s/;/.,/g" | sed 's/^/bash scripts\/upload_csv_to_insights_api.sh test data\/out\/csv\//' \
-		| parallel echo '{} \"$$(date -r db/table/stat_h3 +%Y-%m-%dT%H:%M:%SZ)\"' | parallel {}
 
 ## Independent loading
 
-data/out/csv/area_km2.csv: db/table/stat_h3 | data/out/csv ## extract area_km2 to csv file 
-	psql -q -X -c "copy (select h3, area_km2 from stat_h3 where h3 is not null and area_km2 is not null) to stdout with delimiter ',' csv;" > data/out/csv/area_km2.csv
+data/out/csv/area_km2.csv: db/table/area_km2_and_one_h3 | data/out/csv ## extract area_km2 to csv file 
+	psql -q -X -c "copy (select h3, area_km2 from area_km2_and_one_h3 where h3 is not null and area_km2 is not null) to stdout with delimiter ',' csv;" > data/out/csv/area_km2.csv
 	touch $@
 
-data/out/csv/one.csv: db/table/stat_h3 | data/out/csv ## extract one to csv file 
-	psql -q -X -c "copy (select h3, one from stat_h3 where h3 is not null and one is not null) to stdout with delimiter ',' csv;" > data/out/csv/one.csv
+data/out/csv/one.csv: db/table/area_km2_and_one_h3 | data/out/csv ## extract one to csv file 
+	psql -q -X -c "copy (select h3, one from area_km2_and_one_h3 where h3 is not null and one is not null) to stdout with delimiter ',' csv;" > data/out/csv/one.csv
 	touch $@
 
 data/out/csv/view_count.csv: db/table/tile_logs | data/out/csv ## extract view_count to csv file 

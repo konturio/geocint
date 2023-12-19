@@ -173,14 +173,10 @@ data/in/covid19/_global_csv: | data/in/covid19 ## Download global daily COVID-19
 data/in/covid19/_us_csv: | data/in/covid19 ## Download US detailed daily COVID-19 data from github Data Repository by the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University.
 	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv" -O data/in/covid19/time_series_us_confirmed.csv
 	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv" -O data/in/covid19/time_series_us_deaths.csv
-	wget "https://acolyte.kontur.io/nobackup/geo/Utah_COVID19_data.zip" -O data/in/covid19/utah_covid19.zip
 	touch $@
 
 data/mid/covid19: | data/mid  ## Directory for storing temporary file based datasets on COVID-19
 	mkdir -p $@
-
-data/mid/covid19/covid19_utah.csv: data/in/covid19/_us_csv | data/mid/covid19 ## Unzip COVID-19 data for Utah from the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University.
-	unzip -p data/in/covid19/utah_covid19.zip 'Overview_Seven-Day Rolling Average COVID-19 Cases by Test Report'* > $@
 
 data/mid/covid19/normalized_csv: data/in/covid19/_global_csv | data/mid/covid19  ## Normalize detailed daily global COVID-19 data from the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University.
 	rm -f data/mid/covid19/time_series_global_*_normalized.csv
@@ -205,13 +201,10 @@ data/mid/covid19/normalized_us_confirmed_csv: data/in/covid19/_us_csv | data/mid
 	python3 scripts/covid19_us_confirmed_normalization.py data/in/covid19/time_series_us_confirmed.csv
 	touch $@
 
-db/table/covid19_us_confirmed_in: data/mid/covid19/normalized_us_confirmed_csv data/mid/covid19/covid19_utah.csv | db/table ## Normalized, merged data from CSSE (Center for Systems Science and Engineering) at Johns Hopkins University COVID-19 US datasets (confirmed cases).
+db/table/covid19_us_confirmed_in: data/mid/covid19/normalized_us_confirmed_csv | db/table ## Normalized, merged data from CSSE (Center for Systems Science and Engineering) at Johns Hopkins University COVID-19 US datasets (confirmed cases).
 	psql -c 'drop table if exists covid19_us_confirmed_csv_in;'
 	psql -c 'create table covid19_us_confirmed_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, date timestamptz, value int);'
 	cat data/mid/covid19/time_series_us_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_us_confirmed_csv_in (uid, iso2, iso3, code3, fips, admin2, province, country, lat, lon, combined_key, date, value) from stdin with csv header;"
-	psql -c 'drop table if exists covid19_utah_confirmed_csv_in;'
-	psql -c 'create table covid19_utah_confirmed_csv_in (date timestamptz, confirmed_case_count int, cumulative_cases int, seven_day_average float);'
-	cat data/mid/covid19/covid19_utah.csv | grep -v "Case" | psql -c "copy covid19_utah_confirmed_csv_in (date, confirmed_case_count, cumulative_cases, seven_day_average) from stdin delimiter ',';"
 	psql -f tables/covid19_us_confirmed_in.sql
 	touch $@
 

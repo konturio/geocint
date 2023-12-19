@@ -34,8 +34,8 @@ dev)
 esac
 
 # Get token
-token_request_content=$(curl -d "client_id=kontur_platform&username=${DN_USERNAME}&grant_type=password" \
-                        --data-urlencode "password=${DN_PASSWORD}" \
+token_request_content=$(curl -d "client_id=kontur_platform&username=$DN_USERNAME&grant_type=password" \
+                        --data-urlencode "password=$DN_PASSWORD" \
                         -H "Content-Type: application/x-www-form-urlencoded" \
                         -X POST ${auth_endpoint})
 token=$(jq -r '.access_token // empty' <<<"$token_request_content")

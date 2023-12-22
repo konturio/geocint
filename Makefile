@@ -29,9 +29,9 @@ prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/clea
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-kontur_population_h3_r10: data/out/reports/population_check_world ## [FINAL] Builds all targets for development. Run on every branch.
+kontur_population_h3_r11: data/out/reports/population_check_world ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
-	echo "kontur_population_h3_r10 target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+	echo "kontur_population_h3_r11 target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
@@ -458,8 +458,8 @@ db/table/hrsl_population_raster: data/in/raster/hrsl_cogs/download | db/table ##
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
 
-db/table/hrsl_population_grid_h3_r10: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 10 resolution.
-	psql -f tables/population_raster_grid_h3_r10.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r10=hrsl_population_grid_h3_r10
+db/table/hrsl_population_grid_h3_r11: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 11 resolution.
+	psql -f tables/population_raster_grid_h3_r11.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r11=hrsl_population_grid_h3_r11
 	touch $@
 
 db/table/hrsl_population_boundary: db/table/gadm_countries_boundary db/table/hrsl_population_raster | db/table ## Boundaries where HRSL data is available.
@@ -484,9 +484,9 @@ db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_
 	raster2pgsql -M -Y -s 54009 data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.tif -t auto ghs_globe_population_raster | psql -q
 	touch $@
 
-db/table/ghs_globe_population_grid_h3_r10: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 10 resolution.
-	psql -f tables/population_raster_grid_h3_r10.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r10=ghs_globe_population_grid_h3_r10
-	psql -c "delete from ghs_globe_population_grid_h3_r10 where population = 0;"
+db/table/ghs_globe_population_grid_h3_r11: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 11 resolution.
+	psql -f tables/population_raster_grid_h3_r11.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r11=ghs_globe_population_grid_h3_r11
+	psql -c "delete from ghs_globe_population_grid_h3_r11 where population = 0;"
 	touch $@
 
 data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data/in/raster  ## Download GHS-SMOD (Global Human Settlement Model) grid dataset archive.
@@ -697,13 +697,13 @@ db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 db/procedure/generate_over
 	psql -c "create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);"
 	touch $@
 
-db/table/osm_building_count_grid_h3_r10: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.
-	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r10 -v item_count=building_count
+db/table/osm_building_count_grid_h3_r11: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r11 -v item_count=building_count
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r10 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 db/procedure/generate_overviews | db/table ## Count max amount of buildings at hexagons from all building datasets.
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r11 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 db/procedure/generate_overviews | db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
-	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 10);"
+	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 ### GADM 4.10 export block -- Database of Global Administrative Areas ###
@@ -1198,7 +1198,7 @@ db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/presca
 	seq 2 1 26 | xargs -I {} psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level={}
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r10 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table  ## Kontur Population (most recent).
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r11 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table  ## Kontur Population (most recent).
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 
@@ -1295,8 +1295,8 @@ db/procedure/insert_projection_54009: | db/procedure ## Add ESRI-54009 projectio
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r10: db/table/hrsl_population_grid_h3_r10 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r10 | db/table ## General table for population data at hexagons.
-	psql -f tables/population_grid_h3_r10.sql
+db/table/population_grid_h3_r11: db/table/hrsl_population_grid_h3_r11 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r11 | db/table ## General table for population data at hexagons.
+	psql -f tables/population_grid_h3_r11.sql
 	touch $@
 
 db/table/osm_local_active_users: db/function/h3 db/table/osm_user_count_grid_h3 | db/table ## OpenStreetMap local active users (heuristics based on user activity).

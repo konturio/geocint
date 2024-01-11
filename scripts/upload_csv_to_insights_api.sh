@@ -62,7 +62,7 @@ layer_unit_id="\"${12}\""
 layer_last_updated="\"${13}\""
 
 parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}, \"lastUpdated\": ${layer_last_updated}}"
-curl_request="curl -w "\":::\"%{http_code}" --location --request POST ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$2\"'"
+curl_request="curl -k -w "\":::\"%{http_code}" --location --request POST ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$2\"'"
 
 # Upload file
 request_result=$(eval $curl_request)

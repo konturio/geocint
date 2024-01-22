@@ -658,7 +658,7 @@ db/table/gebco_2022_elevation_h3: db/table/gebco_2022_elevation | db/table ## GE
 	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2022_elevation -v table_name_h3=gebco_2022_elevation_h3 -v aggr_func=avg -v item_name=avg_elevation_gebco_2022
 	touch $@
 
-db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 db/procedure/generate_overviews | db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
+db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 db/table/land_polygons_h3_r8 db/procedure/generate_overviews | db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
 	psql -f tables/gebco_2022_h3.sql
 	psql -c "call generate_overviews('gebco_2022_h3', '{avg_slope_gebco_2022, avg_elevation_gebco_2022}'::text[], '{avg, avg}'::text[], 8);"
 	psql -c "create index on gebco_2022_h3 (h3);"

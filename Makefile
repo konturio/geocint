@@ -3881,284 +3881,284 @@ db/table/insights_api_indicators_list_test: | db/table ## Refresh insights_api_i
 
 deploy/test/custom_axis/population_area_km2: deploy/test/uploads/population_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for population area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "population" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "population" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/count_area_km2: deploy/test/uploads/count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/building_count_area_km2: deploy/test/uploads/building_count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for building_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "building_count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "building_count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/local_hours_area_km2: deploy/test/uploads/local_hours_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for local_hours area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "local_hours" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "local_hours" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/total_hours_area_km2: deploy/test/uploads/total_hours_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for total_hours area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "total_hours" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "total_hours" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/view_count_area_km2: deploy/test/uploads/view_count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for view_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "view_count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "view_count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/osm_users_one: deploy/test/uploads/osm_users_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for osm_users one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "osm_users" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "osm_users" "one"
 	touch $@
 
 deploy/test/custom_axis/total_building_count_area_km2: deploy/test/uploads/total_building_count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for total_building_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "total_building_count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "total_building_count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/wildfires_area_km2: deploy/test/uploads/wildfires_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for wildfires area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "wildfires" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "wildfires" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/forest_area_km2: deploy/test/uploads/forest_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for forest area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "forest" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "forest" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/days_maxtemp_over_32c_1c_one: deploy/test/uploads/days_maxtemp_over_32c_1c_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for days_maxtemp_over_32c_1c one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "days_maxtemp_over_32c_1c" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "days_maxtemp_over_32c_1c" "one"
 	touch $@
 
 deploy/test/custom_axis/days_mintemp_above_25c_1c_one: deploy/test/uploads/days_mintemp_above_25c_1c_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for days_mintemp_above_25c_1c one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "days_mintemp_above_25c_1c" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "days_mintemp_above_25c_1c" "one"
 	touch $@
 
 deploy/test/custom_axis/man_distance_to_fire_brigade_one: deploy/test/uploads/man_distance_to_fire_brigade_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for man_distance_to_fire_brigade one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_fire_brigade" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_fire_brigade" "one"
 	touch $@
 
 deploy/test/custom_axis/man_distance_to_hospital_one: deploy/test/uploads/man_distance_to_hospital_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for man_distance_to_hospital one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_hospital" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_hospital" "one"
 	touch $@
 
 deploy/test/custom_axis/highway_length_area_km2: deploy/test/uploads/highway_length_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for highway_length area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "highway_length" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "highway_length" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/total_road_length_area_km2: deploy/test/uploads/total_road_length_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for total_road_length area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "total_road_length" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "total_road_length" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/foursquare_places_count_one: deploy/test/uploads/foursquare_places_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for foursquare_places_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "foursquare_places_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "foursquare_places_count" "one"
 	touch $@
 
 deploy/test/custom_axis/foursquare_visits_count_one: deploy/test/uploads/foursquare_visits_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for foursquare_visits_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "foursquare_visits_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "foursquare_visits_count" "one"
 	touch $@
 
 deploy/test/custom_axis/view_count_bf2402_one: deploy/test/uploads/view_count_bf2402_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for view_count_bf2402 one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "view_count_bf2402" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "view_count_bf2402" "one"
 	touch $@
 
 deploy/test/custom_axis/view_count_bf2402_area_km2: deploy/test/uploads/view_count_bf2402_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for view_count_bf2402 area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "view_count_bf2402" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "view_count_bf2402" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/powerlines_one: deploy/test/uploads/powerlines_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for powerlines one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "powerlines" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "powerlines" "one"
 	touch $@
 
 deploy/test/custom_axis/night_lights_intensity_one: deploy/test/uploads/night_lights_intensity_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for night_lights_intensity one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "night_lights_intensity" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "night_lights_intensity" "one"
 	touch $@
 
 deploy/test/custom_axis/man_distance_to_bomb_shelters_one: deploy/test/uploads/man_distance_to_bomb_shelters_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_bomb_shelters" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_bomb_shelters" "one"
 	touch $@
 
 deploy/test/custom_axis/man_distance_to_charging_stations_one: deploy/test/uploads/man_distance_to_charging_stations_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for man_distance_to_charging_stations one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_charging_stations" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_charging_stations" "one"
 	touch $@
 
 deploy/test/custom_axis/solar_power_plants_area_km2: deploy/test/uploads/solar_power_plants_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for solar_power_plants area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "solar_power_plants" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "solar_power_plants" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/volcano_days_count_area_km2: deploy/test/uploads/volcano_days_count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for volcano_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "volcano_days_count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "volcano_days_count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/volcano_days_count_one: deploy/test/uploads/volcano_days_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for volcano_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "volcano_days_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "volcano_days_count" "one"
 	touch $@
 
 deploy/test/custom_axis/flood_days_count_area_km2: deploy/test/uploads/flood_days_count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for flood_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "flood_days_count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "flood_days_count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/flood_days_count_one: deploy/test/uploads/flood_days_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for flood_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "flood_days_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "flood_days_count" "one"
 	touch $@
 
 deploy/test/custom_axis/man_distance_to_bomb_shelters_population: deploy/test/uploads/man_distance_to_bomb_shelters_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_bomb_shelters" "population"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_bomb_shelters" "population"
 	touch $@
 
 deploy/test/custom_axis/man_distance_to_charging_stations_population: deploy/test/uploads/man_distance_to_charging_stations_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for man_distance_to_charging_stations population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_charging_stations" "population"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_charging_stations" "population"
 	touch $@
 
 deploy/test/custom_axis/man_distance_to_fire_brigade_population: deploy/test/uploads/man_distance_to_fire_brigade_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for man_distance_to_fire_brigade population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_fire_brigade" "population"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "man_distance_to_fire_brigade" "population"
 	touch $@
 
 deploy/test/custom_axis/building_count_total_building_count: deploy/test/uploads/building_count_upload deploy/test/uploads/total_building_count_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for building_count total_building_count axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "building_count" "total_building_count"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "building_count" "total_building_count"
 	touch $@
 
 deploy/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy/test/uploads/waste_basket_coverage_area_km2_upload deploy/test/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "waste_basket_coverage_area_km2" "populated_area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "waste_basket_coverage_area_km2" "populated_area_km2"
 	touch $@
 
 deploy/test/custom_axis/highway_length_total_road_length: deploy/test/uploads/highway_length_upload deploy/test/uploads/total_road_length_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for highway_length total_road_length axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "highway_length" "total_road_length"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "highway_length" "total_road_length"
 	touch $@
 
 deploy/test/custom_axis/eatery_count_one: deploy/test/uploads/eatery_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for eatery_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "eatery_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "eatery_count" "one"
 	touch $@
 
 deploy/test/custom_axis/food_shops_count_one: deploy/test/uploads/food_shops_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for food_shops_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "food_shops_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "food_shops_count" "one"
 	touch $@
 
 deploy/test/custom_axis/hazardous_days_count_area_km2: deploy/test/uploads/hazardous_days_count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for hazardous_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "hazardous_days_count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "hazardous_days_count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/hazardous_days_count_one: deploy/test/uploads/hazardous_days_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for hazardous_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "hazardous_days_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "hazardous_days_count" "one"
 	touch $@
 
 deploy/test/custom_axis/earthquake_days_count_area_km2: deploy/test/uploads/earthquake_days_count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for earthquake_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "earthquake_days_count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "earthquake_days_count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/earthquake_days_count_one: deploy/test/uploads/earthquake_days_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for earthquake_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "earthquake_days_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "earthquake_days_count" "one"
 	touch $@
 
 deploy/test/custom_axis/drought_days_count_area_km2: deploy/test/uploads/drought_days_count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for drought_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "drought_days_count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "drought_days_count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/drought_days_count_one: deploy/test/uploads/drought_days_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for drought_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "drought_days_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "drought_days_count" "one"
 	touch $@
 
 deploy/test/custom_axis/cyclone_days_count_area_km2: deploy/test/uploads/cyclone_days_count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for cyclone_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "cyclone_days_count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "cyclone_days_count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/cyclone_days_count_one: deploy/test/uploads/cyclone_days_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for cyclone_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "cyclone_days_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "cyclone_days_count" "one"
 	touch $@
 
 deploy/test/custom_axis/wildfire_days_count_area_km2: deploy/test/uploads/wildfire_days_count_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for wildfire_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "wildfire_days_count" "area_km2"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "wildfire_days_count" "area_km2"
 	touch $@
 
 deploy/test/custom_axis/wildfire_days_count_one: deploy/test/uploads/wildfire_days_count_upload deploy/test/uploads/one_upload db/table/insights_api_indicators_list_test | deploy/test/custom_axis ## Deploy custom values for wildfire_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/get_auth_token.sh test | xargs I {} bash scripts/upload_custom_axis_to_insights_api test {} "wildfire_days_count" "one"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/update_indicators_list.sh test {} | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/get_auth_token.sh test | xargs -I {} bash scripts/upload_custom_axis_to_insights_api test {} "wildfire_days_count" "one"
 	touch $@
 
 deploy/test/custom_axis/all_custom_axis: deploy/test/custom_axis/population_area_km2 deploy/test/custom_axis/count_area_km2 deploy/test/custom_axis/building_count_area_km2 deploy/test/custom_axis/local_hours_area_km2 deploy/test/custom_axis/total_hours_area_km2 deploy/test/custom_axis/view_count_area_km2 deploy/test/custom_axis/osm_users_one deploy/test/custom_axis/total_building_count_area_km2 deploy/test/custom_axis/wildfires_area_km2 deploy/test/custom_axis/forest_area_km2 deploy/test/custom_axis/days_maxtemp_over_32c_1c_one deploy/test/custom_axis/days_mintemp_above_25c_1c_one deploy/test/custom_axis/man_distance_to_fire_brigade_one deploy/test/custom_axis/man_distance_to_hospital_one deploy/test/custom_axis/highway_length_area_km2 deploy/test/custom_axis/total_road_length_area_km2 deploy/test/custom_axis/foursquare_places_count_one deploy/test/custom_axis/foursquare_visits_count_one deploy/test/custom_axis/view_count_bf2402_one deploy/test/custom_axis/view_count_bf2402_area_km2 deploy/test/custom_axis/powerlines_one deploy/test/custom_axis/night_lights_intensity_one deploy/test/custom_axis/man_distance_to_bomb_shelters_one deploy/test/custom_axis/man_distance_to_charging_stations_one deploy/test/custom_axis/solar_power_plants_area_km2 deploy/test/custom_axis/volcano_days_count_area_km2 deploy/test/custom_axis/volcano_days_count_one deploy/test/custom_axis/flood_days_count_area_km2 deploy/test/custom_axis/flood_days_count_one deploy/test/custom_axis/man_distance_to_bomb_shelters_population deploy/test/custom_axis/man_distance_to_charging_stations_population deploy/test/custom_axis/man_distance_to_fire_brigade_population deploy/test/custom_axis/building_count_total_building_count deploy/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy/test/custom_axis/highway_length_total_road_length deploy/test/custom_axis/eatery_count_one deploy/test/custom_axis/food_shops_count_one deploy/test/custom_axis/hazardous_days_count_area_km2 deploy/test/custom_axis/hazardous_days_count_one deploy/test/custom_axis/earthquake_days_count_area_km2 deploy/test/custom_axis/earthquake_days_count_one deploy/test/custom_axis/drought_days_count_area_km2 deploy/test/custom_axis/drought_days_count_one deploy/test/custom_axis/cyclone_days_count_area_km2 deploy/test/custom_axis/cyclone_days_count_one deploy/test/custom_axis/wildfire_days_count_area_km2 deploy/test/custom_axis/wildfire_days_count_one ## final target for custom axis deployment to test
@@ -4171,284 +4171,284 @@ db/table/insights_api_indicators_list_dev: | db/table ## Refresh insights_api_in
 
 deploy/dev/custom_axis/population_area_km2: deploy/dev/uploads/population_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for population area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "population" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "population" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/count_area_km2: deploy/dev/uploads/count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/building_count_area_km2: deploy/dev/uploads/building_count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for building_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "building_count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "building_count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/local_hours_area_km2: deploy/dev/uploads/local_hours_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for local_hours area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "local_hours" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "local_hours" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/total_hours_area_km2: deploy/dev/uploads/total_hours_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for total_hours area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "total_hours" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "total_hours" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/view_count_area_km2: deploy/dev/uploads/view_count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for view_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "view_count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "view_count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/osm_users_one: deploy/dev/uploads/osm_users_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for osm_users one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "osm_users" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "osm_users" "one"
 	touch $@
 
 deploy/dev/custom_axis/total_building_count_area_km2: deploy/dev/uploads/total_building_count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for total_building_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "total_building_count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "total_building_count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/wildfires_area_km2: deploy/dev/uploads/wildfires_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for wildfires area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "wildfires" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "wildfires" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/forest_area_km2: deploy/dev/uploads/forest_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for forest area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "forest" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "forest" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/days_maxtemp_over_32c_1c_one: deploy/dev/uploads/days_maxtemp_over_32c_1c_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for days_maxtemp_over_32c_1c one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "days_maxtemp_over_32c_1c" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "days_maxtemp_over_32c_1c" "one"
 	touch $@
 
 deploy/dev/custom_axis/days_mintemp_above_25c_1c_one: deploy/dev/uploads/days_mintemp_above_25c_1c_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for days_mintemp_above_25c_1c one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "days_mintemp_above_25c_1c" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "days_mintemp_above_25c_1c" "one"
 	touch $@
 
 deploy/dev/custom_axis/man_distance_to_fire_brigade_one: deploy/dev/uploads/man_distance_to_fire_brigade_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for man_distance_to_fire_brigade one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_fire_brigade" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_fire_brigade" "one"
 	touch $@
 
 deploy/dev/custom_axis/man_distance_to_hospital_one: deploy/dev/uploads/man_distance_to_hospital_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for man_distance_to_hospital one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_hospital" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_hospital" "one"
 	touch $@
 
 deploy/dev/custom_axis/highway_length_area_km2: deploy/dev/uploads/highway_length_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for highway_length area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "highway_length" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "highway_length" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/total_road_length_area_km2: deploy/dev/uploads/total_road_length_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for total_road_length area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "total_road_length" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "total_road_length" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/foursquare_places_count_one: deploy/dev/uploads/foursquare_places_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for foursquare_places_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "foursquare_places_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "foursquare_places_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/foursquare_visits_count_one: deploy/dev/uploads/foursquare_visits_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for foursquare_visits_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "foursquare_visits_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "foursquare_visits_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/view_count_bf2402_one: deploy/dev/uploads/view_count_bf2402_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for view_count_bf2402 one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "view_count_bf2402" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "view_count_bf2402" "one"
 	touch $@
 
 deploy/dev/custom_axis/view_count_bf2402_area_km2: deploy/dev/uploads/view_count_bf2402_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for view_count_bf2402 area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "view_count_bf2402" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "view_count_bf2402" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/powerlines_one: deploy/dev/uploads/powerlines_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for powerlines one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "powerlines" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "powerlines" "one"
 	touch $@
 
 deploy/dev/custom_axis/night_lights_intensity_one: deploy/dev/uploads/night_lights_intensity_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for night_lights_intensity one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "night_lights_intensity" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "night_lights_intensity" "one"
 	touch $@
 
 deploy/dev/custom_axis/man_distance_to_bomb_shelters_one: deploy/dev/uploads/man_distance_to_bomb_shelters_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_bomb_shelters" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_bomb_shelters" "one"
 	touch $@
 
 deploy/dev/custom_axis/man_distance_to_charging_stations_one: deploy/dev/uploads/man_distance_to_charging_stations_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for man_distance_to_charging_stations one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_charging_stations" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_charging_stations" "one"
 	touch $@
 
 deploy/dev/custom_axis/solar_power_plants_area_km2: deploy/dev/uploads/solar_power_plants_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for solar_power_plants area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "solar_power_plants" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "solar_power_plants" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/volcano_days_count_area_km2: deploy/dev/uploads/volcano_days_count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for volcano_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "volcano_days_count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "volcano_days_count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/volcano_days_count_one: deploy/dev/uploads/volcano_days_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for volcano_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "volcano_days_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "volcano_days_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/flood_days_count_area_km2: deploy/dev/uploads/flood_days_count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for flood_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "flood_days_count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "flood_days_count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/flood_days_count_one: deploy/dev/uploads/flood_days_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for flood_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "flood_days_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "flood_days_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/man_distance_to_bomb_shelters_population: deploy/dev/uploads/man_distance_to_bomb_shelters_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_bomb_shelters" "population"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_bomb_shelters" "population"
 	touch $@
 
 deploy/dev/custom_axis/man_distance_to_charging_stations_population: deploy/dev/uploads/man_distance_to_charging_stations_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for man_distance_to_charging_stations population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_charging_stations" "population"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_charging_stations" "population"
 	touch $@
 
 deploy/dev/custom_axis/man_distance_to_fire_brigade_population: deploy/dev/uploads/man_distance_to_fire_brigade_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for man_distance_to_fire_brigade population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_fire_brigade" "population"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "man_distance_to_fire_brigade" "population"
 	touch $@
 
 deploy/dev/custom_axis/building_count_total_building_count: deploy/dev/uploads/building_count_upload deploy/dev/uploads/total_building_count_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for building_count total_building_count axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "building_count" "total_building_count"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "building_count" "total_building_count"
 	touch $@
 
 deploy/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy/dev/uploads/waste_basket_coverage_area_km2_upload deploy/dev/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "waste_basket_coverage_area_km2" "populated_area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "waste_basket_coverage_area_km2" "populated_area_km2"
 	touch $@
 
 deploy/dev/custom_axis/highway_length_total_road_length: deploy/dev/uploads/highway_length_upload deploy/dev/uploads/total_road_length_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for highway_length total_road_length axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "highway_length" "total_road_length"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "highway_length" "total_road_length"
 	touch $@
 
 deploy/dev/custom_axis/eatery_count_one: deploy/dev/uploads/eatery_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for eatery_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "eatery_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "eatery_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/food_shops_count_one: deploy/dev/uploads/food_shops_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for food_shops_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "food_shops_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "food_shops_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/hazardous_days_count_area_km2: deploy/dev/uploads/hazardous_days_count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for hazardous_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "hazardous_days_count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "hazardous_days_count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/hazardous_days_count_one: deploy/dev/uploads/hazardous_days_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for hazardous_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "hazardous_days_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "hazardous_days_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/earthquake_days_count_area_km2: deploy/dev/uploads/earthquake_days_count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for earthquake_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "earthquake_days_count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "earthquake_days_count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/earthquake_days_count_one: deploy/dev/uploads/earthquake_days_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for earthquake_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "earthquake_days_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "earthquake_days_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/drought_days_count_area_km2: deploy/dev/uploads/drought_days_count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for drought_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "drought_days_count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "drought_days_count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/drought_days_count_one: deploy/dev/uploads/drought_days_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for drought_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "drought_days_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "drought_days_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/cyclone_days_count_area_km2: deploy/dev/uploads/cyclone_days_count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for cyclone_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "cyclone_days_count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "cyclone_days_count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/cyclone_days_count_one: deploy/dev/uploads/cyclone_days_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for cyclone_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "cyclone_days_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "cyclone_days_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/wildfire_days_count_area_km2: deploy/dev/uploads/wildfire_days_count_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for wildfire_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "wildfire_days_count" "area_km2"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "wildfire_days_count" "area_km2"
 	touch $@
 
 deploy/dev/custom_axis/wildfire_days_count_one: deploy/dev/uploads/wildfire_days_count_upload deploy/dev/uploads/one_upload db/table/insights_api_indicators_list_dev | deploy/dev/custom_axis ## Deploy custom values for wildfire_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/get_auth_token.sh dev | xargs I {} bash scripts/upload_custom_axis_to_insights_api dev {} "wildfire_days_count" "one"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/update_indicators_list.sh dev {} | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/get_auth_token.sh dev | xargs -I {} bash scripts/upload_custom_axis_to_insights_api dev {} "wildfire_days_count" "one"
 	touch $@
 
 deploy/dev/custom_axis/all_custom_axis: deploy/dev/custom_axis/population_area_km2 deploy/dev/custom_axis/count_area_km2 deploy/dev/custom_axis/building_count_area_km2 deploy/dev/custom_axis/local_hours_area_km2 deploy/dev/custom_axis/total_hours_area_km2 deploy/dev/custom_axis/view_count_area_km2 deploy/dev/custom_axis/osm_users_one deploy/dev/custom_axis/total_building_count_area_km2 deploy/dev/custom_axis/wildfires_area_km2 deploy/dev/custom_axis/forest_area_km2 deploy/dev/custom_axis/days_maxtemp_over_32c_1c_one deploy/dev/custom_axis/days_mintemp_above_25c_1c_one deploy/dev/custom_axis/man_distance_to_fire_brigade_one deploy/dev/custom_axis/man_distance_to_hospital_one deploy/dev/custom_axis/highway_length_area_km2 deploy/dev/custom_axis/total_road_length_area_km2 deploy/dev/custom_axis/foursquare_places_count_one deploy/dev/custom_axis/foursquare_visits_count_one deploy/dev/custom_axis/view_count_bf2402_one deploy/dev/custom_axis/view_count_bf2402_area_km2 deploy/dev/custom_axis/powerlines_one deploy/dev/custom_axis/night_lights_intensity_one deploy/dev/custom_axis/man_distance_to_bomb_shelters_one deploy/dev/custom_axis/man_distance_to_charging_stations_one deploy/dev/custom_axis/solar_power_plants_area_km2 deploy/dev/custom_axis/volcano_days_count_area_km2 deploy/dev/custom_axis/volcano_days_count_one deploy/dev/custom_axis/flood_days_count_area_km2 deploy/dev/custom_axis/flood_days_count_one deploy/dev/custom_axis/man_distance_to_bomb_shelters_population deploy/dev/custom_axis/man_distance_to_charging_stations_population deploy/dev/custom_axis/man_distance_to_fire_brigade_population deploy/dev/custom_axis/building_count_total_building_count deploy/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy/dev/custom_axis/highway_length_total_road_length deploy/dev/custom_axis/eatery_count_one deploy/dev/custom_axis/food_shops_count_one deploy/dev/custom_axis/hazardous_days_count_area_km2 deploy/dev/custom_axis/hazardous_days_count_one deploy/dev/custom_axis/earthquake_days_count_area_km2 deploy/dev/custom_axis/earthquake_days_count_one deploy/dev/custom_axis/drought_days_count_area_km2 deploy/dev/custom_axis/drought_days_count_one deploy/dev/custom_axis/cyclone_days_count_area_km2 deploy/dev/custom_axis/cyclone_days_count_one deploy/dev/custom_axis/wildfire_days_count_area_km2 deploy/dev/custom_axis/wildfire_days_count_one ## final target for custom axis deployment to dev

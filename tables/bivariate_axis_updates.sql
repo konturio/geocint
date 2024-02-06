@@ -1,15 +1,15 @@
 drop table if exists bivariate_axis_overrides;
 
 create table bivariate_axis_overrides as
-select numerator, denominator, label, min, max, p25, p75
+select numerator as numerator_id, denominator as denominator_id, label, min, max, p25, p75
 from bivariate_axis
 limit 0;
 
 alter table bivariate_axis_overrides
-add constraint ba_overrides_key unique (numerator, denominator);
+add constraint ba_overrides_key unique (numerator_id, denominator_id);
 
 insert into bivariate_axis_overrides
-    (numerator, denominator, label)
+    (numerator_id, denominator_id, label)
 values
     ('population', 'area_km2', 'Population (ppl/km²)'),
     ('count', 'area_km2', 'OSM objects (n/km²)'),
@@ -60,17 +60,17 @@ values
     ('solar_power_plants', 'area_km2', 'Solar power plants');
 
 insert into bivariate_axis_overrides
-    (numerator, denominator, p25)
+    (numerator_id, denominator_id, p25)
 values
     ('waste_basket_coverage_area_km2' , 'populated_area_km2', 0.2),
     ('man_distance_to_bomb_shelters', 'population', 3.0),
     ('man_distance_to_charging_stations', 'population', 3.0),
     ('man_distance_to_fire_brigade', 'population', 3.0)
-on conflict (numerator, denominator) do update
+on conflict (numerator_id, denominator_id) do update
 set p25 = excluded.p25;
 
 insert into bivariate_axis_overrides
-    (numerator, denominator, p75)
+    (numerator_id, denominator_id, p75)
 values
     ('waste_basket_coverage_area_km2' , 'populated_area_km2', 0.5),
     ('man_distance_to_bomb_shelters', 'population', 10.0),
@@ -78,19 +78,19 @@ values
     ('man_distance_to_fire_brigade', 'population', 10.0),
     ('building_count', 'total_building_count', 0.9),
     ('highway_length', 'total_road_length', 0.9)
-on conflict (numerator, denominator) do update
+on conflict (numerator_id, denominator_id) do update
 set p75 = excluded.p75;
 
 insert into bivariate_axis_overrides
-    (numerator, denominator, max)
+    (numerator_id, denominator_id, max)
 values
     ('waste_basket_coverage_area_km2' , 'populated_area_km2', 1.0),
     ('highway_length', 'total_road_length', 1.01)
-on conflict (numerator, denominator) do update
+on conflict (numerator_id, denominator_id) do update
 set max = excluded.max;
 
 insert into bivariate_axis_overrides
-    (numerator, denominator, min)
+    (numerator_id, denominator_id, min)
 values
     ('eatery_count', 'one', 0),
     ('food_shops_count', 'one', 0),
@@ -108,7 +108,7 @@ values
     ('volcano_days_count', 'one', 0),
     ('flood_days_count', 'area_km2', 0),
     ('flood_days_count', 'one', 0)
-on conflict (numerator, denominator) do update
+on conflict (numerator_id, denominator_id) do update
 set min = excluded.min;
 
 update bivariate_axis a
@@ -120,8 +120,8 @@ set
     p75 = coalesce(b.p75, a.p75)
 from bivariate_axis_overrides b
 where
-    a.numerator = b.numerator and
-    a.denominator = b.denominator;
+    a.numerator = b.numerator_id and
+    a.denominator = b.denominator_id;
 
 update bivariate_axis
 set

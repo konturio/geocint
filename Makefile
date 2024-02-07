@@ -119,10 +119,13 @@ deploy/dev: | deploy ## folder for dev deployment footprints.
 deploy/dev/uploads: | deploy/dev ## folder for layer uploading to Insights API footprints
 	mkdir -p $@
 
+deploy/dev/custom_axis: | deploy/dev ## Folder to store custom axis deployment fingerprints for dev instance.
+	mkdir -p $@
+
 deploy/test/uploads: | deploy/test ## folder for layer uploading to Insights API footprints
 	mkdir -p $@
 
-deploy/test/custom_axis: | deploy/test ## Folder to store custom axis deployment fingerprints.
+deploy/test/custom_axis: | deploy/test ## Folder to store custom axis deployment fingerprints for test instance.
 	mkdir -p $@
 
 deploy/geocint: | deploy ## We use geocint as a GIS development server.

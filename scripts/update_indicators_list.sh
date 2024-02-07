@@ -1,6 +1,5 @@
 #!/bin/bash
 # $1 - stage - prod, test or dev
-# $2 - access token
 
 # define endpoints
 case $1 in
@@ -20,9 +19,9 @@ dev)
 esac
 
 # Prepare inputs
-token="$2"
+token=$(bash scripts/get_auth_token.sh $1)
 
-curl_request="curl -s -k -X 'GET' '$indicators_endpoint}' -H 'accept: */*' --header 'Authorization: Bearer ${token}'"
+curl_request="curl -s -k -X 'GET' '${indicators_endpoint}' -H 'accept: */*' --header 'Authorization: Bearer ${token}'"
 
 # GET the list of indicators
 request_result=$(eval $curl_request)

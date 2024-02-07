@@ -1,8 +1,7 @@
 #!/bin/bash
 # $1 - stage - prod, test or dev
-# $2 - access token
-# $3 - numerator_id - external uuid
-# $4 - denominator_id - external uuid
+# $2 - numerator_id - external uuid
+# $3 - denominator_id - external uuid
 
 # define endpoints
 case $1 in
@@ -22,9 +21,9 @@ dev)
 esac
 
 # Prepare inputs
-token="$2"
-numerator_id="$3"
-denominator_id="$4"
+token=$(bash scripts/get_auth_token.sh $1)
+numerator_id="$2"
+denominator_id="$3"
 
 parameters_json=$(psql -Xqtc "select row_to_json(row) from (select a.uuid as numerator_id, b.uuid as denominator_id, c.label, c.min, c.max, c.p25, c.p75 from (select uuid, id from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$numerator_id' order by last_updated asc limit 1) a, (select uuid, id from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$denominator_id' order by last_updated asc limit 1) b, bivariate_axis_overrides c where a.id = c.numerator_id and b.id = c.denominator_id) row;")
 

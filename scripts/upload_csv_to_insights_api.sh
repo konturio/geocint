@@ -49,14 +49,29 @@ layer_update_freq="\"${12}\""
 layer_unit_id="\"${13}\""
 layer_last_updated="\"${14}\""
 
-parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}, \"lastUpdated\": ${layer_last_updated}}"
-curl_request="curl -k -w "\":::\"%{http_code}" --location --request POST ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$3\"'"
+existed_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$4' order by last_updated asc limit 1;" | xargs)
+
+if [[ -z $existed_uuid ]]; then
+  action="upload"
+
+  parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}, \"lastUpdated\": ${layer_last_updated}}"
+
+  curl_request="curl -k -w "\":::\"%{http_code}" --location --request POST ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$3\"'"
+else
+  action="update"
+
+  parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"uuid\": \"${existed_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}, \"lastUpdated\": ${layer_last_updated}}"
+
+  curl_request="curl -k -w "\":::\"%{http_code}" --location --request PUT ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$3\"'"
+fi
+
+echo "$curl_request"
 
 # Upload file
 request_result=$(eval $curl_request)
 
 if [[ -z $request_result ]]; then
-  echo "Error. Failed to upload layer"
+  echo "Error. Failed to $action layer"
   exit 1
 fi
 
@@ -64,16 +79,16 @@ response_status=$(sed 's/.*:::\(.*\)/\1/' <<< $request_result)
 response_status_length=${#response_status}
 
 if [ $response_status_length != 3 ]; then
-  echo "$(date '+%F %H:%M:%S') Error. Failed to upload layer. $layer_label $layer_id Message: $response_status"
+  echo "$(date '+%F %H:%M:%S') Error. Failed to $action layer. $layer_label $layer_id Message: $response_status"
   exit 1
 fi
 
 if [ $response_status != 200 ]; then
-  echo "$(date '+%F %H:%M:%S') Error. Failed to upload layer. $layer_label $layer_id Status code: $response_status"
+  echo "$(date '+%F %H:%M:%S') Error. Failed to $action layer. $layer_label $layer_id Status code: $response_status"
   exit 1
 fi
 
 layer_uuid=${request_result::-6}
 
-echo "$(date '+%F %H:%M:%S') Layer uploaded successfully. $layer_label $layer_id UUID: $layer_uuid"
+echo "$(date '+%F %H:%M:%S') Layer $action was successful. $layer_label $layer_id UUID: $layer_uuid"
 exit 0

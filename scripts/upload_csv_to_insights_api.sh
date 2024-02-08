@@ -52,17 +52,17 @@ existed_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 
 
 if [[ -z $existed_uuid ]]; then
   action="upload"
+  metod="POST"
 
   parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}, \"lastUpdated\": ${layer_last_updated}}"
-
-  curl_request="curl -k -w "\":::\"%{http_code}" --location --request POST ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$3\"'"
 else
   action="update"
+  metod="PUT"
 
   parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"uuid\": \"${existed_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}, \"lastUpdated\": ${layer_last_updated}}"
-
-  curl_request="curl -k -w "\":::\"%{http_code}" --location --request PUT ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$3\"'"
 fi
+
+curl_request="curl -k -w "\":::\"%{http_code}" --location --request ${metod} ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$3\"'"
 
 echo "$curl_request"
 

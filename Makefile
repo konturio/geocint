@@ -21,7 +21,7 @@ include runner_make osm_make
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy/test/custom_axis/all_custom_axis deploy/dev/custom_axis/all_custom_axis ## [FINAL] Builds all targets for development. Run on every branch.	
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy/test/custom_axis/all_custom_axis deploy/dev/custom_axis/all_custom_axis deploy/test/presets/all_presets deploy/dev/presets/all_presets## [FINAL] Builds all targets for development. Run on every branch.	
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -122,10 +122,16 @@ deploy/dev/uploads: | deploy/dev ## folder for layer uploading to Insights API f
 deploy/dev/custom_axis: | deploy/dev ## Folder to store custom axis deployment fingerprints for dev instance.
 	mkdir -p $@
 
+deploy/dev/presets: | deploy/dev ## Folder to store presets deployment fingerprints for dev instance.
+	mkdir -p $@
+
 deploy/test/uploads: | deploy/test ## folder for layer uploading to Insights API footprints
 	mkdir -p $@
 
 deploy/test/custom_axis: | deploy/test ## Folder to store custom axis deployment fingerprints for test instance.
+	mkdir -p $@
+
+deploy/test/presets: | deploy/test ## Folder to store presets deployment fingerprints for test instance.
 	mkdir -p $@
 
 deploy/geocint: | deploy ## We use geocint as a GIS development server.
@@ -4457,6 +4463,148 @@ deploy/test/custom_axis/wildfire_days_count_one: deploy/test/uploads/wildfire_da
 deploy/test/custom_axis/all_custom_axis: deploy/test/custom_axis/population_area_km2 deploy/test/custom_axis/count_area_km2 deploy/test/custom_axis/building_count_area_km2 deploy/test/custom_axis/local_hours_area_km2 deploy/test/custom_axis/total_hours_area_km2 deploy/test/custom_axis/view_count_area_km2 deploy/test/custom_axis/osm_users_one deploy/test/custom_axis/total_building_count_area_km2 deploy/test/custom_axis/wildfires_area_km2 deploy/test/custom_axis/forest_area_km2 deploy/test/custom_axis/days_maxtemp_over_32c_1c_one deploy/test/custom_axis/days_mintemp_above_25c_1c_one deploy/test/custom_axis/man_distance_to_fire_brigade_one deploy/test/custom_axis/man_distance_to_hospital_one deploy/test/custom_axis/highway_length_area_km2 deploy/test/custom_axis/total_road_length_area_km2 deploy/test/custom_axis/foursquare_places_count_one deploy/test/custom_axis/foursquare_visits_count_one deploy/test/custom_axis/view_count_bf2402_one deploy/test/custom_axis/view_count_bf2402_area_km2 deploy/test/custom_axis/powerlines_one deploy/test/custom_axis/night_lights_intensity_one deploy/test/custom_axis/man_distance_to_bomb_shelters_one deploy/test/custom_axis/man_distance_to_charging_stations_one deploy/test/custom_axis/solar_power_plants_area_km2 deploy/test/custom_axis/volcano_days_count_area_km2 deploy/test/custom_axis/volcano_days_count_one deploy/test/custom_axis/flood_days_count_area_km2 deploy/test/custom_axis/flood_days_count_one deploy/test/custom_axis/man_distance_to_bomb_shelters_population deploy/test/custom_axis/man_distance_to_charging_stations_population deploy/test/custom_axis/man_distance_to_fire_brigade_population deploy/test/custom_axis/building_count_total_building_count deploy/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy/test/custom_axis/highway_length_total_road_length deploy/test/custom_axis/eatery_count_one deploy/test/custom_axis/food_shops_count_one deploy/test/custom_axis/hazardous_days_count_area_km2 deploy/test/custom_axis/hazardous_days_count_one deploy/test/custom_axis/earthquake_days_count_area_km2 deploy/test/custom_axis/earthquake_days_count_one deploy/test/custom_axis/drought_days_count_area_km2 deploy/test/custom_axis/drought_days_count_one deploy/test/custom_axis/cyclone_days_count_area_km2 deploy/test/custom_axis/cyclone_days_count_one deploy/test/custom_axis/wildfire_days_count_area_km2 deploy/test/custom_axis/wildfire_days_count_one ## final target for custom axis deployment to test
 	touch $@
 
-## END custom axis updates block
+## END Custom axis updates block
+
+## Presets upload block
+
+deploy/test/presets/osm_quantity: deploy/test/uploads/count_upload deploy/test/uploads/area_km2_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Kontur OpenStreetMap Quantity overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "count" "area_km2" "population" "area_km2"
+	touch $@
+
+deploy/test/presets/osm_building_completeness: deploy/test/uploads/building_count_upload deploy/test/uploads/total_building_count_upload deploy/test/uploads/area_km2_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "building_count" "total_building_count" "population" "area_km2"
+	touch $@
+
+deploy/test/presets/osm_road_completeness: deploy/test/uploads/road_length_upload deploy/test/uploads/total_road_length_upload deploy/test/uploads/area_km2_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "road_length" "total_road_length" "population" "area_km2"
+	touch $@
+
+deploy/test/presets/osm_mapping_activity: deploy/test/uploads/local_hours_upload deploy/test/uploads/total_hours_upload deploy/test/uploads/area_km2_upload  db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "local_hours" "area_km2" "total_hours" "area_km2"
+	touch $@
+
+deploy/test/presets/osm_antiquity: deploy/test/uploads/avgmax_ts_upload deploy/test/uploads/one_upload deploy/test/uploads/area_km2_upload deploy/test/uploads/view_count_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "avgmax_ts" "one" "view_count" "area_km2"
+	touch $@
+
+deploy/test/presets/nighttime_heatwave_risk: deploy/test/uploads/days_mintemp_above_25c_1c_upload deploy/test/uploads/one_upload deploy/test/uploads/area_km2_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "days_mintemp_above_25c_1c" "one" "population" "area_km2"
+	touch $@
+
+deploy/test/presets/fire_service_scarcity_risk: deploy/test/uploads/man_distance_to_fire_brigade_upload deploy/test/uploads/area_km2_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_fire_brigade" "population" "population" "area_km2"
+	touch $@
+
+deploy/test/presets/views_before_after: deploy/test/uploads/view_count_bf2402_upload deploy/test/uploads/area_km2_upload deploy/test/uploads/view_count_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Kontur OpenStreetMap Views before after overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "view_count_bf2402" "area_km2" "view_count" "area_km2"
+	touch $@
+
+deploy/test/presets/ev_charging_availability: deploy/test/uploads/man_distance_to_charging_stations_upload deploy/test/uploads/area_km2_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy EV Charging Availability overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_charging_stations" "population" "population" "area_km2"
+	touch $@
+
+deploy/test/presets/waste_containers_availability: deploy/test/uploads/waste_basket_coverage_area_km2_upload deploy/test/uploads/populated_area_km2_upload deploy/test/uploads/population_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Waste containers availability overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
+	touch $@
+
+deploy/test/presets/shelters_scarcity_risk: deploy/test/uploads/man_distance_to_bomb_shelters_upload deploy/test/uploads/population_upload deploy/test/uploads/area_km2_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Shelters Scarcity Risk overlay to test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_bomb_shelters" "population" "population" "area_km2"
+	touch $@
+
+deploy/test/presets/all_presets: deploy/test/presets/osm_quantity deploy/test/presets/osm_building_completeness deploy/test/presets/osm_road_completeness deploy/test/presets/osm_mapping_activity deploy/test/presets/osm_antiquity deploy/test/presets/nighttime_heatwave_risk deploy/test/presets/fire_service_scarcity_risk deploy/test/presets/views_before_after deploy/test/presets/ev_charging_availability deploy/test/presets/waste_containers_availability deploy/test/presets/shelters_scarcity_risk ## final target for presets deployment to test
+	touch $@
+
+deploy/dev/presets/osm_quantity: deploy/dev/uploads/count_upload deploy/dev/uploads/area_km2_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Kontur OpenStreetMap Quantity overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "count" "area_km2" "population" "area_km2"
+	touch $@
+
+deploy/dev/presets/osm_building_completeness: deploy/dev/uploads/building_count_upload deploy/dev/uploads/total_building_count_upload deploy/dev/uploads/area_km2_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "building_count" "total_building_count" "population" "area_km2"
+	touch $@
+
+deploy/dev/presets/osm_road_completeness: deploy/dev/uploads/road_length_upload deploy/dev/uploads/total_road_length_upload deploy/dev/uploads/area_km2_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "road_length" "total_road_length" "population" "area_km2"
+	touch $@
+
+deploy/dev/presets/osm_mapping_activity: deploy/dev/uploads/local_hours_upload deploy/dev/uploads/total_hours_upload deploy/dev/uploads/area_km2_upload  db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "local_hours" "area_km2" "total_hours" "area_km2"
+	touch $@
+
+deploy/dev/presets/osm_antiquity: deploy/dev/uploads/avgmax_ts_upload deploy/dev/uploads/one_upload deploy/dev/uploads/area_km2_upload deploy/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "avgmax_ts" "one" "view_count" "area_km2"
+	touch $@
+
+deploy/dev/presets/nighttime_heatwave_risk: deploy/dev/uploads/days_mintemp_above_25c_1c_upload deploy/dev/uploads/one_upload deploy/dev/uploads/area_km2_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "days_mintemp_above_25c_1c" "one" "population" "area_km2"
+	touch $@
+
+deploy/dev/presets/fire_service_scarcity_risk: deploy/dev/uploads/man_distance_to_fire_brigade_upload deploy/dev/uploads/area_km2_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_fire_brigade" "population" "population" "area_km2"
+	touch $@
+
+deploy/dev/presets/views_before_after: deploy/dev/uploads/view_count_bf2402_upload deploy/dev/uploads/area_km2_upload deploy/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Kontur OpenStreetMap Views before after overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "view_count_bf2402" "area_km2" "view_count" "area_km2"
+	touch $@
+
+deploy/dev/presets/ev_charging_availability: deploy/dev/uploads/man_distance_to_charging_stations_upload deploy/dev/uploads/area_km2_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy EV Charging Availability overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_charging_stations" "population" "population" "area_km2"
+	touch $@
+
+deploy/dev/presets/waste_containers_availability: deploy/dev/uploads/waste_basket_coverage_area_km2_upload deploy/dev/uploads/populated_area_km2_upload deploy/dev/uploads/population_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Waste containers availability overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
+	touch $@
+
+deploy/dev/presets/shelters_scarcity_risk: deploy/dev/uploads/man_distance_to_bomb_shelters_upload deploy/dev/uploads/population_upload deploy/dev/uploads/area_km2_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Shelters Scarcity Risk overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_bomb_shelters" "population" "population" "area_km2"
+	touch $@
+
+deploy/dev/presets/all_presets: deploy/dev/presets/osm_quantity deploy/dev/presets/osm_building_completeness deploy/dev/presets/osm_road_completeness deploy/dev/presets/osm_mapping_activity deploy/dev/presets/osm_antiquity deploy/dev/presets/nighttime_heatwave_risk deploy/dev/presets/fire_service_scarcity_risk deploy/dev/presets/views_before_after deploy/dev/presets/ev_charging_availability deploy/dev/presets/waste_containers_availability deploy/dev/presets/shelters_scarcity_risk ## final target for presets deployment to dev
+	touch $@
+
+## END Presets upload block
 
 ### END Deploy to dev and test through API

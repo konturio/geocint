@@ -31,7 +31,5 @@ if [[ -z $request_result ]]; then
   exit 1
 fi
 
-response_status=$(sed 's/.*:::\(.*\)/\1/' <<< $request_result)
-
 echo "$request_result"
 exit 0

@@ -2875,3 +2875,35 @@ data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_upda
 	touch $@
 
 ### End update customviz using hdxloader ###
+
+### Unemployment and poverty rates ###
+
+db/table/poverty_rates: | db/table ## load poverty rates data
+	psql -c 'drop table if exists poverty_rates;'
+	psql -c 'create table poverty_rates(iso3 char(3), iso2 char(2), year integer, poverty_rate float);'
+	cat scripts/poverty_rates.csv | psql -c "copy poverty_rates(iso3, year, poverty_rate) from stdin with csv header delimiter ',';"
+	psql -c 'update poverty_rates set iso2 = hasc from hdx_locations_with_wikicodes h where iso3 ilike code;'
+	touch $@
+
+db/table/unemployment_rates: | db/table ## load unemployment rates data
+	psql -c 'drop table if exists unemployment_rates;'
+	psql -c 'create table unemployment_rates(iso3 char(3), iso2 char(2), year integer, unemployment_rate float);'
+	cat scripts/unemployment_rates.csv | psql -c "copy unemployment_rates(iso3, year, unemployment_rate) from stdin with csv header delimiter ',';"
+	psql -c 'update unemployment_rates set iso2 = hasc from hdx_locations_with_wikicodes h where iso3 ilike code;'
+	touch $@
+
+db/table/poverty_rates_h3: db/table/hdx_locations_with_wikicodes db/table/kontur_population_h3 db/procedure/transform_hasc_to_h3 | db/table ## temporary layer with poverty rates
+	psql -c "call transform_hasc_to_h3('poverty_rates', 'poverty_rates_h3_in', 'iso2', '{poverty_rate}'::text[], 8);"
+	psql -c 'create index on poverty_rates_h3_in using brin(h3);'
+	psql -c 'create poverty_rates_h3_mid as select b.h3, p.poverty_rate::float * b.population::float as value from kontur_population_h3 b, poverty_rates_h3_in p where p.h3 = b.h3;'
+	touch $@
+
+db/table/unemployment_rates_h3: db/table/hdx_locations_with_wikicodes db/table/kontur_population_h3 db/procedure/transform_hasc_to_h3 | db/table ## temporary layer with unemployment rates
+	psql -c "call transform_hasc_to_h3('unemployment_rates', 'unemployment_rates_h3_in', 'iso2', '{unemployment_rate}'::text[], 8);"
+	psql -c 'create index on unemployment_rates_h3_in using brin(h3);'
+	psql -c 'create unemployment_rates_h3_mid as select b.h3, p.poverty_rate::float * b.population::float as value from kontur_population_h3 b, unemployment_rates_h3_in p where p.h3 = b.h3;'
+	touch $@
+
+
+	psql -c "call generate_overviews('global_rva_h3', '{raw_mhe_pop_scaled, }'::text[], '{avg,avg}'::text[], 8);"
+	psql -c "call generate_overviews('global_rva_h3', '{raw_mhe_pop_scaled, }'::text[], '{avg,avg}'::text[], 8);"

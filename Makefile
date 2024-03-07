@@ -21,7 +21,7 @@ include runner_make osm_make
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check db/table/poverty_rates_h3 db/table/unemployment_rates_h3 ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -2881,29 +2881,41 @@ data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_upda
 db/table/poverty_rates: | db/table ## load poverty rates data
 	psql -c 'drop table if exists poverty_rates;'
 	psql -c 'create table poverty_rates(iso3 char(3), iso2 char(2), year integer, poverty_rate float);'
-	cat scripts/poverty_rates.csv | psql -c "copy poverty_rates(iso3, year, poverty_rate) from stdin with csv header delimiter ',';"
+	cat static_data/socioeconomic/poverty_rates.csv | psql -c "copy poverty_rates(iso3, year, poverty_rate) from stdin with csv delimiter ',';"
+	psql -c 'update poverty_rates set poverty_rate = poverty_rate::float / 100.0::float;'
 	psql -c 'update poverty_rates set iso2 = hasc from hdx_locations_with_wikicodes h where iso3 ilike code;'
 	touch $@
 
 db/table/unemployment_rates: | db/table ## load unemployment rates data
 	psql -c 'drop table if exists unemployment_rates;'
 	psql -c 'create table unemployment_rates(iso3 char(3), iso2 char(2), year integer, unemployment_rate float);'
-	cat scripts/unemployment_rates.csv | psql -c "copy unemployment_rates(iso3, year, unemployment_rate) from stdin with csv header delimiter ',';"
+	cat static_data/socioeconomic/unemployment_rates.csv | psql -c "copy unemployment_rates(iso3, year, unemployment_rate) from stdin with csv delimiter ',';"
+	psql -c 'update unemployment_rates set unemployment_rate = unemployment_rate::float / 100.0::float;'
 	psql -c 'update unemployment_rates set iso2 = hasc from hdx_locations_with_wikicodes h where iso3 ilike code;'
 	touch $@
 
-db/table/poverty_rates_h3: db/table/hdx_locations_with_wikicodes db/table/kontur_population_h3 db/procedure/transform_hasc_to_h3 | db/table ## temporary layer with poverty rates
+db/table/poverty_rates_h3_mid: db/table/hdx_locations_with_wikicodes db/table/kontur_population_h3 db/procedure/transform_hasc_to_h3 | db/table ## temporary layer with poverty rates
 	psql -c "call transform_hasc_to_h3('poverty_rates', 'poverty_rates_h3_in', 'iso2', '{poverty_rate}'::text[], 8);"
 	psql -c 'create index on poverty_rates_h3_in using brin(h3);'
-	psql -c 'create poverty_rates_h3_mid as select b.h3, p.poverty_rate::float * b.population::float as value from kontur_population_h3 b, poverty_rates_h3_in p where p.h3 = b.h3;'
+	psql -c 'drop table if exists poverty_rates_h3_mid;'
+	psql -c 'create table poverty_rates_h3_mid as select b.h3, b.population, p.poverty_rate::float * b.population::float as value from kontur_population_h3 b, poverty_rates_h3_in p where p.h3 = b.h3;'
 	touch $@
 
-db/table/unemployment_rates_h3: db/table/hdx_locations_with_wikicodes db/table/kontur_population_h3 db/procedure/transform_hasc_to_h3 | db/table ## temporary layer with unemployment rates
+db/table/unemployment_rates_h3_mid: db/table/hdx_locations_with_wikicodes db/table/kontur_population_h3 db/procedure/transform_hasc_to_h3 | db/table ## temporary layer with unemployment rates
 	psql -c "call transform_hasc_to_h3('unemployment_rates', 'unemployment_rates_h3_in', 'iso2', '{unemployment_rate}'::text[], 8);"
 	psql -c 'create index on unemployment_rates_h3_in using brin(h3);'
-	psql -c 'create unemployment_rates_h3_mid as select b.h3, p.poverty_rate::float * b.population::float as value from kontur_population_h3 b, unemployment_rates_h3_in p where p.h3 = b.h3;'
+	psql -c 'drop table if exists unemployment_rates_h3_mid;'
+	psql -c 'create table unemployment_rates_h3_mid as select b.h3, b.population, p.unemployment_rate::float * b.population::float as value from kontur_population_h3 b, unemployment_rates_h3_in p where p.h3 = b.h3;'
 	touch $@
 
+db/table/unemployment_rates_h3: db/table/unemployment_rates_h3_mid db/procedure/generate_overviews | db/table ## generate final table with unemployment rates
+	psql -f tables/dither_unemployment_rates.sql
+	psql -c "call generate_overviews('unemployment_rates_h3', '{unemployment_rate}'::text[], '{sum}'::text[], 8);"
+	touch $@
 
-	psql -c "call generate_overviews('global_rva_h3', '{raw_mhe_pop_scaled, }'::text[], '{avg,avg}'::text[], 8);"
-	psql -c "call generate_overviews('global_rva_h3', '{raw_mhe_pop_scaled, }'::text[], '{avg,avg}'::text[], 8);"
+db/table/poverty_rates_h3: db/table/poverty_rates_h3_mid db/procedure/generate_overviews | db/table ## generate final table with poverty rates
+	psql -f tables/dither_poverty_rates.sql
+	psql -c "call generate_overviews('poverty_rates_h3', '{poverty_rate}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+### END Unemployment and poverty rates ###

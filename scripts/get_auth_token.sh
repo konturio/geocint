@@ -4,13 +4,13 @@
 # define endpoints
 case $1 in
 prod)
-  auth_endpoint="https://keycloak01.kontur.io/auth/realms/kontur/protocol/openid-connect/token"
+  auth_endpoint="https://keycloak01.kontur.io/realms/kontur/protocol/openid-connect/token"
   ;;
 test)
-  auth_endpoint="https://keycloak01.konturlabs.com/auth/realms/test/protocol/openid-connect/token"
+  auth_endpoint="https://keycloak01.konturlabs.com/realms/test/protocol/openid-connect/token"
   ;;
 dev)
-  auth_endpoint="https://dev-keycloak.k8s-01.konturlabs.com/auth/realms/dev/protocol/openid-connect/token"
+  auth_endpoint="https://dev-keycloak.k8s-01.konturlabs.com/realms/dev/protocol/openid-connect/token"
   ;;
 *)
   echo "Error. Unsupported realm"

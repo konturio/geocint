@@ -4479,7 +4479,7 @@ deploy/test/presets/osm_building_completeness: deploy/test/uploads/building_coun
 	bash scripts/upload_presets_to_insights_api.sh test "building_count" "total_building_count" "population" "area_km2"
 	touch $@
 
-deploy/test/presets/osm_road_completeness: deploy/test/uploads/road_length_upload deploy/test/uploads/total_road_length_upload deploy/test/uploads/area_km2_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to test.
+deploy/test/presets/osm_road_completeness: deploy/test/uploads/highway_length_upload deploy/test/uploads/total_road_length_upload deploy/test/uploads/area_km2_upload deploy/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy/test/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "road_length" "total_road_length" "population" "area_km2"
@@ -4548,7 +4548,7 @@ deploy/dev/presets/osm_building_completeness: deploy/dev/uploads/building_count_
 	bash scripts/upload_presets_to_insights_api.sh dev "building_count" "total_building_count" "population" "area_km2"
 	touch $@
 
-deploy/dev/presets/osm_road_completeness: deploy/dev/uploads/road_length_upload deploy/dev/uploads/total_road_length_upload deploy/dev/uploads/area_km2_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to dev.
+deploy/dev/presets/osm_road_completeness: deploy/dev/uploads/highway_length_upload deploy/dev/uploads/total_road_length_upload deploy/dev/uploads/area_km2_upload deploy/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy/dev/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh dev "road_length" "total_road_length" "population" "area_km2"

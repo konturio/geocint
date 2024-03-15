@@ -33,7 +33,7 @@ create table osm_missing_boundaries_report as (
 
            -- Generate link for JOSM remote desktop:
            'hrefIcon_[' || b.name ||
-           '](http://localhost:8111/load_object?new_layer=false&objects=' ||
+           '](http://127.0.0.1:8111/load_object?new_layer=false&objects=' ||
            left(b.osm_type, 1) || osm_id || '&relation_members=true)'                                       as "Name",
 
            b.admin_level                                                                                    as "Admin level",

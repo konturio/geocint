@@ -93,7 +93,7 @@ step1 as (
 
         -- Generate link for JOSM remote desktop:
         'hrefIcon_[' || case when u.group_id = u.osm_id then '' else 'tab_' end  ||
-        o.name || '](http://localhost:8111/load_object?new_layer=false&objects=' ||
+        o.name || '](http://127.0.0.1:8111/load_object?new_layer=false&objects=' ||
         left(o.osm_type, 1) || u.osm_id || '&relation_members=true)'                        as "Name",
 
         o.admin_level                                                                       as "Admin level",

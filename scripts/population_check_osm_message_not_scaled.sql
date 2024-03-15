@@ -19,7 +19,7 @@ with sections as (
                                                    'type', 'plain_text',
                                                    'text', 'Open in JOSM'
                                                ),
-                                           'url', 'http://localhost:8111/load_object?new_layer=true&objects=r' ||
+                                           'url', 'http://127.0.0.1:8111/load_object?new_layer=true&objects=r' ||
                                                   osm_id ||
                                                   '&relation_members=true'
                                        ),

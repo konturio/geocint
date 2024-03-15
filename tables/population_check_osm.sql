@@ -13,7 +13,7 @@ create table population_check_osm_in as (
 
             -- Generate link for JOSM remote desktop:
             'hrefIcon_[' || coalesce(tags ->> 'name:en', tags ->> 'int_name', name) ||
-            '](http://localhost:8111/load_object?new_layer=false&objects=' ||
+            '](http://127.0.0.1:8111/load_object?new_layer=false&objects=' ||
             left(osm_type, 1) || osm_id || '&relation_members=true)'                                      as report_name,
 
             tags ->> 'population:date'                                                                    as report_osm_date,

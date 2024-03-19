@@ -48,7 +48,7 @@ layer_update_freq="\"${11}\""
 layer_unit_id="\"${12}\""
 layer_last_updated="\"${13}\""
 
-existed_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$4' order by last_updated asc limit 1;" | xargs)
+existed_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$3' order by last_updated asc limit 1;" | xargs)
 
 if [[ -z $existed_uuid ]]; then
   action="upload"

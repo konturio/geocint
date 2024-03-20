@@ -189,7 +189,7 @@ create table stat_h3_quality as (
                 avg(a.road_density) as agg_road_density,
                 avg(a.households_with_fixed_phone) as agg_households_with_fixed_phone,
                 avg(a.households_with_cell_phone) as agg_households_with_cell_phone,
-                avg(a.voter_participation) as agg_voter_participation
+                avg(a.voter_participation) as agg_voter_participation,
                 avg(a.stddev_accel) as agg_stddev_accel
             from
                 stat_h3 a

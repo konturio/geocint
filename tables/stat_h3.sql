@@ -46,6 +46,7 @@ create table stat_h3_in  as (
            coalesce(sum(man_distance_to_charging_stations), 0) as man_distance_to_charging_stations,
            coalesce(sum(waste_basket_coverage), 0) as waste_basket_coverage,
            coalesce(sum(solar_farms_placement_suitability), 0) as solar_farms_placement_suitability,
+           coalesce(sum(stddev_accel), 0) as stddev_accel,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
@@ -62,7 +63,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from osm_object_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -79,7 +80,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from kontur_population_h3
              union all
              select h3, null::float as count, null::float as count_6_months,null::float as building_count,
@@ -96,7 +97,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from gdp_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -113,7 +114,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, h3_get_resolution(h3) as resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, h3_get_resolution(h3) as resolution
              from user_hours_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -130,7 +131,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, h3_get_resolution(h3) as resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, h3_get_resolution(h3) as resolution
              from residential_pop_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -147,7 +148,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from tile_logs_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -164,7 +165,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from building_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -181,7 +182,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from global_fires_stat_h3
              union all
              /*
@@ -199,7 +200,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from covid19_vaccine_accept_us_counties_h3
              union all
               */
@@ -217,7 +218,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from covid19_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -234,7 +235,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from kontur_population_v5_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -251,7 +252,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from osm_landuse_industrial_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -268,7 +269,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from osm_volcanos_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -284,7 +285,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from us_census_tracts_stats_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -301,7 +302,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from isodist_fire_stations_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -318,7 +319,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from isodist_hospitals_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -335,7 +336,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from total_road_length_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -352,7 +353,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from foursquare_places_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -369,7 +370,7 @@ create table stat_h3_in  as (
                     foursquare_visits_count::float, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from foursquare_visits_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -386,7 +387,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from tile_logs_bf2402_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -403,7 +404,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from osm_road_segments_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -420,7 +421,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from osm_road_segments_6_months_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -437,7 +438,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     eatery_count::float, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from osm_places_eatery_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -454,7 +455,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, food_shops_count::float, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from osm_places_food_shops_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -471,7 +472,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, man_distance as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from isodist_bomb_shelters_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -488,7 +489,7 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     man_distance as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
-                    null::float as solar_farms_placement_suitability, resolution
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from isodist_charging_stations_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -504,7 +505,8 @@ create table stat_h3_in  as (
                     null::float as total_road_length, null::float as foursquare_places_count,
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
-                    null::float as man_distance_to_charging_stations, waste_basket_coverage, null::float as solar_farms_placement_suitability, resolution
+                    null::float as man_distance_to_charging_stations, waste_basket_coverage, null::float as solar_farms_placement_suitability, 
+                    null::float as stddev_accel, resolution
              from waste_containers_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -521,8 +523,25 @@ create table stat_h3_in  as (
                     null::float as foursquare_visits_count, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
-                    solar_farms_placement_suitability, resolution
+                    solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from solar_farms_placement_suitability_synthetic_h3
+             union all
+             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
+                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
+                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
+                    null::float as wildfires, null::float as covid19_confirmed,
+                    null::float as population_prev, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
+                    null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
+                    null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
+                    null::float as total_road_length, null::float as foursquare_places_count,
+                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
+                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
+                    null::float as solar_farms_placement_suitability, stddev_accel, resolution
+             from live_sensor_data_h3
         ) z
     group by 2, 1
 );
@@ -578,6 +597,7 @@ create table stat_h3  as (
            a.food_shops_count,
            (ST_Area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0) * a.waste_basket_coverage / (49.0 * POWER(7, 8 - a.resolution)) as waste_basket_coverage_area_km2,
            a.solar_farms_placement_suitability,
+           a.stddev_accel,
            (coalesce(ms.mapswipe_area, 0))::float as mapswipe_area_km2,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
            (coalesce(gbc.avg_elevation_gebco_2022, 0))::float as avg_elevation_gebco_2022,
@@ -786,5 +806,5 @@ population_change_scale, urban_population_change_scale, population_pressures_ind
 );
 
 create index stat_h3_brin_pt6 on stat_h3 using brin (
-physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale,raw_population_exposure_index, raw_economic_exposure, relative_population_exposure_index, relative_economic_exposure, poverty, economic_dependency, maternal_mortality, infant_mortality, malnutrition, population_change, urban_pop_change, school_enrollment, years_of_schooling, fem_to_male_labor, proportion_of_female_seats_in_government, life_expectancy, protected_area, physicians_per_10000_persons, nurse_midwife_per_10k, distance_to_hospital, hbeds_per_10000_persons, distance_to_port, road_density, households_with_fixed_phone, households_with_cell_phone, voter_participation
+physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale,raw_population_exposure_index, raw_economic_exposure, relative_population_exposure_index, relative_economic_exposure, poverty, economic_dependency, maternal_mortality, infant_mortality, malnutrition, population_change, urban_pop_change, school_enrollment, years_of_schooling, fem_to_male_labor, proportion_of_female_seats_in_government, life_expectancy, protected_area, physicians_per_10000_persons, nurse_midwife_per_10k, distance_to_hospital, hbeds_per_10000_persons, distance_to_port, road_density, households_with_fixed_phone, households_with_cell_phone, voter_participation, stddev_accel
 );

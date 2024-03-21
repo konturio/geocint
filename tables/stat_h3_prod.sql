@@ -93,7 +93,7 @@ create table stat_h3_prod  as (
     
 vacuum analyze stat_h3_prod;
 
-create index on stat_h3 using gist (geom, zoom);
+create index on stat_h3_prod using gist (geom, zoom);
 -- cannot create index with more than 32 columns, so create more indexes
 create index stat_h3_prod_brin_pt1 on stat_h3 using brin (
                                                      area_km2, populated_area_km2, population, count, building_count,

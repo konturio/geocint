@@ -95,7 +95,7 @@ vacuum analyze stat_h3_prod;
 
 create index on stat_h3 using gist (geom, zoom);
 -- cannot create index with more than 32 columns, so create more indexes
-create index stat_h3_brin_pt1 on stat_h3 using brin (
+create index stat_h3_prod_brin_pt1 on stat_h3 using brin (
                                                      area_km2, populated_area_km2, population, count, building_count,
                                                      highway_length, resolution, zoom, geom, one, total_building_count,
                                                      max_ts, total_hours, avgmax_ts, forest,
@@ -105,7 +105,7 @@ create index stat_h3_brin_pt1 on stat_h3 using brin (
                                                      coping_capacity_index, vulnerability_index, night_lights_intensity
     );
 
-create index stat_h3_brin_pt2 on stat_h3 using brin (
+create index stat_h3_prod_brin_pt2 on stat_h3 using brin (
                                                      gdp, highway_length_6_months, wildfires, avg_ndvi,building_count_6_months,
                                                      local_hours, osm_users, covid19_confirmed, population_prev,
                                                      industrial_area, volcanos_count, pop_under_5_total,
@@ -118,7 +118,7 @@ create index stat_h3_brin_pt2 on stat_h3 using brin (
                                                      powerlines, stddev_accel
     );
 
-create index stat_h3_brin_pt3 on stat_h3 using brin (
+create index stat_h3_prod_brin_pt3 on stat_h3 using brin (
                                                      eatery_count, food_shops_count, avg_elevation_gebco_2022,
                                                      avg_slope_gebco_2022, mapswipe_area_km2, gsa_ghi,
                                                      worldclim_avg_temperature, worldclim_min_temperature,

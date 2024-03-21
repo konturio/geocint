@@ -972,6 +972,11 @@ values ('voter_participation', 'PDC NDPBA Voter participation', jsonb_build_arra
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
         '[["unimportant"], ["important", "bad"]]'::jsonb, 'Registered voters per 10,000 population.', 'World', 'static', 'n_per_10k', FALSE);
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+values ('stddev_accel', 'Road Quality metric (Standard Deviatiation of Acceleration)', jsonb_build_array(
+        '© Kontur https://kontur.io/'),
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'm_s2', FALSE);
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

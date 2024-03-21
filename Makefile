@@ -2195,19 +2195,19 @@ db/table/stat_h3_prod: db/table/stat_h3 | db/table ## Extract PROD part of summa
 	psql -f tables/stat_h3_prod.sql
 	touch $@
 
-db/table/prod_indicators_list: db/table/stat_h3 | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers for PROD
+db/table/prod_indicators_list: db/table/stat_h3 | db/table ## Store list of indicators that should be available on PROD
 	psql -f tables/prod_indicators_list.sql
 	touch $@
 
-db/table/bivariate_axis_prod: db/table/bivariate_axis db/table/prod_indicators_list | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers for PROD
+db/table/bivariate_axis_prod: db/table/bivariate_axis db/table/prod_indicators_list | db/table ## Extract PROD part of Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers
 	psql -f tables/bivariate_axis_prod.sql
 	touch $@
 
-db/table/bivariate_axis_correlation_prod: db/table/bivariate_axis_correlation db/table/prod_indicators_list | db/table ## Precalculated correlations for bivariate layers for PROD
+db/table/bivariate_axis_correlation_prod: db/table/bivariate_axis_correlation db/table/prod_indicators_list | db/table ## Extract PROD part of Precalculated correlations for bivariate layers
 	psql -f tables/bivariate_axis_correlation_prod.sql
 	touch $@
 
-db/table/bivariate_indicators_prod: db/table/bivariate_indicators db/table/prod_indicators_list | db/table ## Bivariate indicators properties, and attribution used in Bivariate manager for PROD
+db/table/bivariate_indicators_prod: db/table/bivariate_indicators db/table/prod_indicators_list | db/table ## Extract PROD part of Bivariate indicators properties, and attribution used in Bivariate manager
 	psql -f tables/bivariate_indicators_prod.sql
 	touch $@
 

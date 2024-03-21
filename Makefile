@@ -2339,8 +2339,8 @@ data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## C
 	mv $@__TMP $@
 	touch $@
 
-data/out/population/stat_h3_prod.sqld.gz: db/table/stat_h3 | data/out/population ## Crafting production friendly SQL dump for stat_h3 table
-	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner --no-tablespaces -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') scripts/population_api_dump_footer.sql | pigz" > $@__TMP
+data/out/population/stat_h3_prod.sqld.gz: db/table/stat_h3_prod | data/out/population ## Crafting production friendly SQL dump for stat_h3 table
+	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner --no-tablespaces -t stat_h3_prod | sed 's/ public.stat_h3_prod / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') scripts/population_api_dump_footer.sql | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@
 

@@ -20,7 +20,7 @@ alter table bivariate_indicators
 insert into bivariate_indicators_prod 
         select * 
         from bivariate_indicators 
-        where param_id in (select * from prod_indicators_list);
+        where param_id in (select indicator from prod_indicators_list);
 
 -- set indicator is_base to become denominators
 update bivariate_indicators_prod

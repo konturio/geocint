@@ -926,12 +926,12 @@ values ('life_expectancy', 'PDC NDPBA Life expectancy', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('protected_area', 'PDC NDPBA Protected area', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["unimportant", "good"]]'::jsonb, 'Percentage of department area that is within a natural protected area.', 'World', 'static', 'perc', FALSE, '');
+        '[["important", "bad"], ["unimportant", "good"]]'::jsonb, 'Percentage of department area that is within a natural protected area.', 'World', 'static', 'perc', FALSE, '🛡️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('physicians_per_10000_persons', 'PDC NDPBA Physicians per 10000 persons', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["unimportant", "good"]]'::jsonb, 'Physicians per 10000 persons.', 'World', 'static', 'n_per_10k', FALSE, '🛡️');
+        '[["important", "bad"], ["unimportant", "good"]]'::jsonb, 'Physicians per 10000 persons.', 'World', 'static', 'n_per_10k', FALSE, '👨‍⚕️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('nurse_midwife_per_10k', 'PDC NDPBA Nurse per 10000 persons', jsonb_build_array(

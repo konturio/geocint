@@ -1,18 +1,5 @@
 drop table if exists bivariate_indicators_prod;
-create table bivariate_indicators_prod 
-(
-    param_id   text,
-    param_label text,
-    copyrights json,
-    direction json,
-    is_base boolean not null default false,
-    description text,
-    coverage text,
-    update_frequency text,
-    is_public boolean,
-    application json,
-    unit_id text
-);
+create table bivariate_indicators_prod as table bivariate_indicators with no data;
 
 alter table bivariate_indicators
     set (parallel_workers = 32);

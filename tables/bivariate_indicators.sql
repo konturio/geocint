@@ -112,12 +112,12 @@ values ('wetland', 'Landcover: wetland', jsonb_build_array('© Kontur https://ko
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050'),
         '[["unimportant"], ["important"]]'::jsonb, 'Wetland, Lands with a permanent mixture of water and herbaceous or woody vegetation. The vegetation can be present in either salt, brackish, or fresh water.', 'World', 'static', 'km2', TRUE, '🌊');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('moss_lichen', 'Landcover: mosses and lichens', jsonb_build_array('© Kontur https://kontur.io/',
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050'),
         '[["unimportant"], ["important"]]'::jsonb, 'Moss and lichen', 'World', 'static', 'km2', TRUE, '🍄');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('bare_vegetation', 'Landcover: bare vegetation', jsonb_build_array('© Kontur https://kontur.io/',
        'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050'),
         '[["unimportant"], ["important"]]'::jsonb, 'Bare / sparse vegetation. Lands with exposed soil, sand, or rocks and never has more than 10 % vegetated cover during any time of the year.', 'World', 'static', 'km2', TRUE, '🌾');
@@ -127,12 +127,12 @@ values ('builtup', 'Landcover: builtup', jsonb_build_array('© Kontur https://ko
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050'),
         '[["unimportant"], ["important"]]'::jsonb, 'Urban / built up. Land covered by buildings and other man-made structures.', 'World', 'static', 'km2', TRUE, '🏙️');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('snow_ice', 'Landcover: snow and ice', jsonb_build_array('© Kontur https://kontur.io/',
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050'),
         '[["unimportant"], ["important"]]'::jsonb, 'Snow and Ice. Lands under snow or ice cover throughout the year.', 'World', 'static', 'km2', TRUE, '❄️');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('permanent_water', 'Landcover: permanent water', jsonb_build_array('© Kontur https://kontur.io/',
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050'),
         '[["unimportant"], ["important"]]'::jsonb, 'Permanent water bodies. Lakes, reservoirs, and rivers. Can be either fresh or salt-water bodies.', 'World', 'static', 'km2', TRUE, '💧');
@@ -245,7 +245,7 @@ values ('avg_elevation_gebco_2022', 'Elevation (avg)', jsonb_build_array(
 '© Data from General Bathymatric Chart of the Oceans, www.gebco.net'),
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Average surface elevation in meters.',  'World', 'static', 'm', TRUE, '🏔️');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('avg_ndvi', 'NDVI - Normalized difference vegetation index (avg)', jsonb_build_array(
 '© Data from Sentinel-2 L2A 120m Mosaic, CC-BY 4.0, https://forum.sentinel-hub.com/c/aws-sentinel'),
     '[["bad"], ["good"]]'::jsonb, 'Average values of Normalized Difference Vegetation Index (NDVI), as of June 2019. Negative values of NDVI (values approaching -1) correspond to water. Values close to zero (-0.1 to 0.1) generally correspond to barren areas of rock, sand, or snow. Low, positive values represent shrub and grassland (approximately 0.2 to 0.4), while high values indicate temperate and tropical rainforests (values approaching 1).', 'World', 'static', 'index', TRUE, '🌿');
@@ -260,32 +260,32 @@ values ('volcanos_count', 'OSM: volcanoes count', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["unimportant"], ["important"]]'::jsonb, 'Number of volcanoes in a given area.', 'World', 'daily', 'n', TRUE, '🌋');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('pop_under_5_total', 'Population: under 5 (USA)', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["unimportant"], ["important"]]'::jsonb, 'Number of children (ages 0-5) in the United States.', 'The United States of America', 'static', 'ppl', TRUE, '👧👦');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('pop_over_65_total', 'Population: over 65 (USA)', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["unimportant"], ["important"]]'::jsonb, 'Number of elderly people (ages 65+) in the United States.', 'The United States of America', 'static', 'ppl', TRUE, '👴👵');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('poverty_families_total', 'Population: families below poverty line (USA)', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["unimportant", "good"], ["important"]]'::jsonb, 'Number of households living below the poverty line in the United States.', 'The United States of America', 'static', 'n', TRUE, '💸');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('pop_disability_total', 'Population: with disabilities (USA)', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["unimportant"], ["important"]]'::jsonb, 'Number of people with disabilities in the United States based on the U.S. Census Bureaus American Community Survey (ACS). This page describes how disability is defined and collected in the ACS: https://www.census.gov/topics/health/disability/guidance/data-collection-acs.html', 'The United States of America', 'static', 'ppl', TRUE, '♿');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('pop_not_well_eng_speak', 'Population: limited English proficiency (USA)', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["good"], ["important", "bad"]]'::jsonb, 'Number of people who have difficulty speaking English in the United States.', 'The United States of America', 'static', 'ppl', TRUE, '🗣️');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('pop_without_car', 'Population: without a car (USA)', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
         '[["neutral"], ["important"]]'::jsonb, 'Number of working people without a car in the United States.', 'The United States of America', 'static', 'ppl', TRUE, '🚶‍♂️');
@@ -427,7 +427,7 @@ values ('worldclim_amp_temperature', 'Air temperature (amplitude)', jsonb_build_
         'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
         '[["good"], ["bad"]]'::jsonb, 'Monthly amplitude of air temperatures according to WorldClim data for the years 1970-2000.', 'World', 'static', 'celc_deg', TRUE, '🔥🌡️❄️');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('powerlines_proximity_m', 'Proximity to powerlines grid', jsonb_build_array(
         'Copyright © OpenStreetMap contributors https://www.openstreetmap.org/copyright',
         '© 2020 The World Bank Group, CC-BY 4.0'),
@@ -443,7 +443,7 @@ values ('populated_areas_proximity_m', 'Proximity to densely populated areas', j
         'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["good"], ["bad"]]'::jsonb, 'Distance to closest Kontur Population cell with population > 80 ppl', 'World', 'daily', 'm', TRUE, '🏡🚶‍♂️');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('power_substations_proximity_m', 'Proximity to power substations', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["good"], ["bad"]]'::jsonb, 'Distance to closest power substation', 'World', 'daily', 'm', TRUE, '🏭🚶‍♂️');
@@ -460,7 +460,7 @@ values ('residential', 'Percentage of permanent population', jsonb_build_array(
         'Dataset: Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC) PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE Concept & Methodology: Freire S., MacManus K., Pesaresi M., Doxsey-Whitfield E., Mills J. (2016) Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World; Association of Geographic Information Laboratories in Europe (AGILE), AGILE 2016'),
         '[["unimportant"], ["important"]]'::jsonb, 'Estimation of residential population percentage according to GHS-POP dataset (2015)', 'World', 'static', 'fract', FALSE, '🏡');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('solar_power_plants', 'OSM: Existing solar power plants', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["unimportant"], ["important"]]'::jsonb, 'Total number of solar power plants in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '☀️⚡');
@@ -773,12 +773,12 @@ values ('communications_capacity_index', 'PDC GRVA Communications capacity index
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
         '[["important", "bad"], ["good"]]'::jsonb, 'General Communications capacity index based on fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scaled', 'World', 'static', 'index', FALSE, '📡');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('port_rnwy_density_scale', 'PDC GRVA ports and airports density scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
         '[["important", "bad"], ["good"]]'::jsonb, 'Count of ports and airports per 10,000 sq. km land area. ([Count of ports and airports] / [total dept. land area - water bodies removed]) * 10,000.', 'World', 'static', 'n_per_10k_sq_km', FALSE, '🚢🛣️');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('road_rr_density_scale', 'PDC GRVA Road length per sq. km of populated area (density scaled)', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
         '[["important", "bad"], ["good"]]'::jsonb, 'Length per sq. km of populated area. ([Sum of road and rail length] / [total dept. land area - water bodies removed]) * 10,000.', 'World', 'static', 'index', FALSE, '🛣️🚂');
@@ -863,7 +863,7 @@ values ('relative_economic_exposure', 'PDC NDPBA Relative Economic Exposure', js
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
         '[["unimportant"], ["important", "bad"]]'::jsonb, 'Relative Multi-hazard Economic Exposure depicts the proportion of a country’s total estimated replacement cost of buildings within one or more of nine hazard zones. Relative Economic Exposure highlights the scale and importance of exposure. This provides information to assist with potential prioritization of resources.', 'World', 'static', 'index', FALSE, '💰🔍📊');
 
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public)
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('poverty', 'PDC NDPBA Poverty rates', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
         '[["unimportant"], ["important", "bad"]]'::jsonb, 'The proportion of the population living in poverty or extreme poverty.', 'World', 'static', 'perc', FALSE, '💸');

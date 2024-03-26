@@ -2193,7 +2193,7 @@ db/table/bivariate_colors: db/table/stat_h3 | db/table ## Color pallets used for
 
 db/table/stat_h3_prod: db/table/stat_h3 | db/table ## Extract PROD part of summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -c "drop table if exists stat_h3_prod;"
-	psql -qXtc "select string_agg(indicator, ', ') from prod_indicators_list;" | parallel 'psql -c "create table stat_h3_prod as (select h3, zoom, resolution, {}, geom from stat_h3);"'
+	psql -qXtc "select string_agg(indicator, ', ') from prod_indicators_list;" | xargs -I {} psql -c "create table stat_h3_prod as (select h3, zoom, resolution, {}, geom from stat_h3);"
 	psql -c "vacuum analyze stat_h3_prod;"
 	psql -c "create index on stat_h3_prod using gist (geom, zoom);"
 	## cannot create index with more than 32 columns, so create more indexes

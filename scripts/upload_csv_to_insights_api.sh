@@ -11,8 +11,7 @@
 # $10 - layer coverage ("World")
 # $11 - layer update frequency ("daily")
 # $12 - layer unit_id ("n")
-# $13 - layer emoji ("🌳")
-# $14 - layer last_updated
+# $13 - layer last_updated
 
 # define endpoints
 case $1 in
@@ -47,8 +46,9 @@ layer_description="\"$9\""
 layer_coverage="\"${10}\""
 layer_update_freq="\"${11}\""
 layer_unit_id="\"${12}\""
-layer_emoji="\"${13}\""
-layer_last_updated="\"${14}\""
+layer_emoji=$(psql -Xqtc "select emoji from bivariate_indicators where param_id = '$3';" | xargs)
+
+layer_last_updated="\"${13}\""
 
 existed_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$3' order by last_updated asc limit 1;" | xargs)
 

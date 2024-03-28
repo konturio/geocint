@@ -47,7 +47,7 @@ layer_description="\"$9\""
 layer_coverage="\"${10}\""
 layer_update_freq="\"${11}\""
 layer_unit_id="\"${12}\""
-layer_emoji="\"$13\""
+layer_emoji="\"${13}\""
 layer_last_updated="\"${14}\""
 
 existed_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$3' order by last_updated asc limit 1;" | xargs)

@@ -34,6 +34,7 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
 	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check data/in/hot_projects/hot_projects db/table/insights_api_indicators_list_test db/table/insights_api_indicators_list_dev
 	psql -f scripts/clean.sql
+	psql -f tables/bivariate_indicators.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
 	docker image prune --force --filter label=stage=osrm-backend
@@ -2188,7 +2189,7 @@ db/table/stat_h3_quality: db/table/stat_h3 db/table/stat_h3_data_quality_check |
 	psql -f tables/stat_h3_quality.sql
 	touch $@
 
-db/table/bivariate_axis: db/table/bivariate_indicators db/table/bivariate_overlays db/table/stat_h3 db/table/stat_h3_quality | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
+db/table/bivariate_axis: db/table/bivariate_overlays db/table/stat_h3 db/table/stat_h3_quality | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
 	psql -f tables/bivariate_axis.sql
 	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' 'psql -f tables/bivariate_axis_stops.sql -v numerator={1} -v denominator={2}'
 	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | tee /dev/tty | parallel --colsep ',' 'psql -f tables/bivariate_axis_quality_estimate.sql -v numerator={1} -v denominator={2}'
@@ -2197,7 +2198,7 @@ db/table/bivariate_axis: db/table/bivariate_indicators db/table/bivariate_overla
 	psql -c "vacuum analyze bivariate_axis;"
 	touch $@
 
-db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3_quality db/table/bivariate_indicators | db/table ## Precalculated correlations for bivariate layers
+db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3_quality | db/table ## Precalculated correlations for bivariate layers
 	psql -f tables/bivariate_axis_correlation.sql
 	touch $@
 
@@ -2211,10 +2212,6 @@ db/table/bivariate_unit: db/table/stat_h3 | db/table ## Bivariate units descript
 
 db/table/bivariate_unit_localization: db/table/bivariate_unit | db/table ## Bivariate unit localization
 	psql -f tables/bivariate_unit_localization.sql
-	touch $@
-
-db/table/bivariate_indicators: db/table/bivariate_unit_localization | db/table ## Bivariate indicators properties, and attribution used in Bivariate manager.
-	psql -f tables/bivariate_indicators.sql
 	touch $@
 
 db/table/bivariate_colors: db/table/stat_h3 | db/table ## Color pallets used for styling layers in Bivariate manager.
@@ -2349,7 +2346,7 @@ data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## C
 	mv $@__TMP $@
 	touch $@
 
-data/out/population/bivariate_tables_checks: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## series of bivariate tables quality checks
+data/out/population/bivariate_tables_checks: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_colors | data/out/population ## series of bivariate tables quality checks
 	psql -AXt -c "select count(*) from bivariate_axis where quality = 'NaN' or quality is NULL;" |  xargs -I {} bash scripts/check_items_count.sh {} 0
 	psql -AXt -c "select count(*) from bivariate_axis_correlation where quality = 'NaN' or correlation = 'NaN' or quality is NULL or correlation is NULL;" |  xargs -I {} bash scripts/check_items_count.sh {} 0
 	touch $@

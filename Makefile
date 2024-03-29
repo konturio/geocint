@@ -2197,9 +2197,9 @@ db/table/stat_h3_prod: db/table/stat_h3 | db/table ## Extract PROD part of summa
 	psql -c "vacuum analyze stat_h3_prod;"
 	psql -c "create index on stat_h3_prod using gist (geom, zoom);"
 	## cannot create index with more than 32 columns, so create more indexes
-	psql -qXtc "select string_agg(indicator, ', ') from prod_indicators_list where id < 33;" | parallel "psql -c 'create index stat_h3_prod_brin_pt1 on stat_h3_prod using brin ({});'"
-	psql -qXtc "select string_agg(indicator, ', ') from prod_indicators_list where id >= 33 and id < 65;" | parallel "psql -c 'create index stat_h3_prod_brin_pt2 on stat_h3_prod using brin ({});'"
-	psql -qXtc "select string_agg(indicator, ', ') from prod_indicators_list where id >= 65;" | parallel "psql -c 'create index stat_h3_prod_brin_pt3 on stat_h3_prod using brin (resolution, zoom, geom, {});'"
+	psql -qXtc "select string_agg(indicator, ', ') from prod_indicators_list where id < 33;" | xargs -I {} psql -c "create index stat_h3_prod_brin_pt1 on stat_h3_prod using brin ({});"
+	psql -qXtc "select string_agg(indicator, ', ') from prod_indicators_list where id >= 33 and id < 65;" | xargs -I {} psql -c "create index stat_h3_prod_brin_pt2 on stat_h3_prod using brin ({});"
+	psql -qXtc "select string_agg(indicator, ', ') from prod_indicators_list where id >= 65;" | xargs -I {} psql -c "create index stat_h3_prod_brin_pt3 on stat_h3_prod using brin (resolution, zoom, geom, {});"
 	touch $@
 
 db/table/prod_indicators_list: db/table/stat_h3 | db/table ## Store list of indicators that should be available on PROD

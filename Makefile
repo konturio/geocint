@@ -2191,7 +2191,7 @@ db/table/bivariate_colors: db/table/stat_h3 | db/table ## Color pallets used for
 	psql -f tables/bivariate_colors.sql
 	touch $@
 
-db/table/stat_h3_prod: db/table/stat_h3 | db/table ## Extract PROD part of summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3_prod: db/table/stat_h3 db/table/prod_indicators_list | db/table ## Extract PROD part of summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -c "drop table if exists stat_h3_prod;"
 	psql -qXtc "select string_agg(indicator, ', ') from prod_indicators_list;" | xargs -I {} psql -c "create table stat_h3_prod as (select h3, zoom, resolution, {}, geom from stat_h3);"
 	psql -c "vacuum analyze stat_h3_prod;"

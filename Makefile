@@ -2362,7 +2362,7 @@ data/out/population/bivariate_tables.sqld.gz: data/out/population/bivariate_tabl
 	touch $@
 
 data/out/population/bivariate_tables_prod.sqld.gz: data/out/population/bivariate_tables_checks db/table/bivariate_axis_prod db/table/bivariate_axis_correlation_prod db/table/bivariate_indicators_prod | data/out/population ## Crafting bivariate tables SQL dump for PROD
-	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis_prod -t bivariate_axis_correlation_prod -t bivariate_colors -t bivariate_indicators_prod -t bivariate_overlays -t bivariate_unit -t bivariate_unit_localization | pigz" > $@__TMP
+	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis_prod -t bivariate_axis_correlation_prod -t bivariate_colors -t bivariate_indicators_prod -t bivariate_overlays -t bivariate_unit -t bivariate_unit_localization | sed 's/ public.bivariate_indicators_prod / public.bivariate_indicators /; s/ public.bivariate_axis_prod / public.bivariate_axis /; s/ public.bivariate_axis_correlation_prod / public.bivariate_axis_correlation /; s/ public.bivariate_indicators_prod/ public.bivariate_indicators/; s/ public.bivariate_axis_prod/ public.bivariate_axis/; s/ public.bivariate_axis_correlation_prod/ public.bivariate_axis_correlation/; s/ bivariate_indicators_prod/ bivariate_indicators/; s/ bivariate_axis_prod/ bivariate_axis/; s/ bivariate_axis_correlation_prod/ bivariate_axis_correlation/;' | pigz" > $@__TMP
 	mv $@__TMP $@
 	touch $@
 
@@ -2424,12 +2424,12 @@ deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/stat_h3_dump de
 
 deploy/prod/population_api_tables: deploy/s3/prod/population_api_tables_check_mdate | deploy/prod ## Getting population_api_tables dump from AWS private prod folder and restoring it.
 	ansible lima_insights_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible lima_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/stat_h3_prod.sqld.gz dest=$$HOME/tmp/stat_h3_prod.sqld.gz mode=get'
-	ansible lima_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/bivariate_tables_prod.sqld.gz dest=$$HOME/tmp/bivariate_tables_prod.sqld.gz mode=get'
-	ansible lima_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=paris.kontur.io state=restore target=$$HOME/tmp/stat_h3_prod.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible lima_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=paris.kontur.io state=restore target=$$HOME/tmp/bivariate_tables_prod.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/bivariate_tables_prod.sqld.gz state=absent'
-	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/stat_h3_prod.sqld.gz state=absent'
+	ansible lima_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/stat_h3_prod.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
+	ansible lima_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/bivariate_tables_prod.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
+	ansible lima_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=paris.kontur.io state=restore target=$$HOME/tmp/stat_h3.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
+	ansible lima_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=paris.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
+	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
+	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
 deploy/prod/cleanup_cache: deploy/prod/population_api_tables | deploy/prod ## Clear insights-api cache on Prod.

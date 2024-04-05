@@ -22,7 +22,6 @@ create table stat_h3_in  as (
            coalesce(sum(total_hours), 0) as total_hours,
            coalesce(sum(view_count), 0) as view_count,
            coalesce(sum(wildfires), 0) as wildfires,
---           coalesce(sum(covid19_vaccines), 0) as covid19_vaccines,
            coalesce(sum(covid19_confirmed), 0) as covid19_confirmed,
            coalesce(sum(population_prev), 0) as population_prev,
            coalesce(sum(industrial_area), 0) as industrial_area,
@@ -37,8 +36,6 @@ create table stat_h3_in  as (
            coalesce(sum(man_distance_to_fire_brigade), 0) as man_distance_to_fire_brigade,
            coalesce(sum(man_distance_to_hospital), 0) as man_distance_to_hospital,
            coalesce(sum(total_road_length), 0) as total_road_length,
-           coalesce(sum(foursquare_places_count), 0) as foursquare_places_count,
-           coalesce(sum(foursquare_visits_count), 0) as foursquare_visits_count,
            coalesce(sum(view_count_bf2402), 0) as view_count_bf2402,
            coalesce(sum(eatery_count), 0) as eatery_count,
            coalesce(sum(food_shops_count), 0) as food_shops_count,
@@ -59,8 +56,7 @@ create table stat_h3_in  as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -76,8 +72,7 @@ create table stat_h3_in  as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -93,8 +88,7 @@ create table stat_h3_in  as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -110,8 +104,7 @@ create table stat_h3_in  as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, h3_get_resolution(h3) as resolution
@@ -127,8 +120,7 @@ create table stat_h3_in  as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, h3_get_resolution(h3) as resolution
@@ -144,8 +136,7 @@ create table stat_h3_in  as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -161,8 +152,7 @@ create table stat_h3_in  as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -178,32 +168,12 @@ create table stat_h3_in  as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
              from global_fires_stat_h3
              union all
-             /*
-             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
-                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
-                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
-                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
-                    null::float as wildfires, vaccine_value as covid19_vaccines, null::float as covid19_confirmed,
-                    null::float as population_prev, null::float as industrial_area, null::float as volcanos_count,
-                    null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
-                    null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
-                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
-             from covid19_vaccine_accept_us_counties_h3
-             union all
-              */
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
                     null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
                     null::float as highway_length_6_months, null::float as osm_users, null::float as population,
@@ -214,8 +184,7 @@ create table stat_h3_in  as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -231,8 +200,7 @@ create table stat_h3_in  as (
                     null::float as pop_under_5_total, null::float as pop_over_65_total, null::float as poverty_families_total,
                     null::float as pop_disability_total, null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -248,8 +216,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -265,8 +232,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -281,8 +247,7 @@ create table stat_h3_in  as (
                     null::float as population_prev, null::float as industrial_area, null::float as volcanos_count, pop_under_5_total,
                     pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -298,8 +263,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, man_distance as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -315,8 +279,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, man_distance as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -332,8 +295,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    total_road_length as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    total_road_length as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -347,44 +309,9 @@ create table stat_h3_in  as (
                     null::float as wildfires, null::float as covid19_confirmed,
                     null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
-                    null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
-                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
-             from foursquare_places_h3
-             union all
-             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
-                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
-                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
-                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
-                    null::float as wildfires, null::float as covid19_confirmed,
-                    null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
-                    null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
-                    null::float as pop_not_well_eng_speak, null::float as pop_without_car,
-                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    foursquare_visits_count::float, null::float as view_count_bf2402,
-                    null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
-                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
-                    null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
-             from foursquare_visits_h3
-             union all
-             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
-                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
-                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
-                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
-                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
-                    null::float as wildfires, null::float as covid19_confirmed,
-                    null::float as population_v2, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
-                    null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, 
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, view_count_bf2402,
+                    null::float as total_road_length, view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -400,8 +327,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, 
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -417,8 +343,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area, 
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -434,8 +359,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area,
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     eatery_count::float, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -451,8 +375,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car, null::float as populated_area,
                     null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, food_shops_count::float, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -468,8 +391,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, man_distance as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -485,8 +407,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     man_distance as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -502,8 +423,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, waste_basket_coverage, null::float as solar_farms_placement_suitability, 
                     null::float as stddev_accel, resolution
@@ -519,8 +439,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
                     solar_farms_placement_suitability, null::float as stddev_accel, resolution
@@ -536,8 +455,7 @@ create table stat_h3_in  as (
                     null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
                     null::float as pop_not_well_eng_speak, null::float as pop_without_car,
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
-                    null::float as total_road_length, null::float as foursquare_places_count,
-                    null::float as foursquare_visits_count, null::float as view_count_bf2402,
+                    null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
                     null::float as solar_farms_placement_suitability, stddev_accel, resolution
@@ -577,7 +495,6 @@ create table stat_h3  as (
            a.min_ts,
            a.max_ts,
            a.wildfires,
-           --a.covid19_vaccines,
            a.covid19_confirmed,
            a.population_prev,
            a.industrial_area,
@@ -591,8 +508,6 @@ create table stat_h3  as (
            a.man_distance_to_hospital,
            a.man_distance_to_bomb_shelters,
            a.man_distance_to_charging_stations,
-           a.foursquare_places_count,
-           a.foursquare_visits_count,
            a.eatery_count,
            a.food_shops_count,
            (ST_Area(h3_cell_to_boundary_geography(a.h3)) / 1000000.0) * a.waste_basket_coverage / (49.0 * POWER(7, 8 - a.resolution)) as waste_basket_coverage_area_km2,
@@ -620,105 +535,6 @@ create table stat_h3  as (
            (coalesce(pf.days_maxwetbulb_over_32c_1c, 0))::float as days_maxwetbulb_over_32c_1c,
            (coalesce(pf.days_maxwetbulb_over_32c_2c, 0))::float as days_maxwetbulb_over_32c_2c,
            (coalesce(pf.mandays_maxtemp_over_32c_1c, 0))::float as mandays_maxtemp_over_32c_1c,
-           (coalesce(rva.raw_mhe_pop_scaled, 0))::float as raw_mhe_pop_scaled,
-           (coalesce(rva.raw_mhe_cap_scaled, 0))::float as raw_mhe_cap_scaled,
-           (coalesce(rva.raw_mhe_index, 0))::float as raw_mhe_index,
-           (coalesce(rva.relative_mhe_pop_scaled, 0))::float as relative_mhe_pop_scaled,
-           (coalesce(rva.relative_mhe_cap_scaled, 0))::float as relative_mhe_cap_scaled,
-           (coalesce(rva.relative_mhe_index, 0))::float as relative_mhe_index,
-           (coalesce(rva.mhe_index, 0))::float as mhe_index,
-           (coalesce(rva.life_expectancy_scale, 0))::float as life_expectancy_scale,
-           (coalesce(rva.infant_mortality_scale, 0))::float as infant_mortality_scale,
-           (coalesce(rva.maternal_mortality_scale, 0))::float as maternal_mortality_scale,
-           (coalesce(rva.prevalence_undernourished_scale, 0))::float as prevalence_undernourished_scale,
-           (coalesce(rva.vulnerable_health_status_index, 0))::float as vulnerable_health_status_index,
-           (coalesce(rva.pop_wout_improved_sanitation_scale, 0))::float as pop_wout_improved_sanitation_scale,
-           (coalesce(rva.pop_wout_improved_water_scale, 0))::float as pop_wout_improved_water_scale,
-           (coalesce(rva.clean_water_access_vulnerability_index, 0))::float as clean_water_access_vulnerability_index,
-           (coalesce(rva.adult_illiteracy_scale, 0))::float as adult_illiteracy_scale,
-           (coalesce(rva.gross_enrollment_scale, 0))::float as gross_enrollment_scale,
-           (coalesce(rva.years_of_schooling_scale, 0))::float as years_of_schooling_scale,
-           (coalesce(rva.pop_wout_internet_scale, 0))::float as pop_wout_internet_scale,
-           (coalesce(rva.info_access_vulnerability_index, 0))::float as info_access_vulnerability_index,
-           (coalesce(rva.export_minus_import_percent_scale, 0))::float as export_minus_import_percent_scale,
-           (coalesce(rva.average_inflation_scale, 0))::float as average_inflation_scale,
-           (coalesce(rva.economic_dependency_scale, 0))::float as economic_dependency_scale,
-           (coalesce(rva.economic_constraints_index, 0))::float as economic_constraints_index,
-           (coalesce(rva.female_govt_seats_scale, 0))::float as female_govt_seats_scale,
-           (coalesce(rva.female_male_secondary_enrollment_scale, 0))::float as female_male_secondary_enrollment_scale,
-           (coalesce(rva.female_male_labor_ratio_scale, 0))::float as female_male_labor_ratio_scale,
-           (coalesce(rva.gender_inequality_index, 0))::float as gender_inequality_index,
-           (coalesce(rva.max_political_discrimination_scale, 0))::float as max_political_discrimination_scale,
-           (coalesce(rva.max_economic_discrimination_scale, 0))::float as max_economic_discrimination_scale,
-           (coalesce(rva.ethnic_discrimination_index, 0))::float as ethnic_discrimination_index,
-           (coalesce(rva.marginalization_index, 0))::float as marginalization_index,
-           (coalesce(rva.population_change_scale, 0))::float as population_change_scale,
-           (coalesce(rva.urban_population_change_scale, 0))::float as urban_population_change_scale,
-           (coalesce(rva.population_pressures_index, 0))::float as population_pressures_index,
-           (coalesce(rva.freshwater_withdrawals_scale, 0))::float as freshwater_withdrawals_scale,
-           (coalesce(rva.forest_area_change_scale, 0))::float as forest_area_change_scale,
-           (coalesce(rva.ruminant_density_scale, 0))::float as ruminant_density_scale,
-           (coalesce(rva.environmental_stress_index, 0))::float as environmental_stress_index,
-           (coalesce(rva.recent_disaster_losses_scale, 0))::float as recent_disaster_losses_scale,
-           (coalesce(rva.recent_disaster_deaths_scale, 0))::float as recent_disaster_deaths_scale,
-           (coalesce(rva.recent_disaster_impacts_index, 0))::float as recent_disaster_impacts_index,
-           (coalesce(rva.recent_conflict_deaths_scale, 0))::float as recent_conflict_deaths_scale,
-           (coalesce(rva.displaced_populations_scale, 0))::float as displaced_populations_scale,
-           (coalesce(rva.conflict_impacts_index, 0))::float as conflict_impacts_index,
-           (coalesce(rva.vulnerability_index, 0))::float as vulnerability_index,
-           (coalesce(rva.voice_and_accountability_scale, 0))::float as voice_and_accountability_scale,
-           (coalesce(rva.rule_of_law_scale, 0))::float as rule_of_law_scale,
-           (coalesce(rva.political_stability_scale, 0))::float as political_stability_scale,
-           (coalesce(rva.govt_effectiveness_scale, 0))::float as govt_effectiveness_scale,
-           (coalesce(rva.control_of_corruption_scale, 0))::float as control_of_corruption_scale,
-           (coalesce(rva.governance_index, 0))::float as governance_index,
-           (coalesce(rva.gni_per_capita_scale, 0))::float as gni_per_capita_scale,
-           (coalesce(rva.reserves_per_capita_scale, 0))::float as reserves_per_capita_scale,
-           (coalesce(rva.economic_capacity_index, 0))::float as economic_capacity_index,
-           (coalesce(rva.fixed_phone_access_scale, 0))::float as fixed_phone_access_scale,
-           (coalesce(rva.mobile_phone_access_scale, 0))::float as mobile_phone_access_scale,
-           (coalesce(rva.internet_server_access_scale, 0))::float as internet_server_access_scale,
-           (coalesce(rva.communications_capacity_index, 0))::float as communications_capacity_index,
-           (coalesce(rva.port_rnwy_density_scale, 0))::float as port_rnwy_density_scale,
-           (coalesce(rva.road_rr_density_scale, 0))::float as road_rr_density_scale,
-           (coalesce(rva.transportation_index, 0))::float as transportation_index,
-           (coalesce(rva.hospital_bed_density_scale, 0))::float as hospital_bed_density_scale,
-           (coalesce(rva.nurses_midwives_scale, 0))::float as nurses_midwives_scale,
-           (coalesce(rva.physicians_scale, 0))::float as physicians_scale,
-           (coalesce(rva.health_care_capacity_index, 0))::float as health_care_capacity_index,
-           (coalesce(rva.infrastructure_capacity_index, 0))::float as infrastructure_capacity_index,
-           (coalesce(rva.biome_protection_scale, 0))::float as biome_protection_scale,
-           (coalesce(rva.marine_protected_area_scale, 0))::float as marine_protected_area_scale,
-           (coalesce(rva.environmental_capacity_index, 0))::float as environmental_capacity_index,
-           (coalesce(rva.coping_capacity_index, 0))::float as coping_capacity_index,
-           (coalesce(rva.resilience_index, 0))::float as resilience_index,
-           (coalesce(rva.mhr_index, 0))::float as mhr_index,
-           (coalesce(ndpba.raw_population_exposure_index, 0))::float as raw_population_exposure_index,
-           (coalesce(ndpba.raw_economic_exposure, 0))::float as raw_economic_exposure,
-           (coalesce(ndpba.relative_population_exposure_index, 0))::float as relative_population_exposure_index,
-           (coalesce(ndpba.relative_economic_exposure, 0))::float as relative_economic_exposure,
-           (coalesce(ndpba.poverty, 0))::float as poverty,
-           (coalesce(ndpba.economic_dependency, 0))::float as economic_dependency,
-           (coalesce(ndpba.maternal_mortality, 0))::float as maternal_mortality,
-           (coalesce(ndpba.infant_mortality, 0))::float as infant_mortality,
-           (coalesce(ndpba.malnutrition, 0))::float as malnutrition,
-           (coalesce(ndpba.population_change, 0))::float as population_change,
-           (coalesce(ndpba.urban_pop_change, 0))::float as urban_pop_change,
-           (coalesce(ndpba.school_enrollment, 0))::float as school_enrollment,
-           (coalesce(ndpba.years_of_schooling, 0))::float as years_of_schooling,
-           (coalesce(ndpba.fem_to_male_labor, 0))::float as fem_to_male_labor,
-           (coalesce(ndpba.proportion_of_female_seats_in_government, 0))::float as proportion_of_female_seats_in_government,
-           (coalesce(ndpba.life_expectancy, 0))::float as life_expectancy,
-           (coalesce(ndpba.protected_area, 0))::float as protected_area,
-           (coalesce(ndpba.physicians_per_10000_persons, 0))::float as physicians_per_10000_persons,
-           (coalesce(ndpba.nurse_midwife_per_10k, 0))::float as nurse_midwife_per_10k,
-           (coalesce(ndpba.distance_to_hospital, 0))::float as distance_to_hospital,
-           (coalesce(ndpba.hbeds_per_10000_persons, 0))::float as hbeds_per_10000_persons,
-           (coalesce(ndpba.distance_to_port, 0))::float as distance_to_port,
-           (coalesce(ndpba.road_density, 0))::float as road_density,
-           (coalesce(ndpba.households_with_fixed_phone, 0))::float as households_with_fixed_phone,
-           (coalesce(ndpba.households_with_cell_phone, 0))::float as households_with_cell_phone,
-           (coalesce(ndpba.voter_participation, 0))::float as voter_participation,
            (coalesce(disaster_event_episodes_h3.hazardous_days_count, 0))::float as hazardous_days_count,
            (coalesce(disaster_event_episodes_h3.earthquake_days_count, 0))::float as earthquake_days_count,
            (coalesce(disaster_event_episodes_h3.wildfire_days_count, 0))::float as wildfire_days_count,
@@ -744,8 +560,6 @@ create table stat_h3  as (
          left join copernicus_landcover_h3 cf on (a.h3 = cf.h3)
          left join pf_maxtemp_h3 pf on (a.h3 = pf.h3)
          left join ndvi_2019_06_10_h3 nd on (a.h3 = nd.h3)
-         left join global_rva_h3 rva on (a.h3 = rva.h3)
-         left join ndpba_rva_h3 ndpba on (a.h3 = ndpba.h3)
          left join disaster_event_episodes_h3 on (a.h3 = disaster_event_episodes_h3.h3)
          left join facebook_medium_voltage_distribution_h3 on (a.h3 = facebook_medium_voltage_distribution_h3.h3)
          left join night_lights_h3 nl on (a.h3 = nl.h3)
@@ -766,8 +580,7 @@ create index stat_h3_brin_pt1 on stat_h3 using brin (
                                                      max_ts, total_hours, avgmax_ts, forest,
                                                      evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest,
                                                      min_ts, residential, view_count, count_6_months, total_road_length,
-                                                     view_count_bf2402, mhr_index, mhe_index, resilience_index, 
-                                                     coping_capacity_index, vulnerability_index, night_lights_intensity
+                                                     view_count_bf2402, night_lights_intensity
     );
 
 create index stat_h3_brin_pt2 on stat_h3 using brin (
@@ -780,8 +593,7 @@ create index stat_h3_brin_pt2 on stat_h3 using brin (
                                                      days_mintemp_above_25c_1c, days_mintemp_above_25c_2c,
                                                      days_maxwetbulb_over_32c_1c, days_maxwetbulb_over_32c_2c,
                                                      man_distance_to_fire_brigade, man_distance_to_hospital,
-                                                     foursquare_visits_count, foursquare_places_count, flood_days_count,
-                                                     powerlines
+                                                     flood_days_count, powerlines
     );
 
 create index stat_h3_brin_pt3 on stat_h3 using brin (
@@ -796,15 +608,3 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      safety_index, cropland, wetland, moss_lichen, bare_vegetation, 
                                                      builtup, snow_ice, permanent_water
     );
-
-create index stat_h3_brin_pt4 on stat_h3 using brin (
-raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, environmental_capacity_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index
-);
-
-create index stat_h3_brin_pt5 on stat_h3 using brin (
-population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, marine_protected_area_scale, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale
-);
-
-create index stat_h3_brin_pt6 on stat_h3 using brin (
-physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale,raw_population_exposure_index, raw_economic_exposure, relative_population_exposure_index, relative_economic_exposure, poverty, economic_dependency, maternal_mortality, infant_mortality, malnutrition, population_change, urban_pop_change, school_enrollment, years_of_schooling, fem_to_male_labor, proportion_of_female_seats_in_government, life_expectancy, protected_area, physicians_per_10000_persons, nurse_midwife_per_10k, distance_to_hospital, hbeds_per_10000_persons, distance_to_port, road_density, households_with_fixed_phone, households_with_cell_phone, voter_participation, stddev_accel
-);

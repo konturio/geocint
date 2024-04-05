@@ -352,10 +352,7 @@ values ('total_road_length', 'Total road length', jsonb_build_array(
         '©2019 Facebook, Inc. and its affiliates https://github.com/facebookmicrosites/Open-Mapping-At-Facebook/blob/main/LICENSE.md',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright', '© Kontur https://kontur.io/'),
         '[["unimportant"], ["important"]]'::jsonb, 'Estimated total road length according to Meta (Facebook) AI and OpenStreetMap data. For places where Meta (Facebook) roads data are unavailable, the estimation is based on statistical regression from Kontur Population data.', 'World', 'daily', 'km', TRUE, '🛣️📏');
-<<<<<<< HEAD
-=======
 
->>>>>>> 9a86bd0 (Remove foursquare indicators from bivariate_indicators table)
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('view_count_bf2402', 'OSM: map views (Jan 25 - Feb 24, 2022)',
         jsonb_build_array('© Kontur', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),

@@ -198,7 +198,7 @@ values ('hazardous_days_count', 'Exposure: all disaster types', jsonb_build_arra
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('earthquake_days_count', 'Exposure: earthquake', jsonb_build_array(
 'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
-    '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Number of days in the last year when severe and extreme earthquakes were recorded.', 'World', 'daily', 'days', TRUE, '🏚️📅');
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Number of days in the last year when severe and extreme earthquakes were recorded.', 'World', 'daily', 'days', TRUE, '🌍📅');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('drought_days_count', 'Exposure: drought', jsonb_build_array(
@@ -318,14 +318,14 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('days_maxwetbulb_over_32c_1c', 'Days above 32°C wet-bulb (+1°C scenario)', jsonb_build_array(
         '© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0'),
         '[["good"], ["bad"]]'::jsonb, 'Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the "recent" climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science).
-Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F)  and 55% humidity.', 'World (-60:60 latitudes)', 'static', 'days', TRUE, '🌞💦');
+Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F)  and 55% humidity.', 'World (-60:60 latitudes)', 'static', 'days', TRUE, '🌞');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('days_maxwetbulb_over_32c_2c', 'Days above 32°C wet-bulb (+2°C scenario)', jsonb_build_array(
         '© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0'),
         '[["good"], ["bad"]]'::jsonb, 'Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the "potential" climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science).
 Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F)  and 55% humidity.
-The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values.', 'World (-60:60 latitudes)', 'static', 'days', TRUE, '🌞💦🔥');
+The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values.', 'World (-60:60 latitudes)', 'static', 'days', TRUE, '🌞🔥');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('mandays_maxtemp_over_32c_1c', 'Man-days above 32°C, (+1°C scenario)', jsonb_build_array(
@@ -425,7 +425,7 @@ values ('worldclim_max_temperature', 'Air temperature (max)', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('worldclim_amp_temperature', 'Air temperature (amplitude)', jsonb_build_array(
         'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
-        '[["good"], ["bad"]]'::jsonb, 'Monthly amplitude of air temperatures according to WorldClim data for the years 1970-2000.', 'World', 'static', 'celc_deg', TRUE, '🔥🌡️❄️');
+        '[["good"], ["bad"]]'::jsonb, 'Monthly amplitude of air temperatures according to WorldClim data for the years 1970-2000.', 'World', 'static', 'celc_deg', TRUE, '🌡️↕️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('powerlines_proximity_m', 'Proximity to: powerlines grid', jsonb_build_array(
@@ -436,7 +436,7 @@ values ('powerlines_proximity_m', 'Proximity to: powerlines grid', jsonb_build_a
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('waste_basket_coverage_area_km2', 'OSM: waste containers count', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["bad"], ["good"]]'::jsonb, 'Number of waste containers in a given area.', 'World', 'daily', 'n', TRUE, '🚮');
+        '[["bad"], ["good"]]'::jsonb, 'Number of waste containers in a given area.', 'World', 'daily', 'n', TRUE, '🗑️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('populated_areas_proximity_m', 'Proximity to densely populated areas', jsonb_build_array(
@@ -453,7 +453,7 @@ values ('solar_farms_placement_suitability', 'Suitability estimation for solar f
         'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright',
         'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html', 
         'Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use'),
-        '[["bad"], ["good"]]'::jsonb, 'Multi-criteria analysis based layer dedicated to estimation of suitability of solar farms placement. 0 means absolutely unsuitable, 1 means perfectly suitable. Analysis is based on solar irradiace, powerlines grid proximity, power substations proximity, elevation slope, minimal and maximal temperatures, populated areas proximity', 'World (-60:60 latitudes)', 'daily', 'index', TRUE, '☀️⚡📏');
+        '[["bad"], ["good"]]'::jsonb, 'Multi-criteria analysis based layer dedicated to estimation of suitability of solar farms placement. 0 means absolutely unsuitable, 1 means perfectly suitable. Analysis is based on solar irradiace, powerlines grid proximity, power substations proximity, elevation slope, minimal and maximal temperatures, populated areas proximity', 'World (-60:60 latitudes)', 'daily', 'index', TRUE, '☀️💡');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('residential', 'Percentage of permanent population', jsonb_build_array(
@@ -493,12 +493,12 @@ values ('raw_mhe_index', 'PDC GRVA Raw Multi-hazard exposure', jsonb_build_array
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('relative_mhe_pop_scaled', 'PDC GRVA Relative Multi-hazard population scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Relative Multi-hazard Population Exposure depicts the proportion of a country’s total population within one or more of seven hazard zones: tropical cyclone winds (Saffir-Simpson categories 1-5), storm surge, earthquakes of MMI categories 7 and greater, tsunami run-up, riverine flood, volcanoes, and wildfire. Relative Population Exposure highlights the scale and importance of exposure. This provides information to assist with potential prioritization of resources. [Raw_MHE_Pop_Scaled / Total country population] https://ghin.pdc.org/ghin/catalog/search/resource/details.page?uuid=%7B1C683D32-281F-450D-9775-264B9B41090D%7D', 'World', 'static', 'perc', FALSE, '🚨👥🔍');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Relative Multi-hazard Population Exposure depicts the proportion of a country’s total population within one or more of seven hazard zones: tropical cyclone winds (Saffir-Simpson categories 1-5), storm surge, earthquakes of MMI categories 7 and greater, tsunami run-up, riverine flood, volcanoes, and wildfire. Relative Population Exposure highlights the scale and importance of exposure. This provides information to assist with potential prioritization of resources. [Raw_MHE_Pop_Scaled / Total country population] https://ghin.pdc.org/ghin/catalog/search/resource/details.page?uuid=%7B1C683D32-281F-450D-9775-264B9B41090D%7D', 'World', 'static', 'perc', FALSE, '🚨👤');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('relative_mhe_cap_scaled', 'PDC GRVA Relative Multi-hazard Economic Exposure ', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Relative Multi-hazard Economic Exposure depicts the proportion of a country’s total estimated replacement cost of buildings within one or more of seven hazard zones: tropical cyclone winds (Saffir-Simpson categories 1-5), storm surge, earthquakes of MMI categories 7 and greater, tsunami run-up, riverine flood, volcanoes, and wildfire. Relative Economic Exposure highlights the scale and importance of exposure. This provides information to assist with potential prioritization of resources. [Raw Multi-hazard Economic Exposure / Total Estimated Replacement cost of buildings] https://ghin.pdc.org/ghin/catalog/search/resource/details.page?uuid=%7BCC676ADA-B6C6-438D-B249-6354029748D0%7D', 'World', 'static', 'perc', FALSE, '🚨💵🔍');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Relative Multi-hazard Economic Exposure depicts the proportion of a country’s total estimated replacement cost of buildings within one or more of seven hazard zones: tropical cyclone winds (Saffir-Simpson categories 1-5), storm surge, earthquakes of MMI categories 7 and greater, tsunami run-up, riverine flood, volcanoes, and wildfire. Relative Economic Exposure highlights the scale and importance of exposure. This provides information to assist with potential prioritization of resources. [Raw Multi-hazard Economic Exposure / Total Estimated Replacement cost of buildings] https://ghin.pdc.org/ghin/catalog/search/resource/details.page?uuid=%7BCC676ADA-B6C6-438D-B249-6354029748D0%7D', 'World', 'static', 'perc', FALSE, '🚨💰');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('relative_mhe_index', 'PDC GRVA Relative Multi-hazard exposure', jsonb_build_array(
@@ -513,7 +513,7 @@ values ('mhe_index', 'PDC GRVA Multi-hazard exposure', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('life_expectancy_scale', 'PDC GRVA Life expectancy scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["good"]]'::jsonb, 'Life expectancy scaled', 'World', 'static', 'years', FALSE, '👦⏳👴');
+        '[["important", "bad"], ["good"]]'::jsonb, 'Life expectancy scaled', 'World', 'static', 'years', FALSE, '❤️↕️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('infant_mortality_scale', 'PDC GRVA Infant mortality scaled', jsonb_build_array(
@@ -544,7 +544,7 @@ values ('pop_wout_improved_sanitation_scale', 'PDC GRVA Population without impro
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('pop_wout_improved_water_scale', 'PDC GRVA Population without improved water scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Percentage of households without access to improved water. Improved Sanitation includes toilets connected to sewer or septic, and washable toilets.', 'World', 'static', 'perc', FALSE, '🍶🚫');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Percentage of households without access to improved water. Improved Sanitation includes toilets connected to sewer or septic, and washable toilets.', 'World', 'static', 'perc', FALSE, '🚰🚫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('clean_water_access_vulnerability_index', 'PDC GRVA Clean water access vulnerability index', jsonb_build_array(
@@ -569,7 +569,7 @@ values ('years_of_schooling_scale', 'PDC GRVA Years of schooling scaled', jsonb_
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('pop_wout_internet_scale', 'PDC GRVA Population without internet scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Percentage of population without Internet Access.', 'World', 'static', 'perc', FALSE, '📡🚫');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Percentage of population without Internet Access.', 'World', 'static', 'perc', FALSE, '🛜🚫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('info_access_vulnerability_index', 'PDC GRVA Information access vulnerability index', jsonb_build_array(
@@ -604,12 +604,12 @@ values ('female_govt_seats_scale', 'PDC GRVA Female government seats scaled', js
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('female_male_secondary_enrollment_scale', 'PDC GRVA Female male secondary enrollment scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["good"]]'::jsonb,  'Ratio of Female to Male Secondary Enrollment.', 'World', 'static', 'index', FALSE, '👩👨🏫');
+        '[["important", "bad"], ["good"]]'::jsonb,  'Ratio of Female to Male Secondary Enrollment.', 'World', 'static', 'index', FALSE, '👫🏫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('female_male_labor_ratio_scale', 'PDC GRVA Female to male labor force participation ratio scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["good"]]'::jsonb, 'Ratio of females to males who participate in the labor force by country (ages 15 and over). Values closer to 1 represent a higher degree of gender parity. Labor force participation rate is the proportion of the population ages 15 and older that is economically active: all people who supply labor for the production of goods and services during a specified period. This indicator details the ratio between female and male labor force participation rate.', 'World', 'static', 'index', FALSE, '👩👨💼');
+        '[["important", "bad"], ["good"]]'::jsonb, 'Ratio of females to males who participate in the labor force by country (ages 15 and over). Values closer to 1 represent a higher degree of gender parity. Labor force participation rate is the proportion of the population ages 15 and older that is economically active: all people who supply labor for the production of goods and services during a specified period. This indicator details the ratio between female and male labor force participation rate.', 'World', 'static', 'index', FALSE, '👫💼');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('gender_inequality_index', 'PDC GRVA Gender inequality index', jsonb_build_array(
@@ -644,7 +644,7 @@ values ('population_change_scale', 'PDC GRVA Population change scaled', jsonb_bu
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('urban_population_change_scale', 'PDC GRVA Urban population change scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Urban population growth (annual %)', 'World', 'static', 'perc', FALSE, '👥🌆🔄');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Urban population growth (annual %)', 'World', 'static', 'perc', FALSE, '👥🌆');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('population_pressures_index', 'PDC GRVA Population pressures index', jsonb_build_array(
@@ -669,7 +669,7 @@ values ('ruminant_density_scale', 'PDC GRVA Ruminant density scaled', jsonb_buil
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('environmental_stress_index', 'PDC GRVA Environmental stress index', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Environmental stress index.', 'World', 'static', 'index', FALSE, '🌍💪📈');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Environmental stress index.', 'World', 'static', 'index', FALSE, '🌿❌');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('recent_disaster_losses_scale', 'PDC GRVA Recent disaster losses scaled', jsonb_build_array(
@@ -724,7 +724,7 @@ values ('political_stability_scale', 'PDC GRVA Political stability scaled', json
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('govt_effectiveness_scale', 'PDC GRVA Governement effectiveness scaled', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["good"]]'::jsonb, 'Government effectiveness captures perceptions of the quality of public services, the quality of the civil service and the degree of its independence from political pressures, the quality of policy formulation and implementation, and the credibility of the governments commitment to such policies. Reflects perceptions of the quality of public services, the quality of the civil service and the degree of its independence from political pressures, the quality of policy formulation and implementation, and the credibility of the governments commitment to such policies. Estimate of governance (ranges from approximately -2.5 (weak) to 2.5 (strong) governance performance). https://ghin.pdc.org/ghin/catalog/search/resource/details.page?uuid=%7BFA16C4C5-2408-4BD4-A4A6-BEFA6BF5F226%7D', 'World', 'static', 'index', FALSE, '🏛️✅📈');
+        '[["important", "bad"], ["good"]]'::jsonb, 'Government effectiveness captures perceptions of the quality of public services, the quality of the civil service and the degree of its independence from political pressures, the quality of policy formulation and implementation, and the credibility of the governments commitment to such policies. Reflects perceptions of the quality of public services, the quality of the civil service and the degree of its independence from political pressures, the quality of policy formulation and implementation, and the credibility of the governments commitment to such policies. Estimate of governance (ranges from approximately -2.5 (weak) to 2.5 (strong) governance performance). https://ghin.pdc.org/ghin/catalog/search/resource/details.page?uuid=%7BFA16C4C5-2408-4BD4-A4A6-BEFA6BF5F226%7D', 'World', 'static', 'index', FALSE, '🏛️✅');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('control_of_corruption_scale', 'PDC GRVA Control of corruption scaled', jsonb_build_array(
@@ -846,7 +846,7 @@ values ('mhr_index', 'PDC GRVA Multi-hazard risk', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('raw_population_exposure_index', 'PDC NDPBA Raw population exposure index', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Raw count of person units exposed to multiple hazards, including flood inundation, landslide, volcanic ash, earthquakes, tsunami inundation, and tropical cyclone wind.', 'World', 'static', 'index', FALSE, '🏙️🔍');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Raw count of person units exposed to multiple hazards, including flood inundation, landslide, volcanic ash, earthquakes, tsunami inundation, and tropical cyclone wind.', 'World', 'static', 'index', FALSE, '💥👤');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('raw_economic_exposure', 'PDC NDPBA Raw economic exposure index', jsonb_build_array(
@@ -856,12 +856,12 @@ values ('raw_economic_exposure', 'PDC NDPBA Raw economic exposure index', jsonb_
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('relative_population_exposure_index', 'PDC NDPBA Relative population exposure index', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Total count of person units exposed to multiple hazards by department population.', 'World', 'static', 'index', FALSE, '🏙️🔍📊');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Total count of person units exposed to multiple hazards by department population.', 'World', 'static', 'index', FALSE, '💥👥');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('relative_economic_exposure', 'PDC NDPBA Relative Economic Exposure', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Relative Multi-hazard Economic Exposure depicts the proportion of a country’s total estimated replacement cost of buildings within one or more of nine hazard zones. Relative Economic Exposure highlights the scale and importance of exposure. This provides information to assist with potential prioritization of resources.', 'World', 'static', 'index', FALSE, '💰🔍📊');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Relative Multi-hazard Economic Exposure depicts the proportion of a country’s total estimated replacement cost of buildings within one or more of nine hazard zones. Relative Economic Exposure highlights the scale and importance of exposure. This provides information to assist with potential prioritization of resources.', 'World', 'static', 'index', FALSE, '👥💰');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('poverty', 'PDC NDPBA Poverty', jsonb_build_array(
@@ -871,7 +871,7 @@ values ('poverty', 'PDC NDPBA Poverty', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('economic_dependency', 'PDC NDPBA Economic dependency', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Age dependency ratio is the ratio of dependents people younger than 15 or older than 64 to the working-age population those ages 15-64. Data are shown as the proportion of dependents per 100 working-age population.', 'World', 'static', 'n_per_100', FALSE, '👥💼🔍');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Age dependency ratio is the ratio of dependents people younger than 15 or older than 64 to the working-age population those ages 15-64. Data are shown as the proportion of dependents per 100 working-age population.', 'World', 'static', 'n_per_100', FALSE, '👥💼');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('maternal_mortality', 'PDC NDPBA Maternal mortality', jsonb_build_array(
@@ -886,7 +886,7 @@ values ('infant_mortality', 'PDC NDPBA Infant mortality', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('malnutrition', 'PDC NDPBA Malnutrition', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Percentage of children under 5 that are malnourished. Note: MINSAL separated counts by age group: < 1 year; 1 year; 2-4 years, so: ([total cases of malnutrition for children <1 year old] + [total cases of malnutrition for children 1 year old] + [total cases of malnutrition for children 2-4 years old]) / ([total children <1 year old for which malnutrition status was determined] + [total children 1 year old for which weight determined] + [total children 2-4 year old for which weight and/or height determined])', 'World', 'static', 'perc', FALSE, '🍔');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Percentage of children under 5 that are malnourished. Note: MINSAL separated counts by age group: < 1 year; 1 year; 2-4 years, so: ([total cases of malnutrition for children <1 year old] + [total cases of malnutrition for children 1 year old] + [total cases of malnutrition for children 2-4 years old]) / ([total children <1 year old for which malnutrition status was determined] + [total children 1 year old for which weight determined] + [total children 2-4 year old for which weight and/or height determined])', 'World', 'static', 'perc', FALSE, '🍽️🚫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('population_change', 'PDC NDPBA Population change', jsonb_build_array(
@@ -896,7 +896,7 @@ values ('population_change', 'PDC NDPBA Population change', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('urban_pop_change', 'PDC NDPBA Urban Population change', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important"]]'::jsonb, 'Urban population growth (annual %)', 'World', 'static', 'perc', FALSE, '👥🌆🔄');
+        '[["unimportant"], ["important"]]'::jsonb, 'Urban population growth (annual %)', 'World', 'static', 'perc', FALSE, '👥🔄');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('school_enrollment', 'PDC NDPBA School enrollment', jsonb_build_array(
@@ -911,7 +911,7 @@ values ('years_of_schooling', 'PDC NDPBA Years of schooling', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('fem_to_male_labor', 'PDC NDPBA Female to male labor force participation', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["unimportant", "good"]]'::jsonb, 'Ratio of females to males who participate in the labor force by country (ages 15 and over). Values closer to 1 represent a higher degree of gender parity. Labor force participation rate is the proportion of the population ages 15 and older that is economically active: all people who supply labor for the production of goods and services during a specified period. This indicator details the ratio between female and male labor force participation rate.', 'World', 'static', 'index', FALSE, '👩‍🔧👨‍🔧💼');
+        '[["important", "bad"], ["unimportant", "good"]]'::jsonb, 'Ratio of females to males who participate in the labor force by country (ages 15 and over). Values closer to 1 represent a higher degree of gender parity. Labor force participation rate is the proportion of the population ages 15 and older that is economically active: all people who supply labor for the production of goods and services during a specified period. This indicator details the ratio between female and male labor force participation rate.', 'World', 'static', 'index', FALSE, '👫🛠️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('proportion_of_female_seats_in_government', 'PDC NDPBA Proportion of female seats in government', jsonb_build_array(
@@ -921,7 +921,7 @@ values ('proportion_of_female_seats_in_government', 'PDC NDPBA Proportion of fem
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('life_expectancy', 'PDC NDPBA Life expectancy', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["important", "bad"], ["unimportant", "good"]]'::jsonb, 'life expectancy.', 'World', 'static', 'years', FALSE, '👦⏳👴');
+        '[["important", "bad"], ["unimportant", "good"]]'::jsonb, 'life expectancy.', 'World', 'static', 'years', FALSE, '❤️⏳');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('protected_area', 'PDC NDPBA Protected area', jsonb_build_array(
@@ -941,7 +941,7 @@ values ('nurse_midwife_per_10k', 'PDC NDPBA Nurse per 10000 persons', jsonb_buil
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('distance_to_hospital', 'PDC NDPBA Distance to hospital', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Average distance to nearest hospital', 'World', 'static', 'km', FALSE, '🏨🔍📏');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Average distance to nearest hospital', 'World', 'static', 'km', FALSE, '🏨📏');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('hbeds_per_10000_persons', 'PDC NDPBA Hbeds per 10000_Persons', jsonb_build_array(
@@ -951,7 +951,7 @@ values ('hbeds_per_10000_persons', 'PDC NDPBA Hbeds per 10000_Persons', jsonb_bu
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('distance_to_port', 'PDC NDPBA Distance to port', jsonb_build_array(
         '© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/'),
-        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Count of ports and airports per 10,000 sq. km land area.', 'World', 'static', 'n_per_10k_sq_km', FALSE, '🚢🔍📏');
+        '[["unimportant"], ["important", "bad"]]'::jsonb, 'Count of ports and airports per 10,000 sq. km land area.', 'World', 'static', 'n_per_10k_sq_km', FALSE, '🚢📏');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('road_density', 'PDC NDPBA Road density', jsonb_build_array(
@@ -974,7 +974,7 @@ values ('voter_participation', 'PDC NDPBA Voter participation', jsonb_build_arra
         '[["unimportant"], ["important", "bad"]]'::jsonb, 'Registered voters per 10,000 population.', 'World', 'static', 'n_per_10k', FALSE, '🏛️🗣️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('stddev_accel', 'Road Quality metric (Standard Deviatiation of Acceleration)', jsonb_build_array(
+values ('stddev_accel', 'Road Quality (St. Dev. of Acceleration)', jsonb_build_array(
         '© Kontur https://kontur.io/'),
         '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'm_s2', FALSE, '🚙📊');
 

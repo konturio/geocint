@@ -56,6 +56,8 @@ parameters_json=$(psql -Xqtc "select row_to_json(row)
 
 curl_request="curl -X POST -w "\":::\"%{http_code}" --request POST ${preset_endpoint} -H 'Content-Type: application/json' --header 'Authorization: Bearer ${token}' -d '${parameters_json}'"
 
+echo $curl_request
+
 # Upload preset
 
 request_result=$(eval $curl_request)

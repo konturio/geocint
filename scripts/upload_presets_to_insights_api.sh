@@ -45,6 +45,7 @@ parameters_json=$(psql -Xqtc "select row_to_json(row)
                                                 '$y_denominator_uuid' as y_denominator_id, 
                                                 name, 
                                                 active, 
+                                                description,
                                                 replace(colors::text, '\"', '\"') as colors, 
                                                 application, 
                                                 is_public 

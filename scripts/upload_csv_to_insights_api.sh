@@ -46,7 +46,7 @@ layer_description="\"$9\""
 layer_coverage="\"${10}\""
 layer_update_freq="\"${11}\""
 layer_unit_id="\"${12}\""
-layer_emoji=$(psql -Xqtc "select emoji from bivariate_indicators where param_id = '$3';" | xargs)
+layer_emoji="\"$(psql -Xqtc "select emoji from bivariate_indicators where param_id = '$3';" | xargs)\""
 
 layer_last_updated="\"${13}\""
 

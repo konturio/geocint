@@ -381,9 +381,9 @@ values ('food_shops_count', 'Food shops', jsonb_build_array(
         '[["unimportant"], ["important"]]'::jsonb, 'Number of places where you can buy fresh or packaged food products in a given area.', 'World', 'daily', 'n', TRUE, '🛒');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('mapswipe_area_km2', 'MapSwipe Human Activity', jsonb_build_array(
+values ('mapswipe_area_km2', 'MapSwipe human activity', jsonb_build_array(
         'Copyright © 2022 MapSwipe https://mapswipe.org/en/privacy.html'),
-        '[["unimportant"], ["important"]]'::jsonb, 'Places were MapSwipe users have detected some human activity through features (i.e. buildings, roadways, waterways, etc.) on satellite images.', 'World', 'daily', 'km2', TRUE, '👣');
+        '[["unimportant"], ["important"]]'::jsonb, 'Places where MapSwipe users have detected some human activity through features (i.e. buildings, roadways, waterways, etc.) on satellite images.', 'World', 'daily', 'km2', TRUE, '👣');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('gsa_ghi', 'Global Horizontal Irradiance', jsonb_build_array(

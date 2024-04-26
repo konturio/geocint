@@ -170,7 +170,7 @@ values ('population_prev', 'Population (previous version)', jsonb_build_array(
         'NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/',
         'Geoalert Urban Mapping: Chechnya, Moscow region, Tyva, Tashkent, Bukhara, Samarkand, Navoi, Chirchiq - https://github.com/Geoalert/urban-mapping',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["unimportant"], ["important"]]'::jsonb, '', 'World', 'daily', 'ppl', FALSE, '🚶‍♂️');
+        '[["unimportant"], ["important"]]'::jsonb, '', 'World', 'daily', 'ppl', FALSE, '👫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('total_building_count', 'Buildings', jsonb_build_array(
@@ -283,7 +283,7 @@ values ('pop_not_well_eng_speak', 'Population with limited English proficiency',
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('pop_without_car', 'Population without a car', jsonb_build_array(
         '© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html'),
-        '[["neutral"], ["important"]]'::jsonb, 'Number of working people without a car in the United States.', 'The United States of America', 'static', 'ppl', TRUE, '🚶‍♂️');
+        '[["neutral"], ["important"]]'::jsonb, 'Number of working people without a car in the United States.', 'The United States of America', 'static', 'ppl', TRUE, '👫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('days_maxtemp_over_32c_1c', 'Days above 32°C (+1°C scenario)', jsonb_build_array(
@@ -414,7 +414,7 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('powerlines_proximity_m', 'Proximity to powerlines', jsonb_build_array(
         'Copyright © OpenStreetMap contributors https://www.openstreetmap.org/copyright',
         '© 2020 The World Bank Group, CC-BY 4.0'),
-        '[["important"], ["unimportant"]]'::jsonb, 'Distance to closest powerline', 'World', 'static', 'm', TRUE, '⚡🚶‍♂️');
+        '[["important"], ["unimportant"]]'::jsonb, 'Distance to closest powerline', 'World', 'static', 'm', TRUE, '⚡👫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('waste_basket_coverage_area_km2', 'Waste containers', jsonb_build_array(
@@ -424,12 +424,12 @@ values ('waste_basket_coverage_area_km2', 'Waste containers', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('populated_areas_proximity_m', 'Proximity to densely populated areas', jsonb_build_array(
         'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, 'Distance to closest Kontur Population cell with population > 80 ppl', 'World', 'daily', 'm', TRUE, '🏡🚶‍♂️');
+        '[["good"], ["bad"]]'::jsonb, 'Distance to closest Kontur Population cell with population > 80 ppl', 'World', 'daily', 'm', TRUE, '🏡👫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('power_substations_proximity_m', 'Proximity to power substations', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, 'Distance to closest power substation', 'World', 'daily', 'm', TRUE, '🏭🚶‍♂️');
+        '[["good"], ["bad"]]'::jsonb, 'Distance to closest power substation', 'World', 'daily', 'm', TRUE, '🏭👫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('solar_farms_placement_suitability', 'Suitability estimation for solar farms placement', jsonb_build_array(

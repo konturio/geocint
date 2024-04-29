@@ -1,3 +1,6 @@
+-- IT'S A LOCAL GEOCINT COPY JUST FOR A REFERENCE
+-- TO ADD NEW COLOR PLEASE ADD IT TO INSIGHTS-API
+
 drop table if exists bivariate_colors;
 create table bivariate_colors (
     color text,

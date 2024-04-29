@@ -25,7 +25,7 @@ dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump dep
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy_indicators/prod/presets/all_presets ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -2174,39 +2174,15 @@ db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 
 	psql -f tables/stat_h3.sql
 	touch $@
 
-db/table/stat_h3_data_quality_check: db/table/stat_h3 | db/table ## check if all h3 values in stat_h3 are unique and not null and control that there is no indicators in stat_h3 where all values on 8th resolution are zeros.
-	psql -qXc "copy (select column_name::text FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'stat_h3' and column_name not in ('h3', 'geom', 'zoom', 'resolution')) to stdout with csv;" | parallel "bash scripts/psql_query_number_of_records_at_stat_h3.sh {}" | xargs -I {} bash scripts/check_value_is_not_zero_with_description.sh {}
-	rm -f $@__STAT_H3_NULLS
-	psql -q -X -t -c 'select count(*) from stat_h3 where h3 is null;' > $@__STAT_H3_NULLS	
-	if [ 0 -lt $$(cat $@__STAT_H3_NULLS) ]; then echo "Table stat_h3 contains null h3 indexes. Execution was interrupted." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
-	rm -f $@__STAT_H3_NULLS $@__STAT_H3_DUPLICATES
-	psql -q -X -t -c 'select count(h3) - count(distinct h3) as diff from stat_h3;' > $@__STAT_H3_DUPLICATES
-	if [ 0 -lt $$(cat $@__STAT_H3_DUPLICATES) ]; then echo "Table stat_h3 contains duplicated h3 indexes. Execution was interrupted." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
-	rm -f $@__STAT_H3_DUPLICATES
-	touch $@
-
-db/table/stat_h3_quality: db/table/stat_h3 db/table/stat_h3_data_quality_check | db/table ## summarized statistics aggregated on H3 hexagons between resolutions.
-	psql -f tables/stat_h3_quality.sql
-	touch $@
-
-db/table/bivariate_axis: db/table/bivariate_overlays db/table/stat_h3 db/table/stat_h3_quality | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
-	psql -f tables/bivariate_axis.sql
-	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' 'psql -f tables/bivariate_axis_stops.sql -v numerator={1} -v denominator={2}'
-	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | tee /dev/tty | parallel --colsep ',' 'psql -f tables/bivariate_axis_quality_estimate.sql -v numerator={1} -v denominator={2}'
-	psql -f tables/bivariate_axis_updates.sql
-	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' "psql -f tables/bivariate_axis_analytics.sql -v numerator={1} -v denominator={2}"
-	psql -c "vacuum analyze bivariate_axis;"
-	touch $@
-
-db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3_quality | db/table ## Precalculated correlations for bivariate layers
-	psql -f tables/bivariate_axis_correlation.sql
+db/table/bivariate_axis_overrides: db/table/bivariate_overlays db/table/bivariate_color db/table/bivariate_unit_localization | db/table ## Overrides for bivariate axis.
+	psql -f tables/bivariate_axis_overrides.sql
 	touch $@
 
 db/table/bivariate_overlays: db/table/osm_meta db/table/tile_logs | db/table ## Several default indicator presets for Bivariate manager.
 	psql -f tables/bivariate_overlays.sql
 	touch $@
 
-db/table/bivariate_unit: db/table/stat_h3 | db/table ## Bivariate units description
+db/table/bivariate_unit: | db/table ## Bivariate units description
 	psql -f tables/bivariate_unit.sql
 	touch $@
 
@@ -2214,7 +2190,7 @@ db/table/bivariate_unit_localization: db/table/bivariate_unit | db/table ## Biva
 	psql -f tables/bivariate_unit_localization.sql
 	touch $@
 
-db/table/bivariate_colors: db/table/stat_h3 | db/table ## Color pallets used for styling layers in Bivariate manager.
+db/table/bivariate_colors: | db/table ## Color pallets used for styling layers in Bivariate manager.
 	psql -f tables/bivariate_colors.sql
 	touch $@
 
@@ -2340,52 +2316,6 @@ deploy/prod/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/prod ## Deploy 
 		rm -f "$$HOME/tmp/users_tiles.tar.bz2"; \
 	'
 	touch $@
-
-data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## Crafting production friendly SQL dump for stat_h3 table
-	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner --no-tablespaces -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') scripts/population_api_dump_footer.sql | pigz" > $@__TMP
-	mv $@__TMP $@
-	touch $@
-
-data/out/population/bivariate_tables_checks: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_colors | data/out/population ## series of bivariate tables quality checks
-	psql -AXt -c "select count(*) from bivariate_axis where quality = 'NaN' or quality is NULL;" |  xargs -I {} bash scripts/check_items_count.sh {} 0
-	psql -AXt -c "select count(*) from bivariate_axis_correlation where quality = 'NaN' or correlation = 'NaN' or quality is NULL or correlation is NULL;" |  xargs -I {} bash scripts/check_items_count.sh {} 0
-	touch $@
-
-data/out/population/bivariate_tables.sqld.gz: data/out/population/bivariate_tables_checks | data/out/population ## Crafting bivariate tables SQL dump
-	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays -t bivariate_unit -t bivariate_unit_localization | pigz" > $@__TMP
-	mv $@__TMP $@
-	touch $@
-
-deploy/s3/prod/stat_h3_dump: data/out/population/stat_h3.sqld.gz | deploy/s3/prod ## Copying stat_h3 table dump from server to AWS-prod one.
-	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz.bak --profile geocint_pipeline_sender || true
-	aws s3 cp data/out/population/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz --profile geocint_pipeline_sender
-	touch $@
-
-deploy/s3/prod/bivariate_tables_dump: data/out/population/bivariate_tables.sqld.gz | deploy/s3/prod ## Сopying bivariate tables dump from server to AWS-prod one.
-	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
-	aws s3 cp data/out/population/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
-	touch $@
-
-deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/stat_h3_dump deploy/s3/prod/bivariate_tables_dump data/out/population/stat_h3.sqld.gz data/out/population/bivariate_tables.sqld.gz | deploy/s3/prod ## Checking if dumps on AWS is not older than local file.
-	bash scripts/check_population_api_tables_dump_dates.sh
-	touch $@
-
-deploy/prod/population_api_tables: deploy/s3/prod/population_api_tables_check_mdate | deploy/prod ## Getting population_api_tables dump from AWS private prod folder and restoring it.
-	ansible lima_insights_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible lima_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
-	ansible lima_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
-	ansible lima_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=paris.kontur.io state=restore target=$$HOME/tmp/stat_h3.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible lima_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=paris.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
-	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
-	touch $@
-
-deploy/prod/cleanup_cache: deploy/prod/population_api_tables | deploy/prod ## Clear insights-api cache on Prod.
-	bash scripts/check_http_response_code.sh GET https://apps.kontur.io/insights-api/cache/cleanUp 200
-	touch $@
-
 
 data/in/kontur_events: | data/in ## Download dir for kontur_events files.
 	mkdir -p $@
@@ -3105,26 +3035,6 @@ data/out/csv/mandays_maxtemp_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/
 	psql -q -X -c "copy (select h3, mandays_maxtemp_over_32c_1c from pf_maxtemp_h3 where h3 is not null and mandays_maxtemp_over_32c_1c is not null) to stdout with delimiter ',' csv;" > data/out/csv/mandays_maxtemp_over_32c_1c.csv
 	touch $@
 
-data/out/csv/mhr_index.csv: db/table/global_rva_h3 | data/out/csv ## extract mhr_index to csv file 
-	psql -q -X -c "copy (select h3, mhr_index from global_rva_h3 where h3 is not null and mhr_index is not null) to stdout with delimiter ',' csv;" > data/out/csv/mhr_index.csv
-	touch $@
-
-data/out/csv/mhe_index.csv: db/table/global_rva_h3 | data/out/csv ## extract mhe_index to csv file 
-	psql -q -X -c "copy (select h3, mhe_index from global_rva_h3 where h3 is not null and mhe_index is not null) to stdout with delimiter ',' csv;" > data/out/csv/mhe_index.csv
-	touch $@
-
-data/out/csv/resilience_index.csv: db/table/global_rva_h3 | data/out/csv ## extract resilience_index to csv file 
-	psql -q -X -c "copy (select h3, resilience_index from global_rva_h3 where h3 is not null and resilience_index is not null) to stdout with delimiter ',' csv;" > data/out/csv/resilience_index.csv
-	touch $@
-
-data/out/csv/coping_capacity_index.csv: db/table/global_rva_h3 | data/out/csv ## extract coping_capacity_index to csv file 
-	psql -q -X -c "copy (select h3, coping_capacity_index from global_rva_h3 where h3 is not null and coping_capacity_index is not null) to stdout with delimiter ',' csv;" > data/out/csv/coping_capacity_index.csv
-	touch $@
-
-data/out/csv/vulnerability_index.csv: db/table/global_rva_h3 | data/out/csv ## extract vulnerability_index to csv file 
-	psql -q -X -c "copy (select h3, vulnerability_index from global_rva_h3 where h3 is not null and vulnerability_index is not null) to stdout with delimiter ',' csv;" > data/out/csv/vulnerability_index.csv
-	touch $@
-
 data/out/csv/hazardous_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract hazardous_days_count to csv file 
 	psql -q -X -c "copy (select h3, hazardous_days_count from disaster_event_episodes_h3 where h3 is not null and hazardous_days_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/hazardous_days_count.csv
 	touch $@
@@ -3493,34 +3403,9 @@ deploy_indicators/dev/uploads/view_count_bf2402_upload: data/out/csv/view_count_
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count_bf2402.csv "view_count_bf2402" "OSM: map views (Jan 25 - Feb 24, 2022)" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"© Kontur\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of tile requests in a given area for the 30 days before Feb 24, 2022." "World" "daily" "n" "$(date -r db/table/tile_logs_bf2402 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
-deploy_indicators/dev/uploads/mhr_index_upload: data/out/csv/mhr_index.csv | deploy_indicators/dev/uploads ## upload mhr_index to insight-api
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mhr_index.csv "mhr_index" "PDC GRVA Multi-hazard risk" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\"]" "" "World" "static" "index" "$(date -r db/table/global_rva_h3 +'%Y-%m-%dT%H:%M:%SZ')"
-	touch $@
-
 deploy_indicators/dev/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/dev/uploads ## upload powerlines to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines.csv "powerlines" "Medium-voltage powerlines distribution (predictive)" "[[\"bad\"], [\"good\"]]" false false "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
-	touch $@
-
-deploy_indicators/dev/uploads/mhe_index_upload: data/out/csv/mhe_index.csv | deploy_indicators/dev/uploads ## upload mhe_index to insight-api
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mhe_index.csv "mhe_index" "PDC GRVA Multi-hazard exposure" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\"]" "" "World" "static" "index" "$(date -r db/table/global_rva_h3 +'%Y-%m-%dT%H:%M:%SZ')"
-	touch $@
-
-deploy_indicators/dev/uploads/coping_capacity_index_upload: data/out/csv/coping_capacity_index.csv | deploy_indicators/dev/uploads ## upload coping_capacity_index to insight-api
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/coping_capacity_index.csv "coping_capacity_index" "PDC GRVA Coping сapacity" "[[\"important\", \"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\"]" "" "World" "static" "index" "$(date -r db/table/global_rva_h3 +'%Y-%m-%dT%H:%M:%SZ')"
-	touch $@
-
-deploy_indicators/dev/uploads/resilience_index_upload: data/out/csv/resilience_index.csv | deploy_indicators/dev/uploads ## upload resilience_index to insight-api
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/resilience_index.csv "resilience_index" "PDC GRVA Resilience" "[[\"important\", \"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\"]" "" "World" "static" "index" "$(date -r db/table/global_rva_h3 +'%Y-%m-%dT%H:%M:%SZ')"
-	touch $@
-
-deploy_indicators/dev/uploads/vulnerability_index_upload: data/out/csv/vulnerability_index.csv | deploy_indicators/dev/uploads ## upload vulnerability_index to insight-api
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerability_index.csv "vulnerability_index" "PDC GRVA Vulnerability" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\"]" "" "World" "static" "index" "$(date -r db/table/global_rva_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/dev/uploads ## upload eatery_count to insight-api
@@ -3888,6 +3773,78 @@ deploy_indicators/dev/custom_axis/wildfire_days_count_one: deploy_indicators/dev
 deploy_indicators/dev/custom_axis/all_custom_axis: deploy_indicators/dev/custom_axis/population_area_km2 deploy_indicators/dev/custom_axis/count_area_km2 deploy_indicators/dev/custom_axis/building_count_area_km2 deploy_indicators/dev/custom_axis/local_hours_area_km2 deploy_indicators/dev/custom_axis/total_hours_area_km2 deploy_indicators/dev/custom_axis/view_count_area_km2 deploy_indicators/dev/custom_axis/osm_users_one deploy_indicators/dev/custom_axis/total_building_count_area_km2 deploy_indicators/dev/custom_axis/wildfires_area_km2 deploy_indicators/dev/custom_axis/forest_area_km2 deploy_indicators/dev/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/dev/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/dev/custom_axis/man_distance_to_hospital_one deploy_indicators/dev/custom_axis/highway_length_area_km2 deploy_indicators/dev/custom_axis/total_road_length_area_km2  deploy_indicators/dev/custom_axis/view_count_bf2402_one deploy_indicators/dev/custom_axis/view_count_bf2402_area_km2 deploy_indicators/dev/custom_axis/powerlines_one deploy_indicators/dev/custom_axis/night_lights_intensity_one deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_one deploy_indicators/dev/custom_axis/solar_power_plants_area_km2 deploy_indicators/dev/custom_axis/volcano_days_count_area_km2 deploy_indicators/dev/custom_axis/volcano_days_count_one deploy_indicators/dev/custom_axis/flood_days_count_area_km2 deploy_indicators/dev/custom_axis/flood_days_count_one deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_population deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/dev/custom_axis/building_count_total_building_count deploy_indicators/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/dev/custom_axis/highway_length_total_road_length deploy_indicators/dev/custom_axis/eatery_count_one deploy_indicators/dev/custom_axis/food_shops_count_one deploy_indicators/dev/custom_axis/hazardous_days_count_area_km2 deploy_indicators/dev/custom_axis/hazardous_days_count_one deploy_indicators/dev/custom_axis/earthquake_days_count_area_km2 deploy_indicators/dev/custom_axis/earthquake_days_count_one deploy_indicators/dev/custom_axis/drought_days_count_area_km2 deploy_indicators/dev/custom_axis/drought_days_count_one deploy_indicators/dev/custom_axis/cyclone_days_count_area_km2 deploy_indicators/dev/custom_axis/cyclone_days_count_one deploy_indicators/dev/custom_axis/wildfire_days_count_area_km2 deploy_indicators/dev/custom_axis/wildfire_days_count_one ## final target for custom axis deployment to dev
 	touch $@
 
+## dev presets upload block
+deploy_indicators/dev/presets/osm_quantity: deploy_indicators/dev/uploads/count_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Quantity overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "count" "area_km2" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/osm_building_completeness: deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/total_building_count_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "building_count" "total_building_count" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/osm_road_completeness: deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "highway_length" "total_road_length" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/osm_mapping_activity: deploy_indicators/dev/uploads/local_hours_upload deploy_indicators/dev/uploads/total_hours_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "local_hours" "area_km2" "total_hours" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/osm_antiquity: deploy_indicators/dev/uploads/avgmax_ts_upload  deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "avgmax_ts" "one" "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/nighttime_heatwave_risk: deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "days_mintemp_above_25c_1c" "one" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/fire_service_scarcity_risk: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_fire_brigade" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/views_before_after: deploy_indicators/dev/uploads/view_count_bf2402_upload deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Views before after overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "view_count_bf2402" "area_km2" "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/ev_charging_availability: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy EV Charging Availability overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_charging_stations" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/waste_containers_availability: deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/populated_area_km2_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Waste containers availability overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/shelters_scarcity_risk: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Shelters Scarcity Risk overlay to dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_bomb_shelters" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/all_presets: deploy_indicators/dev/presets/osm_quantity deploy_indicators/dev/presets/osm_building_completeness deploy_indicators/dev/presets/osm_road_completeness deploy_indicators/dev/presets/osm_mapping_activity deploy_indicators/dev/presets/osm_antiquity deploy_indicators/dev/presets/nighttime_heatwave_risk deploy_indicators/dev/presets/fire_service_scarcity_risk deploy_indicators/dev/presets/views_before_after deploy_indicators/dev/presets/ev_charging_availability deploy_indicators/dev/presets/waste_containers_availability deploy_indicators/dev/presets/shelters_scarcity_risk ## final target for presets deployment to dev
+	touch $@
+
+## END dev presets upload
+
 ## Deploy test ##
 db/table/insights_api_indicators_list_test: | db/table ## Refresh insights_api_indicators_list_test table before new deploy cycle
 	psql -c "drop table if exists insights_api_indicators_list_test;"
@@ -4176,34 +4133,9 @@ deploy_indicators/test/uploads/view_count_bf2402_upload: data/out/csv/view_count
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count_bf2402.csv "view_count_bf2402" "OSM: map views (Jan 25 - Feb 24, 2022)" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"© Kontur\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of tile requests in a given area for the 30 days before Feb 24, 2022." "World" "daily" "n" "$(date -r db/table/tile_logs_bf2402 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
-deploy_indicators/test/uploads/mhr_index_upload: data/out/csv/mhr_index.csv | deploy_indicators/test/uploads ## upload mhr_index to insight-api
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mhr_index.csv "mhr_index" "PDC GRVA Multi-hazard risk" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\"]" "" "World" "static" "index" "$(date -r db/table/global_rva_h3 +'%Y-%m-%dT%H:%M:%SZ')"
-	touch $@
-
 deploy_indicators/test/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/test/uploads ## upload powerlines to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines.csv "powerlines" "Medium-voltage powerlines distribution (predictive)" "[[\"bad\"], [\"good\"]]" false false "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
-	touch $@
-
-deploy_indicators/test/uploads/mhe_index_upload: data/out/csv/mhe_index.csv | deploy_indicators/test/uploads ## upload mhe_index to insight-api
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mhe_index.csv "mhe_index" "PDC GRVA Multi-hazard exposure" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\"]" "" "World" "static" "index" "$(date -r db/table/global_rva_h3 +'%Y-%m-%dT%H:%M:%SZ')"
-	touch $@
-
-deploy_indicators/test/uploads/coping_capacity_index_upload: data/out/csv/coping_capacity_index.csv | deploy_indicators/test/uploads ## upload coping_capacity_index to insight-api
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/coping_capacity_index.csv "coping_capacity_index" "PDC GRVA Coping сapacity" "[[\"important\", \"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\"]" "" "World" "static" "index" "$(date -r db/table/global_rva_h3 +'%Y-%m-%dT%H:%M:%SZ')"
-	touch $@
-
-deploy_indicators/test/uploads/resilience_index_upload: data/out/csv/resilience_index.csv | deploy_indicators/test/uploads ## upload resilience_index to insight-api
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/resilience_index.csv "resilience_index" "PDC GRVA Resilience" "[[\"important\", \"bad\"], [\"good\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\"]" "" "World" "static" "index" "$(date -r db/table/global_rva_h3 +'%Y-%m-%dT%H:%M:%SZ')"
-	touch $@
-
-deploy_indicators/test/uploads/vulnerability_index_upload: data/out/csv/vulnerability_index.csv | deploy_indicators/test/uploads ## upload vulnerability_index to insight-api
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/vulnerability_index.csv "vulnerability_index" "PDC GRVA Vulnerability" "[[\"unimportant\"], [\"important\", \"bad\"]]" false false "[\"© 2022 Pacific Disaster Center. https://www.pdc.org/privacy-policy/\"]" "" "World" "static" "index" "$(date -r db/table/global_rva_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/test/uploads ## upload eatery_count to insight-api
@@ -4291,7 +4223,7 @@ deploy_indicators/test/uploads/population_upload: data/out/csv/population.csv | 
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population.csv "population" "Population" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data. The datasets detailed methodology is available here: https://data.humdata.org/dataset/kontur-population-dataset" "World" "daily" "ppl" "$(date -r db/table/kontur_population_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
-deploy_indicators/test/uploads/upload_test: deploy_indicators/test/uploads/population_upload deploy_indicators/test/uploads/view_count_upload deploy_indicators/test/uploads/count_upload deploy_indicators/test/uploads/populated_area_km2_upload deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload deploy_indicators/test/uploads/local_hours_upload deploy_indicators/test/uploads/total_hours_upload deploy_indicators/test/uploads/avgmax_ts_upload deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/view_count_bf2402_upload deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/test/uploads/total_building_count_upload deploy_indicators/test/uploads/count_6_months_upload deploy_indicators/test/uploads/building_count_6_months_upload deploy_indicators/test/uploads/highway_length_6_months_upload deploy_indicators/test/uploads/osm_users_upload deploy_indicators/test/uploads/residential_upload deploy_indicators/test/uploads/gdp_upload deploy_indicators/test/uploads/min_ts_upload deploy_indicators/test/uploads/max_ts_upload deploy_indicators/test/uploads/wildfires_upload deploy_indicators/test/uploads/covid19_confirmed_upload deploy_indicators/test/uploads/population_prev_upload deploy_indicators/test/uploads/industrial_area_upload deploy_indicators/test/uploads/volcanos_count_upload deploy_indicators/test/uploads/pop_under_5_total_upload deploy_indicators/test/uploads/pop_over_65_total_upload deploy_indicators/test/uploads/poverty_families_total_upload deploy_indicators/test/uploads/pop_disability_total_upload deploy_indicators/test/uploads/pop_not_well_eng_speak_upload deploy_indicators/test/uploads/pop_without_car_upload deploy_indicators/test/uploads/man_distance_to_hospital_upload deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/man_distance_to_charging_stations_upload  deploy_indicators/test/uploads/eatery_count_upload deploy_indicators/test/uploads/food_shops_count_upload deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/solar_farms_placement_suitability_upload deploy_indicators/test/uploads/mapswipe_area_km2_upload deploy_indicators/test/uploads/avg_slope_gebco_2022_upload deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload deploy_indicators/test/uploads/forest_upload deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/test/uploads/shrubs_upload deploy_indicators/test/uploads/herbage_upload deploy_indicators/test/uploads/unknown_forest_upload deploy_indicators/test/uploads/avg_ndvi_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/mhr_index_upload deploy_indicators/test/uploads/mhe_index_upload deploy_indicators/test/uploads/resilience_index_upload deploy_indicators/test/uploads/coping_capacity_index_upload deploy_indicators/test/uploads/vulnerability_index_upload deploy_indicators/test/uploads/hazardous_days_count_upload deploy_indicators/test/uploads/earthquake_days_count_upload deploy_indicators/test/uploads/wildfire_days_count_upload deploy_indicators/test/uploads/drought_days_count_upload deploy_indicators/test/uploads/cyclone_days_count_upload deploy_indicators/test/uploads/volcano_days_count_upload deploy_indicators/test/uploads/flood_days_count_upload deploy_indicators/test/uploads/powerlines_upload deploy_indicators/test/uploads/night_lights_intensity_upload deploy_indicators/test/uploads/gsa_ghi_upload deploy_indicators/test/uploads/worldclim_avg_temperature_upload deploy_indicators/test/uploads/worldclim_min_temperature_upload deploy_indicators/test/uploads/worldclim_max_temperature_upload deploy_indicators/test/uploads/worldclim_amp_temperature_upload deploy_indicators/test/uploads/powerlines_proximity_m_upload deploy_indicators/test/uploads/populated_areas_proximity_m_upload deploy_indicators/test/uploads/power_substations_proximity_m_upload deploy_indicators/test/uploads/solar_power_plants_upload deploy_indicators/test/uploads/safety_index_upload | deploy_indicators/test/uploads ## Control of layer uplodings to Insigths API for TEST - without area_km2 and one
+deploy_indicators/test/uploads/upload_test: deploy_indicators/test/uploads/population_upload deploy_indicators/test/uploads/view_count_upload deploy_indicators/test/uploads/count_upload deploy_indicators/test/uploads/populated_area_km2_upload deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload deploy_indicators/test/uploads/local_hours_upload deploy_indicators/test/uploads/total_hours_upload deploy_indicators/test/uploads/avgmax_ts_upload deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/view_count_bf2402_upload deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/test/uploads/total_building_count_upload deploy_indicators/test/uploads/count_6_months_upload deploy_indicators/test/uploads/building_count_6_months_upload deploy_indicators/test/uploads/highway_length_6_months_upload deploy_indicators/test/uploads/osm_users_upload deploy_indicators/test/uploads/residential_upload deploy_indicators/test/uploads/gdp_upload deploy_indicators/test/uploads/min_ts_upload deploy_indicators/test/uploads/max_ts_upload deploy_indicators/test/uploads/wildfires_upload deploy_indicators/test/uploads/covid19_confirmed_upload deploy_indicators/test/uploads/population_prev_upload deploy_indicators/test/uploads/industrial_area_upload deploy_indicators/test/uploads/volcanos_count_upload deploy_indicators/test/uploads/pop_under_5_total_upload deploy_indicators/test/uploads/pop_over_65_total_upload deploy_indicators/test/uploads/poverty_families_total_upload deploy_indicators/test/uploads/pop_disability_total_upload deploy_indicators/test/uploads/pop_not_well_eng_speak_upload deploy_indicators/test/uploads/pop_without_car_upload deploy_indicators/test/uploads/man_distance_to_hospital_upload deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/man_distance_to_charging_stations_upload  deploy_indicators/test/uploads/eatery_count_upload deploy_indicators/test/uploads/food_shops_count_upload deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/solar_farms_placement_suitability_upload deploy_indicators/test/uploads/mapswipe_area_km2_upload deploy_indicators/test/uploads/avg_slope_gebco_2022_upload deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload deploy_indicators/test/uploads/forest_upload deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/test/uploads/shrubs_upload deploy_indicators/test/uploads/herbage_upload deploy_indicators/test/uploads/unknown_forest_upload deploy_indicators/test/uploads/avg_ndvi_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/hazardous_days_count_upload deploy_indicators/test/uploads/earthquake_days_count_upload deploy_indicators/test/uploads/wildfire_days_count_upload deploy_indicators/test/uploads/drought_days_count_upload deploy_indicators/test/uploads/cyclone_days_count_upload deploy_indicators/test/uploads/volcano_days_count_upload deploy_indicators/test/uploads/flood_days_count_upload deploy_indicators/test/uploads/powerlines_upload deploy_indicators/test/uploads/night_lights_intensity_upload deploy_indicators/test/uploads/gsa_ghi_upload deploy_indicators/test/uploads/worldclim_avg_temperature_upload deploy_indicators/test/uploads/worldclim_min_temperature_upload deploy_indicators/test/uploads/worldclim_max_temperature_upload deploy_indicators/test/uploads/worldclim_amp_temperature_upload deploy_indicators/test/uploads/powerlines_proximity_m_upload deploy_indicators/test/uploads/populated_areas_proximity_m_upload deploy_indicators/test/uploads/power_substations_proximity_m_upload deploy_indicators/test/uploads/solar_power_plants_upload deploy_indicators/test/uploads/safety_index_upload | deploy_indicators/test/uploads ## Control of layer uplodings to Insigths API for TEST - without area_km2 and one
 	touch $@
 
 deploy/test/cleanup_cache: deploy_indicators/test/uploads/upload_test | deploy_indicators/test ## Clear insights-api cache on Test.
@@ -4574,69 +4506,69 @@ deploy_indicators/test/custom_axis/all_custom_axis: deploy_indicators/test/custo
 
 ## END Custom axis updates block
 
-## Presets upload block
+## TEST Presets upload block
 
-deploy_indicators/test/presets/osm_quantity: deploy_indicators/test/uploads/count_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Quantity overlay to test.
+deploy_indicators/test/presets/osm_quantity: deploy_indicators/test/uploads/count_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Quantity overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "count" "area_km2" "population" "area_km2"
 	touch $@
 
-deploy_indicators/test/presets/osm_building_completeness: deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/total_building_count_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to test.
+deploy_indicators/test/presets/osm_building_completeness: deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/total_building_count_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "building_count" "total_building_count" "population" "area_km2"
 	touch $@
 
-deploy_indicators/test/presets/osm_road_completeness: deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to test.
+deploy_indicators/test/presets/osm_road_completeness: deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "highway_length" "total_road_length" "population" "area_km2"
 	touch $@
 
-deploy_indicators/test/presets/osm_mapping_activity: deploy_indicators/test/uploads/local_hours_upload deploy_indicators/test/uploads/total_hours_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to test.
+deploy_indicators/test/presets/osm_mapping_activity: deploy_indicators/test/uploads/local_hours_upload deploy_indicators/test/uploads/total_hours_upload  db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "local_hours" "area_km2" "total_hours" "area_km2"
 	touch $@
 
-deploy_indicators/test/presets/osm_antiquity: deploy_indicators/test/uploads/avgmax_ts_upload  deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to test.
+deploy_indicators/test/presets/osm_antiquity: deploy_indicators/test/uploads/avgmax_ts_upload  deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "avgmax_ts" "one" "view_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/presets/nighttime_heatwave_risk: deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to test.
+deploy_indicators/test/presets/nighttime_heatwave_risk: deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "days_mintemp_above_25c_1c" "one" "population" "area_km2"
 	touch $@
 
-deploy_indicators/test/presets/fire_service_scarcity_risk: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to test.
+deploy_indicators/test/presets/fire_service_scarcity_risk: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_fire_brigade" "population" "population" "area_km2"
 	touch $@
 
-deploy_indicators/test/presets/views_before_after: deploy_indicators/test/uploads/view_count_bf2402_upload deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Views before after overlay to test.
+deploy_indicators/test/presets/views_before_after: deploy_indicators/test/uploads/view_count_bf2402_upload deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Views before after overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "view_count_bf2402" "area_km2" "view_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/presets/ev_charging_availability: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy EV Charging Availability overlay to test.
+deploy_indicators/test/presets/ev_charging_availability: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy EV Charging Availability overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_charging_stations" "population" "population" "area_km2"
 	touch $@
 
-deploy_indicators/test/presets/waste_containers_availability: deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/populated_area_km2_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy Waste containers availability overlay to test.
+deploy_indicators/test/presets/waste_containers_availability: deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/populated_area_km2_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Waste containers availability overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
 	touch $@
 
-deploy_indicators/test/presets/shelters_scarcity_risk: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/presets ## Deploy Shelters Scarcity Risk overlay to test.
+deploy_indicators/test/presets/shelters_scarcity_risk: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Shelters Scarcity Risk overlay to test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_bomb_shelters" "population" "population" "area_km2"
@@ -4645,75 +4577,738 @@ deploy_indicators/test/presets/shelters_scarcity_risk: deploy_indicators/test/up
 deploy_indicators/test/presets/all_presets: deploy_indicators/test/presets/osm_quantity deploy_indicators/test/presets/osm_building_completeness deploy_indicators/test/presets/osm_road_completeness deploy_indicators/test/presets/osm_mapping_activity deploy_indicators/test/presets/osm_antiquity deploy_indicators/test/presets/nighttime_heatwave_risk deploy_indicators/test/presets/fire_service_scarcity_risk deploy_indicators/test/presets/views_before_after deploy_indicators/test/presets/ev_charging_availability deploy_indicators/test/presets/waste_containers_availability deploy_indicators/test/presets/shelters_scarcity_risk ## final target for presets deployment to test
 	touch $@
 
-deploy_indicators/dev/presets/osm_quantity: deploy_indicators/dev/uploads/count_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Quantity overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "count" "area_km2" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/osm_building_completeness: deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/total_building_count_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "building_count" "total_building_count" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/osm_road_completeness: deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "highway_length" "total_road_length" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/osm_mapping_activity: deploy_indicators/dev/uploads/local_hours_upload deploy_indicators/dev/uploads/total_hours_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "local_hours" "area_km2" "total_hours" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/osm_antiquity: deploy_indicators/dev/uploads/avgmax_ts_upload  deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "avgmax_ts" "one" "view_count" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/nighttime_heatwave_risk: deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "days_mintemp_above_25c_1c" "one" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/fire_service_scarcity_risk: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_fire_brigade" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/views_before_after: deploy_indicators/dev/uploads/view_count_bf2402_upload deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Views before after overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "view_count_bf2402" "area_km2" "view_count" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/ev_charging_availability: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy EV Charging Availability overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_charging_stations" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/waste_containers_availability: deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/populated_area_km2_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy Waste containers availability overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/shelters_scarcity_risk: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/presets ## Deploy Shelters Scarcity Risk overlay to dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_bomb_shelters" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/all_presets: deploy_indicators/dev/presets/osm_quantity deploy_indicators/dev/presets/osm_building_completeness deploy_indicators/dev/presets/osm_road_completeness deploy_indicators/dev/presets/osm_mapping_activity deploy_indicators/dev/presets/osm_antiquity deploy_indicators/dev/presets/nighttime_heatwave_risk deploy_indicators/dev/presets/fire_service_scarcity_risk deploy_indicators/dev/presets/views_before_after deploy_indicators/dev/presets/ev_charging_availability deploy_indicators/dev/presets/waste_containers_availability deploy_indicators/dev/presets/shelters_scarcity_risk ## final target for presets deployment to dev
-	touch $@
-
-## END Presets upload block
+## END test upload block
 
 ### END Deploy to dev and test through API
+
+### Deploy to prod through API
+## Deploy prod ##
+db/table/insights_api_indicators_list_prod: | db/table ## Refresh insights_api_indicators_list_prod table before new deploy cycle
+	psql -c "drop table if exists insights_api_indicators_list_prod;"
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	touch $@
+
+deploy_indicators/prod/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/prod/uploads ## upload count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count.csv "count" "OSM: objects count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$(date -r db/table/stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/prod/uploads ## upload hazardous_days_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hazardous_days_count.csv "hazardous_days_count" "Exposure: all disaster types" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme disasters of any types were recorded." "World" "daily" "days" "$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" "Man-days above 32°C, (+1°C scenario)" "[[\"good\"], [\"bad\"]]" false false "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "" "World" "daily" "other" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/prod/uploads ## upload man_distance_to_fire_brigade to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" "Man-distance to fire brigade" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_fire_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/prod/uploads ## upload food_shops_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/food_shops_count.csv "food_shops_count" "OSM: food shops count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of places where you can buy fresh or packaged food products in a given area." "World" "daily" "n" "$(date -r db/table/osm_places_food_shops_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv | deploy_indicators/prod/uploads ## upload populated_area_km2 to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_area_km2.csv "populated_area_km2" "Populated area" "[[\"unimportant\"], [\"important\"]]" true false "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "km2" "$(date -r db/table/kontur_population_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/count_6_months_upload: data/out/csv/count_6_months.csv | deploy_indicators/prod/uploads ## upload count_6_months to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count_6_months.csv "count_6_months" "OSM: objects mapped (6 months)" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of objects mapped in OpenStreetMap in the last 6 months." "World" "daily" "n" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/prod/uploads ## upload view_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count.csv "view_count" "OSM: map views (last 30 days)" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of tile requests in a given area for the last 30 days." "World" "daily" "n" "$(date -r db/table/tile_logs +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/prod/uploads ## upload avgmax_ts to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avgmax_ts.csv "avgmax_ts" "OSM: last edit (avg)" "[[\"bad\", \"unimportant\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Average of latest OpenStreetMap edit dates in a given area." "World" "daily" "unixtime" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/max_ts_upload: data/out/csv/max_ts.csv | deploy_indicators/prod/uploads ## upload max_ts to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_ts.csv "max_ts" "OSM: last edit" "[[\"bad\", \"unimportant\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Date of latest OpenStreetMap edit in a given area at highest resolution." "World" "daily" "unixtime" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_indicators/prod/uploads ## upload min_ts to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_ts.csv "min_ts" "OSM: first edit" "[[\"good\"], [\"neutral\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Date of earliest OpenStreetMap edit in a given area." "World" "daily" "unixtime" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/prod/uploads ## upload osm_users to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_users.csv "osm_users" "OSM: contributors count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of users who have edited a given area in OpenStreetMap." "World" "daily" "ppl" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/prod/uploads ## upload building_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count.csv "building_count" "OSM: buildings count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of buildings in a given area according to OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv | deploy_indicators/prod/uploads ## upload building_count_6_months to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count_6_months.csv "building_count_6_months" "OSM: new buildings (last 6 months)" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of buildings mapped in OpenStreetMap in the last 6 months." "World" "daily" "n" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/highway_length_upload: data/out/csv/highway_length.csv | deploy_indicators/prod/uploads ## upload highway_length to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length.csv "highway_length" "OSM: road length" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total length of roads in a given area according to OpenStreetMap." "World" "daily" "km" "$(date -r db/table/osm_road_segments_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv | deploy_indicators/prod/uploads ## upload highway_length_6_months to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length_6_months.csv "highway_length_6_months" "OSM: new road length (last 6 months)" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Length of roads mapped in OpenStreetMap in the last 6 months." "World" "daily" "km" "$(date -r db/table/osm_road_segments_6_months_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/total_hours_upload: data/out/csv/total_hours.csv | deploy_indicators/prod/uploads ## upload total_hours to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_hours.csv "total_hours" "OSM: contributor activity" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of OpenStreetMap mapping hours by all users in the last 2 years. A mapping hour is an hour in which a user uploaded at least one tagged object." "World" "daily" "h" "$(date -r db/table/user_hours_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/local_hours_upload: data/out/csv/local_hours.csv | deploy_indicators/prod/uploads ## upload local_hours to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/local_hours.csv "local_hours" "OSM: local contributor activity" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of OpenStreetMap mapping hours by active local mappers in the last 2 years. A mapping hour is an hour in which a user uploaded at least one tagged object. Mapper is considered active if they contributed more than 30 mapping hours in the last 2 years. The position of the active mapper is estimated by the region of their highest activity." "World" "daily" "h" "$(date -r db/table/user_hours_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/forest_upload: data/out/csv/forest.csv | deploy_indicators/prod/uploads ## upload forest to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/forest.csv "forest" "Landcover: forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by forest - where tree canopy is more than 15%." "World" "static" "km2" "$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv | deploy_indicators/prod/uploads ## upload evergreen_needle_leaved_forest to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" "Landcover: evergreen needleleaf forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by either closed or open evergreen needleleaf forest. Almost all needleleaf trees remain green all year. Canopy is never without green foliage. Closed forest has tree canopy >70%. Open forest has top layer - trees 15-70 % - and second layer - mix of shrubs and grassland." "World" "static" "km2" "$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/shrubs_upload: data/out/csv/shrubs.csv | deploy_indicators/prod/uploads ## upload shrubs to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/shrubs.csv "shrubs" "Landcover: shrubland" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Shrubland, or area where vegetation is dominated by woody perennial plants generally less than 5 meters in height, with persistent and woody stems and without any defined main stem. The shrub foliage can be either evergreen or deciduous." "World" "static" "km2" "$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/herbage_upload: data/out/csv/herbage.csv | deploy_indicators/prod/uploads ## upload herbage to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/herbage.csv "herbage" "Landcover: herbaceous vegetation" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by herbaceous plants. These plants have no persistent woody stems above ground and lack definite firm structure. Tree and shrub cover is less than 10%." "World" "static" "km2" "$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv | deploy_indicators/prod/uploads ## upload unknown_forest to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/unknown_forest.csv "unknown_forest" "Landcover: unknown forest type" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by forest that does not match defined forest types." "World" "static" "km2" "$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicators/prod/uploads ## upload gdp to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gdp.csv "gdp" "Gross Domestic Product" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© 2019 The World Bank Group, CC-BY 4.0\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, Myroslava Lesiv, Nandin-Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"@ OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "A country GDP (Gross Domestic Product) per capita multiplied by the population in a given area. For areas covering multiple countries, a sum of their respective GDP portions is used. GDP is the standard measure of the value created through the production of goods and services in a country during a certain period." "World" "static" "USD" "$(date -r db/table/gdp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/population_prev_upload: data/out/csv/population_prev.csv | deploy_indicators/prod/uploads ## upload population_prev to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population_prev.csv "population_prev" "Population (previous version)" "[[\"unimportant\"], [\"important\"]]" false false "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to previous version of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data." "World" "daily" "ppl" "$(date -r db/table/kontur_population_v5_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/prod/uploads ## upload total_building_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_building_count.csv "total_building_count" "Total buildings count" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Estimated number of buildings in a given area based on various data sources." "World" "daily" "n" "$(date -r db/table/building_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/prod/uploads ## upload wildfires to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfires.csv "wildfires" "Wildfire days" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false false "[\"© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002\", \"NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML\"]" "Number of days per year when a thermal anomaly was recorded in the last 13 months." "World" "daily" "days" "$(date -r db/table/global_fires_stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/prod/uploads ## upload earthquake_days_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/earthquake_days_count.csv "earthquake_days_count" "Exposure: earthquake" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme earthquakes were recorded." "World" "daily" "days" "$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv | deploy_indicators/prod/uploads ## upload drought_days_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drought_days_count.csv "drought_days_count" "Exposure: drought" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme droughts were recorded." "World" "daily" "days" "$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv | deploy_indicators/prod/uploads ## upload cyclone_days_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cyclone_days_count.csv "cyclone_days_count" "Exposure: cyclone" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme cyclones were recorded." "World" "daily" "days" "$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv | deploy_indicators/prod/uploads ## upload wildfire_days_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfire_days_count.csv "wildfire_days_count" "Exposure: wildfire" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme wildfires were recorded." "World" "daily" "days" "$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv | deploy_indicators/prod/uploads ## upload volcano_days_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcano_days_count.csv "volcano_days_count" "Exposure: volcanic eruption" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme volcanos were recorded." "World" "daily" "days" "$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv | deploy_indicators/prod/uploads ## upload flood_days_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/flood_days_count.csv "flood_days_count" "Exposure: flood" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme floods were recorded." "World" "daily" "days" "$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/covid19_confirmed_upload: data/out/csv/covid19_confirmed.csv | deploy_indicators/prod/uploads ## upload covid19_confirmed to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/covid19_confirmed.csv "covid19_confirmed" "COVID-19 confirmed сases" "[[\"good\"], [\"bad\"]]" false true "[\"© Data from JHU CSSE COVID-19 Dataset\"]" "Number of COVID-19 confirmed cases for the entire observation period according to the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University (JHU)." "World" "daily" "n" "$(date -r db/table/covid19_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/prod/uploads ## upload avg_slope_gebco_2022 to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" "Slope (avg)" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface slope." "World" "static" "deg" "$(date -r db/table/gebco_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/prod/uploads ## upload avg_elevation_gebco_2022 to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" "Elevation (avg)" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface elevation in meters." "World" "static" "m" "$(date -r db/table/gebco_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/prod/uploads ## upload industrial_area to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/industrial_area.csv "industrial_area" "OSM: industrial area" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Areas of land used for industrial purposes, which may include facilities such as workshops, factories and warehouses, and their associated infrastructure (car parks, service roads, yards, etc.)." "World" "daily" "km2" "$(date -r db/table/osm_landuse_industrial_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv | deploy_indicators/prod/uploads ## upload avg_ndvi to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_ndvi.csv "avg_ndvi" "NDVI (avg)" "[[\"bad\"], [\"good\"]]" false true "[\"© Data from Sentinel-2 L2A 120m Mosaic, CC-BY 4.0, https://forum.sentinel-hub.com/c/aws-sentinel\"]" "Average values of Normalized Difference Vegetation Index (NDVI), as of June 2019. Negative values of NDVI (values approaching -1) correspond to water. Values close to zero (-0.1 to 0.1) generally correspond to barren areas of rock, sand, or snow. Low, positive values represent shrub and grassland (approximately 0.2 to 0.4), while high values indicate temperate and tropical rainforests (values approaching 1)." "World" "static" "index" "$(date -r db/table/ndvi_2019_06_10_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv | deploy_indicators/prod/uploads ## upload volcanos_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcanos_count.csv "volcanos_count" "OSM: volcanoes count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of volcanoes in a given area." "World" "daily" "n" "$(date -r db/table/osm_volcanos_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv | deploy_indicators/prod/uploads ## upload pop_under_5_total to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_under_5_total.csv "pop_under_5_total" "Population: under 5" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of children (ages 0-5) in the United States." "The United States of America" "static" "ppl" "$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv | deploy_indicators/prod/uploads ## upload pop_over_65_total to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_over_65_total.csv "pop_over_65_total" "Population: over 65" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of elderly people (ages 65+) in the United States." "The United States of America" "static" "ppl" "$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv | deploy_indicators/prod/uploads ## upload poverty_families_total to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/poverty_families_total.csv "poverty_families_total" "Population: families below poverty line" "[[\"unimportant\", \"good\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of households living below the poverty line in the United States." "The United States of America" "static" "n" "$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv | deploy_indicators/prod/uploads ## upload pop_disability_total to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_disability_total.csv "pop_disability_total" "Population: with disabilities" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of people with disabilities in the United States based on the U.S. Census Bureaus American Community Survey (ACS). This page describes how disability is defined and collected in the ACS: https://www.census.gov/topics/health/disability/guidance/data-collection-acs.html" "The United States of America" "static" "ppl" "$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv | deploy_indicators/prod/uploads ## upload pop_not_well_eng_speak to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" "Population: limited English proficiency" "[[\"good\"], [\"important\", \"bad\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of people who have difficulty speaking English in the United States." "The United States of America" "static" "ppl" "$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv | deploy_indicators/prod/uploads ## upload pop_without_car to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_without_car.csv "pop_without_car" "Population: without a car" "[[\"neutral\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of working people without a car in the United States." "The United States of America" "static" "ppl" "$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload days_maxtemp_over_32c_1c to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" "Days above 32°C (+1°C scenario)" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum temperature exceeding 32°C (90°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science)." "World (-60:60 latitudes)" "static" "days" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv | deploy_indicators/prod/uploads ## upload days_maxtemp_over_32c_2c to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" "Days above 32°C (+2°C scenario)" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum temperature exceeding 32°C (90°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science).The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv | deploy_indicators/prod/uploads ## upload days_mintemp_above_25c_1c to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" "Nights above 25°C (+1°C scenario)" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily minimum temperature exceeding 25°C (77°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). The lowest temperature during the day happens at night when temperatures dip after sunset. The human experience of a “hot” night is relative to location, so a threshold of 20°C is often used for higher latitudes (Europe and the US) and a threshold of 25°C is often used for tropical and equatorial regions." "World (-60:60 latitudes)" "static" "days" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv | deploy_indicators/prod/uploads ## upload days_mintemp_above_25c_2c to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" "Nights above 25°C (+2°C scenario)" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily minimum temperature exceeding 25°C (77°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). The lowest temperature during the day happens at night when temperatures dip after sunset. The human experience of a “hot” night is relative to location, so a threshold of 20°C is often used for higher latitudes (Europe and the US) and a threshold of 25°C is often used for tropical and equatorial regions. The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" "Days above 32°C wet-bulb (+1°C scenario)" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F) and 55% humidity." "World (-60:60 latitudes)" "static" "days" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv | deploy_indicators/prod/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" "Days above 32°C wet-bulb (+2°C scenario)" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F) and 55% humidity. The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/prod/uploads ## upload man_distance_to_hospital to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" "Man-distance to hospitals" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_hospitals_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/prod/uploads ## upload man_distance_to_bomb_shelters to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" "Man-distance to bomb shelters" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_bomb_shelters_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/prod/uploads ## upload man_distance_to_charging_stations to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" "Man-distance to charging stations" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_charging_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/prod/uploads ## upload total_road_length to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_road_length.csv "total_road_length" "Total road length" "[[\"unimportant\"], [\"important\"]]" true true "[\"©2019 Facebook, Inc. and its affiliates https://github.com/facebookmicrosites/Open-Mapping-At-Facebook/blob/main/LICENSE.md\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"© Kontur https://kontur.io/\"]" "Estimated total road length according to Meta (Facebook) AI and OpenStreetMap data. For places where Meta (Facebook) roads data are unavailable, the estimation is based on statistical regression from Kontur Population data." "World" "daily" "km" "$(date -r db/table/total_road_length_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/prod/uploads ## upload view_count_bf2402 to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count_bf2402.csv "view_count_bf2402" "OSM: map views (Jan 25 - Feb 24, 2022)" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"© Kontur\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of tile requests in a given area for the 30 days before Feb 24, 2022." "World" "daily" "n" "$(date -r db/table/tile_logs_bf2402 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/prod/uploads ## upload powerlines to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines.csv "powerlines" "Medium-voltage powerlines distribution (predictive)" "[[\"bad\"], [\"good\"]]" false false "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/prod/uploads ## upload eatery_count to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/eatery_count.csv "eatery_count" "OSM: eatery places count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of places where you can buy and eat food (such as restaurants, cafés, fast-food outlets, etc.) in a given area." "World" "daily" "n" "$(date -r db/table/osm_places_eatery_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv | deploy_indicators/prod/uploads ## upload night_lights_intensity to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/night_lights_intensity.csv "night_lights_intensity" "Nighttime lights intensity" "[[\"unimportant\"], [\"important\"]]" false true "[\"Earth Observation Group © 2021. https://eogdata.mines.edu/products/vnl/#reference\", \"C. D. Elvidge, K. E. Baugh, M. Zhizhin, and F.-C. Hsu, “Why VIIRS data are superior to DMSP for mapping nighttime lights,” Asia-Pacific Advanced Network 35, vol. 35, p. 62, 2013.\", \"C. D. Elvidge, M. Zhizhin, T. Ghosh, F-C. Hsu, “Annual time series of global VIIRS nighttime lights derived from monthly averages: 2012 to 2019”, Remote Sensing (In press)\"]" "Remote sensing of nighttime light emissions offers a unique perspective for investigations into human behaviors. The Visible Infrared Imaging Radiometer Suite (VIIRS) instruments aboard the Suomi NPP and NOAA-20 satellites provide global daily measurements of nighttime light." "World" "static" "nW_cm2_sr" "$(date -r db/table/night_lights_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv | deploy_indicators/prod/uploads ## upload mapswipe_area_km2 to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" "Human activity" "[[\"unimportant\"], [\"important\"]]" false true "[\"Copyright © 2022 MapSwipe https://mapswipe.org/en/privacy.html\"]" "Places were MapSwipe users have detected some human activity through features (i.e. buildings, roadways, waterways, etc.) on satellite images." "World" "daily" "km2" "$(date -r db/table/mapswipe_hot_tasking_data_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv | deploy_indicators/prod/uploads ## upload gsa_ghi to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gsa_ghi.csv "gsa_ghi" "Global Horizontal Irradiance (GHI)" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use\"]" "Total amount of shortwave terrestrial irradiance received by a surface horizontal to the ground." "World (-60:60 latitudes)" "static" "W_m2" "$(date -r db/table/global_solar_atlas_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_avg_temperature to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" "Air temperature (avg)" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly average air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_min_temperature to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" "Air temperature (min)" "[[\"bad\"], [\"good\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly minimum air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_max_temperature to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" "Air temperature (max)" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly maximum air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_amp_temperature to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" "Air temperature (amplitude)" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly amplitude of air temperatures according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv | deploy_indicators/prod/uploads ## upload powerlines_proximity_m to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" "Proximity to: powerlines grid" "[[\"important\"], [\"unimportant\"]]" false true "[\"Copyright © OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"© 2020 The World Bank Group, CC-BY 4.0\"]" "Distance to closest powerline" "World" "static" "m" "$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/prod/uploads ## upload waste_basket_coverage_area_km2 to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" "OSM: waste containers count" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of waste containers in a given area." "World" "daily" "n" "$(date -r db/table/waste_containers_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/prod/uploads ## upload populated_areas_proximity_m to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" "Proximity to densely populated areas" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Distance to closest Kontur Population cell with population > 80 ppl" "World" "daily" "m" "$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv | deploy_indicators/prod/uploads ## upload power_substations_proximity_m to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" "Proximity to power substations, m" "[[\"good\"], [\"bad\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Distance to closest power substation" "World" "daily" "m" "$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | deploy_indicators/prod/uploads ## upload solar_farms_placement_suitability to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" "Suitability estimation for solar farms placement" "[[\"bad\"], [\"good\"]]" false true "[\"Copyright © Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\", \"Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use\"]" "Multi-criteria analysis based layer dedicated to estimation of suitability of solar farms placement. 0 means absolutely unsuitable, 1 means perfectly suitable. Analysis is based on solar irradiace, powerlines grid proximity, power substations proximity, elevation slope, minimal and maximal temperatures, populated areas proximity" "World (-60:60 latitudes)" "daily" "index" "$(date -r db/table/solar_farms_placement_suitability_synthetic_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/prod/uploads ## upload residential to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/residential.csv "residential" "Percentage of permanent population" "[[\"unimportant\"], [\"important\"]]" false false "[\"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\"]" "Estimation of residential population percentage according to GHS-POP dataset (2015)" "World" "static" "fract" "$(date -r db/table/residential_pop_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/prod/uploads ## upload solar_power_plants to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_power_plants.csv "solar_power_plants" "Solar power plants" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of solar power plants in a given area according to OpenStreetMap." "World" "daily" "n" "$(date -r db/table/existing_solar_power_panels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/prod/uploads ## upload safety_index to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/safety_index.csv "safety_index" "Safety (Global Peace Index 2022)" "[[\"bad\"], [\"good\"]]" false true "[\"© The Institute for Economics and Peace Limited 2022 https://www.visionofhumanity.org/\"]" "The Global Peace Index covers 99.7% of the world’s population, and is calculated using 23 qualitative and quantitative indicators from highly respected sources, and measures the state of peace across three domains: the level of Societal Safety and Security, the extent of Ongoing Domestic and International Conflict, and the degree of Militarisation." "World" "static" "index" "$(date -r db/table/safety_index_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/population_upload: data/out/csv/population.csv | deploy_indicators/prod/uploads ## upload population to insight-api
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population.csv "population" "Population" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data. The datasets detailed methodology is available here: https://data.humdata.org/dataset/kontur-population-dataset" "World" "daily" "ppl" "$(date -r db/table/kontur_population_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	touch $@
+
+deploy_indicators/prod/uploads/upload_prod: deploy_indicators/prod/uploads/population_upload deploy_indicators/prod/uploads/view_count_upload deploy_indicators/prod/uploads/count_upload deploy_indicators/prod/uploads/populated_area_km2_upload deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload deploy_indicators/prod/uploads/local_hours_upload deploy_indicators/prod/uploads/total_hours_upload deploy_indicators/prod/uploads/avgmax_ts_upload deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/view_count_bf2402_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/prod/uploads/total_building_count_upload deploy_indicators/prod/uploads/count_6_months_upload deploy_indicators/prod/uploads/building_count_6_months_upload deploy_indicators/prod/uploads/highway_length_6_months_upload deploy_indicators/prod/uploads/osm_users_upload deploy_indicators/prod/uploads/residential_upload deploy_indicators/prod/uploads/gdp_upload deploy_indicators/prod/uploads/min_ts_upload deploy_indicators/prod/uploads/max_ts_upload deploy_indicators/prod/uploads/wildfires_upload deploy_indicators/prod/uploads/covid19_confirmed_upload deploy_indicators/prod/uploads/population_prev_upload deploy_indicators/prod/uploads/industrial_area_upload deploy_indicators/prod/uploads/volcanos_count_upload deploy_indicators/prod/uploads/pop_under_5_total_upload deploy_indicators/prod/uploads/pop_over_65_total_upload deploy_indicators/prod/uploads/poverty_families_total_upload deploy_indicators/prod/uploads/pop_disability_total_upload deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload deploy_indicators/prod/uploads/pop_without_car_upload deploy_indicators/prod/uploads/man_distance_to_hospital_upload deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  deploy_indicators/prod/uploads/eatery_count_upload deploy_indicators/prod/uploads/food_shops_count_upload deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload deploy_indicators/prod/uploads/mapswipe_area_km2_upload deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload deploy_indicators/prod/uploads/forest_upload deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/prod/uploads/shrubs_upload deploy_indicators/prod/uploads/herbage_upload deploy_indicators/prod/uploads/unknown_forest_upload deploy_indicators/prod/uploads/avg_ndvi_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/hazardous_days_count_upload deploy_indicators/prod/uploads/earthquake_days_count_upload deploy_indicators/prod/uploads/wildfire_days_count_upload deploy_indicators/prod/uploads/drought_days_count_upload deploy_indicators/prod/uploads/cyclone_days_count_upload deploy_indicators/prod/uploads/volcano_days_count_upload deploy_indicators/prod/uploads/flood_days_count_upload deploy_indicators/prod/uploads/powerlines_upload deploy_indicators/prod/uploads/night_lights_intensity_upload deploy_indicators/prod/uploads/gsa_ghi_upload deploy_indicators/prod/uploads/worldclim_avg_temperature_upload deploy_indicators/prod/uploads/worldclim_min_temperature_upload deploy_indicators/prod/uploads/worldclim_max_temperature_upload deploy_indicators/prod/uploads/worldclim_amp_temperature_upload deploy_indicators/prod/uploads/powerlines_proximity_m_upload deploy_indicators/prod/uploads/populated_areas_proximity_m_upload deploy_indicators/prod/uploads/power_substations_proximity_m_upload deploy_indicators/prod/uploads/solar_power_plants_upload deploy_indicators/prod/uploads/safety_index_upload | deploy_indicators/prod/uploads ## Control of layer uplodings to Insigths API for prod without one and area_km2
+	touch $@
+
+deploy/prod/cleanup_cache: deploy_indicators/prod/uploads/upload_prod | deploy_indicators/prod ## Clear insights-api cache on PROD.
+	bash scripts/check_http_response_code.sh GET https://test-apps02.konturlabs.com/insights-api/cache/cleanUp 200
+	touch $@
+
+deploy_indicators/prod/custom_axis/population_area_km2: deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for population area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/count_area_km2: deploy_indicators/prod/uploads/count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/building_count_area_km2: deploy_indicators/prod/uploads/building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for building_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "building_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/local_hours_area_km2: deploy_indicators/prod/uploads/local_hours_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for local_hours area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "local_hours" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/total_hours_area_km2: deploy_indicators/prod/uploads/total_hours_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for total_hours area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_hours" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/view_count_area_km2: deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for view_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/osm_users_one: deploy_indicators/prod/uploads/osm_users_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for osm_users one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "osm_users" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/total_building_count_area_km2: deploy_indicators/prod/uploads/total_building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for total_building_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_building_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/wildfires_area_km2: deploy_indicators/prod/uploads/wildfires_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for wildfires area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfires" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/forest_area_km2: deploy_indicators/prod/uploads/forest_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for forest area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "forest" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for days_maxtemp_over_32c_1c one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "days_maxtemp_over_32c_1c" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for days_mintemp_above_25c_1c one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "days_mintemp_above_25c_1c" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_fire_brigade one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_fire_brigade" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_hospital_one: deploy_indicators/prod/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_hospital one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_hospital" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/highway_length_area_km2: deploy_indicators/prod/uploads/highway_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for highway_length area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "highway_length" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/total_road_length_area_km2: deploy_indicators/prod/uploads/total_road_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for total_road_length area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_road_length" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/view_count_bf2402_one: deploy_indicators/prod/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for view_count_bf2402 one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count_bf2402" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2: deploy_indicators/prod/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for view_count_bf2402 area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count_bf2402" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/powerlines_one: deploy_indicators/prod/uploads/powerlines_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for powerlines one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "powerlines" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/night_lights_intensity_one: deploy_indicators/prod/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for night_lights_intensity one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "night_lights_intensity" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_bomb_shelters" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_charging_stations one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_charging_stations" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/solar_power_plants_area_km2: deploy_indicators/prod/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for solar_power_plants area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "solar_power_plants" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/volcano_days_count_area_km2: deploy_indicators/prod/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for volcano_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "volcano_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/volcano_days_count_one: deploy_indicators/prod/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for volcano_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "volcano_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/flood_days_count_area_km2: deploy_indicators/prod/uploads/flood_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for flood_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "flood_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/flood_days_count_one: deploy_indicators/prod/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for flood_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "flood_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters population axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_bomb_shelters" "population"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_charging_stations population axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_charging_stations" "population"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_fire_brigade population axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_fire_brigade" "population"
+	touch $@
+
+deploy_indicators/prod/custom_axis/building_count_total_building_count: deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/total_building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for building_count total_building_count axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "building_count" "total_building_count"
+	touch $@
+
+deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "waste_basket_coverage_area_km2" "populated_area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/highway_length_total_road_length: deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for highway_length total_road_length axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "highway_length" "total_road_length"
+	touch $@
+
+deploy_indicators/prod/custom_axis/eatery_count_one: deploy_indicators/prod/uploads/eatery_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for eatery_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "eatery_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/food_shops_count_one: deploy_indicators/prod/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for food_shops_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "food_shops_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2: deploy_indicators/prod/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for hazardous_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "hazardous_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/hazardous_days_count_one: deploy_indicators/prod/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for hazardous_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "hazardous_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2: deploy_indicators/prod/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for earthquake_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "earthquake_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/earthquake_days_count_one: deploy_indicators/prod/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for earthquake_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "earthquake_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/drought_days_count_area_km2: deploy_indicators/prod/uploads/drought_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for drought_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "drought_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/drought_days_count_one: deploy_indicators/prod/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for drought_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "drought_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2: deploy_indicators/prod/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for cyclone_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "cyclone_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/cyclone_days_count_one: deploy_indicators/prod/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for cyclone_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "cyclone_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2: deploy_indicators/prod/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for wildfire_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfire_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/wildfire_days_count_one: deploy_indicators/prod/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for wildfire_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfire_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/all_custom_axis: deploy_indicators/prod/custom_axis/population_area_km2 deploy_indicators/prod/custom_axis/count_area_km2 deploy_indicators/prod/custom_axis/building_count_area_km2 deploy_indicators/prod/custom_axis/local_hours_area_km2 deploy_indicators/prod/custom_axis/total_hours_area_km2 deploy_indicators/prod/custom_axis/view_count_area_km2 deploy_indicators/prod/custom_axis/osm_users_one deploy_indicators/prod/custom_axis/total_building_count_area_km2 deploy_indicators/prod/custom_axis/wildfires_area_km2 deploy_indicators/prod/custom_axis/forest_area_km2 deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/prod/custom_axis/man_distance_to_hospital_one deploy_indicators/prod/custom_axis/highway_length_area_km2 deploy_indicators/prod/custom_axis/total_road_length_area_km2  deploy_indicators/prod/custom_axis/view_count_bf2402_one deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2 deploy_indicators/prod/custom_axis/powerlines_one deploy_indicators/prod/custom_axis/night_lights_intensity_one deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one deploy_indicators/prod/custom_axis/solar_power_plants_area_km2 deploy_indicators/prod/custom_axis/volcano_days_count_area_km2 deploy_indicators/prod/custom_axis/volcano_days_count_one deploy_indicators/prod/custom_axis/flood_days_count_area_km2 deploy_indicators/prod/custom_axis/flood_days_count_one deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/prod/custom_axis/building_count_total_building_count deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/prod/custom_axis/highway_length_total_road_length deploy_indicators/prod/custom_axis/eatery_count_one deploy_indicators/prod/custom_axis/food_shops_count_one deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2 deploy_indicators/prod/custom_axis/hazardous_days_count_one deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2 deploy_indicators/prod/custom_axis/earthquake_days_count_one deploy_indicators/prod/custom_axis/drought_days_count_area_km2 deploy_indicators/prod/custom_axis/drought_days_count_one deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2 deploy_indicators/prod/custom_axis/cyclone_days_count_one deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2 deploy_indicators/prod/custom_axis/wildfire_days_count_one ## final target for custom axis deployment to prod
+	touch $@
+
+## PROD presets upload block
+deploy_indicators/prod/presets/osm_quantity: deploy_indicators/prod/uploads/count_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Quantity overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "count" "area_km2" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/osm_building_completeness: deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/total_building_count_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "building_count" "total_building_count" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/osm_road_completeness: deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "highway_length" "total_road_length" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/osm_mapping_activity: deploy_indicators/prod/uploads/local_hours_upload deploy_indicators/prod/uploads/total_hours_upload  db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "local_hours" "area_km2" "total_hours" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/osm_antiquity: deploy_indicators/prod/uploads/avgmax_ts_upload  deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "avgmax_ts" "one" "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/nighttime_heatwave_risk: deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "days_mintemp_above_25c_1c" "one" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/fire_service_scarcity_risk: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "man_distance_to_fire_brigade" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/views_before_after: deploy_indicators/prod/uploads/view_count_bf2402_upload deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Views before after overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "view_count_bf2402" "area_km2" "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/ev_charging_availability: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy EV Charging Availability overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "man_distance_to_charging_stations" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/waste_containers_availability: deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/populated_area_km2_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Waste containers availability overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/shelters_scarcity_risk: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Shelters Scarcity Risk overlay to prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_presets_to_insights_api.sh prod "man_distance_to_bomb_shelters" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/all_presets: deploy_indicators/prod/presets/osm_quantity deploy_indicators/prod/presets/osm_building_completeness deploy_indicators/prod/presets/osm_road_completeness deploy_indicators/prod/presets/osm_mapping_activity deploy_indicators/prod/presets/osm_antiquity deploy_indicators/prod/presets/nighttime_heatwave_risk deploy_indicators/prod/presets/fire_service_scarcity_risk deploy_indicators/prod/presets/views_before_after deploy_indicators/prod/presets/ev_charging_availability deploy_indicators/prod/presets/waste_containers_availability deploy_indicators/prod/presets/shelters_scarcity_risk ## final target for presets deployment to prod.
+	touch $@
+
+## END PROD presets upload block
+
+### END Deploy prod through API

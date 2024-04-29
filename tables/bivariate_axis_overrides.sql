@@ -1,9 +1,14 @@
 drop table if exists bivariate_axis_overrides;
 
-create table bivariate_axis_overrides as
-select numerator as numerator_id, denominator as denominator_id, label, min, max, p25, p75
-from bivariate_axis
-limit 0;
+create table bivariate_axis_overrides(
+    numerator_id   text,
+    denominator_id text,
+    min double precision,
+    p25 double precision,
+    p75 double precision,
+    max double precision,
+    label text
+);
 
 alter table bivariate_axis_overrides
 add constraint ba_overrides_key unique (numerator_id, denominator_id);
@@ -110,25 +115,3 @@ values
     ('flood_days_count', 'one', 0)
 on conflict (numerator_id, denominator_id) do update
 set min = excluded.min;
-
-update bivariate_axis a
-set
-    label = coalesce(b.label, a.label),
-    min = coalesce(b.min, a.min),
-    max = coalesce(b.max, a.max),
-    p25 = coalesce(b.p25, a.p25),
-    p75 = coalesce(b.p75, a.p75)
-from bivariate_axis_overrides b
-where
-    a.numerator = b.numerator_id and
-    a.denominator = b.denominator_id;
-
-update bivariate_axis
-set
-    min_label = to_char(to_timestamp(min), 'DD Mon YYYY'),
-    p25_label = to_char(to_timestamp(p25), 'DD Mon YYYY'),
-    p75_label = to_char(to_timestamp(p75), 'DD Mon YYYY'),
-    max_label = to_char(to_timestamp(max), 'DD Mon YYYY')
-where
-      numerator in ('min_ts', 'max_ts', 'avgmax_ts')
-  and denominator = 'one';

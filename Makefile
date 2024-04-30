@@ -2793,23 +2793,7 @@ data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_upda
 
 ### End update customviz using hdxloader ###
 
-db/table/area_km2_and_one_h3: db/table/land_polygons_h3_r8 ## Create table with area_km2 and one values for land covered hexes
-	psql -c "drop table if exists area_km2_and_one_in;"
-	psql -c "create table area_km2_and_one_in as select h3, 1::float as one, 8::int as resolution from land_polygons_h3_r8;"
-	psql -c "call generate_overviews('area_km2_and_one_in', '{one}'::text[], '{min}'::text[], 8);"
-	psql -c "drop table if exists area_km2_and_one_h3;"
-	psql -c "create table area_km2_and_one_h3 as select h3, ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0 as area_km2, 1::float as one, 8::int as resolution from area_km2_and_one_in;"
-	touch $@
-
 ### Deploy to dev and test through API
-
-data/out/csv/area_km2.csv: db/table/area_km2_and_one_h3 | data/out/csv ## extract area_km2 to csv file 
-	psql -q -X -c "copy (select h3, area_km2 from area_km2_and_one_h3 where h3 is not null and area_km2 is not null) to stdout with delimiter ',' csv;" > data/out/csv/area_km2.csv
-	touch $@
-
-data/out/csv/one.csv: db/table/area_km2_and_one_h3 | data/out/csv ## extract one to csv file 
-	psql -q -X -c "copy (select h3, one from area_km2_and_one_h3 where h3 is not null and one is not null) to stdout with delimiter ',' csv;" > data/out/csv/one.csv
-	touch $@
 
 data/out/csv/view_count.csv: db/table/tile_logs | data/out/csv ## extract view_count to csv file 
 	psql -q -X -c "copy (select h3, view_count from tile_logs_h3 where h3 is not null and view_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/view_count.csv
@@ -3125,7 +3109,7 @@ db/table/insights_api_indicators_list_dev: | db/table ## Refresh insights_api_in
 
 deploy_indicators/dev/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/dev/uploads ## upload count to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count.csv "count" "OSM: objects count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$(date -r db/table/stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count.csv "count" "OSM: objects count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/dev/uploads ## upload hazardous_days_count to insight-api
@@ -3854,7 +3838,7 @@ db/table/insights_api_indicators_list_test: | db/table ## Refresh insights_api_i
 
 deploy_indicators/test/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/test/uploads ## upload count to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count.csv "count" "OSM: objects count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$(date -r db/table/stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count.csv "count" "OSM: objects count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/test/uploads ## upload hazardous_days_count to insight-api
@@ -4591,7 +4575,7 @@ db/table/insights_api_indicators_list_prod: | db/table ## Refresh insights_api_i
 
 deploy_indicators/prod/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/prod/uploads ## upload count to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count.csv "count" "OSM: objects count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$(date -r db/table/stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count.csv "count" "OSM: objects count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/prod/uploads ## upload hazardous_days_count to insight-api

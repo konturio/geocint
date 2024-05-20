@@ -1866,7 +1866,11 @@ db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews 
 	psql -c "call generate_overviews('osm_volcanos_h3', '{volcanos_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_places_eatery_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## Eatery extraction from OpenStreetMap.
+db/table/osm_places_eatery: db/index/osm_tags_idx | db/table ## Eatery extraction from OpenStreetMap.
+	psql -f tables/osm_places_eatery.sql
+	touch $@
+
+db/table/osm_places_eatery_h3: db/table/osm_places_eatery db/procedure/generate_overviews | db/table ## Eatery count h3 layer from OpenStreetMap.
 	psql -f tables/osm_places_eatery.sql
 	# Count eatery places within H3 grid hexagons of resolution = 8.
 	psql -f tables/count_points_inside_h3.sql -v table=osm_places_eatery -v table_h3=osm_places_eatery_h3 -v item_count=eatery_count
@@ -1874,9 +1878,11 @@ db/table/osm_places_eatery_h3: db/index/osm_tags_idx db/procedure/generate_overv
 	psql -c "call generate_overviews('osm_places_eatery_h3', '{eatery_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_places_food_shops_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## Food shops extraction from OpenStreetMap.
-	# Extract food_shops points from OpenStreetMap dataset.
+db/table/osm_places_food_shops: db/index/osm_tags_idx | db/table ## Extract food_shops points from OpenStreetMap dataset.	
 	psql -f tables/osm_places_food_shops.sql
+	touch $@
+
+db/table/osm_places_food_shops_h3: db/table/osm_places_food_shops db/procedure/generate_overviews | db/table ## Food shops count h3 layer from OpenStreetMap.
 	# Count eatery places within H3 grid hexagons of resolution = 8.
 	psql -f tables/count_points_inside_h3.sql -v table=osm_places_food_shops -v table_h3=osm_places_food_shops_h3 -v item_count=food_shops_count
 	# Generate overviews for resolution < 8 hexagons.
@@ -2027,7 +2033,7 @@ db/table/isochrone_destinations: | db/table ## Initialize isochrone_destinations
 	psql -c 'create table isochrone_destinations (osm_id bigint, type text, tags jsonb, geom geometry);'
 	touch $@
 
-db/table/isochrone_destinations_new: db/table/isochrone_destinations db/index/osm_tags_idx | db/table ## Get new isochrone destinations from osm.
+db/table/isochrone_destinations_new: db/table/isochrone_destinations db/table/osm_places_eatery db/table/osm_places_food_shops db/index/osm_tags_idx | db/table ## Get new isochrone destinations from osm.
 	psql -f tables/isochrone_destinations_new.sql
 	touch $@
 
@@ -2072,6 +2078,12 @@ db/table/isodist_bomb_shelters_h3: db/table/update_isochrone_destinations db/tab
 	psql -f tables/isodist_bomb_shelters_h3.sql
 	seq 8 -1 1 | xargs -I {} psql -f tables/isodist_h3_overview.sql -v table_name=isodist_bomb_shelters_h3 -v seq_res={}
 	psql -c "drop table isodist_bomb_shelters_h3_distinct;"
+	touch $@
+
+db/table/isodist_food_shops_eatery_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 | db/table ## H3 hexagons from food shops and eatery.
+	psql -f tables/isodist_food_shops_eatery_h3.sql
+	seq 8 -1 1 | xargs -I {} psql -f tables/isodist_h3_overview.sql -v table_name=isodist_food_shops_eatery_h3 -v seq_res={}
+	psql -c "drop table isodist_food_shops_eatery_h3_distinct;"
 	touch $@
 
 ## Isochrones calculation block end
@@ -2139,7 +2151,7 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits db/procedure/generate_
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/live_sensor_data_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/live_sensor_data_h3 db/table/isodist_food_shops_eatery_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 

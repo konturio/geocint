@@ -343,6 +343,11 @@ values ('man_distance_to_bomb_shelters', 'Man-distance to bomb shelters', jsonb_
         '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', FALSE, '🏠🏃');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('man_distance_to_food_shops_eatery', 'Man-distance to food shops and eatery', jsonb_build_array(
+        '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', FALSE, '🍕🏃');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('man_distance_to_charging_stations', 'Man-distance to charging stations', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', FALSE, '🔌🏃');

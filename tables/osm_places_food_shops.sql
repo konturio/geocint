@@ -2,7 +2,8 @@ drop table if exists osm_places_food_shops;
 create table osm_places_food_shops as (
     select ST_Centroid(o.geog::geometry) as geom,
            o.osm_id,
-           o.tags ->> 'shop'             as type
+           o.tags ->> 'shop'             as type,
+           o.tags                        as tags
     from osm o
       where
         o.tags ? 'shop'

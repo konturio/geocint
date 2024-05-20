@@ -1,5 +1,5 @@
-drop table if exists isochrone_destinations_new;
-create table isochrone_destinations_new as (
+drop table if exists isochrone_destinations_new_in;
+create table isochrone_destinations_new_in as (
     select osm_id,
            tags ->> 'amenity'             "type",
            tags,
@@ -18,3 +18,26 @@ create table isochrone_destinations_new as (
        or tags @> '{"military":"bunker"}'
     order by osm_id
 );
+
+drop table if exists isochrone_destinations_new;
+create table isochrone_destinations_new as (
+    select osm_id,
+           type,
+           tags,
+           geom 
+    from isochrone_destinations_new_in
+    union all
+    select osm_id,
+           "food_shops_eatery" as type,
+           tags,
+           geom
+    from osm_places_eatery
+    union all
+    select osm_id,
+           "food_shops_eatery" as type,
+           tags,
+           geom
+    from osm_places_food_shops
+);
+
+drop table if exists isochrone_destinations_new_in;

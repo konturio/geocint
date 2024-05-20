@@ -53,11 +53,14 @@ values
     ('eatery_count', 'one', 'Number of OSM eateries'),
     ('food_shops_count', 'one', 'Number of OSM food shops'),
     ('man_distance_to_bomb_shelters', 'one', 'Man-distance to bomb shelters'),
+    ('man_distance_to_food_shops_eatery', 'one', 'Man-distance to food shops and eatery'),
     ('man_distance_to_charging_stations', 'one', 'Man-distance to electric car charging stations'),
     ('man_distance_to_charging_stations', 'population', 'Distance to electric car charging stations (km)'),
+    ('man_distance_to_food_shops_eatery', 'population', 'Distance to food shops and eatery (km)'),
     ('waste_basket_coverage_area_km2' , 'populated_area_km2', 'Waste basket coverage (coverage / populated area)'),
     ('man_distance_to_bomb_shelters', 'population', 'Distance to shelters (km)'),
     ('solar_power_plants', 'area_km2', 'Solar power plants');
+
 
 insert into bivariate_axis_overrides
     (numerator, denominator, p25)
@@ -65,7 +68,8 @@ values
     ('waste_basket_coverage_area_km2' , 'populated_area_km2', 0.2),
     ('man_distance_to_bomb_shelters', 'population', 3.0),
     ('man_distance_to_charging_stations', 'population', 3.0),
-    ('man_distance_to_fire_brigade', 'population', 3.0)
+    ('man_distance_to_fire_brigade', 'population', 3.0),
+    ('man_distance_to_food_shops_eatery', 'population', 3.0)
 on conflict (numerator, denominator) do update
 set p25 = excluded.p25;
 
@@ -76,6 +80,7 @@ values
     ('man_distance_to_bomb_shelters', 'population', 10.0),
     ('man_distance_to_charging_stations', 'population', 30.0),
     ('man_distance_to_fire_brigade', 'population', 10.0),
+    ('man_distance_to_food_shops_eatery', 'population', 15.0),
     ('building_count', 'total_building_count', 0.9),
     ('highway_length', 'total_road_length', 0.9)
 on conflict (numerator, denominator) do update

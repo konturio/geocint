@@ -89,7 +89,11 @@ create table stat_h3_quality as (
                 avg(a.solar_power_plants::float) as agg_solar_power_plants,
                 avg(a.safety_index::float) as agg_safety_index,                
                 avg(a.stddev_accel) as agg_stddev_accel,
-                avg(a.man_distance_to_food_shops_eatery::float) as agg_man_distance_to_food_shops_eatery
+                avg(a.man_distance_to_food_shops_eatery::float) as agg_man_distance_to_food_shops_eatery,
+                avg(a.ghs_max_building_height::float) as agg_ghs_max_building_height, 
+                avg(a.ghs_avg_building_height::float) as agg_ghs_avg_building_height,
+                avg(a.max_osm_building_levels) as agg_max_osm_building_levels, 
+                avg(a.avg_osm_building_levels) as agg_avg_osm_building_levels
             from
                 stat_h3 a
             where

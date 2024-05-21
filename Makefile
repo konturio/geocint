@@ -1871,7 +1871,6 @@ db/table/osm_places_eatery: db/index/osm_tags_idx | db/table ## Eatery extractio
 	touch $@
 
 db/table/osm_places_eatery_h3: db/table/osm_places_eatery db/procedure/generate_overviews | db/table ## Eatery count h3 layer from OpenStreetMap.
-	psql -f tables/osm_places_eatery.sql
 	# Count eatery places within H3 grid hexagons of resolution = 8.
 	psql -f tables/count_points_inside_h3.sql -v table=osm_places_eatery -v table_h3=osm_places_eatery_h3 -v item_count=eatery_count
 	# Generate overviews for resolution < 8 hexagons.

@@ -28,13 +28,13 @@ create table isochrone_destinations_new as (
     from isochrone_destinations_new_in
     union all
     select osm_id,
-           "food_shops_eatery" as type,
+           'food_shops_eatery' as type,
            tags,
            geom
     from osm_places_eatery
     union all
     select osm_id,
-           "food_shops_eatery" as type,
+           'food_shops_eatery' as type,
            tags,
            geom
     from osm_places_food_shops

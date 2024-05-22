@@ -21,9 +21,13 @@ include runner_make osm_make
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/ndpba_rva_h3 db/table/global_rva_h3 ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache deploy/s3/test/osm_addresses_minsk data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/test/custom_axis/all_custom_axis deploy_indicators/dev/custom_axis/all_custom_axis deploy_indicators/test/presets/all_presets deploy_indicators/dev/presets/all_presets data/out/csv/foursquare_places_count.csv data/out/csv/foursquare_visits_count.csv ## [FINAL] Builds all targets for development. Run on every branch.	
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+
+prod_new_deploy: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy_indicators/prod/presets/all_presets ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+	touch $@
+	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/ndpba_rva_h3 db/table/global_rva_h3 ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
@@ -32,7 +36,7 @@ prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/clea
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check data/in/hot_projects/hot_projects data/in/live_sensor_data_h3.csv
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check data/in/hot_projects/hot_projects data/in/live_sensor_data_h3.csv db/table/insights_api_indicators_list_test db/table/insights_api_indicators_list_dev
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -63,6 +67,9 @@ data/out/kontur_boundaries: | data/out ## Directory for Kontur Boundaries final 
 	mkdir -p $@
 
 data/out/reports: | data/out ## Directory for OpenStreetMap quality reports.
+	mkdir -p $@
+
+data/out/csv: | data/out ## Directory for csv dumps of data tables
 	mkdir -p $@
 
 data/in/gadm: | data/in ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
@@ -111,6 +118,33 @@ deploy/test: | deploy ## folder for test deployment footprints.
 	mkdir -p $@
 
 deploy/dev: | deploy ## folder for dev deployment footprints.
+	mkdir -p $@
+
+deploy_indicators: ## initial folder for Insights API footprints
+	mkdir -p $@
+
+deploy_indicators/test: | deploy_indicators ## folder for Insights API footprints for TEST instance
+	mkdir -p $@
+
+deploy_indicators/dev: | deploy_indicators ## folder for Insights API footprints for DEV instance
+	mkdir -p $@
+
+deploy_indicators/dev/uploads: | deploy_indicators/dev ## folder for layer uploading to Insights API footprints
+	mkdir -p $@
+
+deploy_indicators/dev/custom_axis: | deploy_indicators/dev ## Folder to store custom axis deployment fingerprints for dev instance.
+	mkdir -p $@
+
+deploy_indicators/dev/presets: | deploy_indicators/dev ## Folder to store presets deployment fingerprints for dev instance.
+	mkdir -p $@
+
+deploy_indicators/test/uploads: | deploy_indicators/test ## folder for layer uploading to Insights API footprints
+	mkdir -p $@
+
+deploy_indicators/test/custom_axis: | deploy_indicators/test ## Folder to store custom axis deployment fingerprints for test instance.
+	mkdir -p $@
+
+deploy_indicators/test/presets: | deploy_indicators/test ## Folder to store presets deployment fingerprints for test instance.
 	mkdir -p $@
 
 deploy/geocint: | deploy ## We use geocint as a GIS development server.

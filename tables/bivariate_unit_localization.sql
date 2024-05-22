@@ -1,3 +1,6 @@
+-- IT'S A LOCAL GEOCINT COPY JUST FOR A REFERENCE
+-- TO ADD NEW UNIT LOCALISATION PLEASE ADD IT TO INSIGHTS-API
+
 drop table if exists bivariate_unit_localization;
 create table bivariate_unit_localization
 (

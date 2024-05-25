@@ -108,6 +108,9 @@ data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.
 data/in/raster/gebco_2022_geotiff: | data/in/raster ## Directory for GEBCO 2022 (General Bathymetric Chart of the Oceans) dataset.
 	mkdir -p $@
 
+data/in/raster/forest_canopy_height: | data/in/raster ## Directory for High Resolution Forest Canopy Layer dataset.
+	mkdir -p $@
+
 data/mid/ndvi_2019_06_10: | data/mid ## Directory for NDVI rasters. Taken from https://medium.com/sentinel-hub/digital-twin-sandbox-sentinel-2-collection-available-to-everyone-20f3b5de846e
 	mkdir -p $@
 
@@ -2933,6 +2936,11 @@ db/table/live_sensor_data_h3: data/in/live_sensor_data_h3.csv | db/table ## load
 	touch $@
 
 ### End Live Sensor Data integration block
+
+### High Resolution Forest Canopy Height Maps
+data/in/raster/forest_canopy_height/download: | data/in/raster/forest_canopy_height ## Download High Resolution Forest Canopy Height tifs from Data for Good at AWS S3.
+	cd data/in/raster/forest_canopy_height; aws s3 sync s3://dataforgood-fb-data/forests/v1/alsgedi_global_v6_float/ ./ --no-sign-request
+	touch $@
 
 ### Deploy through API
 

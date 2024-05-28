@@ -108,7 +108,7 @@ data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.
 data/in/raster/gebco_2022_geotiff: | data/in/raster ## Directory for GEBCO 2022 (General Bathymetric Chart of the Oceans) dataset.
 	mkdir -p $@
 
-data/in/raster/forest_canopy_height: | data/in/raster ## Directory for High Resolution Forest Canopy Layer dataset.
+data/in/raster/meta_forest_canopy_height: | data/in/raster ## Directory for High Resolution Forest Canopy Layer dataset.
 	mkdir -p $@
 
 data/mid/ndvi_2019_06_10: | data/mid ## Directory for NDVI rasters. Taken from https://medium.com/sentinel-hub/digital-twin-sandbox-sentinel-2-collection-available-to-everyone-20f3b5de846e
@@ -2938,8 +2938,19 @@ db/table/live_sensor_data_h3: data/in/live_sensor_data_h3.csv | db/table ## load
 ### End Live Sensor Data integration block
 
 ### High Resolution Forest Canopy Height Maps
-data/in/raster/forest_canopy_height/download: | data/in/raster/forest_canopy_height ## Download High Resolution Forest Canopy Height tifs from Data for Good at AWS S3.
-	cd data/in/raster/forest_canopy_height; aws s3 sync s3://dataforgood-fb-data/forests/v1/alsgedi_global_v6_float/ ./ --no-sign-request
+data/in/raster/meta_forest_canopy_height/download: | data/in/raster/meta_forest_canopy_height ## Download and rescale from 1 meter to 100 meters High Resolution Forest Canopy Height tifs from Data for Good at AWS S3.
+	cd data/in/raster/meta_forest_canopy_height; aws s3 ls --profile geocint_pipeline_sender s3://dataforgood-fb-data/forests/v1/alsgedi_global_v6_float/chm/ | tr -s ' ' | cut -d' ' -f4 | grep 'tif$' | parallel 'aws s3 cp --profile geocint_pipeline_sender s3://dataforgood-fb-data/forests/v1/alsgedi_global_v6_float/chm/{} data/in/raster/meta_forest_canopy_height/chm/{} ; gdalwarp -tr 100 100 data/in/raster/meta_forest_canopy_height/chm/{} data/in/raster/meta_forest_canopy_height/chm/100m_{} ; rm {}'
+	touch $@
+
+db/table/meta_forest_canopy_height: data/in/raster/meta_forest_canopy_height/download | db/table ## Put forest canopy tiles in table.
+	psql -c "drop table if exists meta_forest_canopy_height;"
+	find -L data/in/raster/meta_forest_canopy_height/chm -name "*.tif" -type f | head -1 | parallel 'raster2pgsql -p -Y -s 3857 {} -t auto meta_forest_canopy_height | psql -q'
+	find -L data/in/raster/meta_forest_canopy_height/chm -name "*.tif" -type f | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=6 raster2pgsql -a -Y -s 3857 {} -t auto meta_forest_canopy_height | psql -q'
+	touch $@
+
+db/table/meta_forest_canopy_height_h3: db/table/meta_forest_canopy_height | db/table ## Count height of forest canopy into h3 hexagons and generate overviews.
+	psql -f tables/meta_forest_canopy_height_h3.sql
+	psql -c "call generate_overviews('meta_forest_canopy_height_h3', '{height}'::text[], '{avg}'::text[], 8);"
 	touch $@
 
 ### Deploy through API

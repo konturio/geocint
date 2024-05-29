@@ -563,6 +563,7 @@ db/table/ghs_building_height_grid_h3: db/table/ghs_building_height_raster db/pro
 	psql -c "delete from ghs_building_height_grid_h3 where max_height = 0 or avg_height = 0;"
 	psql -c "call generate_overviews('ghs_building_height_grid_h3', '{max_height,avg_height}'::text[], '{max,avg}'::text[], 8);"
 	touch $@
+
 data/in/raster/copernicus_landcover: | data/in/raster ## Directory for Copernicus land cover data.
 	mkdir -p $@
 

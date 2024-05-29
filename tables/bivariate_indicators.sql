@@ -483,6 +483,22 @@ values ('multiple_citizenship', 'Possibility to have multiple citizenship', json
         'This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.'),
         '[["bad"],["good"]]'::jsonb, 'Possibility to have dual (multiple) citizenship: 1 - no, 2 - with restrictions regulated by local legislation, 3 - dual (multiple) citizenship is allowed.', 'World', 'static', 'other', FALSE, '🛂');
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('ghs_max_building_height', 'Maximal of average of the Net Building Height', jsonb_build_array(
+        'Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.'),
+        '[["unimportant"], ["important"]]'::jsonb, 'GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces. ', 'World', 'static', 'm', FALSE, '🏙️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('ghs_avg_building_height', 'Average of the Net Building Height', jsonb_build_array(
+        'Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.'),
+        '[["unimportant"], ["important"]]'::jsonb, 'GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces.', 'World', 'static', 'm', FALSE, '🏠');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('max_osm_building_levels', 'Maximal levels of OSM buildings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["bad"]]'::jsonb, 'Maximal level of buildings in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏢⬆️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('avg_osm_building_levels', 'Average levels of OSM buildings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["bad"]]'::jsonb, 'Average levels of buildings in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏠⬆️'); 
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

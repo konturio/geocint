@@ -36,7 +36,7 @@ prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/clea
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check data/in/hot_projects/hot_projects data/in/live_sensor_data_h3.csv db/table/insights_api_indicators_list_test db/table/insights_api_indicators_list_dev
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check data/in/hot_projects/hot_projects data/in/live_sensor_data_h3.csv db/table/insights_api_indicators_list_test db/table/insights_api_indicators_list_dev db/table/insights_api_indicators_list_prod
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
@@ -337,8 +337,8 @@ data/out/tile_zoom_level_to_h3_resolution_test: db/function/tile_zoom_level_to_h
 	cat scripts/tile_zoom_level_to_h3_resolution_test.sql | psql -AXt |  xargs -I {} bash scripts/check_items_count.sh {} 1
 	touch $@
 
-db/function/h3_raster_agg_to_h3: | db/function ## Aggregate raster values on H3 hexagon grid (default sum, options - min, max, avg, count).
-	psql -f functions/h3_raster_agg_to_h3.sql
+db/function/h3_raster_sum_to_h3: | db/function ## Aggregate sum raster values on H3 hexagon grid.
+	psql -f functions/h3_raster_sum_to_h3.sql
 	touch $@
 
 db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 resolution < 8 using different aggregations.
@@ -493,7 +493,7 @@ db/table/hrsl_population_raster: data/in/raster/hrsl_cogs/download | db/table ##
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
 
-db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_agg_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
+db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r8=hrsl_population_grid_h3_r8
 	touch $@
 
@@ -519,7 +519,7 @@ db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_
 	raster2pgsql -M -Y -s 54009 data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.tif -t auto ghs_globe_population_raster | psql -q
 	touch $@
 
-db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_agg_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 8 resolution.
+db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r8=ghs_globe_population_grid_h3_r8
 	psql -c "delete from ghs_globe_population_grid_h3_r8 where population = 0;"
 	touch $@
@@ -537,7 +537,7 @@ db/table/ghs_globe_residential_raster: data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54
 	raster2pgsql -M -Y -s 54009 data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif -t 256x256 ghs_globe_residential_raster | psql -q
 	touch $@
 
-db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 db/function/h3_raster_agg_to_h3 | db/table ## GHS-SMOD (Global Human Settlement Model) raster polygonized and reprojected with extracted centtroids (EPSG-3857).
+db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## GHS-SMOD (Global Human Settlement Model) raster polygonized and reprojected with extracted centtroids (EPSG-3857).
 	psql -f tables/ghs_globe_residential_vector.sql
 	touch $@
 

@@ -88,7 +88,9 @@ create table stat_h3_quality as (
                 avg(a.solar_farms_placement_suitability::float) as agg_solar_farms_placement_suitability,
                 avg(a.solar_power_plants::float) as agg_solar_power_plants,
                 avg(a.safety_index::float) as agg_safety_index,                
-                avg(a.stddev_accel) as agg_stddev_accel
+                avg(a.stddev_accel) as agg_stddev_accel,
+                avg(a.avg_forest_canopy_height::float) as agg_avg_forest_canopy_height,
+                avg(a.max_forest_canopy_height::float) as agg_max_forest_canopy_height
             from
                 stat_h3 a
             where

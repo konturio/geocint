@@ -468,6 +468,21 @@ values ('max_forest_canopy_height', 'Max Forest Canopy Height', jsonb_build_arra
         'High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.'),
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb, 'Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery.', 'World', 'static', 'm', TRUE, '🌲⬆️');
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('worldbank_total_tax_2019', 'Total tax and contribution rate (% of profit)', jsonb_build_array(
+        '© 2024 The World Bank Group, Doing Business project (http://www.doingbusiness.org/). NOTE: Doing Business has been discontinued as of 9/16/2021. For more information: https://bit.ly/3CLCbme'),
+        '[["good"], ["bad"]]'::jsonb, 'Total tax rate measures the amount of taxes and mandatory contributions payable by businesses after accounting for allowable deductions and exemptions as a share of commercial profits. Taxes withheld (such as personal income tax) or collected and remitted to tax authorities (such as value added taxes, sales taxes or goods and service taxes) are excluded.', 'World', 'static', 'perc', TRUE, '🧮');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('years_to_naturalisation', 'The Legal residence before naturalization', jsonb_build_array(
+        'This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.'),
+        '[["good"], ["bad"]]'::jsonb, 'The duration of legal residence before a national of a foreign state, without any cultural, historical, or marriage ties or connections to the state in question, can request citizenship under that states naturalization laws.', 'World', 'static', 'years', TRUE, '📊');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('multiple_citizenship', 'Possibility to have dual multiple citizenship', jsonb_build_array(
+        'This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.'),
+        '[["good"], ["bad"]]'::jsonb, 'Possibility to have dual (multiple) citizenship: 0 - no, 1 - with restrictions regulated by local legislation, 2 - dual (multiple) citizenship is allowed.', 'World', 'static', 'other', FALSE, '🛂');
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

@@ -29,7 +29,7 @@ prod_new_deploy: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deplo
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/prod/osrm-backend-by-car deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy/s3/prod/reports/reports.tar.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache_old deploy/prod/osrm-backend-by-car deploy/s3/osm_buildings_minsk deploy/s3/osm_addresses_minsk deploy/s3/kontur_boundaries deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy/s3/prod/reports/reports.tar.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -2440,7 +2440,7 @@ deploy/prod/population_api_tables: deploy/s3/prod/population_api_tables_check_md
 	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
 	touch $@
 
-deploy/prod/cleanup_cache: deploy/prod/population_api_tables | deploy/prod ## Clear insights-api cache on Prod.
+deploy/prod/cleanup_cache_old: deploy/prod/population_api_tables | deploy/prod ## Clear insights-api cache on Prod.
 	bash scripts/check_http_response_code.sh GET https://apps.kontur.io/insights-api/cache/cleanUp 200
 	touch $@
 

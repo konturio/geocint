@@ -1123,7 +1123,7 @@ db/table/wikidata_naturalization_gap: | db/table ## Global collection of years o
 	psql -c "create index on wikidata_naturalization_gap using btree(hasc);"
 	touch $@
 
-db/table/wikidata_naturalization_gap_h3: db/table/kontur_boundaries db/table/worldbank_tax_rate db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of wikidata years_to_naturalisation and multiple_citizenship
+db/table/wikidata_naturalization_gap_h3: db/table/kontur_boundaries db/table/wikidata_naturalization_gap db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of wikidata years_to_naturalisation and multiple_citizenship
 	psql -c "call transform_hasc_to_h3('wikidata_naturalization_gap', 'wikidata_naturalization_gap_h3', 'hasc', '{years_to_naturalisation,multiple_citizenship}'::text[], 8);"
 	psql -c "call generate_overviews('wikidata_naturalization_gap_h3', '{years_to_naturalisation,multiple_citizenship}'::text[], '{max,min}'::text[], 8);"
 	touch $@

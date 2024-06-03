@@ -4,6 +4,7 @@ create table osm_building_levels_h3_in as (
            coalesce(max(levels), ceil(max(height)/3), null) as max_levels,
            coalesce(avg(levels), ceil(avg(height)/3), null) as avg_levels
     from osm_buildings
+    where levels < 165 or height < 840
     group by 1
 );
 

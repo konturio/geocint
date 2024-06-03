@@ -1118,7 +1118,7 @@ deploy/s3/prod/reports/prod_reports_public: deploy/geocint/reports/prod/reports.
 ### Wikidata code block
 db/table/wikidata_naturalization_gap: | db/table ## Global collection of years of years_to_naturalisation and multiple_citizenship (0 - not allowed, 1 - with restrictions, 2 - allowed) per country
 	psql -c "drop table if exists wikidata_naturalization_gap;"
-	psql -c "create table wikidata_naturalization_gap (name text, hasc text, code text, years_to_naturalisation integer,multiple_citizenship integer);"
+	psql -c "create table wikidata_naturalization_gap (name text, hasc text, code text, years_to_naturalisation float,multiple_citizenship integer);"
 	cat static_data/wikidata_naturalization/naturalization_gap.csv | psql -c "copy wikidata_naturalization_gap from stdin with csv header;"
 	psql -c "create index on wikidata_naturalization_gap using btree(hasc);"
 	touch $@

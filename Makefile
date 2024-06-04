@@ -2990,7 +2990,7 @@ data/out/csv/populated_area_km2.csv: db/table/kontur_population_h3 | data/out/cs
 	touch $@
 
 data/out/csv/building_count.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract building_count to csv file 
-	psql -q -X -c "copy (select h3, building_count from osm_object_count_grid_h3 where h3 is not null and building_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/building_count.csv
+	psql -q -X -c "copy (select h3, building_count from osm_object_count_grid_h3 where h3 is not null and building_count is not null and building_count > 0) to stdout with delimiter ',' csv;" > data/out/csv/building_count.csv
 	touch $@
 
 data/out/csv/highway_length.csv: db/table/osm_road_segments_h3 | data/out/csv ## extract highway_length to csv file 
@@ -3026,15 +3026,15 @@ data/out/csv/days_mintemp_above_25c_1c.csv: db/table/pf_maxtemp_h3 | data/out/cs
 	touch $@
 
 data/out/csv/total_building_count.csv: db/table/building_count_grid_h3 | data/out/csv ## extract total_building_count to csv file 
-	psql -q -X -c "copy (select h3, building_count as total_building_count from building_count_grid_h3 where h3 is not null and building_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/total_building_count.csv
+	psql -q -X -c "copy (select h3, building_count as total_building_count from building_count_grid_h3 where h3 is not null and building_count is not null and building_coun > 0) to stdout with delimiter ',' csv;" > data/out/csv/total_building_count.csv
 	touch $@
 
 data/out/csv/count_6_months.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count_6_months to csv file 
-	psql -q -X -c "copy (select h3, count_6_months from osm_object_count_grid_h3 where h3 is not null and count_6_months is not null) to stdout with delimiter ',' csv;" > data/out/csv/count_6_months.csv
+	psql -q -X -c "copy (select h3, count_6_months from osm_object_count_grid_h3 where h3 is not null and count_6_months is not null and count_6_months > 0) to stdout with delimiter ',' csv;" > data/out/csv/count_6_months.csv
 	touch $@
 
 data/out/csv/building_count_6_months.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract building_count_6_months to csv file 
-	psql -q -X -c "copy (select h3, building_count_6_months from osm_object_count_grid_h3 where h3 is not null and building_count_6_months is not null) to stdout with delimiter ',' csv;" > data/out/csv/building_count_6_months.csv
+	psql -q -X -c "copy (select h3, building_count_6_months from osm_object_count_grid_h3 where h3 is not null and building_count_6_months is not null and building_count_6_months > 0) to stdout with delimiter ',' csv;" > data/out/csv/building_count_6_months.csv
 	touch $@
 
 data/out/csv/highway_length_6_months.csv: db/table/osm_road_segments_6_months_h3 | data/out/csv ## extract highway_length_6_months to csv file 

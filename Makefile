@@ -3297,16 +3297,16 @@ data/out/csv/multiple_citizenship.csv: db/table/wikidata_naturalization_gap_h3 |
 	psql -q -X -c "copy (select h3, multiple_citizenship from wikidata_naturalization_gap_h3 where h3 is not null and multiple_citizenship is not null) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/ghs_max_building_height.csv: db/table/ghs_building_height_grid_h3 | data/out/csv ## extract ghs_max_building_height to csv file 
-	psql -q -X -c "copy (select h3, ghs_max_building_height from ghs_building_height_grid_h3 where h3 is not null and ghs_max_building_height is not null) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, max_height as ghs_max_building_height from ghs_building_height_grid_h3 where h3 is not null and max_height is not null) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/ghs_avg_building_height.csv: db/table/ghs_building_height_grid_h3 | data/out/csv ## extract ghs_avg_building_height to csv file 
-	psql -q -X -c "copy (select h3, ghs_avg_building_height from ghs_building_height_grid_h3 where h3 is not null and ghs_avg_building_height is not null) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, avg_height as ghs_avg_building_height from ghs_building_height_grid_h3 where h3 is not null and avg_height is not null) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/max_osm_building_levels.csv: db/table/osm_building_levels_h3 | data/out/csv ## extract max_osm_building_levels to csv file 
-	psql -q -X -c "copy (select h3, max_osm_building_levels from osm_building_levels_h3 where h3 is not null and max_osm_building_levels is not null) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, max_levels as max_osm_building_levels from osm_building_levels_h3 where h3 is not null and max_levels is not null) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/avg_osm_building_levels.csv: db/table/osm_building_levels_h3 | data/out/csv ## extract avg_osm_building_levels to csv file 
-	psql -q -X -c "copy (select h3, avg_osm_building_levels from osm_building_levels_h3 where h3 is not null and avg_osm_building_levels is not null) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, avg_levels as avg_osm_building_levels from osm_building_levels_h3 where h3 is not null and avg_levels is not null) to stdout with delimiter ',' csv;" > $@
 
 ### Deploy block ###
 ## Deploy dev ##

@@ -697,13 +697,16 @@ create table stat_h3  as (
            (coalesce(wc_temp.worldclim_max_temperature, 0))::float as worldclim_max_temperature,
            (coalesce(wc_temp.worldclim_amp_temperature, 0))::float as worldclim_amp_temperature,
            (coalesce(prox.powerlines_proximity_m, 0))::float as powerlines_proximity_m,
-           (coalesce(prox.populated_areas_proximity_m,0))::float as populated_areas_proximity_m,
-           (coalesce(prox.power_substations_proximity_m,0))::float as power_substations_proximity_m,
-           (coalesce(solar_panels.solar_power_plants,0))::float as solar_power_plants,
-           (coalesce(sfty.safety_index,0))::float as safety_index,
-           (coalesce(wtr.t2019,0))::float as worldbank_total_tax_2019,
-           (coalesce(wng.years_to_naturalisation,0))::float as years_to_naturalisation,
-           (coalesce(wng.multiple_citizenship,0))::float as multiple_citizenship,
+           (coalesce(prox.populated_areas_proximity_m, 0))::float as populated_areas_proximity_m,
+           (coalesce(prox.power_substations_proximity_m, 0))::float as power_substations_proximity_m,
+           (coalesce(solar_panels.solar_power_plants, 0))::float as solar_power_plants,
+           (coalesce(sfty.safety_index, 0))::float as safety_index,
+           (coalesce(wtr.t2019, 0))::float as worldbank_total_tax_2019,
+           (coalesce(wng.years_to_naturalisation, 0))::float as years_to_naturalisation,
+           (coalesce(wng.multiple_citizenship, 0))::float as multiple_citizenship,
+           (coalesce(osmht.osm_hotels_count, 0))::float as osm_hotels_count,
+           (coalesce(osmht.max_osm_hotels_assesment, 0))::float as max_osm_hotels_assesment,
+           (coalesce(osmht.avg_osm_hotels_assesment, 0))::float as avg_osm_hotels_assesment,
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
@@ -720,7 +723,8 @@ create table stat_h3  as (
          left join existing_solar_power_panels_h3 solar_panels on (a.h3 = solar_panels.h3)
          left join safety_index_h3 sfty on (a.h3 = sfty.h3)
          left join worldbank_tax_rate_h3 wtr on (a.h3 = wtr.h3)
-         left join wikidata_naturalization_gap_h3 wng on(a.h3 = wng.h3) 
+         left join wikidata_naturalization_gap_h3 wng on (a.h3 = wng.h3)
+         left join osm_hotels_h3 osmht on (a.h3 = osmht.h3)
 );
 drop table stat_h3_in;
 vacuum analyze stat_h3;
@@ -765,5 +769,6 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
 
 create index stat_h3_brin_pt4 on stat_h3 using brin (
                                                      stddev_accel, ghs_max_building_height, ghs_avg_building_height,
-                                                     max_osm_building_levels, avg_osm_building_levels
+                                                     max_osm_building_levels, avg_osm_building_levels, osm_hotels_count,
+                                                     max_osm_hotels_assesment, avg_osm_hotels_assesment
     );

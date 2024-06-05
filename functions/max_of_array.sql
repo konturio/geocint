@@ -3,5 +3,5 @@ create or replace function max_of_array(anyarray)
     language sql
 as
 $$
-select max(elements) FROM unnest($1) elements
+select max(elements) from unnest($1) elements
 $$;

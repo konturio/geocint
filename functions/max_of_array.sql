@@ -1,4 +1,4 @@
-create or replace function max_of_array(anyarray)
+create or replace function max_of_array(int[])
     returns integer
     language sql
 as

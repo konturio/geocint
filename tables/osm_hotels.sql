@@ -25,6 +25,7 @@ create table osm_hotels as (
                 -- when it looks like 3s or 3S
                 when stars ~ '^[0-9][sS]$'
                     then left(stars, 1)::float + 0.5
+                -- when it's a letter code
                 when stars ~ '^[A-H]{1}$'
                     then 
                         case
@@ -51,7 +52,7 @@ create table osm_hotels as (
                 -- when it's numbers separated by dash
                 when stars ~ '^[0-9-]*$'
                     then max_of_array(string_to_array(stars,'-')::int[])::float
-                -- when it's numbers separated by dash
+                -- when it's numbers separated by slash
                 when stars ~ '^[0-9/]*$'
                     then max_of_array(string_to_array(stars,'/')::int[])::float
                 -- anything started from number and doesn't match previous cases

@@ -46,6 +46,10 @@ create table stat_h3_in  as (
            coalesce(sum(stddev_accel), 0) as stddev_accel,
            coalesce(sum(avg_forest_canopy_height), 0) as avg_forest_canopy_height,
            coalesce(sum(max_forest_canopy_height), 0) as max_forest_canopy_height,
+           coalesce(sum(ghs_max_building_height), 0) as ghs_max_building_height,
+           coalesce(sum(ghs_avg_building_height), 0) as ghs_avg_building_height,
+           coalesce(sum(max_osm_building_levels), 0) as max_osm_building_levels,
+           coalesce(sum(avg_osm_building_levels), 0) as avg_osm_building_levels,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
@@ -62,7 +66,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from osm_object_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -79,7 +85,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from kontur_population_h3
              union all
              select h3, null::float as count, null::float as count_6_months,null::float as building_count,
@@ -96,7 +104,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from gdp_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -113,7 +123,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, 
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, h3_get_resolution(h3) as resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, h3_get_resolution(h3) as resolution
              from user_hours_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -130,7 +142,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, 
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, h3_get_resolution(h3) as resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, h3_get_resolution(h3) as resolution
              from residential_pop_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -147,7 +161,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from tile_logs_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -164,7 +180,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from building_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -181,7 +199,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from global_fires_stat_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -198,7 +218,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from covid19_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -215,7 +237,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from kontur_population_v5_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -232,7 +256,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from osm_landuse_industrial_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -249,7 +275,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from osm_volcanos_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -265,7 +293,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from us_census_tracts_stats_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -282,7 +312,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from isodist_fire_stations_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -299,7 +331,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from isodist_hospitals_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -316,7 +350,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from total_road_length_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -333,7 +369,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from tile_logs_bf2402_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -350,7 +388,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from osm_road_segments_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -367,7 +407,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from osm_road_segments_6_months_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -384,7 +426,9 @@ create table stat_h3_in  as (
                     eatery_count::float, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from osm_places_eatery_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -401,7 +445,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, food_shops_count::float, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from osm_places_food_shops_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -418,7 +464,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, man_distance as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from isodist_bomb_shelters_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -435,7 +483,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     man_distance as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from isodist_charging_stations_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -450,9 +500,11 @@ create table stat_h3_in  as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
-                    null::float as man_distance_to_charging_stations, waste_basket_coverage, null::float as solar_farms_placement_suitability, 
-                    null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as man_distance_to_charging_stations, waste_basket_coverage, 
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel,  
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from waste_containers_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -469,7 +521,9 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
                     solar_farms_placement_suitability, null::float as stddev_accel,  
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from solar_farms_placement_suitability_synthetic_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -484,9 +538,11 @@ create table stat_h3_in  as (
                     null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
                     null::float as total_road_length, null::float as view_count_bf2402,
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
-                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
+                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, stddev_accel, 
-                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height, resolution
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from live_sensor_data_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -503,8 +559,48 @@ create table stat_h3_in  as (
                     null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage, 
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, 
-                    avg_forest_canopy_height, max_forest_canopy_height, resolution
+                    avg_forest_canopy_height, max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
              from meta_forest_canopy_height_h3
+             union all
+             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
+                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
+                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
+                    null::float as wildfires, null::float as covid19_confirmed,
+                    null::float as population_prev, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
+                    null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
+                    null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
+                    null::float as total_road_length, null::float as view_count_bf2402,
+                    null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,                     
+                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel,
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    max_height as ghs_max_building_height, avg_height as ghs_avg_building_height, 
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, resolution
+             from ghs_building_height_grid_h3
+             union all
+             select h3, null::float as count, null::float as count_6_months, null::float as building_count,
+                    null::float as building_count_6_months, null::float as total_building_count, null::float as highway_length,
+                    null::float as highway_length_6_months, null::float as osm_users, null::float as population,
+                    null::float as residential, null::float as gdp, null::float as min_ts, null::float as max_ts,
+                    null::float as avgmax_ts, null::float as local_hours, null::float as total_hours, null::float as view_count,
+                    null::float as wildfires, null::float as covid19_confirmed,
+                    null::float as population_prev, null::float as industrial_area, null::float as volcanos_count, null::float as pop_under_5_total,
+                    null::float as pop_over_65_total, null::float as poverty_families_total, null::float as pop_disability_total,
+                    null::float as pop_not_well_eng_speak, null::float as pop_without_car,
+                    null::float as populated_area, null::float as man_distance_to_fire_brigade, null::float as man_distance_to_hospital,
+                    null::float as total_road_length, null::float as view_count_bf2402,
+                    null::float as eatery_count, null::float as food_shops_count, null::float as man_distance_to_bomb_shelters,                     
+                    null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
+                    null::float as solar_farms_placement_suitability, null::float as stddev_accel,
+                    null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
+                    max_levels as max_osm_building_levels, avg_levels as avg_osm_building_levels, resolution
+             from osm_building_levels_h3
         ) z
     group by 2, 1
 );
@@ -560,6 +656,10 @@ create table stat_h3  as (
            a.stddev_accel,
            a.avg_forest_canopy_height,
            a.max_forest_canopy_height,
+           a.ghs_max_building_height, 
+           a.ghs_avg_building_height,
+           a.max_osm_building_levels,
+           a.avg_osm_building_levels,
            (coalesce(ms.mapswipe_area, 0))::float as mapswipe_area_km2,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
            (coalesce(gbc.avg_elevation_gebco_2022, 0))::float as avg_elevation_gebco_2022,
@@ -661,4 +761,9 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
                                                      builtup, snow_ice, permanent_water, avg_forest_canopy_height,
                                                      max_forest_canopy_height, worldbank_total_tax_2019,
                                                      years_to_naturalisation, multiple_citizenship
+    );
+
+create index stat_h3_brin_pt4 on stat_h3 using brin (
+                                                     stddev_accel, ghs_max_building_height, ghs_avg_building_height,
+                                                     max_osm_building_levels, avg_osm_building_levels
     );

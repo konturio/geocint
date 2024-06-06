@@ -1,10 +1,12 @@
-create or replace function h3_raster_sum_to_h3
+create or replace function h3_raster_agg_to_h3
 (
-    rast raster, res int
+    rast raster, 
+    res int,
+    agregate_function text default 'sum'
 )
     returns table (
         h3  h3index,
-        sum float
+        value float
     )
 as $$
 select
@@ -22,7 +24,17 @@ select
         end,
         res
         ) as h3,
-    sum(val) as sum
+    case
+        when agregate_function = 'avg'
+            then avg(val)
+        when agregate_function = 'count'
+            then count(val)
+        when agregate_function = 'min'
+            then min(val)
+        when agregate_function = 'max'
+            then max(val)
+        else sum(val)
+    end as value
 from
     ST_PixelAsPolygons(rast)
 where val != 'NaN' and val != 0
@@ -30,4 +42,4 @@ group by 1;
 $$
     language sql
     immutable
-    parallel safe;
+parallel safe;

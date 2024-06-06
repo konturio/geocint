@@ -2,16 +2,15 @@
 # $1 - prod, test or dev
 # $2 - csv file path (data/trees.csv)
 # $3 - layer id ("trees")
-# $4 - layer label ("layer with trees")
-# $5 - layer direction ("[[\"neutral\"], [\"neutral\"]]")
-# $6 - layer isBase (true)
-# $7 - layer isPublic (false)
-# $8 - layer copyrights ("[\"Kontur.io\",\"OSM Contributors\"]")
-# $9 - layer description ("very cool trees layer produced by Kontur")
-# $10 - layer coverage ("World")
-# $11 - layer update frequency ("daily")
-# $12 - layer unit_id ("n")
-# $13 - layer last_updated
+# $4 - layer direction ("[[\"neutral\"], [\"neutral\"]]")
+# $5 - layer isBase (true)
+# $6 - layer isPublic (false)
+# $7 - layer copyrights ("[\"Kontur.io\",\"OSM Contributors\"]")
+# $8 - layer description ("very cool trees layer produced by Kontur")
+# $9 - layer coverage ("World")
+# $10 - layer update frequency ("daily")
+# $11 - layer unit_id ("n")
+# $12 - layer last_updated
 
 # define endpoints
 case $1 in
@@ -33,22 +32,22 @@ esac
 # Prepare inputs
 token=$(bash scripts/get_auth_token.sh $1)
 layer_id="\"$3\""
-layer_label="\"$4\""
-layer_direction=$5 #$(sed 's/"/\\"/g' <<<"$5")
-layer_isbase=$6
-layer_ispublic=$7
-if [ "$8" == "null" ]; then
+layer_label="\"$(psql -Xqtc "select param_label from bivariate_indicators where param_id = '$3';" | xargs)\""
+layer_direction=$4 #$(sed 's/"/\\"/g' <<<"$5")
+layer_isbase=$5
+layer_ispublic=$6
+if [ "$7" == "null" ]; then
   layer_copyrights="null"
 else
-  layer_copyrights=$8 #(sed 's/"/\\"/g' <<<"$8")
+  layer_copyrights=$7
 fi
-layer_description="\"$9\""
-layer_coverage="\"${10}\""
-layer_update_freq="\"${11}\""
-layer_unit_id="\"${12}\""
+layer_description="\"$8\""
+layer_coverage="\"${9}\""
+layer_update_freq="\"${10}\""
+layer_unit_id="\"${11}\""
 layer_emoji="\"$(psql -Xqtc "select emoji from bivariate_indicators where param_id = '$3';" | xargs)\""
 
-layer_last_updated="\"${13}\""
+layer_last_updated="\"${12}\""
 
 existed_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$3' order by last_updated asc limit 1;" | xargs)
 

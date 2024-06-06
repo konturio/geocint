@@ -2935,8 +2935,8 @@ db/table/live_sensor_data_h3: data/in/live_sensor_data_h3.csv | db/table ## load
 
 ### High Resolution Forest Canopy Height Maps
 data/in/raster/meta_forest_canopy_height/download: | data/in/raster/meta_forest_canopy_height ## Download and rescale from 1 meter to 100 meters High Resolution Forest Canopy Height tifs from Data for Good at AWS S3.
-	cd data/in/raster/meta_forest_canopy_height; aws s3 ls --profile geocint_pipeline_sender s3://dataforgood-fb-data/forests/v1/alsgedi_global_v6_float/chm/ | tr -s ' ' | cut -d' ' -f4 | grep 'tif$' | parallel 'aws s3 cp --profile geocint_pipeline_sender s3://dataforgood-fb-data/forests/v1/alsgedi_global_v6_float/chm/{} data/in/raster/meta_forest_canopy_height/chm/{} ; gdalwarp -tr 100 100 data/in/raster/meta_forest_canopy_height/chm/{} data/in/raster/meta_forest_canopy_height/chm/100m_{} ; rm {}'
-	touch $@
+    aws s3 ls --profile geocint_pipeline_sender s3://dataforgood-fb-data/forests/v1/alsgedi_global_v6_float/chm/ | tr -s ' ' | cut -d' ' -f4 | grep 'tif$$' | parallel 'aws s3 cp --profile geocint_pipeline_sender s3://dataforgood-fb-data/forests/v1/alsgedi_global_v6_float/chm/{} data/in/raster/meta_forest_canopy_height/chm/{} ; gdalwarp -tr 100 100 data/in/raster/meta_forest_canopy_height/chm/{} data/in/raster/meta_forest_canopy_height/chm/100m_{} ; rm data/in/raster/meta_forest_canopy_height/chm/{}'
+    touch $@
 
 db/table/meta_forest_canopy_height: data/in/raster/meta_forest_canopy_height/download | db/table ## Put forest canopy tiles in table.
 	psql -c "drop table if exists meta_forest_canopy_height;"

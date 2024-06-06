@@ -92,7 +92,7 @@ create table stat_h3_quality as (
                 avg(a.avg_forest_canopy_height::float) as agg_avg_forest_canopy_height,
                 avg(a.max_forest_canopy_height::float) as agg_max_forest_canopy_height,
                 avg(a.worldbank_total_tax_2019::float) as agg_worldbank_total_tax_2019,
-                avg(a.years_to_naturalisation) as agg years_to_naturalisation,
+                avg(a.years_to_naturalisation) as agg_years_to_naturalisation,
                 avg(a.multiple_citizenship) as agg_multiple_citizenship,
                 avg(a.ghs_max_building_height::float) as agg_ghs_max_building_height, 
                 avg(a.ghs_avg_building_height::float) as agg_ghs_avg_building_height,

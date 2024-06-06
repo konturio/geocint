@@ -764,6 +764,6 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
     );
 
 create index stat_h3_brin_pt4 on stat_h3 using brin (
-                                                     ghs_max_building_height, ghs_avg_building_height,
+                                                     stddev_accel, ghs_max_building_height, ghs_avg_building_height,
                                                      max_osm_building_levels, avg_osm_building_levels
     );

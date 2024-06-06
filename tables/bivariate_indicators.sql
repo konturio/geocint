@@ -499,6 +499,15 @@ values ('max_osm_building_levels', 'Maximal levels of OSM buildings', jsonb_buil
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('avg_osm_building_levels', 'Average levels of OSM buildings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["bad"]]'::jsonb, 'Average levels of buildings in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏠⬆️'); 
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_hotels_count', 'OSM hotels count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of hotels in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏨');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('max_osm_hotels_assesment', 'Max hotel level assesment from OSM', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Max hotel level assesment from OSM.', 'World', 'daily', 'n', TRUE, '🏨🌟');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('avg_osm_hotels_assesment', 'Average hotel level asesment from OSM', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Average hotel level assesment from OSM.', 'World', 'daily', 'n', TRUE, '🏨⭐');
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

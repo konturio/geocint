@@ -508,6 +508,9 @@ values ('max_osm_hotels_assesment', 'Max hotel level assesment from OSM', jsonb_
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('avg_osm_hotels_assesment', 'Average hotel level asesment from OSM', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Average hotel level assesment from OSM.', 'World', 'daily', 'n', TRUE, '🏨⭐');
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('oam_image_count', 'Count unique OAM imagery', jsonb_build_array('© Kontur https://kontur.io','All imagery is publicly licensed and made available through the Humanitarian OpenStreetMap Team‘s Open Imagery Network (OIN) Node. All imagery contained in OIN is licensed CC-BY 4.0, with attribution as contributors of Open Imagery Network. All imagery is available to be traced in OpenStreetMap. © OpenAerialMap'), '[["bad"], ["good"]]'::jsonb, 'Count of the unique OAM imagery.', 'World', 'every_30min', 'n', TRUE, '🗺️🛰️');
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

@@ -100,7 +100,8 @@ create table stat_h3_quality as (
                 avg(a.avg_osm_building_levels) as agg_avg_osm_building_levels,
                 avg(a.osm_hotels_count) as agg_osm_hotels_count,
                 avg(a.max_osm_hotels_assesment) as agg_max_osm_hotels_assesment,
-                avg(a.avg_osm_hotels_assesment::float) as agg_avg_osm_hotels_assesment
+                avg(a.avg_osm_hotels_assesment::float) as agg_avg_osm_hotels_assesment,
+                avg(a.oam_image_count) as agg_oam_image_count
             from
                 stat_h3 a
             where

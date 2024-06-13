@@ -9,7 +9,7 @@ class EventsServers:
 
 STAGES = {
     'dev': EventsServers(
-        api='https://test-apps02.konturlabs.com/events/v1',
+        api='https://dev-event-api.k8s-01.konturlabs.com/events/v1',
         auth='https://dev-keycloak.k8s-01.konturlabs.com/realms/dev/protocol/openid-connect/token',
     ),
     'test': EventsServers(

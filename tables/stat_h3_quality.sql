@@ -101,7 +101,11 @@ create table stat_h3_quality as (
                 avg(a.osm_hotels_count) as agg_osm_hotels_count,
                 avg(a.max_osm_hotels_assesment) as agg_max_osm_hotels_assesment,
                 avg(a.avg_osm_hotels_assesment::float) as agg_avg_osm_hotels_assesment,
-                avg(a.oam_image_count) as agg_oam_image_count
+                avg(a.oam_image_count) as agg_oam_image_count,
+                avg(a.osm_historical_sites_and_museums_count) as agg_osm_historical_sites_and_museums_count,
+                avg(a.osm_art_venues_count) as agg_osm_art_venues_count,
+                avg(a.osm_entertainment_venues_count) as agg_osm_entertainment_venues_count,
+                avg(a.osm_cultural_and_comunity_centers_count) as agg_osm_cultural_and_comunity_centers_count
             from
                 stat_h3 a
             where

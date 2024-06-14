@@ -4,7 +4,8 @@ create table osm_culture_venues_h3 as (
            nullif(count(*) filter (where type = 'osm_historical_sites_and_museums'), 0)  as osm_historical_sites_and_museums_count,
            nullif(count(*) filter (where type = 'osm_art_venues'), 0)                    as osm_art_venues_count,
            nullif(count(*) filter (where type = 'osm_entertainment_venues'), 0)          as osm_entertainment_venues_count,
-           nullif(count(*) filter (where type = 'osm_cultural_and_comunity_centers'), 0) as osm_cultural_and_comunity_centers_count
+           nullif(count(*) filter (where type = 'osm_cultural_and_comunity_centers'), 0) as osm_cultural_and_comunity_centers_count,
+           8::integer                                                                    as resolution
     from osm_culture_venues
     group by 1
 );

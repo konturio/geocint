@@ -19,11 +19,11 @@ alter table bivariate_indicators
     set (parallel_workers = 32);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('one', '1', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', NULL, FALSE, '1️⃣');
+values ('one', '1', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', NULL, TRUE, '1️⃣');
 
 -- area is mostly used in denominator so start the name as lowercase to build better sentences
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('area_km2', 'area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', 'km2', FALSE, '📐');
+values ('area_km2', 'area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', 'km2', TRUE, '📐');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('populated_area_km2', 'Populated area', jsonb_build_array(
@@ -35,7 +35,7 @@ values ('populated_area_km2', 'Populated area', jsonb_build_array(
         'NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/',
         'Geoalert Urban Mapping: Chechnya, Moscow region, Tyva, Tashkent, Bukhara, Samarkand, Navoi, Chirchiq - https://github.com/Geoalert/urban-mapping',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["unimportant"], ["important"]]'::jsonb, '', 'World', 'daily', 'km2', FALSE, '🏡');
+        '[["unimportant"], ["important"]]'::jsonb, '', 'World', 'daily', 'km2', TRUE, '🏡');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('count', 'OSM objects', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Total number of objects in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🧱');

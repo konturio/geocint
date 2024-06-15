@@ -2978,7 +2978,7 @@ data/in/oam_global_coverage.csv: | data/in ## download fresh dump with OAM globa
 
 db/table/oam_global_coverage_h3: data/in/oam_global_coverage.csv | db/table ## load OAM global coverage hexagonal data to database
 	psql -c "drop table if exists oam_global_coverage_h3;"
-	psql -c "create table oam_global_coverage_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, oam_image_count integer);"
+	psql -c "create table oam_global_coverage_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, oam_image_count float);"
 	cat data/in/oam_global_coverage.csv | psql -c "copy oam_global_coverage_h3(h3, oam_image_count) from stdin delimiter ',';"
 	touch $@
 
@@ -3051,7 +3051,7 @@ data/out/csv/days_mintemp_above_25c_1c.csv: db/table/pf_maxtemp_h3 | data/out/cs
 	touch $@
 
 data/out/csv/total_building_count.csv: db/table/building_count_grid_h3 | data/out/csv ## extract total_building_count to csv file 
-	psql -q -X -c "copy (select h3, building_count as total_building_count from building_count_grid_h3 where h3 is not null and building_count is not null and building_coun > 0) to stdout with delimiter ',' csv;" > data/out/csv/total_building_count.csv
+	psql -q -X -c "copy (select h3, building_count as total_building_count from building_count_grid_h3 where h3 is not null and building_count is not null and building_count > 0) to stdout with delimiter ',' csv;" > data/out/csv/total_building_count.csv
 	touch $@
 
 data/out/csv/count_6_months.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count_6_months to csv file 

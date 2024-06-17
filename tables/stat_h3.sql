@@ -129,7 +129,8 @@ create table stat_h3_in  as (
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, 
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
-                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, h3_get_resolution(h3) as resolution
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
+                    null::float as oam_image_count, h3_get_resolution(h3) as resolution
              from user_hours_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -147,8 +148,9 @@ create table stat_h3_in  as (
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, 
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
-                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
-                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, h3_get_resolution(h3) as resolution
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height,
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels,
+                    null::float as oam_image_count, h3_get_resolution(h3) as resolution
              from residential_pop_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,

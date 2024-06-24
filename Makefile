@@ -3314,10 +3314,10 @@ data/out/csv/population.csv: db/table/kontur_population_h3 | data/out/csv ## ext
 	touch $@
 
 data/out/csv/avg_forest_canopy_height.csv: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract avg_forest_canopy_height to csv file 
-	psql -q -X -c "copy (select h3, avg_height as avg_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and avg_height is not null) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, avg_forest_canopy_height as avg_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and avg_forest_canopy_height is not null) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/max_forest_canopy_height.csv: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract max_forest_canopy_height to csv file 
-	psql -q -X -c "copy (select h3, max_height as max_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and max_height is not null) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, max_forest_canopy_height as max_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and max_forest_canopy_height is not null) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/worldbank_tax_rate.csv: db/table/worldbank_tax_rate_h3 | data/out/csv ## extract worldbank_tax_rate to csv file 
 	psql -q -X -c "copy (select h3, t2019 as worldbank_total_tax_2019 from worldbank_tax_rate_h3 where h3 is not null and t2019 is not null) to stdout with delimiter ',' csv;" > $@

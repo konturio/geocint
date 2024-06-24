@@ -19,7 +19,9 @@ create table prescale_to_osm_boundaries_unclipped_in as (
            ST_Normalize(o.geog::geometry)          as geom
     from osm o,
          prescale_to_osm p
-    where o.osm_id = p.osm_id and o.osm_type=p.osm_type
+    where o.osm_id = p.osm_id 
+          and o.osm_type=p.osm_type
+          and o.tags ->>'population' ~ '^[0-9]*\.?[0-9]+$'
 );
 
 -- Add polygon to scale sum popualtion in hexagons within 10km Chornobyl Nuclear Power Plant to 0,

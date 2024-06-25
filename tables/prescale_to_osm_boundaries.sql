@@ -13,7 +13,7 @@ create index on water_polygons_vector_4326 using gist(geom);
 drop table if exists prescale_to_osm_boundaries_unclipped_in;
 create table prescale_to_osm_boundaries_unclipped_in as (
     select p.osm_id                                as osm_id, 
-           cast(o.tags ->> 'population' as bigint) as actual_osm_pop,
+           parse_integer(o.tags ->> 'population')  as actual_osm_pop,
            p.right_population                      as right_population,
            null::integer                           as admin_level,
            ST_Normalize(o.geog::geometry)          as geom
@@ -21,7 +21,6 @@ create table prescale_to_osm_boundaries_unclipped_in as (
          prescale_to_osm p
     where o.osm_id = p.osm_id 
           and o.osm_type=p.osm_type
-          and o.tags ->>'population' ~ '^[0-9]*\.?[0-9]+$'
 );
 
 -- Add polygon to scale sum popualtion in hexagons within 10km Chornobyl Nuclear Power Plant to 0,

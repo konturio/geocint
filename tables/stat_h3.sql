@@ -128,8 +128,8 @@ create table stat_h3_in  as (
                     null::float as man_distance_to_charging_stations, null::float as waste_basket_coverage,
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel, 
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
-                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
-                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
+                    null::float as ghs_max_building_height, null::float as ghs_avg_building_height,
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels,
                     null::float as oam_image_count, h3_get_resolution(h3) as resolution
              from user_hours_h3
              union all
@@ -757,6 +757,10 @@ create table stat_h3  as (
            (coalesce(osmht.osm_hotels_count, 0))::float as osm_hotels_count,
            (coalesce(osmht.max_osm_hotels_assesment, 0))::float as max_osm_hotels_assesment,
            (coalesce(osmht.avg_osm_hotels_assesment, 0))::float as avg_osm_hotels_assesment,
+           (coalesce(osm_culture_venues_h3.osm_historical_sites_and_museums_count, 0))::float as osm_historical_sites_and_museums_count,
+           (coalesce(osm_culture_venues_h3.osm_art_venues_count, 0))::float as osm_art_venues_count,
+           (coalesce(osm_culture_venues_h3.osm_entertainment_venues_count, 0))::float as osm_entertainment_venues_count,
+           (coalesce(osm_culture_venues_h3.osm_cultural_and_comunity_centers_count, 0))::float as osm_cultural_and_comunity_centers_count,
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
@@ -775,6 +779,7 @@ create table stat_h3  as (
          left join worldbank_tax_rate_h3 wtr on (a.h3 = wtr.h3)
          left join wikidata_naturalization_gap_h3 wng on (a.h3 = wng.h3)
          left join osm_hotels_h3 osmht on (a.h3 = osmht.h3)
+         left join osm_culture_venues_h3 on (a.h3 = osm_culture_venues_h3.h3)
 );
 drop table stat_h3_in;
 vacuum analyze stat_h3;
@@ -820,5 +825,7 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
 create index stat_h3_brin_pt4 on stat_h3 using brin (
                                                      stddev_accel, ghs_max_building_height, ghs_avg_building_height,
                                                      max_osm_building_levels, avg_osm_building_levels, osm_hotels_count,
-                                                     max_osm_hotels_assesment, avg_osm_hotels_assesment, oam_image_count
+                                                     max_osm_hotels_assesment, avg_osm_hotels_assesment, oam_image_count,
+                                                     osm_historical_sites_and_museums_count, osm_art_venues_count,
+                                                     osm_entertainment_venues_count, osm_cultural_and_comunity_centers_count
     );

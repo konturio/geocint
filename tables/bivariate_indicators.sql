@@ -19,11 +19,11 @@ alter table bivariate_indicators
     set (parallel_workers = 32);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('one', '1', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', NULL, FALSE, '1️⃣');
+values ('one', '1', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', NULL, TRUE, '1️⃣');
 
 -- area is mostly used in denominator so start the name as lowercase to build better sentences
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('area_km2', 'area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', 'km2', FALSE, '📐');
+values ('area_km2', 'area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', 'km2', TRUE, '📐');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('populated_area_km2', 'Populated area', jsonb_build_array(
@@ -35,7 +35,7 @@ values ('populated_area_km2', 'Populated area', jsonb_build_array(
         'NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/',
         'Geoalert Urban Mapping: Chechnya, Moscow region, Tyva, Tashkent, Bukhara, Samarkand, Navoi, Chirchiq - https://github.com/Geoalert/urban-mapping',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["unimportant"], ["important"]]'::jsonb, '', 'World', 'daily', 'km2', FALSE, '🏡');
+        '[["unimportant"], ["important"]]'::jsonb, '', 'World', 'daily', 'km2', TRUE, '🏡');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('count', 'OSM objects', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Total number of objects in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🧱');
@@ -511,6 +511,18 @@ values ('avg_osm_hotels_assesment', 'Hotel stars rating average', jsonb_build_ar
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('oam_image_count', 'OpenAerialMap images', jsonb_build_array('© Kontur https://kontur.io','All imagery is publicly licensed and made available through the Humanitarian OpenStreetMap Team‘s Open Imagery Network (OIN) Node. All imagery contained in OIN is licensed CC-BY 4.0, with attribution as contributors of Open Imagery Network. All imagery is available to be traced in OpenStreetMap. © OpenAerialMap'), '[["bad"], ["good"]]'::jsonb, 'Count of the unique OpenAerialMap images.', 'World', 'every_30min', 'n', TRUE, '🗺️🛰️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_historical_sites_and_museums_count', 'Historical sites and museums count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of historical sites and museums in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏰');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_art_venues_count', 'Art venues count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of art venues in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🖼️🖌️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_entertainment_venues_count', 'Entertainment venues count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of entertainment venues OpenStreetMap.', 'World', 'daily', 'n', TRUE, '📽️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_cultural_and_comunity_centers_count', 'Cultural and community centers count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of cultural and community centers in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🫂');
 
 -- set indicator is_base to become denominators
 update bivariate_indicators

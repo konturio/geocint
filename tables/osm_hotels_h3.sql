@@ -8,3 +8,5 @@ create table osm_hotels_h3 as (
     from osm_hotels
     group by 1
 );
+
+call generate_overviews('osm_hotels_h3', '{osm_hotels_count,max_osm_hotels_assesment,avg_osm_hotels_assesment}'::text[], '{sum,max,avg}'::text[], 8);

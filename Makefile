@@ -3801,7 +3801,7 @@ deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_
 
 deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/dev/uploads ## upload osm_historical_sites_and_museums_count to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of historical sites and mudeums in OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of historical sites and museums in OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/dev/uploads ## upload osm_art_venues_count to insight-api
@@ -4610,7 +4610,7 @@ deploy_indicators/test/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg
 
 deploy_indicators/test/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/test/uploads ## upload osm_historical_sites_and_museums_count to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of historical sites and mudeums in OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of historical sites and museums in OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/test/uploads ## upload osm_art_venues_count to insight-api
@@ -5423,7 +5423,7 @@ deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg
 
 deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/prod/uploads ## upload osm_historical_sites_and_museums_count to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of historical sites and mudeums in OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of historical sites and museums in OpenStreetMap." "World" "daily" "n" "$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/prod/uploads ## upload osm_art_venues_count to insight-api

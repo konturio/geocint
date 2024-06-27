@@ -21,8 +21,9 @@ alter table bivariate_indicators
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('one', '1', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', NULL, FALSE, '1️⃣');
 
+-- area is mostly used in denominator so start the name as lowercase to build better sentences
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('area_km2', 'Area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', 'km2', FALSE, '📐');
+values ('area_km2', 'area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', 'km2', FALSE, '📐');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('populated_area_km2', 'Populated area', jsonb_build_array(
@@ -40,7 +41,7 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('count', 'OSM objects', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Total number of objects in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🧱');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('count_6_months', 'OSM objects (last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of objects mapped in OpenStreetMap in the last 6 months.', 'World', 'daily', 'n', TRUE, '🧱🆕');
+values ('count_6_months', 'OSM objects (edited in last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of objects mapped in OpenStreetMap in the last 6 months.', 'World', 'daily', 'n', TRUE, '🧱🆕');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('view_count', 'OSM map views (last 30 days)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good", "important"]]'::jsonb, 'Number of tile requests in a given area for the last 30 days.', 'World', 'daily', 'n', TRUE, '🗺️🆕');
@@ -61,13 +62,13 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('building_count', 'OSM buildings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Total number of buildings in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏠');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('building_count_6_months', 'OSM buildings (last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of buildings mapped in OpenStreetMap in the last 6 months.', 'World', 'daily', 'n', TRUE, '🏠🆕');
+values ('building_count_6_months', 'OSM buildings (edited in last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of buildings mapped in OpenStreetMap in the last 6 months.', 'World', 'daily', 'n', TRUE, '🏠🆕');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('highway_length', 'OSM road length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Total length of roads in a given area according to OpenStreetMap.', 'World', 'daily', 'km', TRUE, '🛣️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('highway_length_6_months', 'OSM road length (last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Length of roads mapped in OpenStreetMap in the last 6 months.', 'World', 'daily', 'km', TRUE, '🛣️🆕');
+values ('highway_length_6_months', 'OSM road length (edited in last 6 months)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Length of roads mapped in OpenStreetMap in the last 6 months.', 'World', 'daily', 'km', TRUE, '🛣️🆕');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('local_hours', 'OSM local contributor activity', jsonb_build_array('© Kontur https://kontur.io/',
@@ -133,7 +134,7 @@ values ('snow_ice', 'Landcover snow and ice', jsonb_build_array('© Kontur https
         '[["unimportant"], ["important"]]'::jsonb, 'Snow and Ice. Lands under snow or ice cover throughout the year.', 'World', 'static', 'km2', TRUE, '❄️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('permanent_water', 'Landcover permanent_water', jsonb_build_array('© Kontur https://kontur.io/',
+values ('permanent_water', 'Permanent water landcover', jsonb_build_array('© Kontur https://kontur.io/',
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050'),
         '[["unimportant"], ["important"]]'::jsonb, 'Permanent water bodies. Lakes, reservoirs, and rivers. Can be either fresh or salt-water bodies.', 'World', 'static', 'km2', TRUE, '💧');
 
@@ -183,14 +184,6 @@ values ('total_building_count', 'Buildings', jsonb_build_array(
         '[["unimportant"], ["important"]]'::jsonb, 'Estimated number of buildings in a given area based on various data sources.', 'World', 'daily', 'n', TRUE, '🏘️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('wildfires', 'Days with wildfire', jsonb_build_array(
-'© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002',
-    'NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002',
-    'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006',
-    'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML'),
-    '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Number of days per year when a thermal anomaly was recorded in the last 13 months.', 'World', 'daily', 'days', FALSE, '🔥');
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('hazardous_days_count', 'All disaster types exposure', jsonb_build_array(
 'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Number of days in the last year when severe and extreme disasters of any types were recorded.', 'World', 'daily', 'days', TRUE, '🚨📅');
@@ -214,6 +207,14 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('wildfire_days_count', 'Wildfire exposure', jsonb_build_array(
 'Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)'),
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Number of days in the last year when severe and extreme wildfires were recorded.', 'World', 'daily', 'days', TRUE, '🔥📅');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('wildfires', 'Thermal anomaly exposure', jsonb_build_array(
+'© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002',
+    'NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002',
+    'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006',
+    'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML'),
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Number of days per year when a thermal anomaly was recorded in the last 13 months.', 'World', 'daily', 'days', FALSE, '🔥');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('volcano_days_count', 'Volcano exposure', jsonb_build_array(
@@ -348,7 +349,7 @@ values ('man_distance_to_charging_stations', 'Man-distance to charging stations'
         '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', FALSE, '🔌🏃');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('total_road_length', 'Total road length', jsonb_build_array(
+values ('total_road_length', 'Road length', jsonb_build_array(
         '©2019 Facebook, Inc. and its affiliates https://github.com/facebookmicrosites/Open-Mapping-At-Facebook/blob/main/LICENSE.md',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright', '© Kontur https://kontur.io/'),
         '[["unimportant"], ["important"]]'::jsonb, 'Estimated total road length according to Meta (Facebook) AI and OpenStreetMap data. For places where Meta (Facebook) roads data are unavailable, the estimation is based on statistical regression from Kontur Population data.', 'World', 'daily', 'km', TRUE, '🛣️📏');
@@ -391,27 +392,27 @@ values ('gsa_ghi', 'Global Horizontal Irradiance', jsonb_build_array(
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb, 'Total amount of shortwave terrestrial irradiance received by a surface horizontal to the ground.', 'World (-60:60 latitudes)', 'static', 'W_m2', TRUE, '☀️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('worldclim_avg_temperature', 'Average air temperature', jsonb_build_array(
+values ('worldclim_avg_temperature', 'Air temperature average', jsonb_build_array(
         'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
         '[["good"], ["bad"]]'::jsonb, 'Monthly average air temperature according to WorldClim data for the years 1970-2000.', 'World', 'static', 'celc_deg', TRUE, '🌡️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('worldclim_min_temperature', 'Minimum air temperature', jsonb_build_array(
+values ('worldclim_min_temperature', 'Air temperature minimum', jsonb_build_array(
         'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
         '[["bad"], ["good"]]'::jsonb, 'Monthly minimum air temperature according to WorldClim data for the years 1970-2000.', 'World', 'static', 'celc_deg', TRUE, '🌡️❄️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('worldclim_max_temperature', 'Maximum air temperature', jsonb_build_array(
+values ('worldclim_max_temperature', 'Air temperature maximum', jsonb_build_array(
         'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
         '[["good"], ["bad"]]'::jsonb, 'Monthly maximum air temperature according to WorldClim data for the years 1970-2000.', 'World', 'static', 'celc_deg', TRUE, '🌡️🔥');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('worldclim_amp_temperature', 'Amplitude of air temperatures', jsonb_build_array(
+values ('worldclim_amp_temperature', 'Air temperature monthly amplitude', jsonb_build_array(
         'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html'),
         '[["good"], ["bad"]]'::jsonb, 'Monthly amplitude of air temperatures according to WorldClim data for the years 1970-2000.', 'World', 'static', 'celc_deg', TRUE, '🌡️↕️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('powerlines_proximity_m', 'Proximity to powerlines', jsonb_build_array(
+values ('powerlines_proximity_m', 'Powerlines proximity', jsonb_build_array(
         'Copyright © OpenStreetMap contributors https://www.openstreetmap.org/copyright',
         '© 2020 The World Bank Group, CC-BY 4.0'),
         '[["important"], ["unimportant"]]'::jsonb, 'Distance to closest powerline', 'World', 'static', 'm', TRUE, '⚡👫');
@@ -422,12 +423,12 @@ values ('waste_basket_coverage_area_km2', 'Waste containers', jsonb_build_array(
         '[["bad"], ["good"]]'::jsonb, 'Number of waste containers in a given area.', 'World', 'daily', 'n', TRUE, '🗑️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('populated_areas_proximity_m', 'Proximity to densely populated areas', jsonb_build_array(
+values ('populated_areas_proximity_m', 'Densely populated area proximity', jsonb_build_array(
         'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["good"], ["bad"]]'::jsonb, 'Distance to closest Kontur Population cell with population > 80 ppl', 'World', 'daily', 'm', TRUE, '🏡👫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('power_substations_proximity_m', 'Proximity to power substations', jsonb_build_array(
+values ('power_substations_proximity_m', 'Power substations proximity', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
         '[["good"], ["bad"]]'::jsonb, 'Distance to closest power substation', 'World', 'daily', 'm', TRUE, '🏭👫');
 
@@ -454,17 +455,17 @@ values ('safety_index', 'Safety (Global Peace Index 2022)', jsonb_build_array(
         '[["bad"], ["good"]]'::jsonb, 'The Global Peace Index covers 99.7% of the world’s population, and is calculated using 23 qualitative and quantitative indicators from highly respected sources, and measures the state of peace across three domains: the level of Societal Safety and Security, the extent of Ongoing Domestic and International Conflict, and the degree of Militarisation.', 'World', 'static', 'index', TRUE, '🛡️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('stddev_accel', 'Road Quality (St. Dev. of Acceleration)', jsonb_build_array(
+values ('stddev_accel', 'Road Quality', jsonb_build_array(
         '© Kontur https://kontur.io/'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'm_s2', FALSE, '🚙📊');
+        '[["good"], ["bad"]]'::jsonb, 'Road quality is measured by volunteers using mobile application that records phone accelerometer while driving. The areas that have highest typical standard deviation of acceleration are considered uncomfortable for driving.', 'World', 'daily', 'm_s2', FALSE, '🚙📊');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('avg_forest_canopy_height', 'Average Forest Canopy Height', jsonb_build_array(
+values ('avg_forest_canopy_height', 'Forest canopy average height', jsonb_build_array(
         'High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.'),
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb, 'Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery.', 'World', 'static', 'm', TRUE, '🌲📐');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('max_forest_canopy_height', 'Max Forest Canopy Height', jsonb_build_array(
+values ('max_forest_canopy_height', 'Forest canopy maximal height', jsonb_build_array(
         'High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.'),
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb, 'Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery.', 'World', 'static', 'm', TRUE, '🌲⬆️');
 
@@ -474,42 +475,42 @@ values ('worldbank_total_tax_2019', 'Total tax and contribution rate (% of profi
         '[["good"], ["bad"]]'::jsonb, 'Total tax rate measures the amount of taxes and mandatory contributions payable by businesses after accounting for allowable deductions and exemptions as a share of commercial profits. Taxes withheld (such as personal income tax) or collected and remitted to tax authorities (such as value added taxes, sales taxes or goods and service taxes) are excluded.', 'World', 'static', 'perc', TRUE, '🧮');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('years_to_naturalisation', 'The Legal residence before naturalization', jsonb_build_array(
+values ('years_to_naturalisation', 'Legal residence duration required for naturalization', jsonb_build_array(
         'This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.'),
         '[["good"], ["bad"]]'::jsonb, 'The duration of legal residence before a national of a foreign state, without any cultural, historical, or marriage ties or connections to the state in question, can request citizenship under that states naturalization laws.', 'World', 'static', 'years', TRUE, '📊');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('multiple_citizenship', 'Possibility to have multiple citizenship', jsonb_build_array(
+values ('multiple_citizenship', 'Dual/Multiple citizenship allowed', jsonb_build_array(
         'This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.'),
         '[["bad"],["good"]]'::jsonb, 'Possibility to have dual (multiple) citizenship: 1 - no, 2 - with restrictions regulated by local legislation, 3 - dual (multiple) citizenship is allowed.', 'World', 'static', 'other', FALSE, '🛂');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('ghs_max_building_height', 'Maximal of average of the Net Building Height', jsonb_build_array(
+values ('ghs_max_building_height', 'Building height maximum', jsonb_build_array(
         'Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.'),
         '[["unimportant"], ["important"]]'::jsonb, 'GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces. ', 'World', 'static', 'm', FALSE, '🏙️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('ghs_avg_building_height', 'Average of the Net Building Height', jsonb_build_array(
+values ('ghs_avg_building_height', 'Building height average', jsonb_build_array(
         'Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.'),
         '[["unimportant"], ["important"]]'::jsonb, 'GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces.', 'World', 'static', 'm', FALSE, '🏠');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('max_osm_building_levels', 'Maximal levels of OSM buildings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["bad"]]'::jsonb, 'Maximal level of buildings in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏢⬆️');
+values ('max_osm_building_levels', 'Building levels maximum', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["bad"]]'::jsonb, 'Maximal level of buildings in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏢⬆️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('avg_osm_building_levels', 'Average levels of OSM buildings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["bad"]]'::jsonb, 'Average levels of buildings in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏠⬆️'); 
+values ('avg_osm_building_levels', 'Building levels average', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["bad"]]'::jsonb, 'Average levels of buildings in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏠⬆️'); 
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_hotels_count', 'OSM hotels count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of hotels in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏨');
+values ('osm_hotels_count', 'Hotels', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of hotels in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏨');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('max_osm_hotels_assesment', 'Max hotel level assesment from OSM', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Max hotel level assesment from OSM.', 'World', 'daily', 'n', TRUE, '🏨🌟');
+values ('max_osm_hotels_assesment', 'Hotel stars rating maximum', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Max hotel level assesment from OSM.', 'World', 'daily', 'n', TRUE, '🏨🌟');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('avg_osm_hotels_assesment', 'Average hotel level asesment from OSM', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Average hotel level assesment from OSM.', 'World', 'daily', 'n', TRUE, '🏨⭐');
+values ('avg_osm_hotels_assesment', 'Hotel stars rating average', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Average hotel level assesment from OSM.', 'World', 'daily', 'n', TRUE, '🏨⭐');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('oam_image_count', 'Count unique OAM imagery', jsonb_build_array('© Kontur https://kontur.io','All imagery is publicly licensed and made available through the Humanitarian OpenStreetMap Team‘s Open Imagery Network (OIN) Node. All imagery contained in OIN is licensed CC-BY 4.0, with attribution as contributors of Open Imagery Network. All imagery is available to be traced in OpenStreetMap. © OpenAerialMap'), '[["bad"], ["good"]]'::jsonb, 'Count of the unique OAM imagery.', 'World', 'every_30min', 'n', TRUE, '🗺️🛰️');
+values ('oam_image_count', 'OpenAerialMap images', jsonb_build_array('© Kontur https://kontur.io','All imagery is publicly licensed and made available through the Humanitarian OpenStreetMap Team‘s Open Imagery Network (OIN) Node. All imagery contained in OIN is licensed CC-BY 4.0, with attribution as contributors of Open Imagery Network. All imagery is available to be traced in OpenStreetMap. © OpenAerialMap'), '[["bad"], ["good"]]'::jsonb, 'Count of the unique OpenAerialMap images.', 'World', 'every_30min', 'n', TRUE, '🗺️🛰️');
 
 -- set indicator is_base to become denominators
 update bivariate_indicators

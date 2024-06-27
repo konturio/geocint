@@ -2985,10 +2985,18 @@ data/in/oam_global_coverage.csv: | data/in ## download fresh dump with OAM globa
 
 db/table/oam_global_coverage_h3: data/in/oam_global_coverage.csv | db/table ## load OAM global coverage hexagonal data to database
 	psql -c "drop table if exists oam_global_coverage_h3;"
-	psql -c "create table oam_global_coverage_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, oam_image_count float);"
-	cat data/in/oam_global_coverage.csv | psql -c "copy oam_global_coverage_h3(h3, oam_image_count) from stdin delimiter ',';"
+	psql -c "create table oam_global_coverage_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, oam_coverage_area float);"
+	cat data/in/oam_global_coverage.csv | psql -c "copy oam_global_coverage_h3(h3, oam_coverage_area) from stdin delimiter ',';"
 	touch $@
 
+data/in/oam_number_of_pixels.csv: | data/in ## download fresh dump with OAM number of pixels data
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/oam_global_coverage/prod/oam_number_of_pixels.csv $@ --profile geocint_pipeline_sender
+
+db/table/oam_number_of_pixels_h3: data/in/oam_number_of_pixels.csv | db/table ## load OAM number of pixels data to database
+	psql -c "drop table if exists oam_number_of_pixels_h3;"
+	psql -c "create table oam_number_of_pixels_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, oam_number_of_pixels float);"
+	cat data/in/oam_number_of_pixels.csv | psql -c "copy oam_number_of_pixels_h3(h3, oam_number_of_pixels) from stdin delimiter ',';"
+	touch $@
 ### End OAM global coverage Data integration block
 
 ### High Resolution Forest Canopy Height Maps

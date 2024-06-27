@@ -171,7 +171,7 @@ values ('population_prev', 'Population (previous version)', jsonb_build_array(
         'NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/',
         'Geoalert Urban Mapping: Chechnya, Moscow region, Tyva, Tashkent, Bukhara, Samarkand, Navoi, Chirchiq - https://github.com/Geoalert/urban-mapping',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["unimportant"], ["important"]]'::jsonb, '', 'World', 'daily', 'ppl', FALSE, '👫');
+        '[["unimportant"], ["important"]]'::jsonb, '', 'World', 'daily', 'ppl', TRUE, '👫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('total_building_count', 'Buildings', jsonb_build_array(
@@ -214,7 +214,7 @@ values ('wildfires', 'Thermal anomaly exposure', jsonb_build_array(
     'NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002',
     'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006',
     'MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML'),
-    '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Number of days per year when a thermal anomaly was recorded in the last 13 months.', 'World', 'daily', 'days', FALSE, '🔥');
+    '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Number of days per year when a thermal anomaly was recorded in the last 13 months.', 'World', 'daily', 'days', TRUE, '🔥');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('volcano_days_count', 'Volcano exposure', jsonb_build_array(
@@ -326,27 +326,27 @@ The displayed values are from a range of simulated years from multiple models. A
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('mandays_maxtemp_over_32c_1c', 'Man-days above 32°C, (+1°C scenario)', jsonb_build_array(
         '© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', FALSE, '🌞👥');
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', TRUE, '🌞👥');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('man_distance_to_fire_brigade', 'Man-distance to fire brigade', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', FALSE, '🚒🏃');
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', TRUE, '🚒🏃');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('man_distance_to_hospital', 'Man-distance to hospitals', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', FALSE, '🏥🏃');
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', TRUE, '🏥🏃');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('man_distance_to_bomb_shelters', 'Man-distance to bomb shelters', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', FALSE, '🏠🏃');
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', TRUE, '🏠🏃');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('man_distance_to_charging_stations', 'Man-distance to charging stations', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', FALSE, '🔌🏃');
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', TRUE, '🔌🏃');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('total_road_length', 'Road length', jsonb_build_array(
@@ -362,7 +362,7 @@ values ('view_count_bf2402', 'OSM map views (30 days before Feb 24, 2022)',
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('powerlines', 'Medium-voltage powerlines distribution (predictive)', jsonb_build_array(
         '©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps'),
-        '[["bad"], ["good"]]'::jsonb, 'Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure.', 'World', 'static', 'other', FALSE, '⚡');
+        '[["bad"], ["good"]]'::jsonb, 'Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure.', 'World', 'static', 'other', TRUE, '⚡');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('night_lights_intensity', 'Nighttime lights intensity', jsonb_build_array(
@@ -442,7 +442,7 @@ values ('solar_farms_placement_suitability', 'Suitability estimation for solar f
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('residential', 'Percentage of permanent population', jsonb_build_array(
         'Dataset: Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC) PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE Concept & Methodology: Freire S., MacManus K., Pesaresi M., Doxsey-Whitfield E., Mills J. (2016) Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World; Association of Geographic Information Laboratories in Europe (AGILE), AGILE 2016'),
-        '[["unimportant"], ["important"]]'::jsonb, 'Estimation of residential population percentage according to GHS-POP dataset (2015)', 'World', 'static', 'fract', FALSE, '🏡');
+        '[["unimportant"], ["important"]]'::jsonb, 'Estimation of residential population percentage according to GHS-POP dataset (2015)', 'World', 'static', 'fract', TRUE, '🏡');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('solar_power_plants', 'Solar power plants', jsonb_build_array(
@@ -457,7 +457,7 @@ values ('safety_index', 'Safety (Global Peace Index 2022)', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('stddev_accel', 'Road Quality', jsonb_build_array(
         '© Kontur https://kontur.io/'),
-        '[["good"], ["bad"]]'::jsonb, 'Road quality is measured by volunteers using mobile application that records phone accelerometer while driving. The areas that have highest typical standard deviation of acceleration are considered uncomfortable for driving.', 'World', 'daily', 'm_s2', FALSE, '🚙📊');
+        '[["good"], ["bad"]]'::jsonb, 'Road quality is measured by volunteers using mobile application that records phone accelerometer while driving. The areas that have highest typical standard deviation of acceleration are considered uncomfortable for driving.', 'World', 'daily', 'm_s2', TRUE, '🚙📊');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('avg_forest_canopy_height', 'Forest canopy average height', jsonb_build_array(
@@ -482,17 +482,17 @@ values ('years_to_naturalisation', 'Legal residence duration required for natura
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('multiple_citizenship', 'Dual/Multiple citizenship allowed', jsonb_build_array(
         'This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.'),
-        '[["bad"],["good"]]'::jsonb, 'Possibility to have dual (multiple) citizenship: 1 - no, 2 - with restrictions regulated by local legislation, 3 - dual (multiple) citizenship is allowed.', 'World', 'static', 'other', FALSE, '🛂');
+        '[["bad"],["good"]]'::jsonb, 'Possibility to have dual (multiple) citizenship: 1 - no, 2 - with restrictions regulated by local legislation, 3 - dual (multiple) citizenship is allowed.', 'World', 'static', 'other', TRUE, '🛂');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('ghs_max_building_height', 'Building height maximum', jsonb_build_array(
         'Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.'),
-        '[["unimportant"], ["important"]]'::jsonb, 'GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces. ', 'World', 'static', 'm', FALSE, '🏙️');
+        '[["unimportant"], ["important"]]'::jsonb, 'GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces. ', 'World', 'static', 'm', TRUE, '🏙️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('ghs_avg_building_height', 'Building height average', jsonb_build_array(
         'Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.'),
-        '[["unimportant"], ["important"]]'::jsonb, 'GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces.', 'World', 'static', 'm', FALSE, '🏠');
+        '[["unimportant"], ["important"]]'::jsonb, 'GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces.', 'World', 'static', 'm', TRUE, '🏠');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('max_osm_building_levels', 'Building levels maximum', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["bad"]]'::jsonb, 'Maximal level of buildings in a given area according to OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏢⬆️');

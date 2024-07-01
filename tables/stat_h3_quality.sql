@@ -106,7 +106,8 @@ create table stat_h3_quality as (
                 avg(a.osm_art_venues_count) as agg_osm_art_venues_count,
                 avg(a.osm_entertainment_venues_count) as agg_osm_entertainment_venues_count,
                 avg(a.osm_cultural_and_comunity_centers_count) as agg_osm_cultural_and_comunity_centers_count,
-                avg(a.oam_number_of_pixels) as agg_oam_number_of_pixels
+                avg(a.oam_number_of_pixels) as agg_oam_number_of_pixels,
+                avg(a.worldbank_inflation) as agg_worldbank_inflation
             from
                 stat_h3 a
             where

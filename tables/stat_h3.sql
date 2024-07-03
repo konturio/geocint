@@ -50,7 +50,7 @@ create table stat_h3_in  as (
            coalesce(sum(ghs_avg_building_height), 0) as ghs_avg_building_height,
            coalesce(sum(max_osm_building_levels), 0) as max_osm_building_levels,
            coalesce(sum(avg_osm_building_levels), 0) as avg_osm_building_levels,
-           coalesce(sum(oam_image_count), 0) as oam_image_count,
+           coalesce(sum(oam_coverage_area), 0) as oam_coverage_area,
            1::float as one
     from (
              select h3, count as count, count_6_months as count_6_months, building_count as building_count,
@@ -70,7 +70,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from osm_object_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -90,7 +90,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from kontur_population_h3
              union all
              select h3, null::float as count, null::float as count_6_months,null::float as building_count,
@@ -110,7 +110,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from gdp_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -130,7 +130,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height,
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels,
-                    null::float as oam_image_count, h3_get_resolution(h3) as resolution
+                    null::float as oam_coverage_area, h3_get_resolution(h3) as resolution
              from user_hours_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -150,7 +150,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height,
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels,
-                    null::float as oam_image_count, h3_get_resolution(h3) as resolution
+                    null::float as oam_coverage_area, h3_get_resolution(h3) as resolution
              from residential_pop_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -170,7 +170,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from tile_logs_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -190,7 +190,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from building_count_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -210,7 +210,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from global_fires_stat_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -230,7 +230,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from covid19_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -250,7 +250,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from kontur_population_v5_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -270,7 +270,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from osm_landuse_industrial_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -290,7 +290,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from osm_volcanos_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -309,7 +309,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from us_census_tracts_stats_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -329,7 +329,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from isodist_fire_stations_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -349,7 +349,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from isodist_hospitals_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -369,7 +369,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from total_road_length_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -389,7 +389,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from tile_logs_bf2402_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -409,7 +409,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from osm_road_segments_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -429,7 +429,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from osm_road_segments_6_months_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -449,7 +449,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from osm_places_eatery_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -469,7 +469,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from osm_places_food_shops_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -489,7 +489,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from isodist_bomb_shelters_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -509,7 +509,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from isodist_charging_stations_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -529,7 +529,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from waste_containers_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -549,7 +549,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from solar_farms_placement_suitability_synthetic_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -569,7 +569,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from live_sensor_data_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -589,7 +589,7 @@ create table stat_h3_in  as (
                     avg_forest_canopy_height, max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from meta_forest_canopy_height_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -609,7 +609,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     max_height as ghs_max_building_height, avg_height as ghs_avg_building_height, 
                     null::float as max_osm_building_levels, null::float as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from ghs_building_height_grid_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -629,7 +629,7 @@ create table stat_h3_in  as (
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
                     max_levels as max_osm_building_levels, avg_levels as avg_osm_building_levels, 
-                    null::float as oam_image_count, resolution
+                    null::float as oam_coverage_area, resolution
              from osm_building_levels_h3
              union all
              select h3, null::float as count, null::float as count_6_months, null::float as building_count,
@@ -648,7 +648,7 @@ create table stat_h3_in  as (
                     null::float as solar_farms_placement_suitability, null::float as stddev_accel,
                     null::float as avg_forest_canopy_height, null::float as max_forest_canopy_height,
                     null::float as ghs_max_building_height, null::float as ghs_avg_building_height, 
-                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, oam_image_count, resolution
+                    null::float as max_osm_building_levels, null::float as avg_osm_building_levels, oam_coverage_area, resolution
              from oam_global_coverage_h3
         ) z
     group by 2, 1
@@ -709,7 +709,7 @@ create table stat_h3  as (
            a.ghs_avg_building_height,
            a.max_osm_building_levels,
            a.avg_osm_building_levels,
-           a.oam_image_count,
+           a.oam_coverage_area,
            (coalesce(ms.mapswipe_area, 0))::float as mapswipe_area_km2,
            (coalesce(gbc.avg_slope_gebco_2022, 0))::float as avg_slope_gebco_2022,
            (coalesce(gbc.avg_elevation_gebco_2022, 0))::float as avg_elevation_gebco_2022,
@@ -761,6 +761,7 @@ create table stat_h3  as (
            (coalesce(osm_culture_venues_h3.osm_art_venues_count, 0))::float as osm_art_venues_count,
            (coalesce(osm_culture_venues_h3.osm_entertainment_venues_count, 0))::float as osm_entertainment_venues_count,
            (coalesce(osm_culture_venues_h3.osm_cultural_and_comunity_centers_count, 0))::float as osm_cultural_and_comunity_centers_count,
+           (coalesce(oam_number_of_pixels_h3.oam_number_of_pixels, 0))::float as oam_number_of_pixels,
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
@@ -780,6 +781,7 @@ create table stat_h3  as (
          left join wikidata_naturalization_gap_h3 wng on (a.h3 = wng.h3)
          left join osm_hotels_h3 osmht on (a.h3 = osmht.h3)
          left join osm_culture_venues_h3 on (a.h3 = osm_culture_venues_h3.h3)
+         left join oam_number_of_pixels_h3 on (a.h3 = oam_number_of_pixels_h3.h3)
 );
 drop table stat_h3_in;
 vacuum analyze stat_h3;
@@ -825,7 +827,8 @@ create index stat_h3_brin_pt3 on stat_h3 using brin (
 create index stat_h3_brin_pt4 on stat_h3 using brin (
                                                      stddev_accel, ghs_max_building_height, ghs_avg_building_height,
                                                      max_osm_building_levels, avg_osm_building_levels, osm_hotels_count,
-                                                     max_osm_hotels_assesment, avg_osm_hotels_assesment, oam_image_count,
+                                                     max_osm_hotels_assesment, avg_osm_hotels_assesment, oam_coverage_area,
                                                      osm_historical_sites_and_museums_count, osm_art_venues_count,
-                                                     osm_entertainment_venues_count, osm_cultural_and_comunity_centers_count
+                                                     osm_entertainment_venues_count, osm_cultural_and_comunity_centers_count,
+                                                     oam_number_of_pixels
     );

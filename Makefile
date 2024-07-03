@@ -2985,10 +2985,18 @@ data/in/oam_global_coverage.csv: | data/in ## download fresh dump with OAM globa
 
 db/table/oam_global_coverage_h3: data/in/oam_global_coverage.csv | db/table ## load OAM global coverage hexagonal data to database
 	psql -c "drop table if exists oam_global_coverage_h3;"
-	psql -c "create table oam_global_coverage_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, oam_image_count float);"
-	cat data/in/oam_global_coverage.csv | psql -c "copy oam_global_coverage_h3(h3, oam_image_count) from stdin delimiter ',';"
+	psql -c "create table oam_global_coverage_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, oam_coverage_area float);"
+	cat data/in/oam_global_coverage.csv | psql -c "copy oam_global_coverage_h3(h3, oam_coverage_area) from stdin delimiter ',';"
 	touch $@
 
+data/in/oam_number_of_pixels.csv: | data/in ## download fresh dump with OAM number of pixels data
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/oam_global_coverage/prod/oam_number_of_pixels.csv $@ --profile geocint_pipeline_sender
+
+db/table/oam_number_of_pixels_h3: data/in/oam_number_of_pixels.csv | db/table ## load OAM number of pixels data to database
+	psql -c "drop table if exists oam_number_of_pixels_h3;"
+	psql -c "create table oam_number_of_pixels_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, oam_number_of_pixels float);"
+	cat data/in/oam_number_of_pixels.csv | psql -c "copy oam_number_of_pixels_h3(h3, oam_number_of_pixels) from stdin delimiter ',';"
+	touch $@
 ### End OAM global coverage Data integration block
 
 ### High Resolution Forest Canopy Height Maps
@@ -3011,307 +3019,231 @@ db/table/meta_forest_canopy_height_h3: db/table/meta_forest_canopy_height | db/t
 
 data/out/csv/view_count.csv: db/table/tile_logs | data/out/csv ## extract view_count to csv file 
 	psql -q -X -c "copy (select h3, view_count from tile_logs_h3 where h3 is not null and view_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/view_count.csv
-	touch $@
 
 data/out/csv/count.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count to csv file 
 	psql -q -X -c "copy (select h3, count from osm_object_count_grid_h3 where h3 is not null and count is not null) to stdout with delimiter ',' csv;" > data/out/csv/count.csv
-	touch $@
 
 data/out/csv/populated_area_km2.csv: db/table/kontur_population_h3 | data/out/csv ## extract populated_area_km2 to csv file 
 	psql -q -X -c "copy (select h3, populated_area / 1000000.0 as populated_area_km2 from kontur_population_h3 where h3 is not null and populated_area is not null) to stdout with delimiter ',' csv;" > data/out/csv/populated_area_km2.csv
-	touch $@
 
 data/out/csv/building_count.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract building_count to csv file 
 	psql -q -X -c "copy (select h3, building_count from osm_object_count_grid_h3 where h3 is not null and building_count is not null and building_count > 0) to stdout with delimiter ',' csv;" > data/out/csv/building_count.csv
-	touch $@
 
 data/out/csv/highway_length.csv: db/table/osm_road_segments_h3 | data/out/csv ## extract highway_length to csv file 
 	psql -q -X -c "copy (select h3, highway_length from osm_road_segments_h3 where h3 is not null and highway_length is not null) to stdout with delimiter ',' csv;" > data/out/csv/highway_length.csv
-	touch $@
 
 data/out/csv/total_road_length.csv: db/table/total_road_length_h3 | data/out/csv ## extract total_road_length to csv file 
 	psql -q -X -c "copy (select h3, total_road_length from total_road_length_h3 where h3 is not null and total_road_length is not null) to stdout with delimiter ',' csv;" > data/out/csv/total_road_length.csv
-	touch $@
 
 data/out/csv/local_hours.csv: db/table/user_hours_h3 | data/out/csv ## extract local_hours to csv file 
 	psql -q -X -c "copy (select h3, local_hours from user_hours_h3 where h3 is not null and local_hours is not null) to stdout with delimiter ',' csv;" > data/out/csv/local_hours.csv
-	touch $@
 
 data/out/csv/total_hours.csv: db/table/user_hours_h3 | data/out/csv ## extract total_hours to csv file 
 	psql -q -X -c "copy (select h3, total_hours from user_hours_h3 where h3 is not null and total_hours is not null) to stdout with delimiter ',' csv;" > data/out/csv/total_hours.csv
-	touch $@
 
 data/out/csv/avgmax_ts.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract avgmax_ts to csv file 
 	psql -q -X -c "copy (select h3, avgmax_ts from osm_object_count_grid_h3 where h3 is not null and avgmax_ts is not null) to stdout with delimiter ',' csv;" > data/out/csv/avgmax_ts.csv
-	touch $@
 
 data/out/csv/man_distance_to_fire_brigade.csv: db/table/isodist_fire_stations_h3 | data/out/csv ## extract man_distance_to_fire_brigade to csv file 
 	psql -q -X -c "copy (select h3, man_distance as man_distance_to_fire_brigade from isodist_fire_stations_h3 where h3 is not null and man_distance is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_fire_brigade.csv
-	touch $@
 
 data/out/csv/view_count_bf2402.csv: db/table/tile_logs_bf2402 | data/out/csv ## extract view_count_bf2402 to csv file 
 	psql -q -X -c "copy (select h3, view_count_bf2402 from tile_logs_bf2402_h3 where h3 is not null and view_count_bf2402 is not null) to stdout with delimiter ',' csv;" > data/out/csv/view_count_bf2402.csv
-	touch $@
 
 data/out/csv/days_mintemp_above_25c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_mintemp_above_25c_1c to csv file 
 	psql -q -X -c "copy (select h3, days_mintemp_above_25c_1c from pf_maxtemp_h3 where h3 is not null and days_mintemp_above_25c_1c is not null) to stdout with delimiter ',' csv;" > data/out/csv/days_mintemp_above_25c_1c.csv
-	touch $@
 
 data/out/csv/total_building_count.csv: db/table/building_count_grid_h3 | data/out/csv ## extract total_building_count to csv file 
 	psql -q -X -c "copy (select h3, building_count as total_building_count from building_count_grid_h3 where h3 is not null and building_count is not null and building_count > 0) to stdout with delimiter ',' csv;" > data/out/csv/total_building_count.csv
-	touch $@
 
 data/out/csv/count_6_months.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count_6_months to csv file 
 	psql -q -X -c "copy (select h3, count_6_months from osm_object_count_grid_h3 where h3 is not null and count_6_months is not null and count_6_months > 0) to stdout with delimiter ',' csv;" > data/out/csv/count_6_months.csv
-	touch $@
 
 data/out/csv/building_count_6_months.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract building_count_6_months to csv file 
 	psql -q -X -c "copy (select h3, building_count_6_months from osm_object_count_grid_h3 where h3 is not null and building_count_6_months is not null and building_count_6_months > 0) to stdout with delimiter ',' csv;" > data/out/csv/building_count_6_months.csv
-	touch $@
 
 data/out/csv/highway_length_6_months.csv: db/table/osm_road_segments_6_months_h3 | data/out/csv ## extract highway_length_6_months to csv file 
 	psql -q -X -c "copy (select h3, highway_length_6_months from osm_road_segments_6_months_h3 where h3 is not null and highway_length_6_months is not null) to stdout with delimiter ',' csv;" > data/out/csv/highway_length_6_months.csv
-	touch $@
 
 data/out/csv/osm_users.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract osm_users to csv file 
 	psql -q -X -c "copy (select h3, osm_users from osm_object_count_grid_h3 where h3 is not null and osm_users is not null) to stdout with delimiter ',' csv;" > data/out/csv/osm_users.csv
-	touch $@
 
 data/out/csv/residential.csv: db/table/residential_pop_h3 | data/out/csv ## extract residential to csv file 
 	psql -q -X -c "copy (select h3, residential from residential_pop_h3 where h3 is not null and residential is not null) to stdout with delimiter ',' csv;" > data/out/csv/residential.csv
-	touch $@
 
 data/out/csv/gdp.csv: db/table/gdp_h3 | data/out/csv ## extract gdp to csv file 
 	psql -q -X -c "copy (select h3, gdp from gdp_h3 where h3 is not null and gdp is not null) to stdout with delimiter ',' csv;" > data/out/csv/gdp.csv
-	touch $@
 
 data/out/csv/min_ts.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract min_ts to csv file 
 	psql -q -X -c "copy (select h3, min_ts from osm_object_count_grid_h3 where h3 is not null and min_ts is not null) to stdout with delimiter ',' csv;" > data/out/csv/min_ts.csv
-	touch $@
 
 data/out/csv/max_ts.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract max_ts to csv file 
 	psql -q -X -c "copy (select h3, max_ts from osm_object_count_grid_h3 where h3 is not null and max_ts is not null) to stdout with delimiter ',' csv;" > data/out/csv/max_ts.csv
-	touch $@
 
 data/out/csv/wildfires.csv: db/table/global_fires_stat_h3 | data/out/csv ## extract wildfires to csv file 
 	psql -q -X -c "copy (select h3, wildfires from global_fires_stat_h3 where h3 is not null and wildfires is not null) to stdout with delimiter ',' csv;" > data/out/csv/wildfires.csv
-	touch $@
 
 data/out/csv/covid19_confirmed.csv: db/table/covid19_h3 | data/out/csv ## extract covid19_confirmed to csv file 
 	psql -q -X -c "copy (select h3, confirmed as covid19_confirmed from covid19_h3 where h3 is not null and confirmed is not null) to stdout with delimiter ',' csv;" > data/out/csv/covid19_confirmed.csv
-	touch $@
 
 data/out/csv/population_prev.csv: db/table/kontur_population_v5_h3 | data/out/csv ## extract population_prev to csv file 
 	psql -q -X -c "copy (select h3, population as population_prev from kontur_population_v5_h3 where h3 is not null and population is not null) to stdout with delimiter ',' csv;" > data/out/csv/population_prev.csv
-	touch $@
 
 data/out/csv/industrial_area.csv: db/table/osm_landuse_industrial_h3 | data/out/csv ## extract industrial_area to csv file 
 	psql -q -X -c "copy (select h3, industrial_area from osm_landuse_industrial_h3 where h3 is not null and industrial_area is not null) to stdout with delimiter ',' csv;" > data/out/csv/industrial_area.csv
-	touch $@
 
 data/out/csv/volcanos_count.csv: db/table/osm_volcanos_h3 | data/out/csv ## extract volcanos_count to csv file 
 	psql -q -X -c "copy (select h3, volcanos_count from osm_volcanos_h3 where h3 is not null and volcanos_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/volcanos_count.csv
-	touch $@
 
 data/out/csv/pop_under_5_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_under_5_total to csv file 
 	psql -q -X -c "copy (select h3, pop_under_5_total from us_census_tracts_stats_h3 where h3 is not null and pop_under_5_total is not null) to stdout with delimiter ',' csv;" > data/out/csv/pop_under_5_total.csv
-	touch $@
 
 data/out/csv/pop_over_65_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_over_65_total to csv file 
 	psql -q -X -c "copy (select h3, pop_over_65_total from us_census_tracts_stats_h3 where h3 is not null and pop_over_65_total is not null) to stdout with delimiter ',' csv;" > data/out/csv/pop_over_65_total.csv
-	touch $@
 
 data/out/csv/poverty_families_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract poverty_families_total to csv file 
 	psql -q -X -c "copy (select h3, poverty_families_total from us_census_tracts_stats_h3 where h3 is not null and poverty_families_total is not null) to stdout with delimiter ',' csv;" > data/out/csv/poverty_families_total.csv
-	touch $@
 
 data/out/csv/pop_disability_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_disability_total to csv file 
 	psql -q -X -c "copy (select h3, pop_disability_total from us_census_tracts_stats_h3 where h3 is not null and pop_disability_total is not null) to stdout with delimiter ',' csv;" > data/out/csv/pop_disability_total.csv
-	touch $@
 
 data/out/csv/pop_not_well_eng_speak.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_not_well_eng_speak to csv file 
 	psql -q -X -c "copy (select h3, pop_not_well_eng_speak from us_census_tracts_stats_h3 where h3 is not null and pop_not_well_eng_speak is not null) to stdout with delimiter ',' csv;" > data/out/csv/pop_not_well_eng_speak.csv
-	touch $@
 
 data/out/csv/pop_without_car.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_without_car to csv file 
 	psql -q -X -c "copy (select h3, pop_without_car from us_census_tracts_stats_h3 where h3 is not null and pop_without_car is not null) to stdout with delimiter ',' csv;" > data/out/csv/pop_without_car.csv
-	touch $@
 
 data/out/csv/man_distance_to_hospital.csv: db/table/isodist_hospitals_h3 | data/out/csv ## extract man_distance_to_hospital to csv file 
 	psql -q -X -c "copy (select h3, man_distance as man_distance_to_hospital from isodist_hospitals_h3 where h3 is not null and man_distance is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_hospital.csv
-	touch $@
 
 data/out/csv/man_distance_to_bomb_shelters.csv: db/table/isodist_bomb_shelters_h3 | data/out/csv ## extract man_distance_to_bomb_shelters to csv file 
 	psql -q -X -c "copy (select h3, man_distance as man_distance_to_bomb_shelters from isodist_bomb_shelters_h3 where h3 is not null and man_distance is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_bomb_shelters.csv
-	touch $@
 
 data/out/csv/man_distance_to_charging_stations.csv: db/table/isodist_charging_stations_h3 | data/out/csv ## extract man_distance_to_charging_stations to csv file 
 	psql -q -X -c "copy (select h3, man_distance as man_distance_to_charging_stations from isodist_charging_stations_h3 where h3 is not null and man_distance is not null) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_charging_stations.csv
-	touch $@
 
 data/out/csv/foursquare_places_count.csv: db/table/foursquare_places_h3 | data/out/csv ## extract foursquare_places_count to csv file 
 	psql -q -X -c "copy (select h3, foursquare_places_count from foursquare_places_h3 where h3 is not null and foursquare_places_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/foursquare_places_count.csv
-	touch $@
 
 data/out/csv/foursquare_visits_count.csv: db/table/foursquare_visits_h3 | data/out/csv ## extract foursquare_visits_count to csv file 
 	psql -q -X -c "copy (select h3, foursquare_visits_count from foursquare_visits_h3 where h3 is not null and foursquare_visits_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/foursquare_visits_count.csv
-	touch $@
 
 data/out/csv/eatery_count.csv: db/table/osm_places_eatery_h3 | data/out/csv ## extract eatery_count to csv file 
 	psql -q -X -c "copy (select h3, eatery_count from osm_places_eatery_h3 where h3 is not null and eatery_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/eatery_count.csv
-	touch $@
 
 data/out/csv/food_shops_count.csv: db/table/osm_places_food_shops_h3 | data/out/csv ## extract food_shops_count to csv file 
 	psql -q -X -c "copy (select h3, food_shops_count from osm_places_food_shops_h3 where h3 is not null and food_shops_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/food_shops_count.csv
-	touch $@
 
 data/out/csv/waste_basket_coverage_area_km2.csv: db/table/waste_containers_h3 | data/out/csv ## extract waste_basket_coverage_area_km2 to csv file 
 	psql -q -X -c "copy (select h3, (ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0) * waste_basket_coverage / (49.0 * POWER(7, 8 - resolution)) as waste_basket_coverage_area_km2 from waste_containers_h3 where h3 is not null and waste_basket_coverage is not null) to stdout with delimiter ',' csv;" > data/out/csv/waste_basket_coverage_area_km2.csv
-	touch $@
 
 data/out/csv/solar_farms_placement_suitability.csv: db/table/solar_farms_placement_suitability_synthetic_h3 | data/out/csv ## extract solar_farms_placement_suitability to csv file 
 	psql -q -X -c "copy (select h3, solar_farms_placement_suitability from solar_farms_placement_suitability_synthetic_h3 where h3 is not null and solar_farms_placement_suitability is not null) to stdout with delimiter ',' csv;" > data/out/csv/solar_farms_placement_suitability.csv
-	touch $@
 
 data/out/csv/mapswipe_area_km2.csv: db/table/mapswipe_hot_tasking_data_h3 | data/out/csv ## extract mapswipe_area_km2 to csv file 
 	psql -q -X -c "copy (select h3, mapswipe_area as mapswipe_area_km2 from mapswipe_hot_tasking_data_h3 where h3 is not null and mapswipe_area is not null) to stdout with delimiter ',' csv;" > data/out/csv/mapswipe_area_km2.csv
-	touch $@
 
 data/out/csv/avg_slope_gebco_2022.csv: db/table/gebco_2022_h3 | data/out/csv ## extract avg_slope_gebco_2022 to csv file 
 	psql -q -X -c "copy (select h3, avg_slope_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_slope_gebco_2022 is not null) to stdout with delimiter ',' csv;" > data/out/csv/avg_slope_gebco_2022.csv
-	touch $@
 
 data/out/csv/avg_elevation_gebco_2022.csv: db/table/gebco_2022_h3 | data/out/csv ## extract avg_elevation_gebco_2022 to csv file 
 	psql -q -X -c "copy (select h3, avg_elevation_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_elevation_gebco_2022 is not null) to stdout with delimiter ',' csv;" > data/out/csv/avg_elevation_gebco_2022.csv
-	touch $@
 
 data/out/csv/forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract forest to csv file 
 	psql -q -X -c "copy (select h3, forest_area as forest from copernicus_landcover_h3 where h3 is not null and forest_area is not null) to stdout with delimiter ',' csv;" > data/out/csv/forest.csv
-	touch $@
 
 data/out/csv/evergreen_needle_leaved_forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract evergreen_needle_leaved_forest to csv file 
 	psql -q -X -c "copy (select h3, evergreen_needle_leaved_forest from copernicus_landcover_h3 where h3 is not null and evergreen_needle_leaved_forest is not null) to stdout with delimiter ',' csv;" > data/out/csv/evergreen_needle_leaved_forest.csv
-	touch $@
 
 data/out/csv/shrubs.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract shrubs to csv file 
 	psql -q -X -c "copy (select h3, shrubs from copernicus_landcover_h3 where h3 is not null and shrubs is not null) to stdout with delimiter ',' csv;" > data/out/csv/shrubs.csv
-	touch $@
 
 data/out/csv/herbage.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract herbage to csv file 
 	psql -q -X -c "copy (select h3, herbage from copernicus_landcover_h3 where h3 is not null and herbage is not null) to stdout with delimiter ',' csv;" > data/out/csv/herbage.csv
-	touch $@
 
 data/out/csv/unknown_forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract unknown_forest to csv file 
 	psql -q -X -c "copy (select h3, unknown_forest from copernicus_landcover_h3 where h3 is not null and unknown_forest is not null) to stdout with delimiter ',' csv;" > data/out/csv/unknown_forest.csv
-	touch $@
 
 data/out/csv/avg_ndvi.csv: db/table/ndvi_2019_06_10_h3 | data/out/csv ## extract avg_ndvi to csv file 
 	psql -q -X -c "copy (select h3, avg_ndvi from ndvi_2019_06_10_h3 where h3 is not null and avg_ndvi is not null) to stdout with delimiter ',' csv;" > data/out/csv/avg_ndvi.csv
-	touch $@
 
 data/out/csv/days_maxtemp_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxtemp_over_32c_1c to csv file 
 	psql -q -X -c "copy (select h3, days_maxtemp_over_32c_1c from pf_maxtemp_h3 where h3 is not null and days_maxtemp_over_32c_1c is not null) to stdout with delimiter ',' csv;" > data/out/csv/days_maxtemp_over_32c_1c.csv
-	touch $@
 
 data/out/csv/days_maxtemp_over_32c_2c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxtemp_over_32c_2c to csv file 
 	psql -q -X -c "copy (select h3, days_maxtemp_over_32c_2c from pf_maxtemp_h3 where h3 is not null and days_maxtemp_over_32c_2c is not null) to stdout with delimiter ',' csv;" > data/out/csv/days_maxtemp_over_32c_2c.csv
-	touch $@
 
 data/out/csv/days_mintemp_above_25c_2c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_mintemp_above_25c_2c to csv file 
 	psql -q -X -c "copy (select h3, days_mintemp_above_25c_2c from pf_maxtemp_h3 where h3 is not null and days_mintemp_above_25c_2c is not null) to stdout with delimiter ',' csv;" > data/out/csv/days_mintemp_above_25c_2c.csv
-	touch $@
 
 data/out/csv/days_maxwetbulb_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxwetbulb_over_32c_1c to csv file 
 	psql -q -X -c "copy (select h3, days_maxwetbulb_over_32c_1c from pf_maxtemp_h3 where h3 is not null and days_maxwetbulb_over_32c_1c is not null) to stdout with delimiter ',' csv;" > data/out/csv/days_maxwetbulb_over_32c_1c.csv
-	touch $@
 
 data/out/csv/days_maxwetbulb_over_32c_2c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxwetbulb_over_32c_2c to csv file 
 	psql -q -X -c "copy (select h3, days_maxwetbulb_over_32c_2c from pf_maxtemp_h3 where h3 is not null and days_maxwetbulb_over_32c_2c is not null) to stdout with delimiter ',' csv;" > data/out/csv/days_maxwetbulb_over_32c_2c.csv
-	touch $@
 
 data/out/csv/mandays_maxtemp_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract mandays_maxtemp_over_32c_1c to csv file 
 	psql -q -X -c "copy (select h3, mandays_maxtemp_over_32c_1c from pf_maxtemp_h3 where h3 is not null and mandays_maxtemp_over_32c_1c is not null) to stdout with delimiter ',' csv;" > data/out/csv/mandays_maxtemp_over_32c_1c.csv
-	touch $@
 
 data/out/csv/hazardous_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract hazardous_days_count to csv file 
 	psql -q -X -c "copy (select h3, hazardous_days_count from disaster_event_episodes_h3 where h3 is not null and hazardous_days_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/hazardous_days_count.csv
-	touch $@
 
 data/out/csv/earthquake_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract earthquake_days_count to csv file 
 	psql -q -X -c "copy (select h3, earthquake_days_count from disaster_event_episodes_h3 where h3 is not null and earthquake_days_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/earthquake_days_count.csv
-	touch $@
 
 data/out/csv/wildfire_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract wildfire_days_count to csv file 
 	psql -q -X -c "copy (select h3, wildfire_days_count from disaster_event_episodes_h3 where h3 is not null and wildfire_days_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/wildfire_days_count.csv
-	touch $@
 
 data/out/csv/drought_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract drought_days_count to csv file 
 	psql -q -X -c "copy (select h3, drought_days_count from disaster_event_episodes_h3 where h3 is not null and drought_days_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/drought_days_count.csv
-	touch $@
 
 data/out/csv/cyclone_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract cyclone_days_count to csv file 
 	psql -q -X -c "copy (select h3, cyclone_days_count from disaster_event_episodes_h3 where h3 is not null and cyclone_days_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/cyclone_days_count.csv
-	touch $@
 
 data/out/csv/volcano_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract volcano_days_count to csv file 
 	psql -q -X -c "copy (select h3, volcano_days_count from disaster_event_episodes_h3 where h3 is not null and volcano_days_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/volcano_days_count.csv
-	touch $@
 
 data/out/csv/flood_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract flood_days_count to csv file 
 	psql -q -X -c "copy (select h3, flood_days_count from disaster_event_episodes_h3 where h3 is not null and flood_days_count is not null) to stdout with delimiter ',' csv;" > data/out/csv/flood_days_count.csv
-	touch $@
 
 data/out/csv/powerlines.csv: db/table/facebook_medium_voltage_distribution_h3 | data/out/csv ## extract powerlines to csv file 
 	psql -q -X -c "copy (select h3, powerlines from facebook_medium_voltage_distribution_h3 where h3 is not null and powerlines is not null) to stdout with delimiter ',' csv;" > data/out/csv/powerlines.csv
-	touch $@
 
 data/out/csv/night_lights_intensity.csv: db/table/night_lights_h3 | data/out/csv ## extract night_lights_intensity to csv file 
 	psql -q -X -c "copy (select h3, intensity as night_lights_intensity from night_lights_h3 where h3 is not null and intensity is not null) to stdout with delimiter ',' csv;" > data/out/csv/night_lights_intensity.csv
-	touch $@
 
 data/out/csv/gsa_ghi.csv: db/table/global_solar_atlas_h3 | data/out/csv ## extract gsa_ghi to csv file 
 	psql -q -X -c "copy (select h3, gsa_ghi from global_solar_atlas_h3 where h3 is not null and gsa_ghi is not null) to stdout with delimiter ',' csv;" > data/out/csv/gsa_ghi.csv
-	touch $@
 
 data/out/csv/worldclim_avg_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_avg_temperature to csv file 
 	psql -q -X -c "copy (select h3, worldclim_avg_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_avg_temperature is not null) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_avg_temperature.csv
-	touch $@
 
 data/out/csv/worldclim_min_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_min_temperature to csv file 
 	psql -q -X -c "copy (select h3, worldclim_min_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_min_temperature is not null) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_min_temperature.csv
-	touch $@
 
 data/out/csv/worldclim_max_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_max_temperature to csv file 
 	psql -q -X -c "copy (select h3, worldclim_max_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_max_temperature is not null) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_max_temperature.csv
-	touch $@
 
 data/out/csv/worldclim_amp_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_amp_temperature to csv file 
 	psql -q -X -c "copy (select h3, worldclim_amp_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_amp_temperature is not null) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_amp_temperature.csv
-	touch $@
 
 data/out/csv/powerlines_proximity_m.csv: db/table/proximities_h3 | data/out/csv ## extract powerlines_proximity_m to csv file 
 	psql -q -X -c "copy (select h3, powerlines_proximity_m from proximities_h3 where h3 is not null and powerlines_proximity_m is not null) to stdout with delimiter ',' csv;" > data/out/csv/powerlines_proximity_m.csv
-	touch $@
 
 data/out/csv/populated_areas_proximity_m.csv: db/table/proximities_h3 | data/out/csv ## extract populated_areas_proximity_m to csv file 
 	psql -q -X -c "copy (select h3, populated_areas_proximity_m from proximities_h3 where h3 is not null and populated_areas_proximity_m is not null) to stdout with delimiter ',' csv;" > data/out/csv/populated_areas_proximity_m.csv
-	touch $@
 
 data/out/csv/power_substations_proximity_m.csv: db/table/proximities_h3 | data/out/csv ## extract power_substations_proximity_m to csv file 
 	psql -q -X -c "copy (select h3, power_substations_proximity_m from proximities_h3 where h3 is not null and power_substations_proximity_m is not null) to stdout with delimiter ',' csv;" > data/out/csv/power_substations_proximity_m.csv
-	touch $@
 
 data/out/csv/solar_power_plants.csv: db/table/existing_solar_power_panels_h3 | data/out/csv ## extract solar_power_plants to csv file 
 	psql -q -X -c "copy (select h3, solar_power_plants from existing_solar_power_panels_h3 where h3 is not null and solar_power_plants is not null) to stdout with delimiter ',' csv;" > data/out/csv/solar_power_plants.csv
-	touch $@
 
 data/out/csv/safety_index.csv: db/table/safety_index_h3 | data/out/csv ## extract safety_index to csv file 
 	psql -q -X -c "copy (select h3, safety_index from safety_index_h3 where h3 is not null and safety_index is not null) to stdout with delimiter ',' csv;" > data/out/csv/safety_index.csv
-	touch $@
 
 data/out/csv/population.csv: db/table/kontur_population_h3 | data/out/csv ## extract population to csv file 
 	psql -q -X -c "copy (select h3, population from kontur_population_h3 where h3 is not null and population is not null) to stdout with delimiter ',' csv;" > data/out/csv/population.csv
-	touch $@
 
 data/out/csv/avg_forest_canopy_height.csv: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract avg_forest_canopy_height to csv file 
 	psql -q -X -c "copy (select h3, avg_forest_canopy_height as avg_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and avg_forest_canopy_height is not null) to stdout with delimiter ',' csv;" > $@
@@ -3381,12 +3313,12 @@ deploy_indicators/dev/uploads/hazardous_days_count_upload: data/out/csv/hazardou
 
 deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/dev/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false false "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "" "World" "daily" "other" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "" "World" "daily" "other" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/dev/uploads ## upload man_distance_to_fire_brigade to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_fire_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_fire_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/dev/uploads ## upload food_shops_count to insight-api
@@ -3491,7 +3423,7 @@ deploy_indicators/dev/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicato
 
 deploy_indicators/dev/uploads/population_prev_upload: data/out/csv/population_prev.csv | deploy_indicators/dev/uploads ## upload population_prev to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population_prev.csv "population_prev" "[[\"unimportant\"], [\"important\"]]" false false "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to previous version of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data." "World" "daily" "ppl" "$(date -r db/table/kontur_population_v5_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population_prev.csv "population_prev" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to previous version of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data." "World" "daily" "ppl" "$(date -r db/table/kontur_population_v5_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/dev/uploads ## upload total_building_count to insight-api
@@ -3501,7 +3433,7 @@ deploy_indicators/dev/uploads/total_building_count_upload: data/out/csv/total_bu
 
 deploy_indicators/dev/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/dev/uploads ## upload wildfires to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfires.csv "wildfires" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false false "[\"© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002\", \"NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML\"]" "Number of days per year when a thermal anomaly was recorded in the last 13 months." "World" "daily" "days" "$(date -r db/table/global_fires_stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfires.csv "wildfires" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002\", \"NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML\"]" "Number of days per year when a thermal anomaly was recorded in the last 13 months." "World" "daily" "days" "$(date -r db/table/global_fires_stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/dev/uploads ## upload earthquake_days_count to insight-api
@@ -3626,17 +3558,17 @@ deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/d
 
 deploy_indicators/dev/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/dev/uploads ## upload man_distance_to_hospital to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_hospitals_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_hospitals_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/dev/uploads ## upload man_distance_to_bomb_shelters to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_bomb_shelters_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_bomb_shelters_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/dev/uploads ## upload man_distance_to_charging_stations to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_charging_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_charging_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/dev/uploads ## upload total_road_length to insight-api
@@ -3651,7 +3583,7 @@ deploy_indicators/dev/uploads/view_count_bf2402_upload: data/out/csv/view_count_
 
 deploy_indicators/dev/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/dev/uploads ## upload powerlines to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines.csv "powerlines" "[[\"bad\"], [\"good\"]]" false false "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines.csv "powerlines" "[[\"bad\"], [\"good\"]]" false true "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/dev/uploads ## upload eatery_count to insight-api
@@ -3721,7 +3653,7 @@ deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload: data/out
 
 deploy_indicators/dev/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/dev/uploads ## upload residential to insight-api
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/residential.csv "residential" "[[\"unimportant\"], [\"important\"]]" false false "[\"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\"]" "Estimation of residential population percentage according to GHS-POP dataset (2015)" "World" "static" "fract" "$(date -r db/table/residential_pop_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/residential.csv "residential" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\"]" "Estimation of residential population percentage according to GHS-POP dataset (2015)" "World" "static" "fract" "$(date -r db/table/residential_pop_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/dev/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/dev/uploads ## upload solar_power_plants to insight-api
@@ -4190,12 +4122,12 @@ deploy_indicators/test/uploads/hazardous_days_count_upload: data/out/csv/hazardo
 
 deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/test/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false false "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "" "World" "daily" "other" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "" "World" "daily" "other" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/test/uploads ## upload man_distance_to_fire_brigade to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_fire_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_fire_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/test/uploads ## upload food_shops_count to insight-api
@@ -4300,7 +4232,7 @@ deploy_indicators/test/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicat
 
 deploy_indicators/test/uploads/population_prev_upload: data/out/csv/population_prev.csv | deploy_indicators/test/uploads ## upload population_prev to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population_prev.csv "population_prev" "[[\"unimportant\"], [\"important\"]]" false false "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to previous version of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data." "World" "daily" "ppl" "$(date -r db/table/kontur_population_v5_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population_prev.csv "population_prev" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to previous version of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data." "World" "daily" "ppl" "$(date -r db/table/kontur_population_v5_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/test/uploads ## upload total_building_count to insight-api
@@ -4310,7 +4242,7 @@ deploy_indicators/test/uploads/total_building_count_upload: data/out/csv/total_b
 
 deploy_indicators/test/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/test/uploads ## upload wildfires to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfires.csv "wildfires" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false false "[\"© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002\", \"NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML\"]" "Number of days per year when a thermal anomaly was recorded in the last 13 months." "World" "daily" "days" "$(date -r db/table/global_fires_stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfires.csv "wildfires" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002\", \"NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML\"]" "Number of days per year when a thermal anomaly was recorded in the last 13 months." "World" "daily" "days" "$(date -r db/table/global_fires_stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/test/uploads ## upload earthquake_days_count to insight-api
@@ -4435,17 +4367,17 @@ deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/
 
 deploy_indicators/test/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/test/uploads ## upload man_distance_to_hospital to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_hospitals_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_hospitals_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/test/uploads ## upload man_distance_to_bomb_shelters to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_bomb_shelters_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_bomb_shelters_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/test/uploads ## upload man_distance_to_charging_stations to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_charging_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_charging_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/test/uploads ## upload total_road_length to insight-api
@@ -4460,7 +4392,7 @@ deploy_indicators/test/uploads/view_count_bf2402_upload: data/out/csv/view_count
 
 deploy_indicators/test/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/test/uploads ## upload powerlines to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines.csv "powerlines" "[[\"bad\"], [\"good\"]]" false false "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines.csv "powerlines" "[[\"bad\"], [\"good\"]]" false true "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/test/uploads ## upload eatery_count to insight-api
@@ -4530,7 +4462,7 @@ deploy_indicators/test/uploads/solar_farms_placement_suitability_upload: data/ou
 
 deploy_indicators/test/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/test/uploads ## upload residential to insight-api
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/residential.csv "residential" "[[\"unimportant\"], [\"important\"]]" false false "[\"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\"]" "Estimation of residential population percentage according to GHS-POP dataset (2015)" "World" "static" "fract" "$(date -r db/table/residential_pop_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/residential.csv "residential" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\"]" "Estimation of residential population percentage according to GHS-POP dataset (2015)" "World" "static" "fract" "$(date -r db/table/residential_pop_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/test/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/test/uploads ## upload solar_power_plants to insight-api
@@ -5003,12 +4935,12 @@ deploy_indicators/prod/uploads/hazardous_days_count_upload: data/out/csv/hazardo
 
 deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false false "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "" "World" "daily" "other" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "" "World" "daily" "other" "$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/prod/uploads ## upload man_distance_to_fire_brigade to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_fire_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_fire_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/prod/uploads ## upload food_shops_count to insight-api
@@ -5113,7 +5045,7 @@ deploy_indicators/prod/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicat
 
 deploy_indicators/prod/uploads/population_prev_upload: data/out/csv/population_prev.csv | deploy_indicators/prod/uploads ## upload population_prev to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population_prev.csv "population_prev" "[[\"unimportant\"], [\"important\"]]" false false "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to previous version of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data." "World" "daily" "ppl" "$(date -r db/table/kontur_population_v5_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population_prev.csv "population_prev" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to previous version of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data." "World" "daily" "ppl" "$(date -r db/table/kontur_population_v5_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/prod/uploads ## upload total_building_count to insight-api
@@ -5123,7 +5055,7 @@ deploy_indicators/prod/uploads/total_building_count_upload: data/out/csv/total_b
 
 deploy_indicators/prod/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/prod/uploads ## upload wildfires to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfires.csv "wildfires" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false false "[\"© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002\", \"NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML\"]" "Number of days per year when a thermal anomaly was recorded in the last 13 months." "World" "daily" "days" "$(date -r db/table/global_fires_stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfires.csv "wildfires" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002\", \"NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML\"]" "Number of days per year when a thermal anomaly was recorded in the last 13 months." "World" "daily" "days" "$(date -r db/table/global_fires_stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/prod/uploads ## upload earthquake_days_count to insight-api
@@ -5248,17 +5180,17 @@ deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/
 
 deploy_indicators/prod/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/prod/uploads ## upload man_distance_to_hospital to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_hospitals_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_hospitals_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/prod/uploads ## upload man_distance_to_bomb_shelters to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_bomb_shelters_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_bomb_shelters_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/prod/uploads ## upload man_distance_to_charging_stations to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" "[[\"good\"], [\"bad\"]]" false false "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_charging_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "other" "$(date -r db/table/isodist_charging_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/prod/uploads ## upload total_road_length to insight-api
@@ -5273,7 +5205,7 @@ deploy_indicators/prod/uploads/view_count_bf2402_upload: data/out/csv/view_count
 
 deploy_indicators/prod/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/prod/uploads ## upload powerlines to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines.csv "powerlines" "[[\"bad\"], [\"good\"]]" false false "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines.csv "powerlines" "[[\"bad\"], [\"good\"]]" false true "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/prod/uploads ## upload eatery_count to insight-api
@@ -5343,7 +5275,7 @@ deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload: data/ou
 
 deploy_indicators/prod/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/prod/uploads ## upload residential to insight-api
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/residential.csv "residential" "[[\"unimportant\"], [\"important\"]]" false false "[\"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\"]" "Estimation of residential population percentage according to GHS-POP dataset (2015)" "World" "static" "fract" "$(date -r db/table/residential_pop_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/residential.csv "residential" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\"]" "Estimation of residential population percentage according to GHS-POP dataset (2015)" "World" "static" "fract" "$(date -r db/table/residential_pop_h3 +'%Y-%m-%dT%H:%M:%SZ')"
 	touch $@
 
 deploy_indicators/prod/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/prod/uploads ## upload solar_power_plants to insight-api

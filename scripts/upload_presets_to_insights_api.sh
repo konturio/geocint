@@ -29,13 +29,13 @@ x_denominator_id="$3"
 y_numerator_id="$4"
 y_denominator_id="$5"
 
-x_numerator_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$2' order by last_updated asc limit 1;" | xargs)
+x_numerator_uuid=$(bash scripts/update_indicators_list.sh $1 | jq -c '.[]' | jq -c 'select( .id == "'$2'" )' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
 
-x_denominator_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$3' order by last_updated asc limit 1;" | xargs)
+x_denominator_uuid=$(bash scripts/update_indicators_list.sh $1 | jq -c '.[]' | jq -c 'select( .id == "'$3'" )' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
 
-y_numerator_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$4' order by last_updated asc limit 1;" | xargs)
+y_numerator_uuid=$(bash scripts/update_indicators_list.sh $1 | jq -c '.[]' | jq -c 'select( .id == "'$4'" )' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
 
-y_denominator_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$5' order by last_updated asc limit 1;" | xargs)
+y_denominator_uuid=$(bash scripts/update_indicators_list.sh $1 | jq -c '.[]' | jq -c 'select( .id == "'$5'" )' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
 
 parameters_json=$(psql -Xqtc "select row_to_json(row)
                                    from (select ord,

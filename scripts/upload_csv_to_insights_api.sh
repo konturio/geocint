@@ -49,7 +49,7 @@ layer_emoji="\"$(psql -Xqtc "select emoji from bivariate_indicators where param_
 
 layer_last_updated="\"${12}\""
 
-existed_uuid=$(psql -Xqtc "select uuid from (select jsonb_array_elements(j) ->> 'id' as id, jsonb_array_elements(j) ->> 'uuid' as uuid, jsonb_array_elements(j) ->> 'lastUpdated' as last_updated from insights_api_indicators_list_$1) a where id = '$3' order by last_updated asc limit 1;" | xargs)
+existed_uuid=$(bash scripts/update_indicators_list.sh $1 | jq -c '.[]' | jq -c 'select( .id == "'$3'" )' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
 
 if [[ -z $existed_uuid ]]; then
   action="upload"

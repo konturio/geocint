@@ -527,6 +527,12 @@ values ('osm_entertainment_venues_count', 'Entertainment venues count', jsonb_bu
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('osm_cultural_and_comunity_centers_count', 'Cultural and community centers count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of cultural and community centers in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🫂');
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('worldbank_inflation', 'Price inflation rate', jsonb_build_array(
+        'Ha, Jongrim, M. Ayhan Kose, and Franziska Ohnsorge (2023). One-Stop Source: A Global Database of Inflation. Journal of International Money and Finance 137 (October): 102896'),
+        '[["good"], ["bad"]]'::jsonb, 'Inflation, measured by the Consumer Price Index (CPI), is the annual change in prices of a typical basket of goods and services purchased by households. Data are drawn from multiple databases: OECD.Stat, the IMF World Economic Outlook database and International Financial Statistics, ILOSTAT, UNdata and country-specific sources including central banks and statistical offices.', 'World', 'static', 'perc', TRUE, '💸');
+
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

@@ -1,0 +1,204 @@
+code,hasc,country,imf_country_code,year,inflation
+abw,AW,Aruba,314,2023,3.4
+afg,AF,Afghanistan,512,2022,10.6
+ago,AO,Angola,614,2023,13.6
+alb,AL,Albania,914,2023,5.6
+are,AE,United Arab Emirates,466,2023,1.6
+arg,AR,Argentina,213,2023,128.4
+arm,AM,Armenia,911,2023,2.0
+atg,AG,Antigua and Barbuda,311,2023,5.1
+aus,AU,Australia,193,2023,5.6
+aut,AT,Austria,122,2023,7.8
+aze,AZ,Azerbaijan,912,2023,8.8
+bdi,BI,Burundi,618,2023,26.9
+bel,BE,Belgium,124,2023,4.0
+ben,BJ,Benin,638,2023,4.4
+bfa,BF,Burkina Faso,748,2023,0.7
+bgd,BD,Bangladesh,513,2023,9.8
+bgr,BG,Bulgaria,918,2023,9.4
+bhr,BH,Bahrain,419,2023,0.2
+bhs,BS,Bahamas,313,2023,3.4
+bih,BA,Bosnia and Herzegovina,963,2023,6.1
+blr,BY,Belarus,913,2023,5.0
+blz,BZ,Belize,339,2023,4.5
+bol,BO,Bolivia (Plurinational State of),218,2023,2.6
+bra,BR,Brazil,223,2023,4.6
+brb,BB,Barbados,316,2023,11.0
+brn,BN,Brunei Darussalam,516,2023,0.4
+btn,BT,Bhutan,514,2023,4.0
+bwa,BW,Botswana,616,2023,5.1
+caf,CF,Central African Republic,626,2023,3.0
+can,CA,Canada,156,2023,3.9
+che,CH,Switzerland,146,2023,2.1
+chl,CL,Chile,228,2023,7.6
+chn,CN,China,924,2023,0.2
+civ,CI,Côte d'Ivoire,662,2023,4.4
+cmr,CM,Cameroon,622,2023,7.4
+cod,CD,Democratic Republic of the Congo,636,2023,19.9
+cog,CG,Congo,634,2023,4.3
+col,CO,Colombia,233,2023,11.7
+com,KM,Comoros,632,2023,8.5
+cpv,CV,Cabo Verde,624,2023,4.5
+cri,CR,Costa Rica,238,2023,0.5
+cuw,CW,Curaçao,354,2019,2.6
+cym,KY,Cayman Islands,136,2022,8.2
+cyp,CY,Cyprus,423,2023,3.5
+cze,CZ,Czechia,935,2023,10.7
+deu,DE,Germany,134,2023,5.9
+dji,DJ,Djibouti,611,2023,1.8
+dma,DM,Dominica,321,2023,4.1
+dnk,DK,Denmark,128,2023,3.3
+dom,DO,Dominican Republic,243,2023,4.8
+dza,DZ,Algeria,612,2023,9.3
+ecu,EC,Ecuador,248,2023,2.2
+egy,EG,Egypt,469,2023,33.9
+eri,ER,Eritrea,643,2023,9.2
+esp,ES,Spain,184,2023,3.5
+est,EE,Estonia,939,2023,9.5
+eth,ET,Ethiopia,644,2023,32.3
+fin,FI,Finland,172,2023,6.3
+fji,FJ,Fiji,819,2023,1.4
+fra,FR,France,132,2023,4.9
+fsm,FM,Micronesia (Federated States of),868,2023,6.2
+gab,GA,Gabon,646,2023,3.6
+gbr,GB,United Kingdom,112,2023,6.8
+geo,GE,Georgia,915,2023,2.5
+gha,GH,Ghana,652,2023,38.1
+gin,GN,Guinea,656,2023,7.8
+gmb,GM,Gambia,648,2023,17.0
+gnb,GW,Guinea-Bissau,654,2023,10.1
+gnq,GQ,Equatorial Guinea,642,2023,4.3
+grc,GR,Greece,174,2023,3.5
+grd,GD,Grenada,328,2023,2.9
+gtm,GT,Guatemala,258,2023,6.3
+guy,GY,Guyana,336,2023,2.8
+hkg,HK,"China, Hong Kong Special Administrative Region",532,2023,1.9
+hnd,HN,Honduras,268,2023,6.7
+hrv,HR,Croatia,960,2023,7.9
+hti,HT,Haiti,263,2023,43.6
+hun,HU,Hungary,944,2023,17.1
+idn,ID,Indonesia,536,2023,3.7
+ind,IN,India,534,2023,5.6
+irl,IE,Ireland,178,2023,6.3
+irn,IR,Iran (Islamic Republic of),429,2023,44.6
+irq,IQ,Iraq,433,2023,4.5
+isl,IS,Iceland,176,2023,8.7
+isr,IL,Israel,436,2023,4.2
+ita,IT,Italy,136,2023,5.6
+jam,JM,Jamaica,343,2023,6.6
+jor,JO,Jordan,439,2023,2.1
+jpn,JP,Japan,158,2023,3.3
+kaz,KZ,Kazakhstan,916,2023,14.7
+ken,KE,Kenya,664,2023,7.7
+kgz,KG,Kyrgyzstan,917,2023,10.8
+khm,KH,Cambodia,522,2023,2.1
+kir,KI,Kiribati,826,2023,9.3
+kna,KN,Saint Kitts and Nevis,361,2023,4.0
+kor,KR,Republic of Korea,542,2023,3.6
+kwt,KW,Kuwait,443,2023,3.6
+lao,LA,Lao People's Democratic Republic,544,2023,31.2
+lbn,LB,Lebanon,446,2023,221.3
+lbr,LR,Liberia,668,2023,2.6
+lby,LY,Libya,672,2023,2.6
+lca,LC,Saint Lucia,362,2023,3.7
+lie,LI,Liechtenstein,423,2023,6.4
+lka,LK,Sri Lanka,524,2023,16.5
+lso,LS,Lesotho,666,2023,6.3
+ltu,LT,Lithuania,946,2023,9.1
+lux,LU,Luxembourg,137,2023,3.7
+lva,LV,Latvia,941,2023,8.9
+mac,MO,"China, Macao Special Administrative Region",546,2023,0.9
+mar,MA,Morocco,686,2023,6.1
+mda,MD,Republic of Moldova,921,2023,16.8
+mdg,MG,Madagascar,674,2023,9.9
+mdv,MV,Maldives,556,2023,3.2
+mex,MX,Mexico,273,2023,5.5
+mhl,MH,Marshall Islands,867,2023,6.8
+mkd,MK,North Macedonia,962,2023,9.4
+mli,ML,Mali,678,2023,2.1
+mlt,MT,Malta,181,2023,5.1
+mmr,MM,Myanmar,518,2023,27.1
+mne,ME,Montenegro,943,2023,8.6
+mng,MN,Mongolia,948,2023,10.3
+moz,MZ,Mozambique,688,2023,7.1
+mrt,MR,Mauritania,682,2023,4.9
+msr,MS,Montserrat,664,2022,7.7
+mtq,MQ,Martinique,474,2022,29.1
+mus,MU,Mauritius,684,2023,7.1
+mwi,MW,Malawi,676,2023,28.8
+mys,MY,Malaysia,548,2023,2.8
+nam,NA,Namibia,728,2023,5.9
+ncl,NC,New Caledonia,687,2023,1.7
+ner,NE,Niger,692,2023,3.7
+nga,NG,Nigeria,694,2023,23.3
+nic,NI,Nicaragua,278,2023,9.3
+niu,NU,Niue,570,2023,8.6
+nld,NL,Netherlands,138,2023,3.8
+nor,NO,Norway,142,2023,5.5
+npl,NP,Nepal,558,2023,7.1
+nru,NR,Nauru,836,2023,6.2
+nzl,NZ,New Zealand,196,2023,5.7
+omn,OM,Oman,449,2023,0.9
+pak,PK,Pakistan,564,2023,30.8
+pan,PA,Panama,283,2023,1.5
+per,PE,Peru,293,2023,6.5
+phl,PH,Philippines,566,2023,6.0
+plw,PW,Palau,565,2023,12.7
+png,PG,Papua New Guinea,853,2023,1.5
+pol,PL,Poland,964,2023,11.5
+pri,PR,Puerto Rico,359,2023,0.0
+prt,PT,Portugal,182,2023,4.3
+pry,PY,Paraguay,288,2023,4.6
+pse,PS,State of Palestine,488,2023,5.9
+qat,QA,Qatar,453,2023,3.0
+rou,RO,Romania,968,2023,10.4
+rus,RU,Russian Federation,922,2023,5.9
+rwa,RW,Rwanda,714,2023,19.8
+sau,SA,Saudi Arabia,456,2023,2.3
+sdn,SD,Sudan,732,2023,171.5
+sen,SN,Senegal,722,2023,7.7
+sgp,SG,Singapore,576,2023,4.8
+shn,SH,Saint Helena,654,2023,2.6
+slb,SB,Solomon Islands,813,2023,4.5
+sle,SL,Sierra Leone,724,2023,47.6
+slv,SV,El Salvador,253,2023,4.0
+smr,SM,San Marino,135,2023,6.1
+srb,RS,Serbia,942,2023,12.4
+ssd,SS,South Sudan,733,2023,2.4
+stp,ST,Sao Tome and Principe,716,2023,23.9
+sur,SR,Suriname,366,2023,57.6
+svk,SK,Slovakia,936,2023,10.5
+svn,SI,Slovenia,961,2023,7.4
+swe,SE,Sweden,144,2023,8.5
+swz,SZ,Eswatini,734,2023,4.9
+syc,SC,Seychelles,718,2023,-1.0
+syr,SY,Syrian Arab Republic,463,2016,25.0
+tca,TC,Turks and Caicos Islands,796,2020,2.3
+tcd,TD,Chad,628,2023,10.1
+tgo,TG,Togo,742,2023,5.1
+tha,TH,Thailand,578,2023,3.9
+tjk,TJ,Tajikistan,923,2023,3.5
+tkm,TM,Turkmenistan,925,2023,-1.7
+tls,TL,Timor-Leste,537,2023,8.4
+ton,TO,Tonga,866,2023,6.6
+tto,TT,Trinidad and Tobago,369,2023,5.9
+tun,TN,Tunisia,744,2023,9.3
+tur,TR,Türkiye,186,2023,53.9
+tuv,TV,Tuvalu,869,2023,6.2
+tza,TZ,United Republic of Tanzania,738,2023,4.0
+uga,UG,Uganda,746,2023,5.4
+ukr,UA,Ukraine,926,2023,12.8
+ury,UY,Uruguay,298,2023,5.9
+usa,US,United States,111,2023,4.1
+uzb,UZ,Uzbekistan,927,2023,10.0
+vct,VC,Saint Vincent and the Grenadines,364,2023,4.6
+ven,VE,Venezuela (Bolivarian Republic of),299,2023,337.5
+vgb,VG,British Virgin Islands,284,2021,2.8
+vnm,VN,Viet Nam,582,2023,3.3
+vut,VU,Vanuatu,846,2023,13.0
+wsm,WS,Samoa,862,2023,8.0
+yem,YE,Yemen,474,2023,-1.2
+zaf,ZA,South Africa,199,2023,6.1
+zmb,ZM,Zambia,754,2023,11.0
+zwe,ZW,Zimbabwe,698,2023,105.4
+xkx,XK,Kosovo,383,2023,4.9

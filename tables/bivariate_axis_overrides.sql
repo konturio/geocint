@@ -46,6 +46,7 @@ values
     ('man_distance_to_fire_brigade', 'one', 'Man-distance to fire brigade'),
     ('man_distance_to_hospital', 'one', 'Man-distance to hospitals'),
     ('man_distance_to_fire_brigade', 'population', 'Distance to fire station (km)'),
+    ('man_distance_to_hospital', 'population', 'Distance to hospitals (km)'),
     ('highway_length', 'area_km2', 'OSM roads density (m/km²)'),
     ('total_road_length', 'area_km2', 'Total roads density estimate (km/km²)'),
     ('foursquare_places_count', 'one', 'Foursquare Japan places count'),

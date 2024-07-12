@@ -331,22 +331,22 @@ values ('mandays_maxtemp_over_32c_1c', 'Man-days above 32°C, (+1°C scenario)',
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('man_distance_to_fire_brigade', 'Man-distance to fire brigade', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', TRUE, '🚒🏃');
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'ppl_km2', TRUE, '🚒🏃');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('man_distance_to_hospital', 'Man-distance to hospitals', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', TRUE, '🏥🏃');
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'ppl_km2', TRUE, '🏥🏃');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('man_distance_to_bomb_shelters', 'Man-distance to bomb shelters', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', TRUE, '🏠🏃');
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'ppl_km2', TRUE, '🏠🏃');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('man_distance_to_charging_stations', 'Man-distance to charging stations', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', TRUE, '🔌🏃');
+        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'ppl_km2', TRUE, '🔌🏃');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('total_road_length', 'road length', jsonb_build_array(

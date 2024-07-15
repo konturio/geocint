@@ -1,5 +1,5 @@
-drop table if exists osm_pharmacy_in;
-create table osm_pharmacy_in as (
+drop table if exists osm_pharmacy;
+create table osm_pharmacy as (
     select  osm_type,
             osm_id,
             geog::geometry as geom,
@@ -8,19 +8,6 @@ create table osm_pharmacy_in as (
             tags
     from osm o
     where tags @> '{"amenity":"pharmacy"}' 
-          or tags ->> 'tourism' in ('guest_house','hotel','hostel','motel')    
+          or tags ->> 'tourism' in ('guest_house','hotel','hostel','motel')
+    order by _ST_SortableHash(geog::geometry)
 );
-
-drop table if exists osm_pharmacy;
-create table osm_pharmacy as (
-    select  osm_type,
-            osm_id,
-            geom,
-            operator,
-            opening_hours,
-            tags
-    from osm_pharmacy_in
-    order by _ST_SortableHash(geom)
-);
-
-drop table if exists osm_pharmacy_in;

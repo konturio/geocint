@@ -8,6 +8,7 @@ create table osm_pharmacy as (
             tags
     from osm o
     where tags @> '{"amenity":"pharmacy"}' 
-          or tags ->> 'tourism' in ('guest_house','hotel','hostel','motel')
+          or tags @> '{"shop":"chemist"}'
+          or tags @> '{"healthcare":"pharmacy"}'
     order by _ST_SortableHash(geog::geometry)
 );

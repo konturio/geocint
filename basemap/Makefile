@@ -312,7 +312,7 @@ data/basemap/metadata/test/style_ninja_non_latin_languages.json: styles/ninja.ma
 			> data/basemap/metadata/test/style_ninja_$$lang.json; \
 	done
 
-data/basemap/metadata/prod/style_ninja_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for Latin like languages.
+data/basemap/metadata/prod/style_ninja_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for Latin like languages.
 	for lang in en es de uk id ; do \
 		python2 kothic/src/komap.py \
 			--attribution-text "© OpenStreetMap" \
@@ -321,15 +321,15 @@ data/basemap/metadata/prod/style_ninja_latin_languages.json: styles/ninja.mapcss
 			--renderer=mapbox-style-language \
 			--stylesheet styles/ninja.mapcss \
 			--tiles-max-zoom 14 \
-			--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-			--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-			--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
+			--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
 			--locale $$lang \
 			--label-fallback "int_name,name" \
 			> data/basemap/metadata/prod/style_ninja_$$lang.json; \
 	done
 
-data/basemap/metadata/prod/style_ninja_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for NON Latin like languages.
+data/basemap/metadata/prod/style_ninja_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for NON Latin like languages.
 	for lang in ar th ko ja ; do \
 		python2 kothic/src/komap.py \
 			--attribution-text "© OpenStreetMap" \
@@ -338,9 +338,9 @@ data/basemap/metadata/prod/style_ninja_non_latin_languages.json: styles/ninja.ma
 			--renderer=mapbox-style-language \
 			--stylesheet styles/ninja.mapcss \
 			--tiles-max-zoom 14 \
-			--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-			--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-			--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
+			--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
 			--locale $$lang \
 			> data/basemap/metadata/prod/style_ninja_$$lang.json; \
 	done
@@ -407,7 +407,7 @@ data/basemap/metadata/test/style_night_non_latin_languages.json: styles/ninja.ma
 			> data/basemap/metadata/test/style_night_$$lang.json; \
 	done
 
-data/basemap/metadata/prod/style_night_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for Latin like languages.
+data/basemap/metadata/prod/style_night_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for Latin like languages.
 	for lang in en es de uk id ; do \
 		python2 kothic/src/komap.py \
 			--attribution-text "© OpenStreetMap" \
@@ -416,14 +416,14 @@ data/basemap/metadata/prod/style_night_latin_languages.json: styles/ninja.mapcss
 			--renderer=mapbox-style-language \
 			--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 			--tiles-max-zoom 14 \
-			--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-			--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 			--locale $$lang \
 			--label-fallback "int_name,name" \
 			> data/basemap/metadata/prod/style_night_$$lang.json; \
 	done
 
-data/basemap/metadata/prod/style_night_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for NON Latin like languages.
+data/basemap/metadata/prod/style_night_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for NON Latin like languages.
 	for lang in ar th ko ja ; do \
 		python2 kothic/src/komap.py \
 			--attribution-text "© OpenStreetMap" \
@@ -432,8 +432,8 @@ data/basemap/metadata/prod/style_night_non_latin_languages.json: styles/ninja.ma
 			--renderer=mapbox-style-language \
 			--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 			--tiles-max-zoom 14 \
-			--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-			--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 			--locale $$lang \
 			> data/basemap/metadata/prod/style_night_$$lang.json; \
 	done
@@ -509,9 +509,9 @@ data/basemap/metadata/prod/style_day_no_globe_view_support.json: kothic/src/koma
 		--renderer=mapbox-style-language \
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
+		--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
 		> $@
 
 data/basemap/metadata/prod/style_day.json: data/basemap/metadata/prod/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
@@ -525,9 +525,9 @@ data/basemap/metadata/prod/style_day_en.json: kothic/src/komap.py | data/basemap
 		--renderer=mapbox-style-language \
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
+		--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
 		--locale en \
 		--label-fallback "int_name,name" \
 		> $@
@@ -543,8 +543,8 @@ data/basemap/metadata/prod/style_night_no_globe_view_support.json: kothic/src/ko
 		--renderer=mapbox-style-language \
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/prod/style_night.json: data/basemap/metadata/prod/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
@@ -558,8 +558,8 @@ data/basemap/metadata/prod/style_night_en.json: kothic/src/komap.py | data/basem
 		--renderer=mapbox-style-language \
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
 		--label-fallback "int_name,name" \
 		> $@

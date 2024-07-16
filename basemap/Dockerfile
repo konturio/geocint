@@ -12,7 +12,9 @@ RUN apt-get update && apt-get install -y pigz postgresql-client-15 pspg aria2 gd
   libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc python npm
 
 # build and install osm2pgsql
-RUN git clone https://github.com/openstreetmap/osm2pgsql.git \
+RUN git config --global pack.windowSize 1024
+RUN git config --global core.compression 0
+RUN git clone --depth 1 --branch 1.6.0 https://github.com/openstreetmap/osm2pgsql.git \
     && mkdir osm2pgsql/build \
     && cd osm2pgsql/build \
     && cmake .. \

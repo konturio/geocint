@@ -764,6 +764,9 @@ create table stat_h3  as (
            (coalesce(oam_number_of_pixels_h3.oam_number_of_pixels, 0))::float as oam_number_of_pixels,
            (coalesce(worldbank_inflation_h3.inflation, 0))::float as worldbank_inflation,
            (coalesce(osm_pharmacy_h3.osm_pharmacy_count, 0))::float as osm_pharmacy_count,
+           (coalesce(idmc_country_2023_h3.total_stock_displacement, 0))::float as total_stock_displacement,
+           (coalesce(idmc_country_2023_h3.conflict_internal_displacements, 0))::float as conflict_internal_displacements,
+           (coalesce(idmc_country_2023_h3.disaster_internal_displacements, 0))::float as disaster_internal_displacements,
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
     from stat_h3_in           a
          left join gebco_2022_h3 gbc on (a.h3 = gbc.h3)
@@ -786,6 +789,7 @@ create table stat_h3  as (
          left join oam_number_of_pixels_h3 on (a.h3 = oam_number_of_pixels_h3.h3)
          left join worldbank_inflation_h3 on (a.h3 = worldbank_inflation_h3.h3)
          left join osm_pharmacy_h3 on (a.h3 = osm_pharmacy_h3.h3)
+         left join idmc_country_2023_h3 on (a.h3 = idmc_country_2023_h3.h3)
 );
 drop table stat_h3_in;
 vacuum analyze stat_h3;
@@ -834,5 +838,7 @@ create index stat_h3_brin_pt4 on stat_h3 using brin (
                                                      max_osm_hotels_assesment, avg_osm_hotels_assesment, oam_coverage_area,
                                                      osm_historical_sites_and_museums_count, osm_art_venues_count,
                                                      osm_entertainment_venues_count, osm_cultural_and_comunity_centers_count,
-                                                     oam_number_of_pixels, worldbank_inflation, osm_pharmacy_count
+                                                     oam_number_of_pixels, worldbank_inflation, osm_pharmacy_count,
+                                                     total_stock_displacement,conflict_internal_displacements,
+                                                     disaster_internal_displacements
     );

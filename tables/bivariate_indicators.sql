@@ -535,6 +535,15 @@ values ('worldbank_inflation', 'Price inflation rate', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('osm_pharmacy_count', 'Pharmacy count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of pharmacy in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '⚕️💊');
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('total_stock_displacement', 'Total stock displacement', jsonb_build_array('© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries', '© 2012-2024 Internal Displacement Monitoring Centre (IDMC)'), '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Percent of total population of IDPs (rounded figures at the national level), as a result of conflicts, violence and disasters as of the end of the reporting year.', 'World', 'static', 'perc', TRUE, '🆘🧑🏻‍🤝‍🧑🏿');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('conflict_internal_displacements', 'Conflict internal displacements', jsonb_build_array('© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries', '© 2012-2024 Internal Displacement Monitoring Centre (IDMC)'), '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Percent of total population of internal displacements reported (rounded figures at national level), as a result of conflict and violence over the 2023.', 'World', 'static', 'perc', TRUE, '💣🧑🏻‍🤝‍🧑🏿');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('disaster_internal_displacements', 'Disaster internal displacements', jsonb_build_array('© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries', '© 2012-2024 Internal Displacement Monitoring Centre (IDMC)'), '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Percent of total population of internal displacements reported (rounded figures at national level), as a result of disasters over the 2023.', 'World', 'static', 'perc', TRUE, '🌋🧑🏻‍🤝‍🧑🏿');
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

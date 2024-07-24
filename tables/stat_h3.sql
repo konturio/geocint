@@ -764,7 +764,8 @@ create table stat_h3  as (
            (coalesce(oam_number_of_pixels_h3.oam_number_of_pixels, 0))::float as oam_number_of_pixels,
            (coalesce(worldbank_inflation_h3.inflation, 0))::float as worldbank_inflation,
            (coalesce(osm_pharmacy_h3.osm_pharmacy_count, 0))::float as osm_pharmacy_count,
-           (coalesce(idmc_country_2023_h3.total_stock_displacement, 0))::float as total_stock_displacement,
+           (coalesce(idmc_country_2023_h3.conflict_stock_displacement, 0))::float as conflict_stock_displacement,
+           (coalesce(idmc_country_2023_h3.disaster_stock_displacement, 0))::float as disaster_stock_displacement,
            (coalesce(idmc_country_2023_h3.conflict_internal_displacements, 0))::float as conflict_internal_displacements,
            (coalesce(idmc_country_2023_h3.disaster_internal_displacements, 0))::float as disaster_internal_displacements,
            ST_Transform(h3_cell_to_boundary_geometry(a.h3), 3857) as geom
@@ -839,6 +840,6 @@ create index stat_h3_brin_pt4 on stat_h3 using brin (
                                                      osm_historical_sites_and_museums_count, osm_art_venues_count,
                                                      osm_entertainment_venues_count, osm_cultural_and_comunity_centers_count,
                                                      oam_number_of_pixels, worldbank_inflation, osm_pharmacy_count,
-                                                     total_stock_displacement,conflict_internal_displacements,
-                                                     disaster_internal_displacements
+                                                     conflict_stock_displacement, disaster_stock_displacement,
+                                                     conflict_internal_displacements, disaster_internal_displacements
     );

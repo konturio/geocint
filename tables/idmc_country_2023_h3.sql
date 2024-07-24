@@ -3,10 +3,9 @@ drop table if exists idmc_country_2023_h3_in;
 create table idmc_country_2023_h3_in as (
     select b.code, 
            b.hasc, 
-           a.name, 
-           coalesce(a.conflict_stock_displacement + a.disaster_stock_displacement, 
-           	        a.conflict_stock_displacement, 
-           	        a.disaster_stock_displacement) as total_stock_displacement,
+           a.name,       
+           a.conflict_stock_displacement, 
+           a.disaster_stock_displacement,
            a.conflict_internal_displacements,
            a.disaster_internal_displacements
     from idmc_country_2023 a 
@@ -17,12 +16,13 @@ create table idmc_country_2023_h3_in as (
 call transform_hasc_to_h3_percent_of_population('idmc_country_2023_h3_in', 
 	                      'idmc_country_2023_h3', 
 	                      'hasc', 
-	                      '{total_stock_displacement,conflict_internal_displacements,disaster_internal_displacements}'::text[], 8);
+	                      '{conflict_stock_displacement,disaster_stock_displacement,conflict_internal_displacements,disaster_internal_displacements}'::text[], 8);
 
 -- insert data for Abyei area (disputed area between two Sudans, that doesn't have an official hasc code)
 insert into idmc_country_2023_h3 
 	select distinct on (h3) h3_polygon_to_cells(ST_Subdivide(ST_Transform(ST_Buffer(ST_Transform(b.geom, 3857), 500), 4326)), 8) as h3,
-	                    (a.conflict_stock_displacement + a.disaster_stock_displacement)::float / b.population::float * 100::float as total_stock_displacements,
+	                    a.conflict_stock_displacement::float / b.population::float * 100::float as conflict_stock_displacement,
+                        a.disaster_stock_displacement::float / b.population::float * 100::float as disaster_stock_displacement,
 	                    a.conflict_internal_displacements::float / b.population::float * 100::float as conflict_internal_displacements,
 	                    a.disaster_internal_displacements::float / b.population::float * 100::float as disaster_internal_displacements, 
 	                    8 as resolution
@@ -31,7 +31,7 @@ insert into idmc_country_2023_h3
 
 drop table if exists idmc_country_2023_h3_in;
 
-call generate_overviews('idmc_country_2023_h3', '{total_stock_displacement,conflict_internal_displacements,disaster_internal_displacements}'::text[], '{max,max,max}'::text[], 8);
+call generate_overviews('idmc_country_2023_h3', '{conflict_stock_displacement,disaster_stock_displacement,conflict_internal_displacements,disaster_internal_displacements}'::text[], '{max,max,max,max}'::text[], 8);
 
 vacuum full idmc_country_2023_h3;
 

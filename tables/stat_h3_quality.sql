@@ -109,7 +109,8 @@ create table stat_h3_quality as (
                 avg(a.oam_number_of_pixels) as agg_oam_number_of_pixels,
                 avg(a.worldbank_inflation) as agg_worldbank_inflation,
                 avg(a.osm_pharmacy_count) as agg_osm_pharmacy_count,
-                avg(a.total_stock_displacement) as agg_total_stock_displacement,
+                avg(a.conflict_stock_displacement) as agg_conflict_stock_displacement,
+                avg(a.disaster_stock_displacement) as agg_disaster_stock_displacement,
                 avg(a.conflict_internal_displacements) as agg_conflict_internal_displacements,
                 avg(a.disaster_internal_displacements) as agg_disaster_internal_displacements
             from
@@ -119,4 +120,3 @@ create table stat_h3_quality as (
             group by 1 ) a
     join stat_h3 b on a.h3_parent = b.h3
 );
-

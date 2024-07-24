@@ -19,10 +19,18 @@ dev)
 esac
 
 # Get token
-token_request_content=$(curl -s -d "client_id=kontur_platform&username=$DN_USERNAME&grant_type=password" \
+if [[ "$1" == "prod" ]]; then
+  token_request_content=$(curl -s -d "client_id=kontur_platform&username=$DN_USERNAME&grant_type=password" \
+                        --data-urlencode "password=$DN_PROD_PASSWORD" \
+                        -H "Content-Type: application/x-www-form-urlencoded" \
+                        -X POST ${auth_endpoint})
+else
+  token_request_content=$(curl -s -d "client_id=kontur_platform&username=$DN_USERNAME&grant_type=password" \
                         --data-urlencode "password=$DN_PASSWORD" \
                         -H "Content-Type: application/x-www-form-urlencoded" \
                         -X POST ${auth_endpoint})
+fi
+
 token=$(jq -r '.access_token // empty' <<<"$token_request_content")
 if [[ -z "$token" ]]; then
   echo "Error. Impossible to get auth token"

@@ -3174,19 +3174,19 @@ data/out/csv/foursquare_visits_count.csv: db/table/foursquare_visits_h3 | data/o
 	psql -q -X -c "copy (select h3, foursquare_visits_count from foursquare_visits_h3 where h3 is not null and foursquare_visits_count is not null and foursquare_visits_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/foursquare_visits_count.csv
 
 data/out/csv/eatery_count.csv: db/table/osm_places_eatery_h3 | data/out/csv ## extract eatery_count to csv file 
-	psql -q -X -c "copy (select h3, eatery_count from osm_places_eatery_h3 where h3 is not null and eatery_count is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/eatery_count.csv
+	psql -q -X -c "copy (select h3, eatery_count from osm_places_eatery_h3 where h3 is not null and eatery_count is not null and eatery_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/eatery_count.csv
 
 data/out/csv/food_shops_count.csv: db/table/osm_places_food_shops_h3 | data/out/csv ## extract food_shops_count to csv file 
-	psql -q -X -c "copy (select h3, food_shops_count from osm_places_food_shops_h3 where h3 is not null and food_shops_count is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/food_shops_count.csv
+	psql -q -X -c "copy (select h3, food_shops_count from osm_places_food_shops_h3 where h3 is not null and food_shops_count is not null and food_shops_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/food_shops_count.csv
 
 data/out/csv/waste_basket_coverage_area_km2.csv: db/table/waste_containers_h3 | data/out/csv ## extract waste_basket_coverage_area_km2 to csv file 
-	psql -q -X -c "copy (select h3, (ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0) * waste_basket_coverage / (49.0 * POWER(7, 8 - resolution)) as waste_basket_coverage_area_km2 from waste_containers_h3 where h3 is not null and waste_basket_coverage is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/waste_basket_coverage_area_km2.csv
+	psql -q -X -c "copy (select h3, (ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0) * waste_basket_coverage / (49.0 * POWER(7, 8 - resolution)) as waste_basket_coverage_area_km2 from waste_containers_h3 where h3 is not null and waste_basket_coverage is not null and waste_basket_coverage > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/waste_basket_coverage_area_km2.csv
 
 data/out/csv/solar_farms_placement_suitability.csv: db/table/solar_farms_placement_suitability_synthetic_h3 | data/out/csv ## extract solar_farms_placement_suitability to csv file 
 	psql -q -X -c "copy (select h3, solar_farms_placement_suitability from solar_farms_placement_suitability_synthetic_h3 where h3 is not null and solar_farms_placement_suitability is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/solar_farms_placement_suitability.csv
 
 data/out/csv/mapswipe_area_km2.csv: db/table/mapswipe_hot_tasking_data_h3 | data/out/csv ## extract mapswipe_area_km2 to csv file 
-	psql -q -X -c "copy (select h3, mapswipe_area as mapswipe_area_km2 from mapswipe_hot_tasking_data_h3 where h3 is not null and mapswipe_area is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/mapswipe_area_km2.csv
+	psql -q -X -c "copy (select h3, mapswipe_area as mapswipe_area_km2 from mapswipe_hot_tasking_data_h3 where h3 is not null and mapswipe_area is not null and mapswipe_area > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/mapswipe_area_km2.csv
 
 data/out/csv/avg_slope_gebco_2022.csv: db/table/gebco_2022_h3 | data/out/csv ## extract avg_slope_gebco_2022 to csv file 
 	psql -q -X -c "copy (select h3, avg_slope_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_slope_gebco_2022 is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_slope_gebco_2022.csv
@@ -3252,34 +3252,34 @@ data/out/csv/mandays_maxtemp_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/
 	psql -q -X -c "copy (select h3, mandays_maxtemp_over_32c_1c from pf_maxtemp_h3 where h3 is not null and mandays_maxtemp_over_32c_1c is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/mandays_maxtemp_over_32c_1c.csv
 
 data/out/csv/hazardous_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract hazardous_days_count to csv file 
-	psql -q -X -c "copy (select h3, hazardous_days_count from disaster_event_episodes_h3 where h3 is not null and hazardous_days_count is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/hazardous_days_count.csv
+	psql -q -X -c "copy (select h3, hazardous_days_count from disaster_event_episodes_h3 where h3 is not null and hazardous_days_count is not null and hazardous_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/hazardous_days_count.csv
 
 data/out/csv/earthquake_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract earthquake_days_count to csv file 
-	psql -q -X -c "copy (select h3, earthquake_days_count from disaster_event_episodes_h3 where h3 is not null and earthquake_days_count is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/earthquake_days_count.csv
+	psql -q -X -c "copy (select h3, earthquake_days_count from disaster_event_episodes_h3 where h3 is not null and earthquake_days_count is not null and earthquake_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/earthquake_days_count.csv
 
 data/out/csv/wildfire_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract wildfire_days_count to csv file 
-	psql -q -X -c "copy (select h3, wildfire_days_count from disaster_event_episodes_h3 where h3 is not null and wildfire_days_count is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/wildfire_days_count.csv
+	psql -q -X -c "copy (select h3, wildfire_days_count from disaster_event_episodes_h3 where h3 is not null and wildfire_days_count is not null and wildfire_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/wildfire_days_count.csv
 
 data/out/csv/drought_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract drought_days_count to csv file 
-	psql -q -X -c "copy (select h3, drought_days_count from disaster_event_episodes_h3 where h3 is not null and drought_days_count is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/drought_days_count.csv
+	psql -q -X -c "copy (select h3, drought_days_count from disaster_event_episodes_h3 where h3 is not null and drought_days_count is not null and drought_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/drought_days_count.csv
 
 data/out/csv/cyclone_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract cyclone_days_count to csv file 
-	psql -q -X -c "copy (select h3, cyclone_days_count from disaster_event_episodes_h3 where h3 is not null and cyclone_days_count is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/cyclone_days_count.csv
+	psql -q -X -c "copy (select h3, cyclone_days_count from disaster_event_episodes_h3 where h3 is not null and cyclone_days_count is not null and cyclone_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/cyclone_days_count.csv
 
 data/out/csv/volcano_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract volcano_days_count to csv file 
-	psql -q -X -c "copy (select h3, volcano_days_count from disaster_event_episodes_h3 where h3 is not null and volcano_days_count is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/volcano_days_count.csv
+	psql -q -X -c "copy (select h3, volcano_days_count from disaster_event_episodes_h3 where h3 is not null and volcano_days_count is not null and volcano_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/volcano_days_count.csv
 
 data/out/csv/flood_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract flood_days_count to csv file 
-	psql -q -X -c "copy (select h3, flood_days_count from disaster_event_episodes_h3 where h3 is not null and flood_days_count is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/flood_days_count.csv
+	psql -q -X -c "copy (select h3, flood_days_count from disaster_event_episodes_h3 where h3 is not null and flood_days_count is not null and flood_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/flood_days_count.csv
 
 data/out/csv/powerlines.csv: db/table/facebook_medium_voltage_distribution_h3 | data/out/csv ## extract powerlines to csv file 
 	psql -q -X -c "copy (select h3, powerlines from facebook_medium_voltage_distribution_h3 where h3 is not null and powerlines is not null and powerlines > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/powerlines.csv
 
 data/out/csv/night_lights_intensity.csv: db/table/night_lights_h3 | data/out/csv ## extract night_lights_intensity to csv file 
-	psql -q -X -c "copy (select h3, intensity as night_lights_intensity from night_lights_h3 where h3 is not null and intensity is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/night_lights_intensity.csv
+	psql -q -X -c "copy (select h3, intensity as night_lights_intensity from night_lights_h3 where h3 is not null and intensity is not null and intensity > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/night_lights_intensity.csv
 
 data/out/csv/gsa_ghi.csv: db/table/global_solar_atlas_h3 | data/out/csv ## extract gsa_ghi to csv file 
-	psql -q -X -c "copy (select h3, gsa_ghi from global_solar_atlas_h3 where h3 is not null and gsa_ghi is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/gsa_ghi.csv
+	psql -q -X -c "copy (select h3, gsa_ghi from global_solar_atlas_h3 where h3 is not null and gsa_ghi is not null and gsa_ghi > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/gsa_ghi.csv
 
 data/out/csv/worldclim_avg_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_avg_temperature to csv file 
 	psql -q -X -c "copy (select h3, worldclim_avg_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_avg_temperature is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_avg_temperature.csv
@@ -3303,19 +3303,19 @@ data/out/csv/power_substations_proximity_m.csv: db/table/proximities_h3 | data/o
 	psql -q -X -c "copy (select h3, power_substations_proximity_m from proximities_h3 where h3 is not null and power_substations_proximity_m is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/power_substations_proximity_m.csv
 
 data/out/csv/solar_power_plants.csv: db/table/existing_solar_power_panels_h3 | data/out/csv ## extract solar_power_plants to csv file 
-	psql -q -X -c "copy (select h3, solar_power_plants from existing_solar_power_panels_h3 where h3 is not null and solar_power_plants is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/solar_power_plants.csv
+	psql -q -X -c "copy (select h3, solar_power_plants from existing_solar_power_panels_h3 where h3 is not null and solar_power_plants is not null and solar_power_plants > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/solar_power_plants.csv
 
 data/out/csv/safety_index.csv: db/table/safety_index_h3 | data/out/csv ## extract safety_index to csv file 
 	psql -q -X -c "copy (select h3, safety_index from safety_index_h3 where h3 is not null and safety_index is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/safety_index.csv
 
 data/out/csv/population.csv: db/table/kontur_population_h3 | data/out/csv ## extract population to csv file 
-	psql -q -X -c "copy (select h3, population from kontur_population_h3 where h3 is not null and population is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/population.csv
+	psql -q -X -c "copy (select h3, population from kontur_population_h3 where h3 is not null and population is not null and population > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/population.csv
 
 data/out/csv/avg_forest_canopy_height.csv: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract avg_forest_canopy_height to csv file 
-	psql -q -X -c "copy (select h3, avg_forest_canopy_height as avg_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and avg_forest_canopy_height is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, avg_forest_canopy_height as avg_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and avg_forest_canopy_height is not null and avg_forest_canopy_height > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/max_forest_canopy_height.csv: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract max_forest_canopy_height to csv file 
-	psql -q -X -c "copy (select h3, max_forest_canopy_height as max_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and max_forest_canopy_height is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, max_forest_canopy_height as max_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and max_forest_canopy_height is not null and max_forest_canopy_height > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/worldbank_tax_rate.csv: db/table/worldbank_tax_rate_h3 | data/out/csv ## extract worldbank_tax_rate to csv file 
 	psql -q -X -c "copy (select h3, t2019 as worldbank_total_tax_2019 from worldbank_tax_rate_h3 where h3 is not null and t2019 is not null order by h3) to stdout with delimiter ',' csv;" > $@
@@ -3327,43 +3327,43 @@ data/out/csv/multiple_citizenship.csv: db/table/wikidata_naturalization_gap_h3 |
 	psql -q -X -c "copy (select h3, multiple_citizenship from wikidata_naturalization_gap_h3 where h3 is not null and multiple_citizenship is not null order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/ghs_max_building_height.csv: db/table/ghs_building_height_grid_h3 | data/out/csv ## extract ghs_max_building_height to csv file 
-	psql -q -X -c "copy (select h3, max_height as ghs_max_building_height from ghs_building_height_grid_h3 where h3 is not null and max_height is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, max_height as ghs_max_building_height from ghs_building_height_grid_h3 where h3 is not null and max_height is not null and max_height > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/ghs_avg_building_height.csv: db/table/ghs_building_height_grid_h3 | data/out/csv ## extract ghs_avg_building_height to csv file 
-	psql -q -X -c "copy (select h3, avg_height as ghs_avg_building_height from ghs_building_height_grid_h3 where h3 is not null and avg_height is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, avg_height as ghs_avg_building_height from ghs_building_height_grid_h3 where h3 is not null and avg_height is not null and avg_height > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/max_osm_building_levels.csv: db/table/osm_building_levels_h3 | data/out/csv ## extract max_osm_building_levels to csv file 
-	psql -q -X -c "copy (select h3, max_levels as max_osm_building_levels from osm_building_levels_h3 where h3 is not null and max_levels is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, max_levels as max_osm_building_levels from osm_building_levels_h3 where h3 is not null and max_levels is not null and max_levels > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/avg_osm_building_levels.csv: db/table/osm_building_levels_h3 | data/out/csv ## extract avg_osm_building_levels to csv file 
-	psql -q -X -c "copy (select h3, avg_levels as avg_osm_building_levels from osm_building_levels_h3 where h3 is not null and avg_levels is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, avg_levels as avg_osm_building_levels from osm_building_levels_h3 where h3 is not null and avg_levels is not null and avg_levels > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/osm_hotels_count.csv: db/table/osm_hotels_h3 | data/out/csv ## extract osm_hotels_count to csv file 
-	psql -q -X -c "copy (select h3, osm_hotels_count from osm_hotels_h3 where h3 is not null and osm_hotels_count is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, osm_hotels_count from osm_hotels_h3 where h3 is not null and osm_hotels_count is not null and osm_hotels_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/max_osm_hotels_assesment.csv: db/table/osm_hotels_h3 | data/out/csv ## extract max_osm_hotels_assesment to csv file 
-	psql -q -X -c "copy (select h3, max_osm_hotels_assesment from osm_hotels_h3 where h3 is not null and max_osm_hotels_assesment is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, max_osm_hotels_assesment from osm_hotels_h3 where h3 is not null and max_osm_hotels_assesment is not null and max_osm_hotels_assesment > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/avg_osm_hotels_assesment.csv: db/table/osm_hotels_h3 | data/out/csv ## extract avg_osm_hotels_assesment to csv file 
-	psql -q -X -c "copy (select h3, avg_osm_hotels_assesment from osm_hotels_h3 where h3 is not null and avg_osm_hotels_assesment is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, avg_osm_hotels_assesment from osm_hotels_h3 where h3 is not null and avg_osm_hotels_assesment is not null and avg_osm_hotels_assesment > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/osm_historical_sites_and_museums_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_historical_sites_and_museums_count to csv file 
-	psql -q -X -c "copy (select h3, osm_historical_sites_and_museums_count from osm_culture_venues_h3 where h3 is not null and osm_historical_sites_and_museums_count is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, osm_historical_sites_and_museums_count from osm_culture_venues_h3 where h3 is not null and osm_historical_sites_and_museums_count is not null and osm_historical_sites_and_museums_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/osm_art_venues_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_art_venues_count to csv file 
-	psql -q -X -c "copy (select h3, osm_art_venues_count from osm_culture_venues_h3 where h3 is not null and osm_art_venues_count is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, osm_art_venues_count from osm_culture_venues_h3 where h3 is not null and osm_art_venues_count is not null and osm_art_venues_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/osm_entertainment_venues_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_entertainment_venues_count to csv file 
-	psql -q -X -c "copy (select h3, osm_entertainment_venues_count from osm_culture_venues_h3 where h3 is not null and osm_entertainment_venues_count is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, osm_entertainment_venues_count from osm_culture_venues_h3 where h3 is not null and osm_entertainment_venues_count is not null and osm_entertainment_venues_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/osm_cultural_and_comunity_centers_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_cultural_and_comunity_centers_count to csv file 
-	psql -q -X -c "copy (select h3, osm_cultural_and_comunity_centers_count from osm_culture_venues_h3 where h3 is not null and osm_cultural_and_comunity_centers_count is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, osm_cultural_and_comunity_centers_count from osm_culture_venues_h3 where h3 is not null and osm_cultural_and_comunity_centers_count is not null and osm_cultural_and_comunity_centers_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/worldbank_inflation.csv: db/table/worldbank_inflation_h3 | data/out/csv ## extract worldbank_inflation to csv file 
 	psql -q -X -c "copy (select h3, inflation as worldbank_inflation from worldbank_inflation_h3 where h3 is not null and inflation is not null order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/osm_pharmacy_count.csv: db/table/osm_pharmacy_h3 | data/out/csv ## extract osm_pharmacy_count to csv file 
-	psql -q -X -c "copy (select h3, osm_pharmacy_count from osm_pharmacy_h3 where h3 is not null and osm_pharmacy_count is not null order by h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, osm_pharmacy_count from osm_pharmacy_h3 where h3 is not null and osm_pharmacy_count is not null and osm_pharmacy_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/conflict_stock_displacement.csv: db/table/idmc_country_2023_h3 | data/out/csv ## extract conflict_stock_displacement to csv file
 	psql -q -X -c "copy (select h3, conflict_stock_displacement from idmc_country_2023_h3 where h3 is not null and conflict_stock_displacement is not null and conflict_stock_displacement > 0 order by h3) to stdout with delimiter ',' csv;" > $@

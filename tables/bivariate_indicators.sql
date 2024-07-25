@@ -470,7 +470,7 @@ values ('max_forest_canopy_height', 'Forest canopy maximal height', jsonb_build_
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb, 'Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery.', 'World', 'static', 'm', TRUE, '🌲⬆️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('worldbank_total_tax_2019', 'Total tax and contribution rate (% of profit)', jsonb_build_array(
+values ('worldbank_total_tax_2019', 'Total tax and contribution rate', jsonb_build_array(
         '© 2024 The World Bank Group, Doing Business project (http://www.doingbusiness.org/). NOTE: Doing Business has been discontinued as of 9/16/2021. For more information: https://bit.ly/3CLCbme'),
         '[["good"], ["bad"]]'::jsonb, 'Total tax rate measures the amount of taxes and mandatory contributions payable by businesses after accounting for allowable deductions and exemptions as a share of commercial profits. Taxes withheld (such as personal income tax) or collected and remitted to tax authorities (such as value added taxes, sales taxes or goods and service taxes) are excluded.', 'World', 'static', 'perc', TRUE, '🧮');
 

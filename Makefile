@@ -875,7 +875,7 @@ data/out/topology_boundaries.geojson.gz: db/table/topology_boundaries | data/out
 	ogr2ogr -f GeoJSON data/out/topology_boundaries.geojson PG:'dbname=gis' -sql "select * from topology_boundary" -nln kontur_topology_boundary
 	pigz data/out/topology_boundaries.geojson
 
-deploy/s3/topology_boundaries: data/out/topology_boundaries.geojson.gz | deploy/s3 ## Uploads compressed geojson with topology build of Kontur Boundaries in public directory in geodata-us-east-1-kontur s3 bucket
+deploy/s3/topology_boundaries: data/out/topology_boundaries.geojson.gz | deploy/s3 ## Uploads compressed geojson with topology build of Kontur Boundaries in public directory in geodata-eu-central-1-kontur-public s3 bucket
 	aws s3 cp data/out/topology_boundaries.geojson.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/topology_boundaries.geojson.gz --profile geocint_pipeline_sender --acl public-read
 	touch $@
 

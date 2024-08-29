@@ -616,18 +616,18 @@ data/in/mapswipe/projects_old.csv: | data/in/mapswipe ## Dowload previous overvi
 	touch $@
 
 data/in/mapswipe/projects_old_update: data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv | data/in/mapswipe ## update previous mapswipe projects overview on s3.
-	aws s3 cp data/in/mapswipe/projects_old.csv s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/projects_old.csv --profile geocint_pipeline_sender
+	aws s3 cp data/in/mapswipe/projects_new.csv s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/projects_old.csv --profile geocint_pipeline_sender
 	touch $@
 
 db/table/mapswipe_projects_new: data/in/mapswipe/projects_new.csv | db/table ## Loading new mapswipe overview data to database.
 	psql -c "drop table if exists mapswipe_projects_new;"
-	psql -c "create table mapswipe_projects_new (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, image_url text, created timestamp, custom_options text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
+	psql -c "create table mapswipe_projects_new (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, organization_name text, image text, created timestamp, custom_options text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
 	cat data/in/mapswipe/projects_new.csv | psql -c "copy mapswipe_projects_new from stdin with csv header;"
 	touch $@
 
-db/table/mapswipe_projects_old: data/in/mapswipe/projects_old.csv | db/table ## Loading new mapswipe overview data to database.
+db/table/mapswipe_projects_old: data/in/mapswipe/projects_old.csv | db/table ## Loading old mapswipe overview data to database.
 	psql -c "drop table if exists mapswipe_projects_old;"
-	psql -c "create table mapswipe_projects_old (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
+	psql -c "create table mapswipe_projects_old (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, organization_name text, image text, created timestamp, custom_options text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
 	cat data/in/mapswipe/projects_old.csv | psql -c "copy mapswipe_projects_old from stdin with csv header;"
 	touch $@
 

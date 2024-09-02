@@ -96,7 +96,8 @@ insert into bivariate_axis_overrides
     (numerator, denominator, max)
 values
     ('waste_basket_coverage_area_km2' , 'populated_area_km2', 1.0),
-    ('highway_length', 'total_road_length', 1.01)
+    ('highway_length', 'total_road_length', 1.01),
+    ('populated_area_km2', 'area_km2', 1.0)
 on conflict (numerator, denominator) do update
 set max = excluded.max;
 

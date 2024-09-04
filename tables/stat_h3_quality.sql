@@ -112,7 +112,8 @@ create table stat_h3_quality as (
                 avg(a.conflict_stock_displacement) as agg_conflict_stock_displacement,
                 avg(a.disaster_stock_displacement) as agg_disaster_stock_displacement,
                 avg(a.conflict_internal_displacements) as agg_conflict_internal_displacements,
-                avg(a.disaster_internal_displacements) as agg_disaster_internal_displacements
+                avg(a.disaster_internal_displacements) as agg_disaster_internal_displacements,
+                avg(a.hdi_2022) as agg_hdi_2022
             from
                 stat_h3 a
             where

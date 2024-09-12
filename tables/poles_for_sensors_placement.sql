@@ -14,7 +14,6 @@ select s.*,
        builtup, 
        forest, 
        null::float as population
-       -- ,man_distance_to_fire_brigade/population as distance_to_fire_brigade
  from (select * from stat_h3 s, gat_geom g where resolution = 8 and st_intersects(s.geom, g.geom)) a) s;
 
 -- join with population data on resolution 10

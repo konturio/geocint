@@ -1,24 +1,39 @@
 -- prepare county geometry
 drop table if exists gat_geom;
-select st_transform(geom, 3857) geom  into gat_geom from gatlinburg;
+create table gat_geom as (
+    select st_transform(geom, 3857) geom
+    from gatlinburg
+);
 
 create index on gat_geom using gist(geom);
 
 -- extract data from stat_h3 for county area
 drop table if exists gat_stat;
-select s.*,
-       ST_Transform(h3_cell_to_boundary_geometry(s.h3), 3857) as geom
-    into gat_stat from (select h3_cell_to_children(h3, 10) as h3, 
-       total_road_length, 
-       avg_elevation_gebco_2022, 
-       builtup, 
-       forest, 
-       null::float as population
- from (select * from stat_h3 s, gat_geom g where resolution = 8 and st_intersects(s.geom, g.geom)) a) s;
+create table gat_stat as (
+    select s.*,
+           ST_Transform(h3_cell_to_boundary_geometry(s.h3), 3857) as geom
+    from (select h3_cell_to_children(h3, 10) as h3, 
+                 total_road_length, 
+                 avg_elevation_gebco_2022, 
+                 builtup, 
+                 forest, 
+                 null::float as population
+          from stat_h3 s, 
+               gat_geom g 
+          where resolution = 8 
+                and st_intersects(s.geom, g.geom)) s
+);
 
 -- join with population data on resolution 10
 drop table if exists gat_kp_h3r11;
-select k.* into gat_kp_h3r11 from kp_h3r11 k, gat_geom g where st_intersects(g.geom, k.geom) and k.resolution = 10;
+create table gat_kp_h3r11 as (
+    select k.* 
+    from kp_h3r11 k, 
+         gat_geom g 
+    where st_intersects(g.geom, k.geom) 
+          and k.resolution = 10
+);
+
 update gat_stat set population = k.population from gat_kp_h3r11 k where k.h3 = gat_stat.h3;
 
 -- remove temporary tables
@@ -28,7 +43,14 @@ drop table if exists gat_kp_h3r11;
 -- calculate intersections between county hexagons and area of concern
 alter table gat_stat add column nareas integer;
 drop table if exists gat_count;
-select h3, count(*) into gat_count from gat_stat g, areas_of_concern_upd c where st_intersects(g.geom, st_transform(c.geom, 3857)) group by h3;
+create table gat_count as (
+    select h3, count(*) 
+    from gat_stat g, 
+         areas_of_concern c 
+    where st_intersects(g.geom, st_transform(c.geom, 3857)) 
+    group by h3
+);
+
 update gat_stat set nareas = g.count from gat_count g where g.h3 = gat_stat.h3; 
 update gat_stat set nareas = 0 where nareas is null;
 
@@ -38,14 +60,20 @@ update gat_stat set fires_count = fires_count from gatlinburg_historical_fires_h
 
 -- calculate cost for county hexagons vased on mcda
 alter table gat_stat add column cost float;
+
 drop table if exists gat_cost;
-select h3, coalesce((nareas - min(nareas) OVER ()) / stddev(nareas) OVER (), 0) + 
-                coalesce((total_road_length - min(total_road_length) OVER ()) / stddev(total_road_length) OVER (), 0) + 
-                coalesce((population - min(population) OVER ()) / stddev(population) OVER (), 0) + 
-                coalesce((avg_elevation_gebco_2022 - min(avg_elevation_gebco_2022) OVER ()) / stddev(avg_elevation_gebco_2022) OVER (), 0) + 
-                coalesce((builtup - min(builtup) OVER ()) / stddev(builtup) OVER (), 0) + 
-                coalesce((forest - min(forest) OVER ()) / stddev(forest) OVER (), 0) +
-                coalesce((fires_count - min(fires_count) OVER ()) / stddev(fires_count) OVER (), 0) as cost into gat_cost from gat_stat ;
+create table gat_cost as (
+    select h3, 
+           coalesce((nareas - min(nareas) OVER ()) / stddev(nareas) OVER (), 0) + 
+           coalesce((total_road_length - min(total_road_length) OVER ()) / stddev(total_road_length) OVER (), 0) + 
+           coalesce((population - min(population) OVER ()) / stddev(population) OVER (), 0) + 
+           coalesce((avg_elevation_gebco_2022 - min(avg_elevation_gebco_2022) OVER ()) / stddev(avg_elevation_gebco_2022) OVER (), 0) + 
+           coalesce((builtup - min(builtup) OVER ()) / stddev(builtup) OVER (), 0) + 
+           coalesce((forest - min(forest) OVER ()) / stddev(forest) OVER (), 0) +
+           coalesce((fires_count - min(fires_count) OVER ()) / stddev(fires_count) OVER (), 0) as cost 
+    from gat_stat
+);
+
 update gat_stat set cost = t.cost from gat_cost t where t.h3 = gat_stat.h3;
 
 -- remove temporary tables
@@ -83,7 +111,13 @@ create index on gat_stat using gist(geom);
 
 -- create temporary copy of gat_stat table
 drop table if exists gat_stat_copy;
-select h3, cost, geom into gat_stat_copy from gat_stat;
+create table gat_stat_copy as (
+    select h3, 
+           cost, 
+           geom 
+    from gat_stat
+);
+
 create index on gat_stat_copy using gist(geom);
 
 -- calculate costs for each pole

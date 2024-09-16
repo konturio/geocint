@@ -61,38 +61,7 @@ update gat_stat set fires_count = g.fires_count from gatlinburg_historical_fires
 -- calculate cost for county hexagons vased on mcda
 alter table gat_stat add column cost float;
 
-
-
-
-
-
-
 drop table if exists gat_cost;
--- create table gat_cost as (
---     select h3, 
---            coalesce((nareas - min(nareas) OVER ()) / stddev(nareas) OVER (), 0) + 
---            coalesce((total_road_length - min(total_road_length) OVER ()) / stddev(total_road_length) OVER (), 0) + 
---            coalesce((population - min(population) OVER ()) / stddev(population) OVER (), 0) + 
---            coalesce((avg_elevation_gebco_2022 - min(avg_elevation_gebco_2022) OVER ()) / stddev(avg_elevation_gebco_2022) OVER (), 0) + 
---            coalesce((builtup - min(builtup) OVER ()) / stddev(builtup) OVER (), 0) + 
---            coalesce((forest - min(forest) OVER ()) / stddev(forest) OVER (), 0) +
---            coalesce((fires_count - min(fires_count) OVER ()) / stddev(fires_count) OVER (), 0) as cost 
---     from gat_stat
--- );
-
-drop table if exists gat_cost;
--- create table gat_cost as (
---     select h3, 
---            coalesce((nareas - min(nareas) OVER ()) / stddev(nareas) OVER (), 0) + 
---            coalesce((total_road_length - min(total_road_length) OVER ()) / stddev(total_road_length) OVER (), 0) -
---            coalesce((population - min(population) OVER ()) / stddev(population) OVER (), 0) + 
---            coalesce((avg_slope_gebco_2022 - min(avg_slope_gebco_2022) OVER ()) / stddev(avg_slope_gebco_2022) OVER (), 0) * 2 + 
---            coalesce((gsa_ghi - min(gsa_ghi) OVER ()) / stddev(gsa_ghi) OVER (), 0) + 
---            coalesce((forest - min(forest) OVER ()) / stddev(forest) OVER (), 0) -
---            coalesce((fires_count - min(fires_count) OVER ()) / stddev(fires_count) OVER (), 0) as cost 
---     from gat_stat
--- );
-
 create table gat_cost as (
     select h3,
            coalesce((forest - min(forest) OVER ()) / (max(forest) OVER () - min(forest) OVER ()), 0) +
@@ -194,14 +163,6 @@ begin
             where ST_Intersects(a.geom,gat_stat_copy.geom);
 
         update gpranked set rank = counter where id in (select id from gpranked where rank is null order by cost desc limit 1);
-
-        -- update gpranked set cost = sq.updated_cost 
-        --     from gpranked g inner join 
-        --          (select n.id, 
-        --                  sum(t.cost) as updated_cost 
-        --           from gpranked n, 
-        --                gat_stat_copy t 
-        --           where st_intersects(n.geom,t.geom) and n.cost > 0 and rank is null group by n.id) as sq on g.id = sq.id where gpranked.id = sq.id;
 
         update gpranked set cost = sq.updated_cost 
             from gpranked g inner join 

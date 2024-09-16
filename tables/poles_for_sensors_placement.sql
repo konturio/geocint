@@ -1,7 +1,7 @@
 -- prepare county geometry
 drop table if exists gat_geom;
 create table gat_geom as (
-    select st_transform(geom, 3857) geom
+    select st_buffer(st_transform(geom, 3857),1608) geom
     from gatlinburg
 );
 
@@ -13,16 +13,16 @@ create table gat_stat as (
     select s.*,
            ST_Transform(h3_cell_to_boundary_geometry(s.h3), 3857) as geom
     from (select h3_cell_to_children(h3, 10) as h3, 
-                 total_road_length, 
-                 avg_elevation_gebco_2022, 
-                 builtup, 
+                 total_road_length,
+                 avg_slope_gebco_2022, 
                  forest, 
+                 gsa_ghi,
                  null::float as population
           from stat_h3 s, 
                gat_geom g 
           where resolution = 8 
                 and st_intersects(s.geom, g.geom)) s
-);
+); 
 
 -- join with population data on resolution 10
 drop table if exists gat_kp_h3r11;
@@ -56,24 +56,54 @@ update gat_stat set nareas = 0 where nareas is null;
 
 -- enrich data with historical fires count
 alter table gat_stat add column fires_count integer;
-update gat_stat set fires_count = fires_count from gatlinburg_historical_fires_h3_r10 g where g.h3 = gat_stat.h3;
+update gat_stat set fires_count = g.fires_count from gatlinburg_historical_fires_h3_r10 g where g.h3 = gat_stat.h3;
 
 -- calculate cost for county hexagons vased on mcda
 alter table gat_stat add column cost float;
 
-drop table if exists gat_cost;
-create table gat_cost as (
-    select h3, 
-           coalesce((nareas - min(nareas) OVER ()) / stddev(nareas) OVER (), 0) + 
-           coalesce((total_road_length - min(total_road_length) OVER ()) / stddev(total_road_length) OVER (), 0) + 
-           coalesce((population - min(population) OVER ()) / stddev(population) OVER (), 0) + 
-           coalesce((avg_elevation_gebco_2022 - min(avg_elevation_gebco_2022) OVER ()) / stddev(avg_elevation_gebco_2022) OVER (), 0) + 
-           coalesce((builtup - min(builtup) OVER ()) / stddev(builtup) OVER (), 0) + 
-           coalesce((forest - min(forest) OVER ()) / stddev(forest) OVER (), 0) +
-           coalesce((fires_count - min(fires_count) OVER ()) / stddev(fires_count) OVER (), 0) as cost 
-    from gat_stat
-);
 
+
+
+
+
+
+drop table if exists gat_cost;
+-- create table gat_cost as (
+--     select h3, 
+--            coalesce((nareas - min(nareas) OVER ()) / stddev(nareas) OVER (), 0) + 
+--            coalesce((total_road_length - min(total_road_length) OVER ()) / stddev(total_road_length) OVER (), 0) + 
+--            coalesce((population - min(population) OVER ()) / stddev(population) OVER (), 0) + 
+--            coalesce((avg_elevation_gebco_2022 - min(avg_elevation_gebco_2022) OVER ()) / stddev(avg_elevation_gebco_2022) OVER (), 0) + 
+--            coalesce((builtup - min(builtup) OVER ()) / stddev(builtup) OVER (), 0) + 
+--            coalesce((forest - min(forest) OVER ()) / stddev(forest) OVER (), 0) +
+--            coalesce((fires_count - min(fires_count) OVER ()) / stddev(fires_count) OVER (), 0) as cost 
+--     from gat_stat
+-- );
+
+drop table if exists gat_cost;
+-- create table gat_cost as (
+--     select h3, 
+--            coalesce((nareas - min(nareas) OVER ()) / stddev(nareas) OVER (), 0) + 
+--            coalesce((total_road_length - min(total_road_length) OVER ()) / stddev(total_road_length) OVER (), 0) -
+--            coalesce((population - min(population) OVER ()) / stddev(population) OVER (), 0) + 
+--            coalesce((avg_slope_gebco_2022 - min(avg_slope_gebco_2022) OVER ()) / stddev(avg_slope_gebco_2022) OVER (), 0) * 2 + 
+--            coalesce((gsa_ghi - min(gsa_ghi) OVER ()) / stddev(gsa_ghi) OVER (), 0) + 
+--            coalesce((forest - min(forest) OVER ()) / stddev(forest) OVER (), 0) -
+--            coalesce((fires_count - min(fires_count) OVER ()) / stddev(fires_count) OVER (), 0) as cost 
+--     from gat_stat
+-- );
+
+create table gat_cost as (
+    select h3,
+           coalesce((forest - min(forest) OVER ()) / (max(forest) OVER () - min(forest) OVER ()), 0) +
+           coalesce((nareas - min(nareas) OVER ()) / (max(nareas) OVER () - min(nareas) OVER ()), 0) +
+           coalesce((total_road_length - min(total_road_length) OVER ()) / (max(total_road_length) OVER () - min(total_road_length) OVER ()), 0) +
+           (1-coalesce((population - min(population) OVER ()) / (max(population) OVER () - min(population) OVER ()), 0)) +
+           coalesce((avg_slope_gebco_2022 - min(avg_slope_gebco_2022) OVER ()) / (max(avg_slope_gebco_2022) OVER () - min(avg_slope_gebco_2022) OVER ()), 0) +
+           coalesce((gsa_ghi - min(gsa_ghi) OVER ()) / (max(gsa_ghi) OVER () - min(gsa_ghi) OVER ()), 0)
+           as cost
+    from gat_stat
+); 
 update gat_stat set cost = t.cost from gat_cost t where t.h3 = gat_stat.h3;
 
 -- remove temporary tables
@@ -82,32 +112,32 @@ drop table if exists gat_count;
 
 create index on gat_stat using gist(geom);
 
--- just keep this code block as a first approach - use weighted centroids of clusters instead of poles
--- -- clusterize hexagons
--- drop table if exists proposed_points;
--- create table proposed_points as
--- select
---     geom,cost,
---     ST_ClusterKMeans(
---         ST_Force4D(
---             ST_Transform(ST_Force3D(geom), 4978), -- cluster in 3D XYZ CRS
---             mvalue := cost
---         ),
---         120,                      -- aim to generate at least 20 clusters
---         max_radius := 1600  -- but generate more to make each under 3000 km radius
---     ) over () as cid
--- from
---     gat_stat;
+just keep this code block as a first approach - use weighted centroids of clusters instead of poles
+-- clusterize hexagons
+drop table if exists proposed_points;
+create table proposed_points as
+select
+    geom,cost,
+    ST_ClusterKMeans(
+        ST_Force4D(
+            ST_Transform(ST_Force3D(geom), 4978), -- cluster in 3D XYZ CRS
+            mvalue := cost
+        ),
+        120,                      -- aim to generate at least 20 clusters
+        max_radius := 1600  -- but generate more to make each under 3000 km radius
+    ) over () as cid
+from
+    gat_stat;
 
--- -- transform cluster areas to centroids (proposed sensors placement)
--- drop table if exists proposed_centroids ;
--- create table proposed_centroids as (
---     select st_centroid(st_collect(geom)) as geom, 
---            row_number() over (order by sum(cost) desc) n, 
---            sum(cost),
---            ST_MakePoint(SUM(ST_X(st_centroid(geom)) * cost) / SUM(cost), SUM(ST_Y(st_centroid(geom)) * cost) / SUM(cost)) AS weighted_centroid
---     from proposed_points group by cid 
--- );
+-- transform cluster areas to centroids (proposed sensors placement)
+drop table if exists proposed_centroids ;
+create table proposed_centroids as (
+    select st_centroid(st_collect(geom)) as geom, 
+           row_number() over (order by sum(cost) desc) n, 
+           sum(cost),
+           ST_MakePoint(SUM(ST_X(st_centroid(geom)) * cost) / SUM(cost), SUM(ST_Y(st_centroid(geom)) * cost) / SUM(cost)) AS weighted_centroid
+    from proposed_points group by cid 
+);
 
 -- create temporary copy of gat_stat table
 drop table if exists gat_stat_copy;
@@ -124,23 +154,31 @@ create index on gat_stat_copy using gist(geom);
 drop table if exists gat_poles;
 create table gat_poles as (
     select objectid    as objectid,
+           id, 
            sum(c.cost) as cost,
+           priority,
            source,
            g.geom      as geom
     from gatlinburg_poles g,
          gat_stat c
     where ST_Intersects(st_transform(g.geom,3857),c.geom)
+    group by 1,2,4,5,6
 );
 
 -- crate temporary poly tables with points represented as a buffer area, to speedup future calculations 
 drop table if exists gpranked;
-select objectid as id, 
-       cost     as cost_source, 
-       cost, 
-       row_number() over (order by cost desc) n, 
-       null::integer as rank, 
-       st_buffer(st_transform(geom, 3857),1608) geom 
-into gpranked from gat_poles;
+create table gpranked as (
+    select id   as id, 
+           cost as cost_source, 
+           priority,
+           cost, 
+           row_number() over (order by cost desc) n, 
+           null::integer as rank, 
+           st_buffer(st_transform(geom, 3857),1608) geom 
+    from gat_poles
+);
+create index on gpranked using brin(cost);
+create index on gpranked using gist(geom);
 
 -- set rank to the most suitable poles and reestimate costs for other in loop
 -- all poles should take their reestimated cost and rank if reestimated cost > 0
@@ -149,7 +187,7 @@ $$
 declare 
     counter integer := 1;
 begin 
-    while 0 < (select count(*) from gpranked where rank is null) loop
+    while 0 < (select count(*) from gpranked where rank is null and cost > 0) loop
         raise notice 'Counter %', counter;        
 
         update gat_stat_copy set cost = 0 from (select geom from gpranked where rank is null order by cost desc limit 1) a
@@ -157,13 +195,21 @@ begin
 
         update gpranked set rank = counter where id in (select id from gpranked where rank is null order by cost desc limit 1);
 
+        -- update gpranked set cost = sq.updated_cost 
+        --     from gpranked g inner join 
+        --          (select n.id, 
+        --                  sum(t.cost) as updated_cost 
+        --           from gpranked n, 
+        --                gat_stat_copy t 
+        --           where st_intersects(n.geom,t.geom) and n.cost > 0 and rank is null group by n.id) as sq on g.id = sq.id where gpranked.id = sq.id;
+
         update gpranked set cost = sq.updated_cost 
             from gpranked g inner join 
                  (select n.id, 
                          sum(t.cost) as updated_cost 
                   from gpranked n, 
                        gat_stat_copy t 
-                  where st_intersects(n.geom,t.geom) and n.cost > 0 and rank is null group by n.id) as sq on g.id = sq.id where gpranked.id = sq.id;
+                  where st_intersects(n.geom, t.geom) and n.cost > 0 and rank is null and ST_Intersects(n.geom, (select geom from gpranked where rank is not null order by rank desc limit 1)) group by n.id) as sq on g.id = sq.id where gpranked.id = sq.id;
 
         counter := counter + 1;
     end loop;
@@ -182,7 +228,7 @@ create table poles_for_sensors_placement as (
            g.geom 
     from gat_poles g,
          gpranked t
-    where g.objectid = t.id
+    where g.id = t.id
 );
 
 -- remove temporary tables

@@ -1,0 +1,75 @@
+drop table if exists gat_stat_filtred;
+select s.* into gat_stat_filtred from gat_stat s, gat_poles_3857 p where not st_dwithin(s.geom, p.geom, 804);
+
+drop table if exists proposed_points;
+create table proposed_points as
+select
+    geom,cost,
+    ST_ClusterKMeans(
+        ST_Force4D(
+            ST_Transform(ST_Force3D(geom), 4978), -- cluster in 3D XYZ CRS
+            mvalue := cost
+        ),
+        120,                      -- aim to generate at least 20 clusters
+        max_radius := 765  -- but generate more to make each under 3000 km radius
+    ) over () as cid
+from
+    gat_stat_filtred;
+
+-- transform cluster areas to centroids (proposed sensors placement)
+drop table if exists proposed_centroids ;
+create table proposed_centroids as (
+    select st_setsrid(st_centroid(st_collect(geom)),3857) as geom, 
+           row_number() over (order by sum(cost) desc) n, 
+           sum(cost),
+           ST_MakePoint(SUM(ST_X(st_centroid(geom)) * cost) / SUM(cost), SUM(ST_Y(st_centroid(geom)) * cost) / SUM(cost)) AS weighted_centroid
+    from proposed_points group by cid 
+);
+
+-- merge poles with candidates
+drop table if exists gat_cand_in;
+create table gat_cand_in as (
+    select a.* 
+    from (select source as source, id as id, geom from gat_poles union all select 'centroid' as source, n + 10000 as id, st_transform(st_setsrid(geom,3857),4326) geom from prop_cent_filtered) a, gatlinburg g where st_within(a.geom,g.geom)
+);
+
+-- calculate costs for each pole
+drop table if exists gat_cand;
+create table gat_cand as (
+    select source,
+           id, 
+           sum(c.cost) as cost,
+           null::numeric as dist_network,
+           row_number() over (order by sum(cost) desc) rank,
+           g.geom::geography as geog           
+    from gat_cand_in g,
+         gat_stat c
+    where ST_Intersects(st_transform(g.geom,3857),c.geom)
+    group by 1,2,4,6
+);
+
+update gat_cand set dist_network = st_distance(gat_cand.geog,k.geog) from (select geog from gat_cand where rank = 1) k where st_dwithin(gat_cand.geog,k.geog,3216);
+
+drop table if exists gat_cand_copy;
+create table gat_cand_copy as (select * from gat_cand);
+
+drop table if exists proposed_points;
+create table proposed_points as (select * from gat_cand where rank = 1);
+
+do
+$$
+declare 
+    counter integer := 1;
+begin 
+    while counter < 25 loop --(select count(*) from gpranked where rank is null and cost > 0) loop
+        raise notice 'Counter %', counter; 
+
+        insert into proposed_points (select source, id, cost, dist_network, counter + 1, geog from gat_cand_copy where dist_network > 1608 order by cost desc limit 1);
+
+        update gat_cand_copy set dist_network = st_distance(gat_cand_copy.geog,k.geog) 
+            from (select st_collect(geog::geometry)::geography as geog from proposed_points) k where st_dwithin(gat_cand_copy.geog,k.geog,3216);       
+
+        counter := counter + 1;
+    end loop;
+end;
+$$;

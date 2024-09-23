@@ -65,6 +65,7 @@ update gatlinburg_stat_h3_r10 set total_road_length = 1 where total_road_length 
 -- calculate cost for county hexagons vased on mcda
 alter table gatlinburg_stat_h3_r10 add column cost float;
 
+-- implement cost calculation with mcda based on stat_h3 indicators
 drop table if exists gatlinburg_cost;
 create table gatlinburg_cost as (
     select h3,

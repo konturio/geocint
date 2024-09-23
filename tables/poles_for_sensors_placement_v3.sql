@@ -8,14 +8,15 @@ create table gatlinburg_geom as (
 create index on gatlinburg_geom using gist(geom);
 
 -- extract data from stat_h3 for county area
-drop table if exists gatlinburg_stat;
-create table gatlinburg_stat as (
+drop table if exists gatlinburg_stat_h3_r10;
+create table gatlinburg_stat_h3_r10 as (
     select s.*,
            ST_Transform(h3_cell_to_boundary_geometry(s.h3), 3857) as geom
     from (select h3_cell_to_children(h3, 10) as h3, 
                  total_road_length,
                  avg_slope_gebco_2022, 
-                 forest, 
+                 forest,
+                 builtup,
                  gsa_ghi,
                  null::float as population
           from stat_h3 s, 
@@ -34,35 +35,35 @@ create table gatlinburg_kp_h3r11 as (
           and k.resolution = 10
 );
 
-update gatlinburg_stat set population = k.population from gatlinburg_kp_h3r11 k where k.h3 = gatlinburg_stat.h3;
+update gatlinburg_stat_h3_r10 set population = k.population from gatlinburg_kp_h3r11 k where k.h3 = gatlinburg_stat_h3_r10.h3;
 
 -- remove temporary tables
 drop table if exists gatlinburg_geom;
 drop table if exists gatlinburg_kp_h3r11;
 
 -- calculate intersections between county hexagons and area of concern
-alter table gatlinburg_stat add column nareas integer;
+alter table gatlinburg_stat_h3_r10 add column nareas integer;
 drop table if exists gatlinburg_count;
 create table gatlinburg_count as (
     select h3, count(*) 
-    from gatlinburg_stat g, 
+    from gatlinburg_stat_h3_r10 g, 
          areas_of_concern c 
     where st_intersects(g.geom, st_transform(c.geom, 3857)) 
     group by h3
 );
 
-update gatlinburg_stat set nareas = g.count from gatlinburg_count g where g.h3 = gatlinburg_stat.h3;
-update gatlinburg_stat set nareas = 0 where nareas is null;
+update gatlinburg_stat_h3_r10 set nareas = g.count from gatlinburg_count g where g.h3 = gatlinburg_stat_h3_r10.h3;
+update gatlinburg_stat_h3_r10 set nareas = 0 where nareas is null;
 
 -- enrich data with historical fires count
--- alter table gatlinburg_stat add column fires_count integer;
--- update gatlinburg_stat set fires_count = g.fires_count from gatlinburg_historical_fires_h3_r10 g where g.h3 = gatlinburg_stat.h3;
+-- alter table gatlinburg_stat_h3_r10 add column fires_count integer;
+-- update gatlinburg_stat_h3_r10 set fires_count = g.fires_count from gatlinburg_historical_fires_h3_r10 g where g.h3 = gatlinburg_stat_h3_r10.h3;
 
-update gatlinburg_stat set nareas = 1 where nareas > 0;
-update gatlinburg_stat set total_road_length = 1 where total_road_length > 0;
+update gatlinburg_stat_h3_r10 set nareas = 1 where nareas > 0;
+update gatlinburg_stat_h3_r10 set total_road_length = 1 where total_road_length > 0;
 
 -- calculate cost for county hexagons vased on mcda
-alter table gatlinburg_stat add column cost float;
+alter table gatlinburg_stat_h3_r10 add column cost float;
 
 drop table if exists gatlinburg_cost;
 create table gatlinburg_cost as (
@@ -74,17 +75,17 @@ create table gatlinburg_cost as (
            coalesce((avg_slope_gebco_2022 - min(avg_slope_gebco_2022) OVER ()) / (max(avg_slope_gebco_2022) OVER () - min(avg_slope_gebco_2022) OVER ()), 0) +
            coalesce((gsa_ghi - min(gsa_ghi) OVER ()) / (max(gsa_ghi) OVER () - min(gsa_ghi) OVER ()), 0)
            as cost
-    from gatlinburg_stat
+    from gatlinburg_stat_h3_r10
 ); 
-update gatlinburg_stat set cost = t.cost from gatlinburg_cost t where t.h3 = gatlinburg_stat.h3;
+update gatlinburg_stat_h3_r10 set cost = t.cost from gatlinburg_cost t where t.h3 = gatlinburg_stat_h3_r10.h3;
 
 -- remove temporary tables
 drop table if exists gatlinburg_cost;
 drop table if exists gatlinburg_count;
 
-create index on gatlinburg_stat using gist(geom);
+create index on gatlinburg_stat_h3_r10 using gist(geom);
 
-just keep this code block as a first approach - use weighted centroids of clusters instead of poles
+-- just keep this code block as a first approach - use weighted centroids of clusters instead of poles
 -- clusterize hexagons
 drop table if exists proposed_points;
 create table proposed_points as
@@ -95,11 +96,11 @@ select
             ST_Transform(ST_Force3D(geom), 4978), -- cluster in 3D XYZ CRS
             mvalue := cost
         ),
-        120,                      -- aim to generate at least 20 clusters
-        max_radius := 1600  -- but generate more to make each under 3000 km radius
+        120,                      -- aim to generate at least 120 clusters
+        max_radius := 1565  -- but generate more to make each under mile radius (taking into account h3 r10 radius)
     ) over () as cid
 from
-    gatlinburg_stat;
+    gatlinburg_stat_h3_r10;
 
 -- transform cluster areas to centroids (proposed sensors placement)
 drop table if exists proposed_centroids ;
@@ -111,35 +112,35 @@ create table proposed_centroids as (
     from proposed_points group by cid 
 );
 
--- create temporary copy of gatlinburg_stat table
-drop table if exists gatlinburg_stat_copy;
-create table gatlinburg_stat_copy as (
+-- create temporary copy of gatlinburg_stat_h3_r10 table
+drop table if exists gatlinburg_stat_h3_r10_copy;
+create table gatlinburg_stat_h3_r10_copy as (
     select h3, 
            cost, 
            geom 
-    from gatlinburg_stat
+    from gatlinburg_stat_h3_r10
 );
 
-create index on gatlinburg_stat_copy using gist(geom);
+create index on gatlinburg_stat_h3_r10_copy using gist(geom);
 
 -- calculate costs for each pole
 drop table if exists gatlinburg_poles;
 create table gatlinburg_poles as (
-    select objectid    as objectid,
-           id, 
+    select objectid    as objectid, -- id in source table, keep to be able to make fast join with source info
+           id, -- id in table after merge all sources
            sum(c.cost) as cost,
            priority,
            source,
            g.geom      as geom
     from gatlinburg_poles g,
-         gatlinburg_stat c
+         gatlinburg_stat_h3_r10 c
     where ST_Intersects(st_transform(g.geom,3857),c.geom)
     group by 1,2,4,5,6
 );
 
 -- crate temporary poly tables with points represented as a buffer area, to speedup future calculations 
-drop table if exists gpranked;
-create table gpranked as (
+drop table if exists gatlinburg_poles_ranked;
+create table gatlinburg_poles_ranked as (
     select id   as id, 
            cost as cost_source, 
            priority,
@@ -149,8 +150,8 @@ create table gpranked as (
            st_buffer(st_transform(geom, 3857),1608) geom 
     from gatlinburg_poles
 );
-create index on gpranked using brin(cost);
-create index on gpranked using gist(geom);
+create index on gatlinburg_poles_ranked using brin(cost);
+create index on gatlinburg_poles_ranked using gist(geom);
 
 -- set rank to the most suitable poles and reestimate costs for other in loop
 -- all poles should take their reestimated cost and rank if reestimated cost > 0
@@ -159,21 +160,21 @@ $$
 declare 
     counter integer := 1;
 begin 
-    while 0 < (select count(*) from gpranked where rank is null and cost > 0) loop
+    while 0 < (select count(*) from gatlinburg_poles_ranked where rank is null and cost > 0) loop
         raise notice 'Counter %', counter;        
 
-        update gatlinburg_stat_copy set cost = 0 from (select geom from gpranked where rank is null order by cost desc limit 1) a
-            where ST_Intersects(a.geom,gatlinburg_stat_copy.geom);
+        update gatlinburg_stat_h3_r10_copy set cost = 0 from (select geom from gatlinburg_poles_ranked where rank is null order by cost desc limit 1) a
+            where ST_Intersects(a.geom,gatlinburg_stat_h3_r10_copy.geom);
 
-        update gpranked set rank = counter where id in (select id from gpranked where rank is null order by cost desc limit 1);
+        update gatlinburg_poles_ranked set rank = counter where id in (select id from gatlinburg_poles_ranked where rank is null order by cost desc limit 1);
 
-        update gpranked set cost = sq.updated_cost 
-            from gpranked g inner join 
+        update gatlinburg_poles_ranked set cost = sq.updated_cost 
+            from gatlinburg_poles_ranked g inner join 
                  (select n.id, 
                          sum(t.cost) as updated_cost 
-                  from gpranked n, 
-                       gatlinburg_stat_copy t 
-                  where st_intersects(n.geom, t.geom) and n.cost > 0 and rank is null and ST_Intersects(n.geom, (select geom from gpranked where rank is not null order by rank desc limit 1)) group by n.id) as sq on g.id = sq.id where gpranked.id = sq.id;
+                  from gatlinburg_poles_ranked n, 
+                       gatlinburg_stat_h3_r10_copy t 
+                  where st_intersects(n.geom, t.geom) and n.cost > 0 and rank is null and ST_Intersects(n.geom, (select geom from gatlinburg_poles_ranked where rank is not null order by rank desc limit 1)) group by n.id) as sq on g.id = sq.id where gatlinburg_poles_ranked.id = sq.id;
 
         counter := counter + 1;
     end loop;
@@ -191,17 +192,17 @@ create table poles_for_sensors_placement as (
            t.rank as updated_rank,
            g.geom 
     from gatlinburg_poles g,
-         gpranked t
+         gatlinburg_poles_ranked t
     where g.id = t.id
 );
 
 -- remove temporary tables
-drop table if exists gpranked;
+drop table if exists gatlinburg_poles_ranked;
 
--- enrich gatlinburg_stat table with updated costs, to keep information about ares
+-- enrich gatlinburg_stat_h3_r10 table with updated costs, to keep information about ares
 -- that weren't covered with sensors
-alter table gatlinburg_stat add column updated_cost numeric;
-update table gatlinburg_stat set updated_cost = g.cost from gatlinburg_stat_copy g where gatlinburg_stat.h3 = g.h3; 
+alter table gatlinburg_stat_h3_r10 add column updated_cost numeric;
+update table gatlinburg_stat_h3_r10 set updated_cost = g.cost from gatlinburg_stat_h3_r10_copy g where gatlinburg_stat_h3_r10.h3 = g.h3; 
 
 -- calculate 1 mile buffer buffer
 drop table  if exists wildfire_sensors_placement_1_mile_buffer;
@@ -215,4 +216,4 @@ create table wildfire_sensors_placement_1_mile_buffer as (
 );
 
 -- remove temporary tables
-drop table if exists gatlinburg_stat_copy;
+drop table if exists gatlinburg_stat_h3_r10_copy;

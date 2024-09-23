@@ -51,12 +51,15 @@ create table gat_count as (
     group by h3
 );
 
-update gat_stat set nareas = g.count from gat_count g where g.h3 = gat_stat.h3; 
+update gat_stat set nareas = g.count from gat_count g where g.h3 = gat_stat.h3;
 update gat_stat set nareas = 0 where nareas is null;
 
 -- enrich data with historical fires count
-alter table gat_stat add column fires_count integer;
-update gat_stat set fires_count = g.fires_count from gatlinburg_historical_fires_h3_r10 g where g.h3 = gat_stat.h3;
+-- alter table gat_stat add column fires_count integer;
+-- update gat_stat set fires_count = g.fires_count from gatlinburg_historical_fires_h3_r10 g where g.h3 = gat_stat.h3;
+
+update gat_stat set nareas = 1 where nareas > 0;
+update gat_stat set total_road_length = 1 where total_road_length > 0;
 
 -- calculate cost for county hexagons vased on mcda
 alter table gat_stat add column cost float;

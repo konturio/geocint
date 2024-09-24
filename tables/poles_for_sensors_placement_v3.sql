@@ -62,7 +62,7 @@ update gatlinburg_stat_h3_r10 set nareas = 0 where nareas is null;
 update gatlinburg_stat_h3_r10 set nareas = 1 where nareas > 0;
 update gatlinburg_stat_h3_r10 set total_road_length = 1 where total_road_length > 0;
 
--- calculate cost for county hexagons vased on mcda
+-- calculate cost for county hexagons based on mcda
 alter table gatlinburg_stat_h3_r10 add column cost float;
 
 -- implement cost calculation with mcda based on stat_h3 indicators
@@ -97,8 +97,8 @@ select
             ST_Transform(ST_Force3D(geom), 4978), -- cluster in 3D XYZ CRS
             mvalue := cost
         ),
-        120,                      -- aim to generate at least 120 clusters
-        max_radius := 1565  -- but generate more to make each under mile radius (taking into account h3 r10 radius)
+        120, -- aim to generate at least 120 clusters
+        max_radius := 1608.3 - h3_get_hexagon_edge_length_avg(10,'m')  -- but generate more to make each under mile radius (taking into account h3 r10 radius)
     ) over () as cid
 from
     gatlinburg_stat_h3_r10;

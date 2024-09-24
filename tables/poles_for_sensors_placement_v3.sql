@@ -88,8 +88,8 @@ create index on gatlinburg_stat_h3_r10 using gist(geom);
 
 -- just keep this code block as a first approach - use weighted centroids of clusters instead of poles
 -- clusterize hexagons
-drop table if exists proposed_points;
-create table proposed_points as
+drop table if exists clusterized_hexagons;
+create table clusterized_hexagons as
 select
     geom,cost,
     ST_ClusterKMeans(
@@ -101,7 +101,8 @@ select
         max_radius := 1608.3 - h3_get_hexagon_edge_length_avg(10,'m')  -- but generate more to make each under mile radius (taking into account h3 r10 radius)
     ) over () as cid
 from
-    gatlinburg_stat_h3_r10;
+--     gatlinburg_stat_h3_r10;
+gat_stat;
 
 -- transform cluster areas to centroids (proposed sensors placement)
 drop table if exists proposed_centroids ;
@@ -109,8 +110,8 @@ create table proposed_centroids as (
     select st_centroid(st_collect(geom)) as geom, 
            row_number() over (order by sum(cost) desc) n, 
            sum(cost),
-           ST_MakePoint(SUM(ST_X(st_centroid(geom)) * cost) / SUM(cost), SUM(ST_Y(st_centroid(geom)) * cost) / SUM(cost)) AS weighted_centroid
-    from proposed_points group by cid 
+           ST_WeightedCentroids(geom, cost) AS weighted_centroid
+    from clusterized_hexagons group by cid
 );
 
 -- create temporary copy of gatlinburg_stat_h3_r10 table

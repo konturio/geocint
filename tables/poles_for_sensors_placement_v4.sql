@@ -28,7 +28,7 @@ create table proposed_centroids as (
     select st_setsrid(st_centroid(st_collect(geom)),3857) as geom, 
            row_number() over (order by sum(cost) desc) n, 
            sum(cost),
-           ST_MakePoint(SUM(ST_X(st_centroid(geom)) * cost) / SUM(cost), SUM(ST_Y(st_centroid(geom)) * cost) / SUM(cost)) AS weighted_centroid
+           ST_WeightedCentroids(geom, cost) AS weighted_centroid
     from gatlinburg_stat_h3_r10_clusters group by cid
 );
 

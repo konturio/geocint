@@ -3034,6 +3034,9 @@ db/table/humanitarian_dev_index_2022_h3: db/table/kontur_boundaries db/table/hum
 ### END Humanitarian Development Index
 
 ### N5 Wildfire sensors placement block
+db/function/st_weightedcentroids: | db/function ## Converts text into a float or a NULL.
+	psql -f functions/st_weightedcentroids.sql
+	touch $@
 
 db/table/sevier_county_poles_without_osm: | db/table ## Load data about Sevier County poles
 	psql -c "drop table if exists sevier_county_poles_without_osm;"
@@ -3060,7 +3063,7 @@ db/table/gatlinburg_poles: db/index/osm_tags_idx db/table/sevier_county_poles_wi
 	psql -f tables/gatlinburg_poles.sql
 	touch $@
 
-db/table/poles_for_sensors_placement_v3: db/table/gatlinburg_poles db/table/gatlinburg_historical_fires_h3_r10 db/table/gatlinburg db/table/areas_of_concern db/table/kontur_population_h3 | db/table ## select poles suitable for wildfire sensors placement (ruquires kontur_population on resolution 10) version 3 without new requirements about placement sensors between 1 and 2 miles
+db/table/poles_for_sensors_placement_v3: db/table/gatlinburg_poles db/table/gatlinburg_historical_fires_h3_r10 db/table/gatlinburg db/table/areas_of_concern db/table/kontur_population_h3 db/function/st_weightedcentroids | db/table ## select poles suitable for wildfire sensors placement (ruquires kontur_population on resolution 10) version 3 without new requirements about placement sensors between 1 and 2 miles
 	psql -f poles_for_sensors_placement_v3.sql
 	touch $@
 
@@ -3073,7 +3076,7 @@ data/out/data/out/v3_output: db/table/poles_for_sensors_placement_v3 | data/out/
 	ogr2ogr -f GPKG data/out/data/out/uncovered_areas.gpkg PG:'dbname=gis' -sql "select h3, cost, updated_cost, geom from gatlinburg_stat_h3_r10 where updated_cost > 0 order by h3" -lco "SPATIAL_INDEX=NO" -nln uncovered_areas
 	touch $@
 
-db/table/poles_for_sensors_placement_v4: db/table/poles_for_sensors_placement_v3 | db/table ## V4 create 2 scenarios for wildfire sensors placement (ruquires kontur_population on resolution 10) version 4 with new requirements about placement sensors between 1 and 2 miles
+db/table/poles_for_sensors_placement_v4: db/table/poles_for_sensors_placement_v3 db/function/st_weightedcentroids | db/table ## V4 create 2 scenarios for wildfire sensors placement (ruquires kontur_population on resolution 10) version 4 with new requirements about placement sensors between 1 and 2 miles
 	psql -f poles_for_sensors_placement_v4.sql
 	touch $@
 

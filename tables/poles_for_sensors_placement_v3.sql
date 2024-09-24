@@ -205,7 +205,7 @@ drop table if exists gatlinburg_poles_ranked;
 alter table gatlinburg_stat_h3_r10 add column updated_cost numeric;
 update table gatlinburg_stat_h3_r10 set updated_cost = g.cost from gatlinburg_stat_h3_r10_copy g where gatlinburg_stat_h3_r10.h3 = g.h3; 
 
--- calculate 1 mile buffer buffer
+-- calculate 1 mile buffer
 drop table  if exists wildfire_sensors_placement_1_mile_buffer;
 create table wildfire_sensors_placement_1_mile_buffer as (
     select updated_rank, 

@@ -122,7 +122,7 @@ begin
 
         -- generate 1 mile buffer zone for proposed output points
         drop table if exists proposed_points_v4_buffer_1_mile_1_clusters;
-        create table proposed_points_v4_buffer_1_mile_1_clusters as (select source, id, cost, st_buffer(geog, 1608) as buffer_1_mile from proposed_points_1_scenario_output);
+        create table proposed_points_v4_buffer_1_mile_1_clusters as (select source, id, cost, st_buffer(geog, 1608)::geometry as buffer_1_mile from proposed_points_1_scenario_output);
 
         -- take fresh candidates table for new iteration
         drop table if exists gatlinburg_candidates_copy;
@@ -286,13 +286,13 @@ create table proposed_points_v4_buffer_1_mile_2_clusters as (
     select rank as updated_rank,
            cost,
            dist_network,
-           st_buffer(geog, 1608) as buffer_1_mile
+           st_buffer(geog, 1608)::geometry as buffer_1_mile
     from proposed_points_2_scenario_first_cluster
     union all
     select rank as updated_rank,
            cost,
            dist_network,
-           st_buffer(geog, 1608) as buffer_1_mile
+           st_buffer(geog, 1608)::geometry as buffer_1_mile
     from proposed_points_2_scenario_second_cluster
 );
 

@@ -1,7 +1,7 @@
 -- prepare county geometry
 drop table if exists gatlinburg_geom;
 create table gatlinburg_geom as (
-    select st_buffer(st_transform(geom, 3857),1608) geom
+    select st_buffer(geom::geography,1608.3)::geometry geom
     from gatlinburg
 );
 
@@ -148,10 +148,10 @@ create table gatlinburg_poles_ranked as (
            cost, 
            row_number() over (order by cost desc) n, 
            null::integer as rank, 
-           st_buffer(st_transform(geom, 3857),1608) geom 
+           st_buffer(geom::geography,1608.3)::geometry as geom
     from gatlinburg_poles
 );
-create index on gatlinburg_poles_ranked using brin(cost);
+create index on gatlinburg_poles_ranked using btree(cost);
 create index on gatlinburg_poles_ranked using gist(geom);
 
 -- set rank to the most suitable poles and reestimate costs for other in loop
@@ -211,7 +211,7 @@ create table wildfire_sensors_placement_1_mile_buffer as (
     select updated_rank, 
            cost_source, 
            cost, 
-           st_buffer(st_transform(geom,3857), 1608) as buffer_1_mile 
+           st_buffer(geom::geography,1608.3)::geometry as buffer_1_mile
     from poles_for_sensors_placement 
     where updated_cost > 0
 );

@@ -4,7 +4,7 @@ drop function if exists st_weightedcentroids_sfunc(jsonb, geometry, double preci
 drop function if exists st_weightedcentroids_finalfn(jsonb);
 
 -- State transition function
--- call one time per row to calculate intermadiate result
+-- call one time per row to calculate intermediate result
 create or replace function st_weightedcentroids_sfunc(state jsonb,
                                                       geom geometry,
                                                       cost double precision

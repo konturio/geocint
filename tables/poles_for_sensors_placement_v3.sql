@@ -126,8 +126,8 @@ create table gatlinburg_stat_h3_r10_copy as (
 create index on gatlinburg_stat_h3_r10_copy using gist(geom);
 
 -- calculate costs for each pole
-drop table if exists gatlinburg_poles;
-create table gatlinburg_poles as (
+drop table if exists gatlinburg_poles_with_calculated_cost;
+create table gatlinburg_poles_with_calculated_cost as (
     select objectid    as objectid, -- id in source table, keep to be able to make fast join with source info
            id, -- id in table after merge all sources
            sum(c.cost) as cost,
@@ -150,7 +150,7 @@ create table gatlinburg_poles_ranked as (
            row_number() over (order by cost desc) n, 
            null::integer as rank, 
            st_buffer(geom::geography,1608.3)::geometry as geom
-    from gatlinburg_poles
+    from gatlinburg_poles_with_calculated_cost
 );
 create index on gatlinburg_poles_ranked using btree(cost);
 create index on gatlinburg_poles_ranked using gist(geom);

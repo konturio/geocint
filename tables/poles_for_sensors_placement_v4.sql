@@ -30,7 +30,7 @@ create table proposed_centroids as (
     select ST_Setsrid(ST_Centroid(ST_Collect(geom)),3857) as geom, 
            row_number() over (order by sum(cost) desc) n, 
            sum(cost),
-           ST_WeightedCentroids(geom, cost) AS weighted_centroid
+           ST_WeightedCentroids(geom, cost) as weighted_centroid
     from gatlinburg_stat_h3_r10_clusters group by cid
 );
 
@@ -74,23 +74,33 @@ drop table if exists gatlinburg_stat_h3_r10_clusters;
 
 -- chose best location in cycle, to fix local maximum
 drop table if exists gatlinburg_candidates_copy;
-create table gatlinburg_candidates_copy as (select * from gatlinburg_candidates);
+create table gatlinburg_candidates_copy as (
+    select * from gatlinburg_candidates
+);
 
 -- choose the best point by cost as a start point
 drop table if exists proposed_points_1_scenario;
-create table proposed_points_1_scenario as (select * from gatlinburg_candidates where rank = 1);
+create table proposed_points_1_scenario as (
+    select * from gatlinburg_candidates where rank = 1
+);
 
 -- -- uncomment this block to chose median pole as a start point
--- drop table if exists proposed_points_1_scenario;
--- create table proposed_points_1_scenario as (select source, id, cost, dist_network, 1 as rank, geog
---                                  from gatlinburg_candidates_copy
---                                  order by ST_Distance(geog, ST_Transform(
---                                          (select ST_GeometricMedian(ST_Collect(ST_Force4D(
---                                                  ST_Transform(ST_Force3D(ST_Centroid(geom)), 4978), -- cluster in 3D XYZ CRS
---                                                  mvalue := cost
---                                              )))
---                                           from gatlinburg_stat_h3_r10), 4326)::geography)
---                                  limit 1);
+drop table if exists proposed_points_1_scenario;
+create table proposed_points_1_scenario as (
+    select source,
+           id,
+           cost,
+           dist_network,
+           1 as rank,
+           geog
+    from gatlinburg_candidates_copy
+    order by ST_Distance(geog, ST_Transform(
+                                          (select ST_GeometricMedian(ST_Collect(ST_Force4D(
+                                              ST_Transform(ST_Force3D(ST_Centroid(geom)), 4978), -- cluster in 3D XYZ CRS
+                                                  mvalue := cost)))
+                                          from gatlinburg_stat_h3_r10), 4326)::geography)
+    limit 1
+);
 
 -- initialize first neighbors with distance to seed pole
 update gatlinburg_candidates_copy
@@ -118,7 +128,12 @@ begin
             while counter < 25 loop --(select count(*) from gatlinburg_poles_ranked where rank is null and cost > 0) loop
                 raise notice 'Counter %', counter;
 
-                insert into proposed_points_1_scenario (select source, id, cost, dist_network, counter + 1, geog
+                insert into proposed_points_1_scenario (select source,
+                                                               id,
+                                                               cost,
+                                                               dist_network,
+                                                               counter + 1,
+                                                               geog
                                                         from gatlinburg_candidates_copy
                                                         where dist_network > 1608.3
                                                         order by cost desc limit 1);
@@ -136,7 +151,9 @@ begin
 
         -- generate output final table for first scenario
         drop table if exists proposed_points_1_scenario_output;
-        create table proposed_points_1_scenario_output as (select * from proposed_points_1_scenario);
+        create table proposed_points_1_scenario_output as (
+            select * from proposed_points_1_scenario
+        );
 
         -- generate 1 mile buffer zone for proposed output points
         drop table if exists proposed_points_v4_buffer_1_mile_1_clusters;
@@ -150,7 +167,9 @@ begin
 
         -- take fresh candidates table for new iteration
         drop table if exists gatlinburg_candidates_copy;
-        create table gatlinburg_candidates_copy as (select * from gatlinburg_candidates);
+        create table gatlinburg_candidates_copy as (
+            select * from gatlinburg_candidates
+        );
 
         -- find cluster centroid
         drop table if exists gatlinburg_pp_median_centoid;
@@ -216,7 +235,7 @@ create table gatlinburg_candidates as (
            id,
            sum(c.cost) as cost,
            null::numeric as dist_network,
-           row_number() over (order by sum(cost) desc) rank,
+           row_number() over (order by sum(cost) desc) as rank,
            g.geom::geography as geog
     from gatlinburg_candidates_in g,
          gatlinburg_stat_h3_r10 c
@@ -228,11 +247,15 @@ create table gatlinburg_candidates as (
 drop table if exists gatlinburg_candidates_in;
 
 drop table if exists gatlinburg_candidates_copy;
-create table gatlinburg_candidates_copy as (select * from gatlinburg_candidates);
+create table gatlinburg_candidates_copy as (
+    select * from gatlinburg_candidates
+);
 
 -- choose seed point for the first cluster
 drop table if exists proposed_points_2_scenario_first_cluster;
-create table proposed_points_2_scenario_first_cluster as (select * from gatlinburg_candidates where rank = 1);
+create table proposed_points_2_scenario_first_cluster as (
+    select * from gatlinburg_candidates where rank = 1
+);
 
 -- initialize first neighbors with distance to seed pole
 update gatlinburg_candidates_copy
@@ -307,7 +330,9 @@ drop table if exists gatlinburg_candidates_in;
 
 -- run algorithm again to build second cluster oyt of 3-mile zone of first
 drop table if exists gatlinburg_candidates_copy;
-create table gatlinburg_candidates_copy as (select * from gatlinburg_candidates);
+create table gatlinburg_candidates_copy as (
+    select * from gatlinburg_candidates
+);
 
 -- initialize points with distance to seed pole
 update gatlinburg_candidates_copy

@@ -35,7 +35,10 @@ create table gatlinburg_kp_h3r11 as (
           and k.resolution = 10
 );
 
-update gatlinburg_stat_h3_r10 set population = k.population from gatlinburg_kp_h3r11 k where k.h3 = gatlinburg_stat_h3_r10.h3;
+update gatlinburg_stat_h3_r10
+set population = k.population
+from gatlinburg_kp_h3r11 k
+where k.h3 = gatlinburg_stat_h3_r10.h3;
 
 -- remove temporary tables
 drop table if exists gatlinburg_geom;
@@ -45,22 +48,34 @@ drop table if exists gatlinburg_kp_h3r11;
 alter table gatlinburg_stat_h3_r10 add column nareas integer;
 drop table if exists gatlinburg_count;
 create table gatlinburg_count as (
-    select h3, count(*) 
+    select h3,
+           count(*)
     from gatlinburg_stat_h3_r10 g, 
          areas_of_concern c 
     where ST_Intersects(g.geom, ST_Transform(c.geom, 3857))
     group by h3
 );
 
-update gatlinburg_stat_h3_r10 set nareas = g.count from gatlinburg_count g where g.h3 = gatlinburg_stat_h3_r10.h3;
-update gatlinburg_stat_h3_r10 set nareas = 0 where nareas is null;
+update gatlinburg_stat_h3_r10
+set nareas = g.count
+from gatlinburg_count g
+where g.h3 = gatlinburg_stat_h3_r10.h3;
+
+update gatlinburg_stat_h3_r10
+set nareas = 0
+where nareas is null;
 
 -- enrich data with historical fires count
 -- alter table gatlinburg_stat_h3_r10 add column fires_count integer;
 -- update gatlinburg_stat_h3_r10 set fires_count = g.fires_count from gatlinburg_historical_fires_h3_r10 g where g.h3 = gatlinburg_stat_h3_r10.h3;
 
-update gatlinburg_stat_h3_r10 set nareas = 1 where nareas > 0;
-update gatlinburg_stat_h3_r10 set total_road_length = 1 where total_road_length > 0;
+update gatlinburg_stat_h3_r10
+set nareas = 1
+where nareas > 0;
+
+update gatlinburg_stat_h3_r10
+set total_road_length = 1
+where total_road_length > 0;
 
 -- calculate cost for county hexagons based on mcda
 alter table gatlinburg_stat_h3_r10 add column cost float;
@@ -78,7 +93,10 @@ create table gatlinburg_cost as (
            as cost
     from gatlinburg_stat_h3_r10
 ); 
-update gatlinburg_stat_h3_r10 set cost = t.cost from gatlinburg_cost t where t.h3 = gatlinburg_stat_h3_r10.h3;
+update gatlinburg_stat_h3_r10
+set cost = t.cost
+from gatlinburg_cost t
+where t.h3 = gatlinburg_stat_h3_r10.h3;
 
 -- remove temporary tables
 drop table if exists gatlinburg_cost;
@@ -100,9 +118,7 @@ select
         120, -- aim to generate at least 120 clusters
         max_radius := 1608.3 - h3_get_hexagon_edge_length_avg(10,'m')  -- but generate more to make each under mile radius (taking into account h3 r10 radius)
     ) over () as cid
-from
---     gatlinburg_stat_h3_r10;
-gat_stat;
+from gatlinburg_stat_h3_r10;
 
 -- transform cluster areas to centroids (proposed sensors placement)
 drop table if exists proposed_centroids ;
@@ -167,32 +183,41 @@ begin
         raise notice 'Counter %', counter;
 
         -- store current pole in cur_pole variable
-        select * into cur_pole from gatlinburg_poles_ranked where rank is null order by cost desc limit 1
+        select * into cur_pole
+            from gatlinburg_poles_ranked
+            where rank is null
+            order by cost desc limit 1
 
         -- zero out surrounding hexagons
-        update gatlinburg_stat_h3_r10_copy g set cost = 0 from cur_pole a where ST_Intersects(a.geom,g.geom);
+        update gatlinburg_stat_h3_r10_copy g
+        set cost = 0
+        from cur_pole a
+        where ST_Intersects(a.geom,g.geom);
 
         -- set pole rank
-        update gatlinburg_poles_ranked set rank = counter where id = cur_pole.id;
+        update gatlinburg_poles_ranked
+        set rank = counter
+        where id = cur_pole.id;
 
         -- reestimate cost for remaining hexagons
-        update gatlinburg_poles_ranked set cost = sq.updated_cost 
-            from gatlinburg_poles_ranked g inner join 
-                 (select n.id, 
-                         sum(t.cost) as updated_cost 
-                  from gatlinburg_poles_ranked n, 
-                       gatlinburg_stat_h3_r10_copy t 
-                  where ST_Intersects(n.geom, t.geom)
-                        and n.cost > 0
-                        and rank is null
-                        -- reestimate only for recently changed area
-                        and ST_Intersects(n.geom, (select geom
-                                                   from gatlinburg_poles_ranked
-                                                   where rank is not null
-                                                   order by rank desc limit 1))
-                        group by n.id) as sq
-            on g.id = sq.id
-            where gatlinburg_poles_ranked.id = sq.id;
+        update gatlinburg_poles_ranked
+        set cost = sq.updated_cost
+        from gatlinburg_poles_ranked g inner join
+             (select n.id,
+                     sum(t.cost) as updated_cost
+              from gatlinburg_poles_ranked n,
+                   gatlinburg_stat_h3_r10_copy t
+              where ST_Intersects(n.geom, t.geom)
+                    and n.cost > 0
+                    and rank is null
+                    -- reestimate only for recently changed area
+                    and ST_Intersects(n.geom, (select geom
+                                               from gatlinburg_poles_ranked
+                                               where rank is not null
+                                               order by rank desc limit 1))
+                    group by n.id) as sq
+        on g.id = sq.id
+        where gatlinburg_poles_ranked.id = sq.id;
 
         counter := counter + 1;
     end loop;
@@ -220,7 +245,10 @@ drop table if exists gatlinburg_poles_ranked;
 -- enrich gatlinburg_stat_h3_r10 table with updated costs, to keep information about ares
 -- that weren't covered with sensors
 alter table gatlinburg_stat_h3_r10 add column updated_cost numeric;
-update table gatlinburg_stat_h3_r10 set updated_cost = g.cost from gatlinburg_stat_h3_r10_copy g where gatlinburg_stat_h3_r10.h3 = g.h3;
+update table gatlinburg_stat_h3_r10
+set updated_cost = g.cost
+from gatlinburg_stat_h3_r10_copy g
+where gatlinburg_stat_h3_r10.h3 = g.h3;
 
 -- calculate 1 mile buffer
 drop table  if exists wildfire_sensors_placement_1_mile_buffer;

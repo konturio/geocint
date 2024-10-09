@@ -4,7 +4,9 @@ create table gatlinburg_stat_h3_r10_filtred as (
     select s.*
     from gatlinburg_stat_h3_r10 s,
          gatlinburg_poles p
-    where not ST_Dwithin(s.geom, ST_Transform(p.geom, 3857), 1608.3/2)
+    where not ST_Dwithin(p.geom::geography,
+                         ST_Transform(s.geom, 4326)::geography,
+                         1608.3/2)
 );
 
 -- generate clusters to fill empty spaces
@@ -13,11 +15,11 @@ create table gatlinburg_stat_h3_r10_clusters as (
     select geom,
            cost,
            ST_ClusterKMeans(
-         ST_Force4D(
-               ST_Transform(ST_Force3D(geom), 4978), -- cluster in 3D XYZ CRS
-               mvalue := cost),
-        120, -- aim to generate at least 120 clusters
-           max_radius := 1608.3/2 - h3_get_hexagon_edge_length_avg(10,'m') -- but generate more to make each under half of mile radius (taking into account h3 r10 radius)
+               ST_Force4D(
+                   ST_Transform(ST_Force3D(geom), 4978)), -- cluster in 3D XYZ CRS
+                       -- mvalue := cost),
+               120, -- aim to generate at least 120 clusters
+               max_radius := 1608.3/2 - h3_get_hexagon_edge_length_avg(10,'m') -- but generate more to make each under half of mile radius (taking into account h3 r10 radius)
            ) over () as cid
     from gatlinburg_stat_h3_r10_filtred
 );

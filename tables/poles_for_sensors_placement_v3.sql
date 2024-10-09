@@ -1,7 +1,7 @@
 -- prepare county geometry
 drop table if exists gatlinburg_geom;
 create table gatlinburg_geom as (
-    select st_buffer(geom::geography,1608.3)::geometry geom
+    select ST_Buffer(geom::geography,1608.3)::geometry geom
     from gatlinburg
 );
 
@@ -22,7 +22,7 @@ create table gatlinburg_stat_h3_r10 as (
           from stat_h3 s, 
                gatlinburg_geom g 
           where resolution = 8 
-                and st_intersects(s.geom, g.geom)) s
+                and ST_Intersects(s.geom, g.geom)) s
 ); 
 
 -- join with population data on resolution 10
@@ -31,7 +31,7 @@ create table gatlinburg_kp_h3r11 as (
     select k.* 
     from kp_h3r11 k, 
          gatlinburg_geom g 
-    where st_intersects(g.geom, k.geom) 
+    where ST_Intersects(g.geom, k.geom) 
           and k.resolution = 10
 );
 
@@ -48,7 +48,7 @@ create table gatlinburg_count as (
     select h3, count(*) 
     from gatlinburg_stat_h3_r10 g, 
          areas_of_concern c 
-    where st_intersects(g.geom, st_transform(c.geom, 3857)) 
+    where ST_Intersects(g.geom, ST_Transform(c.geom, 3857))
     group by h3
 );
 
@@ -136,7 +136,7 @@ create table gatlinburg_poles_with_calculated_cost as (
            g.geom      as geom
     from gatlinburg_poles g,
          gatlinburg_stat_h3_r10 c
-    where ST_Intersects(st_transform(g.geom,3857),c.geom)
+    where ST_Intersects(ST_Transform(g.geom,3857),c.geom)
     group by 1,2,4,5,6
 );
 
@@ -149,7 +149,7 @@ create table gatlinburg_poles_ranked as (
            cost, 
            row_number() over (order by cost desc) n, 
            null::integer as rank, 
-           st_buffer(geom::geography,1608.3)::geometry as geom
+           ST_Buffer(geom::geography,1608.3)::geometry as geom
     from gatlinburg_poles_with_calculated_cost
 );
 create index on gatlinburg_poles_ranked using btree(cost);
@@ -161,22 +161,38 @@ do
 $$
 declare 
     counter integer := 1;
+    cur_pole record;
 begin 
     while 0 < (select count(*) from gatlinburg_poles_ranked where rank is null and cost > 0) loop
-        raise notice 'Counter %', counter;        
+        raise notice 'Counter %', counter;
 
-        update gatlinburg_stat_h3_r10_copy set cost = 0 from (select geom from gatlinburg_poles_ranked where rank is null order by cost desc limit 1) a
-            where ST_Intersects(a.geom,gatlinburg_stat_h3_r10_copy.geom);
+        -- store current pole in cur_pole variable
+        select * into cur_pole from gatlinburg_poles_ranked where rank is null order by cost desc limit 1
 
-        update gatlinburg_poles_ranked set rank = counter where id in (select id from gatlinburg_poles_ranked where rank is null order by cost desc limit 1);
+        -- zero out surrounding hexagons
+        update gatlinburg_stat_h3_r10_copy g set cost = 0 from cur_pole a where ST_Intersects(a.geom,g.geom);
 
+        -- set pole rank
+        update gatlinburg_poles_ranked set rank = counter where id = cur_pole.id;
+
+        -- reestimate cost for remaining hexagons
         update gatlinburg_poles_ranked set cost = sq.updated_cost 
             from gatlinburg_poles_ranked g inner join 
                  (select n.id, 
                          sum(t.cost) as updated_cost 
                   from gatlinburg_poles_ranked n, 
                        gatlinburg_stat_h3_r10_copy t 
-                  where st_intersects(n.geom, t.geom) and n.cost > 0 and rank is null and ST_Intersects(n.geom, (select geom from gatlinburg_poles_ranked where rank is not null order by rank desc limit 1)) group by n.id) as sq on g.id = sq.id where gatlinburg_poles_ranked.id = sq.id;
+                  where ST_Intersects(n.geom, t.geom)
+                        and n.cost > 0
+                        and rank is null
+                        -- reestimate only for recently changed area
+                        and ST_Intersects(n.geom, (select geom
+                                                   from gatlinburg_poles_ranked
+                                                   where rank is not null
+                                                   order by rank desc limit 1))
+                        group by n.id) as sq
+            on g.id = sq.id
+            where gatlinburg_poles_ranked.id = sq.id;
 
         counter := counter + 1;
     end loop;
@@ -204,7 +220,7 @@ drop table if exists gatlinburg_poles_ranked;
 -- enrich gatlinburg_stat_h3_r10 table with updated costs, to keep information about ares
 -- that weren't covered with sensors
 alter table gatlinburg_stat_h3_r10 add column updated_cost numeric;
-update table gatlinburg_stat_h3_r10 set updated_cost = g.cost from gatlinburg_stat_h3_r10_copy g where gatlinburg_stat_h3_r10.h3 = g.h3; 
+update table gatlinburg_stat_h3_r10 set updated_cost = g.cost from gatlinburg_stat_h3_r10_copy g where gatlinburg_stat_h3_r10.h3 = g.h3;
 
 -- calculate 1 mile buffer
 drop table  if exists wildfire_sensors_placement_1_mile_buffer;
@@ -212,7 +228,7 @@ create table wildfire_sensors_placement_1_mile_buffer as (
     select updated_rank, 
            cost_source, 
            cost, 
-           st_buffer(geom::geography,1608.3)::geometry as buffer_1_mile
+           ST_Buffer(geom::geography,1608.3)::geometry as buffer_1_mile
     from poles_for_sensors_placement 
     where updated_cost > 0
 );

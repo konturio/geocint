@@ -1,11 +1,11 @@
 -- This aggregated function generates weighted centroid based on cost value
-drop aggregate if exists st_weightedcentroids(geometry, double precision);
-drop function if exists st_weightedcentroids_sfunc(jsonb, geometry, double precision);
-drop function if exists st_weightedcentroids_finalfn(jsonb);
+drop aggregate if exists ST_Weightedcentroids(geometry, double precision);
+drop function if exists ST_Weightedcentroids_sfunc(jsonb, geometry, double precision);
+drop function if exists ST_Weightedcentroids_finalfn(jsonb);
 
 -- State transition function
 -- call one time per row to calculate intermediate result
-create or replace function st_weightedcentroids_sfunc(state jsonb,
+create or replace function ST_Weightedcentroids_sfunc(state jsonb,
                                                       geom geometry,
                                                       cost double precision
 )
@@ -13,8 +13,8 @@ create or replace function st_weightedcentroids_sfunc(state jsonb,
 as
 $$
 declare
-    cx       double precision := st_x(st_centroid(st_transform(geom, 3857))) * cost;
-    cy       double precision := st_y(st_centroid(st_transform(geom, 3857))) * cost;
+    cx       double precision := ST_X(ST_centroid(ST_Transform(geom, 3857))) * cost;
+    cy       double precision := ST_Y(ST_centroid(ST_Transform(geom, 3857))) * cost;
     sum_cost double precision := cost;
 begin
     -- for first line
@@ -35,7 +35,7 @@ $$
 
 -- Final function
 -- compute actual result from accumulated state
-create or replace function st_weightedcentroids_finalfn(state jsonb
+create or replace function ST_Weightedcentroids_finalfn(state jsonb
 )
     returns geometry
 as
@@ -51,7 +51,7 @@ begin
     avg_x := (state -> 'sum_x')::float / (state -> 'sum_cost')::float;
     avg_y := (state -> 'sum_y')::float / (state -> 'sum_cost')::float;
 
-    return st_transform(st_setsrid(st_makepoint(avg_x, avg_y), 3857), 4326);
+    return ST_Transform(ST_Setsrid(ST_makepoint(avg_x, avg_y), 3857), 4326);
 end;
 $$
     language plpgsql
@@ -59,13 +59,13 @@ $$
     parallel safe;
 
 -- Aggregate definition
-create aggregate st_weightedcentroids(geom geometry,
+create aggregate ST_Weightedcentroids(geom geometry,
                                       cost double precision
 )
 (
-    sfunc = st_weightedcentroids_sfunc,
+    sfunc = ST_Weightedcentroids_sfunc,
     stype = jsonb,
-    finalfunc = st_weightedcentroids_finalfn,
+    finalfunc = ST_Weightedcentroids_finalfn,
     initcond = '{}',
     parallel = safe
 );

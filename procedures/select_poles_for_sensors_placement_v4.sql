@@ -11,7 +11,7 @@ create table gatlinburg_stat_h3_r10_filtred as (
          (select st_collect(p.geom)::geography as geog from gatlinburg_poles p) q
     where not ST_Dwithin(q.geog,
                          ST_Transform(s.geom, 4326)::geography,
-                         1608.3/2)
+                         1609.3/2)
 );
 
 -- generate clusters to fill empty spaces
@@ -24,7 +24,7 @@ create table gatlinburg_stat_h3_r10_clusters as (
                    ST_Transform(ST_Force3D(geom), 4978)), -- cluster in 3D XYZ CRS
                        -- mvalue := cost),
                120, -- aim to generate at least 120 clusters
-               max_radius := 1608.3/2 - h3_get_hexagon_edge_length_avg(10,'m') -- but generate more to make each under half of mile radius (taking into account h3 r10 radius)
+               max_radius := 1609.3/2 - h3_get_hexagon_edge_length_avg(10,'m') -- but generate more to make each under half of mile radius (taking into account h3 r10 radius)
            ) over () as cid
     from gatlinburg_stat_h3_r10_filtred
 );
@@ -68,7 +68,7 @@ create table gatlinburg_candidates as (
            g.geom::geography as geog           
     from gatlinburg_candidates_in g,
          gatlinburg_stat_h3_r10 c
-    where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4824.9) -- 3 mile zone
+    where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4827.9) -- 3 mile zone
     group by 1,2,4,6
 );
 
@@ -111,7 +111,7 @@ create table proposed_points_1_scenario as (
 update gatlinburg_candidates_copy
 set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
 from (select geog from proposed_points_1_scenario) k
-where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3216.6);
+where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3218.6);
 
 -- use nested cycle with 5 iteration to optimize cluster placement
 -- after first naive attempt move starting point to the nearest to cluster centroid point
@@ -140,14 +140,14 @@ begin
                                                                counter + 1,
                                                                geog
                                                         from gatlinburg_candidates_copy
-                                                        where dist_network > 1608.3
+                                                        where dist_network > 1609.3
                                                         order by cost desc limit 1);
 
                 update gatlinburg_candidates_copy
                 set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
                 from (select ST_Collect(geog::geometry)::geography as geog
                       from proposed_points_1_scenario) k
-                where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3216.6);
+                where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3218.6);
 
                 counter := counter + 1;
             end loop;
@@ -166,7 +166,7 @@ begin
             select source,
                    id,
                    cost,
-                   ST_Buffer(geog, 1608.3)::geometry as buffer_1_mile
+                   ST_Buffer(geog, 1609.3)::geometry as buffer_1_mile
             from proposed_points_1_scenario_output
         );
 
@@ -207,7 +207,7 @@ begin
         update gatlinburg_candidates_copy
         set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
         from (select geog from proposed_points_1_scenario) k
-        where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3216.6);
+        where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3218.6);
 
         out_counter := out_counter + 1;
     end loop;
@@ -254,11 +254,11 @@ create table gatlinburg_candidates as (
            g.geog
     from gatlinburg_candidates_in g,
          gatlinburg_stat_h3_r10 c
-    where ST_Dwithin(c.geog, g.geog, 4824.9) -- 3 mile zone
+    where ST_Dwithin(c.geog, g.geog, 4827.9) -- 3 mile zone
     -- ST_Dwithin shouldn't be used with 3857, but this option was used for generation result, that we took as a final
     -- fixed, but keep this line to be able repeat if needed (uncomment 2 lines below)
     -- from gatlinburg_candidates_in g, gatlinburg_stat_h3_r10 c
-    -- where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4824.9) -- 3 mile zone
+    -- where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4827.9) -- 3 mile zone
     group by 1,2,4,6
 );
 
@@ -266,7 +266,7 @@ create table gatlinburg_candidates as (
 drop table if exists gatlinburg_candidates_in;
 
 -- choose best 13 poles to first cluster
-call choose_best_pole_location ('gatlinburg_candidates', 'proposed_points_2_scenario_first_cluster', 13, '{1608.3,3216.6}'::float[]);
+call choose_best_pole_location ('gatlinburg_candidates', 'proposed_points_2_scenario_first_cluster', 13, '{1609.3,3218.6}'::float[]);
 
 -- rebuild table with candidates to include cantroids for second iteration
 drop table if exists gatlinburg_candidates_in;
@@ -301,17 +301,17 @@ create table gatlinburg_candidates as (
     from gatlinburg_candidates_in g,
          gatlinburg_stat_h3_r10_geog c,
          (select ST_Collect(geog::geometry)::geography as geog from proposed_points_2_scenario_first_cluster) p
-    where ST_Dwithin(c.geog, g.geog, 4824.9) -- 3 mile zone
-          and not ST_Dwithin(g.geog,p.geog,4824.9)
+    where ST_Dwithin(c.geog, g.geog, 4827.9) -- 3 mile zone
+          and not ST_Dwithin(g.geog,p.geog,4827.9)
     -- ST_Dwithin shouldn't be used with 3857, but this option was used for generation result, that we took as a final
     -- fixed, but keep this line to be able repeat if needed (uncomment 2 lines below)
     -- from gatlinburg_candidates_in g, gatlinburg_stat_h3_r10 c
-    -- where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4824.9) -- 3 mile zone
+    -- where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4827.9) -- 3 mile zone
     group by 1,2,4,6
 );
 
 -- choose best 12 poles to second cluster
-call choose_best_pole_location ('gatlinburg_candidates', 'proposed_points_2_scenario_second_cluster', 12, '{1608.3,3216.6}'::float[]);
+call choose_best_pole_location ('gatlinburg_candidates', 'proposed_points_2_scenario_second_cluster', 12, '{1609.3,3218.6}'::float[]);
 
 -- calculate 1 mile buffer buffer for 2 scenario output
 drop table  if exists proposed_points_v4_buffer_1_mile_2_clusters;
@@ -319,13 +319,13 @@ create table proposed_points_v4_buffer_1_mile_2_clusters as (
     select rank as updated_rank,
            cost,
            dist_network,
-           ST_Buffer(geog, 1608.3)::geometry as buffer_1_mile
+           ST_Buffer(geog, 1609.3)::geometry as buffer_1_mile
     from proposed_points_2_scenario_first_cluster
     union all
     select rank as updated_rank,
            cost,
            dist_network,
-           ST_Buffer(geog, 1608.3)::geometry as buffer_1_mile
+           ST_Buffer(geog, 1609.3)::geometry as buffer_1_mile
     from proposed_points_2_scenario_second_cluster
 );
 

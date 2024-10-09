@@ -5,7 +5,7 @@
 -- prepare county geometry
 drop table if exists gatlinburg_geom;
 create table gatlinburg_geom as (
-    select ST_Buffer(geom::geography,1608.3)::geometry geom
+    select ST_Buffer(geom::geography,1609.3)::geometry geom
     from gatlinburg
 );
 
@@ -120,7 +120,7 @@ select
             mvalue := cost
         ),
         120, -- aim to generate at least 120 clusters
-        max_radius := 1608.3 - h3_get_hexagon_edge_length_avg(10,'m')  -- but generate more to make each under mile radius (taking into account h3 r10 radius)
+        max_radius := 1609.3 - h3_get_hexagon_edge_length_avg(10,'m')  -- but generate more to make each under mile radius (taking into account h3 r10 radius)
     ) over () as cid
 from gatlinburg_stat_h3_r10;
 
@@ -169,7 +169,7 @@ create table gatlinburg_poles_ranked as (
            cost, 
            row_number() over (order by cost desc) n, 
            null::integer as rank, 
-           ST_Buffer(geom::geography,1608.3)::geometry as geom
+           ST_Buffer(geom::geography,1609.3)::geometry as geom
     from gatlinburg_poles_with_calculated_cost
 );
 create index on gatlinburg_poles_ranked using btree(cost);
@@ -260,7 +260,7 @@ create table wildfire_sensors_placement_1_mile_buffer as (
     select updated_rank, 
            cost_source, 
            updated_cost,
-           ST_Buffer(geom::geography,1608.3)::geometry as buffer_1_mile
+           ST_Buffer(geom::geography,1609.3)::geometry as buffer_1_mile
     from poles_for_sensors_placement 
     where updated_cost > 0
 );

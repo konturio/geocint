@@ -5,7 +5,7 @@ create or replace procedure choose_best_pole_location(
     input_table text, -- source table with points
     output_table text, -- output table for selected points
     number_points integer, -- number of points to choose
-    entry_range float[] default array[1608.3,3216.6] -- array with near and far distances limiting choice
+    entry_range float[] default array[1609.3,3218.6] -- array with near and far distances limiting choice
                                                      -- by default choose points between 1 and 2 miles
 
 )

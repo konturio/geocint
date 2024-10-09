@@ -1,10 +1,15 @@
+-- this version takes into account requirements to place poles at a distance between 1 and 2 mile of nearest neighbor
+-- 1 option select best 25 points and iteratively update results to match the local center of masses
+-- 2 option select first 13 points to first cluster from only existed locations and than generate
+-- the second cluster with 12 points on base of existed locations and centroids
+
 -- filter stat table to exclude hexagons closer than a half of mile to existed poles
 drop table if exists gatlinburg_stat_h3_r10_filtred;
 create table gatlinburg_stat_h3_r10_filtred as (
-    select s.*
+    select distinct s.*
     from gatlinburg_stat_h3_r10 s,
-         gatlinburg_poles p
-    where not ST_Dwithin(p.geom::geography,
+         (select st_collect(p.geom)::geography as geog from gatlinburg_poles p) q
+    where not ST_Dwithin(q.geog,
                          ST_Transform(s.geom, 4326)::geography,
                          1608.3/2)
 );
@@ -47,7 +52,7 @@ create table gatlinburg_candidates_in as (
           select 'centroid' as source,
                  n + 10000 as id,
                  ST_Transform(ST_Setsrid(geom,3857),4326) geom
-          from prop_cent_filtered) a,
+          from proposed_centroids) a,
         gatlinburg g
     where ST_Within(a.geom,g.geom)
 );
@@ -85,22 +90,22 @@ create table proposed_points_1_scenario as (
 );
 
 -- -- uncomment this block to chose median pole as a start point
-drop table if exists proposed_points_1_scenario;
-create table proposed_points_1_scenario as (
-    select source,
-           id,
-           cost,
-           dist_network,
-           1 as rank,
-           geog
-    from gatlinburg_candidates_copy
-    order by ST_Distance(geog, ST_Transform(
-                                          (select ST_GeometricMedian(ST_Collect(ST_Force4D(
-                                              ST_Transform(ST_Force3D(ST_Centroid(geom)), 4978), -- cluster in 3D XYZ CRS
-                                                  mvalue := cost)))
-                                          from gatlinburg_stat_h3_r10), 4326)::geography)
-    limit 1
-);
+-- drop table if exists proposed_points_1_scenario;
+-- create table proposed_points_1_scenario as (
+--     select source,
+--            id,
+--            cost,
+--            dist_network,
+--            1 as rank,
+--            geog
+--     from gatlinburg_candidates_copy
+--     order by ST_Distance(geog, ST_Transform(
+--                                           (select ST_GeometricMedian(ST_Collect(ST_Force4D(
+--                                               ST_Transform(ST_Force3D(ST_Centroid(geom)), 4978), -- cluster in 3D XYZ CRS
+--                                                   mvalue := cost)))
+--                                           from gatlinburg_stat_h3_r10), 4326)::geography)
+--     limit 1
+-- );
 
 -- initialize first neighbors with distance to seed pole
 update gatlinburg_candidates_copy
@@ -216,17 +221,27 @@ drop table if exists proposed_points_1_scenario;
 -- finish of the 1 scenario
 
 -- generate 2 scenario - 13 points in first cluster (only poles) and 12 in second cluster (poles + centroids)
-
--- rebuild table with candidates to exclude centroids
 drop table if exists gatlinburg_candidates_in;
 create table gatlinburg_candidates_in as (
-    select a.*
+    select a.source,
+           a.id,
+           a.geom::geography as geog
     from (select source as source,
                  id as id,
                  geom from gatlinburg_poles) a,
         gatlinburg g
-    where st_within(a.geom,g.geom) -- only poles
+    where ST_Within(a.geom,g.geom) -- only poles
 );
+
+create index on gatlinburg_candidates_in using gist(geog);
+
+drop table if exists gatlinburg_stat_h3_r10_geog;
+create table gatlinburg_stat_h3_r10_geog as (
+    select cost,
+           ST_Transform(c.geom,4326)::geography as geog
+    from gatlinburg_stat_h3_r10
+);
+create index on gatlinburg_stat_h3_r10_geog using gist(geog);
 
 -- calculate costs for each pole
 drop table if exists gatlinburg_candidates;
@@ -235,68 +250,30 @@ create table gatlinburg_candidates as (
            id,
            sum(c.cost) as cost,
            null::numeric as dist_network,
-           row_number() over (order by sum(cost) desc) as rank,
-           g.geom::geography as geog
+           row_number() over (order by sum(cost) desc) rank,
+           g.geog
     from gatlinburg_candidates_in g,
          gatlinburg_stat_h3_r10 c
-    where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4824.9) -- 3 mile zone
+    where ST_Dwithin(c.geog, g.geog, 4824.9) -- 3 mile zone
+    -- ST_Dwithin shouldn't be used with 3857, but this option was used for generation result, that we took as a final
+    -- fixed, but keep this line to be able repeat if needed (uncomment 2 lines below)
+    -- from gatlinburg_candidates_in g, gatlinburg_stat_h3_r10 c
+    -- where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4824.9) -- 3 mile zone
     group by 1,2,4,6
 );
 
 -- drop temporary table
 drop table if exists gatlinburg_candidates_in;
 
-drop table if exists gatlinburg_candidates_copy;
-create table gatlinburg_candidates_copy as (
-    select * from gatlinburg_candidates
-);
-
--- choose seed point for the first cluster
-drop table if exists proposed_points_2_scenario_first_cluster;
-create table proposed_points_2_scenario_first_cluster as (
-    select * from gatlinburg_candidates where rank = 1
-);
-
--- initialize first neighbors with distance to seed pole
-update gatlinburg_candidates_copy
-set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
-from (select geog from proposed_points_2_scenario_first_cluster) k
-where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3216.6);
-
 -- choose best 13 poles to first cluster
-do
-$$
-declare
-    counter integer := 1;
-begin
-    while counter < 13 loop
-        raise notice 'Counter %', counter;
-
-        insert into proposed_points_2_scenario_first_cluster (select source,
-                                                                     id,
-                                                                     cost,
-                                                                     dist_network,
-                                                                     counter + 1,
-                                                                     geog
-                                                              from gatlinburg_candidates_copy
-                                                              where dist_network > 1608.3
-                                                              order by cost desc limit 1);
-
-        update gatlinburg_candidates_copy
-        set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
-        from (select ST_Collect(geog::geometry)::geography as geog
-              from proposed_points_2_scenario_first_cluster) k
-        where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3216.6);
-
-        counter := counter + 1;
-    end loop;
-end;
-$$;
+call choose_best_pole_location ('gatlinburg_candidates', 'proposed_points_2_scenario_first_cluster', 13, '{1608.3,3216.6}'::float[]);
 
 -- rebuild table with candidates to include cantroids for second iteration
 drop table if exists gatlinburg_candidates_in;
 create table gatlinburg_candidates_in as (
-    select a.*
+    select a.source,
+           a.id,
+           a.geom::geography as geog
     from (select source as source,
                  id as id,
                  geom
@@ -307,8 +284,10 @@ create table gatlinburg_candidates_in as (
                  ST_Transform(ST_Setsrid(geom,3857),4326) geom
           from prop_cent_filtered) a,
         gatlinburg g
-    where st_within(a.geom,g.geom)
+    where ST_Within(a.geom,g.geom)
 );
+
+create index on gatlinburg_candidates_in using gist(geog);
 
 -- calculate costs for each pole
 drop table if exists gatlinburg_candidates;
@@ -318,79 +297,21 @@ create table gatlinburg_candidates as (
            sum(c.cost) as cost,
            null::numeric as dist_network,
            row_number() over (order by sum(cost) desc) rank,
-           g.geom::geography as geog
+           g.geog
     from gatlinburg_candidates_in g,
-         gatlinburg_stat_h3_r10 c
-    where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4824.9) -- 3 mile zone
+         gatlinburg_stat_h3_r10_geog c,
+         (select ST_Collect(geog::geometry)::geography as geog from proposed_points_2_scenario_first_cluster) p
+    where ST_Dwithin(c.geog, g.geog, 4824.9) -- 3 mile zone
+          and not ST_Dwithin(g.geog,p.geog,4824.9)
+    -- ST_Dwithin shouldn't be used with 3857, but this option was used for generation result, that we took as a final
+    -- fixed, but keep this line to be able repeat if needed (uncomment 2 lines below)
+    -- from gatlinburg_candidates_in g, gatlinburg_stat_h3_r10 c
+    -- where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4824.9) -- 3 mile zone
     group by 1,2,4,6
 );
 
--- drop temporary table
-drop table if exists gatlinburg_candidates_in;
-
--- run algorithm again to build second cluster oyt of 3-mile zone of first
-drop table if exists gatlinburg_candidates_copy;
-create table gatlinburg_candidates_copy as (
-    select * from gatlinburg_candidates
-);
-
--- initialize points with distance to seed pole
-update gatlinburg_candidates_copy
-set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
-from (select ST_Collect(geog::geometry)::geography as geog
-      from proposed_points_2_scenario_first_cluster) k
-where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,4824.9);
-
--- remove points in 3 mile zone of first cluster
-delete from gatlinburg_candidates_copy where dist_network is not null;
-
-drop table if exists proposed_points_2_scenario_second_cluster;
-create table proposed_points_2_scenario_second_cluster as (
-    select source,
-           id,
-           cost,
-           dist_network,
-           1 as rank,
-           geog
-    from gatlinburg_candidates_copy
-    order by cost desc limit 1
-);
-
--- initialize first neighbors with distance to seed pole
-update gatlinburg_candidates_copy
-set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
-from (select geog from proposed_points_2_scenario_second_cluster order by cost desc limit 1) k
-where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3216.6);
-
 -- choose best 12 poles to second cluster
-do
-$$
-declare
-    counter integer := 1;
-begin
-    while counter < 12 loop
-        raise notice 'Counter %', counter;
-
-        insert into proposed_points_2_scenario_second_cluster (select source,
-                                                                      id,
-                                                                      cost,
-                                                                      dist_network,
-                                                                      counter + 1,
-                                                                      geog
-                                                               from gatlinburg_candidates_copy
-                                                               where dist_network > 1608.3
-                                                               order by cost desc limit 1);
-
-        update gatlinburg_candidates_copy
-        set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
-        from (select ST_Collect(geog::geometry)::geography as geog
-              from proposed_points_2_scenario_second_cluster) k
-        where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3216.6);
-
-        counter := counter + 1;
-    end loop;
-end;
-$$;
+call choose_best_pole_location ('gatlinburg_candidates', 'proposed_points_2_scenario_second_cluster', 12, '{1608.3,3216.6}'::float[]);
 
 -- calculate 1 mile buffer buffer for 2 scenario output
 drop table  if exists proposed_points_v4_buffer_1_mile_2_clusters;
@@ -422,5 +343,6 @@ create table proposed_points_2_scenario_output as (
 
 -- drop temporary tables
 drop table if exists gatlinburg_candidates_copy;
+drop table if exists gatlinburg_stat_h3_r10_geog;
 drop table if exists proposed_points_2_scenario_first_cluster;
 drop table if exists proposed_points_2_scenario_second_cluster;

@@ -3063,8 +3063,8 @@ db/table/gatlinburg_poles: db/index/osm_tags_idx db/table/sevier_county_poles_wi
 	psql -f tables/gatlinburg_poles.sql
 	touch $@
 
-db/table/poles_for_sensors_placement_v3: db/table/gatlinburg_poles db/table/gatlinburg_historical_fires_h3_r10 db/table/gatlinburg db/table/areas_of_concern db/table/kontur_population_h3 db/function/st_weightedcentroids | db/table ## select poles suitable for wildfire sensors placement (ruquires kontur_population on resolution 10) version 3 without new requirements about placement sensors between 1 and 2 miles
-	psql -f poles_for_sensors_placement_v3.sql
+db/procedures/poles_for_sensors_placement_v3: db/table/gatlinburg_poles db/table/gatlinburg_historical_fires_h3_r10 db/table/gatlinburg db/table/areas_of_concern db/table/kontur_population_h3 db/function/st_weightedcentroids | db/procedures ## select poles suitable for wildfire sensors placement (ruquires kontur_population on resolution 10) version 3 without new requirements about placement sensors between 1 and 2 miles
+	psql -f procedures/poles_for_sensors_placement_v3.sql
 	touch $@
 
 data/out/data/out/v3_output: db/table/poles_for_sensors_placement_v3 | data/out/wildfire_sensors_placement ## proposed locations for sensors placement
@@ -3076,8 +3076,8 @@ data/out/data/out/v3_output: db/table/poles_for_sensors_placement_v3 | data/out/
 	ogr2ogr -f GPKG data/out/data/out/uncovered_areas.gpkg PG:'dbname=gis' -sql "select h3, cost, updated_cost, geom from gatlinburg_stat_h3_r10 where updated_cost > 0 order by h3" -lco "SPATIAL_INDEX=NO" -nln uncovered_areas
 	touch $@
 
-db/table/poles_for_sensors_placement_v4: db/table/poles_for_sensors_placement_v3 db/function/st_weightedcentroids | db/table ## V4 create 2 scenarios for wildfire sensors placement (ruquires kontur_population on resolution 10) version 4 with new requirements about placement sensors between 1 and 2 miles
-	psql -f poles_for_sensors_placement_v4.sql
+db/procedures/poles_for_sensors_placement_v4: db/procedures/poles_for_sensors_placement_v3 db/function/st_weightedcentroids | db/procedures ## V4 create 2 scenarios for wildfire sensors placement (ruquires kontur_population on resolution 10) version 4 with new requirements about placement sensors between 1 and 2 miles
+	psql -f procedures/poles_for_sensors_placement_v4.sql
 	touch $@
 
 data/out/data/out/v4_output: db/table/poles_for_sensors_placement_v3 | data/out/wildfire_sensors_placement ## proposed locations for sensors placement 1 mile buffers
@@ -3091,7 +3091,7 @@ data/out/data/out/v4_output: db/table/poles_for_sensors_placement_v3 | data/out/
 	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_v4_buffer_1_mile_1_clusters order by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_buffer_1_mile_1_clusters
 	touch @$
 
-data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement: data/out/data/out/wildfire_sensors_placement.gpkg data/out/data/out/wildfire_sensors_placement_1_mile_buffer.gpkg data/out/data/out/uncovered_areas.gpkg db/table/poles_for_sensors_placement_v4 ## final target
+data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement: data/out/data/out/v3_output data/out/data/out/v4_output db/procedures/poles_for_sensors_placement_v4 ## final target
 	touch $@
 
 ### Deploy through API

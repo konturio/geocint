@@ -1,3 +1,7 @@
+-- this version prepare hexagonal grid and implement selection flow that allows to set rank
+-- to the most suitable poles and reestimate costs for other in loop
+-- all poles should take their reestimated cost and rank if reestimated cost
+
 -- prepare county geometry
 drop table if exists gatlinburg_geom;
 create table gatlinburg_geom as (
@@ -22,7 +26,7 @@ create table gatlinburg_stat_h3_r10 as (
           from stat_h3 s, 
                gatlinburg_geom g 
           where resolution = 8 
-                and ST_Intersects(s.geom, g.geom)) s
+                and ST_Intersects(s.geom, ST_Transform(g.geom,3857))) s
 ); 
 
 -- join with population data on resolution 10
@@ -31,7 +35,7 @@ create table gatlinburg_kp_h3r11 as (
     select k.* 
     from kp_h3r11 k, 
          gatlinburg_geom g 
-    where ST_Intersects(g.geom, k.geom) 
+    where ST_Intersects(ST_Transform(g.geom,3857), k.geom)
           and k.resolution = 10
 );
 
@@ -135,7 +139,7 @@ drop table if exists gatlinburg_stat_h3_r10_copy;
 create table gatlinburg_stat_h3_r10_copy as (
     select h3, 
            cost, 
-           geom 
+           st_transform(geom,4326) as geom
     from gatlinburg_stat_h3_r10
 );
 
@@ -186,13 +190,13 @@ begin
         select * into cur_pole
             from gatlinburg_poles_ranked
             where rank is null
-            order by cost desc limit 1
+            order by cost desc limit 1;
 
         -- zero out surrounding hexagons
         update gatlinburg_stat_h3_r10_copy g
         set cost = 0
-        from cur_pole a
-        where ST_Intersects(a.geom,g.geom);
+--         from cur_pole a
+        where ST_Intersects(cur_pole.geom,g.geom);
 
         -- set pole rank
         update gatlinburg_poles_ranked
@@ -234,7 +238,7 @@ create table poles_for_sensors_placement as (
            t.n    as source_rank,
            t.rank as updated_rank,
            g.geom 
-    from gatlinburg_poles g,
+    from gatlinburg_poles_with_calculated_cost g,
          gatlinburg_poles_ranked t
     where g.id = t.id
 );
@@ -245,7 +249,7 @@ drop table if exists gatlinburg_poles_ranked;
 -- enrich gatlinburg_stat_h3_r10 table with updated costs, to keep information about ares
 -- that weren't covered with sensors
 alter table gatlinburg_stat_h3_r10 add column updated_cost numeric;
-update table gatlinburg_stat_h3_r10
+update gatlinburg_stat_h3_r10
 set updated_cost = g.cost
 from gatlinburg_stat_h3_r10_copy g
 where gatlinburg_stat_h3_r10.h3 = g.h3;
@@ -255,7 +259,7 @@ drop table  if exists wildfire_sensors_placement_1_mile_buffer;
 create table wildfire_sensors_placement_1_mile_buffer as (
     select updated_rank, 
            cost_source, 
-           cost, 
+           updated_cost,
            ST_Buffer(geom::geography,1608.3)::geometry as buffer_1_mile
     from poles_for_sensors_placement 
     where updated_cost > 0
@@ -263,3 +267,4 @@ create table wildfire_sensors_placement_1_mile_buffer as (
 
 -- remove temporary tables
 drop table if exists gatlinburg_stat_h3_r10_copy;
+drop table if exists gatlinburg_poles_with_calculated_cost;

@@ -195,7 +195,6 @@ begin
         -- zero out surrounding hexagons
         update gatlinburg_stat_h3_r10_copy g
         set cost = 0
---         from cur_pole a
         where ST_Intersects(cur_pole.geom,g.geom);
 
         -- set pole rank

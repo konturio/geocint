@@ -2,7 +2,7 @@
 
 # configuration file
 file := ${GEOCINT_WORK_DIRECTORY}/config.inc.sh
-# Add here export for every varible from configuration file that you are going to use in targets
+# Add here export for every variable from configuration file that you are going to use in targets
 export PGDATABASE = $(shell sed -n -e '/^PGDATABASE/p' ${file} | cut -d "=" -f 2)
 export SLACK_CHANNEL = $(shell sed -n -e '/^SLACK_CHANNEL/p' ${file} | cut -d "=" -f 2)
 export SLACK_BOT_NAME = $(shell sed -n -e '/^SLACK_BOT_NAME/p' ${file} | cut -d "=" -f 2)
@@ -3034,6 +3034,9 @@ db/table/humanitarian_dev_index_2022_h3: db/table/kontur_boundaries db/table/hum
 ### END Humanitarian Development Index
 
 ### N5 Wildfire sensors placement block
+db/function/st_weightedcentroids: | db/function ## Converts text into a float or a NULL.
+	psql -f functions/st_weightedcentroids.sql
+	touch $@
 
 db/table/sevier_county_poles_without_osm: | db/table ## Load data about Sevier County poles
 	psql -c "drop table if exists sevier_county_poles_without_osm;"
@@ -3060,23 +3063,35 @@ db/table/gatlinburg_poles: db/index/osm_tags_idx db/table/sevier_county_poles_wi
 	psql -f tables/gatlinburg_poles.sql
 	touch $@
 
-db/table/poles_for_sensors_placement: db/table/gatlinburg_poles db/table/gatlinburg_historical_fires_h3_r10 db/table/gatlinburg db/table/areas_of_concern db/table/kontur_population_h3 ## select poles suitable for wildfire sensors placement (ruquires kontur_population on resolution 10)
-	psql -f poles_for_sensors_placement.sql
+db/procedures/poles_for_sensors_placement_v3: db/table/gatlinburg_poles db/table/gatlinburg_historical_fires_h3_r10 db/table/gatlinburg db/table/areas_of_concern db/table/kontur_population_h3 db/function/st_weightedcentroids | db/procedures ## select poles suitable for wildfire sensors placement (ruquires kontur_population on resolution 10) version 3 without new requirements about placement sensors between 1 and 2 miles
+	psql -f procedures/poles_for_sensors_placement_v3.sql
 	touch $@
 
-data/out/data/out/wildfire_sensors_placement.gpkg: db/table/poles_for_sensors_placement | data/out/wildfire_sensors_placement ## proposed locations for sensors placement
-	rm -f $@
-	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from poles_for_sensors_placement where updated_cost > 0 order by rank" -lco "SPATIAL_INDEX=NO" -nln poles_for_sensors_placement
+data/out/data/out/v3_output: db/table/poles_for_sensors_placement_v3 | data/out/wildfire_sensors_placement ## proposed locations for sensors placement
+	rm -f data/out/data/out/wildfire_sensors_placement.gpkg
+	ogr2ogr -f GPKG data/out/data/out/wildfire_sensors_placement.gpkg PG:'dbname=gis' -sql "select * from poles_for_sensors_placement where updated_cost > 0 order by rank" -lco "SPATIAL_INDEX=NO" -nln poles_for_sensors_placement
+	rm -f data/out/data/out/wildfire_sensors_placement_1_mile_buffer.gpkg
+	ogr2ogr -f GPKG data/out/data/out/wildfire_sensors_placement_1_mile_buffer.gpkg PG:'dbname=gis' -sql "select * from wildfire_sensors_placement_1_mile_buffer order by rank" -lco "SPATIAL_INDEX=NO" -nln wildfire_sensors_placement_1_mile_buffer
+	rm -f data/out/data/out/uncovered_areas.gpkg
+	ogr2ogr -f GPKG data/out/data/out/uncovered_areas.gpkg PG:'dbname=gis' -sql "select h3, cost, updated_cost, geom from gatlinburg_stat_h3_r10 where updated_cost > 0 order by h3" -lco "SPATIAL_INDEX=NO" -nln uncovered_areas
+	touch $@
 
-data/out/data/out/wildfire_sensors_placement_1_mile_buffer.gpkg: db/table/poles_for_sensors_placement | data/out/wildfire_sensors_placement ## proposed locations for sensors placement 1 mile buffers
-	rm -f $@
-	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from wildfire_sensors_placement_1_mile_buffer order by rank" -lco "SPATIAL_INDEX=NO" -nln wildfire_sensors_placement_1_mile_buffer
+db/procedures/poles_for_sensors_placement_v4: db/procedures/poles_for_sensors_placement_v3 db/function/st_weightedcentroids | db/procedures ## V4 create 2 scenarios for wildfire sensors placement (ruquires kontur_population on resolution 10) version 4 with new requirements about placement sensors between 1 and 2 miles
+	psql -f procedures/poles_for_sensors_placement_v4.sql
+	touch $@
 
-data/out/data/out/uncovered_areas.gpkg: db/table/poles_for_sensors_placement | data/out/wildfire_sensors_placement ## areas uncovered by proposed locations for sensors placement
-	rm -f $@
-	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select h3, cost, updated_cost, geom from gat_stat where updated_cost > 0 order by h3" -lco "SPATIAL_INDEX=NO" -nln uncovered_areas
+data/out/data/out/v4_output: db/table/poles_for_sensors_placement_v3 | data/out/wildfire_sensors_placement ## proposed locations for sensors placement 1 mile buffers
+	rm -f proposed_points_v4_2_scenario_output.gpkg
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_2_scenario_output order by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_2_scenario_output
+	rm -f proposed_points_v4_buffer_1_mile_2_clusters.gpkg
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_v4_buffer_1_mile_2_clusters by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_buffer_1_mile_2_clusters
+	rm -f proposed_points_v4_1_scenario_output.gpkg
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_1_scenario_output order by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_1_scenario_output
+	rm -f proposed_points_v4_buffer_1_mile_1_clusters.gpkg
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_v4_buffer_1_mile_1_clusters order by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_buffer_1_mile_1_clusters
+	touch @$
 
-data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement: data/out/data/out/wildfire_sensors_placement.gpkg data/out/data/out/wildfire_sensors_placement_1_mile_buffer.gpkg data/out/data/out/uncovered_areas.gpkg ## final target
+data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement: data/out/data/out/v3_output data/out/data/out/v4_output db/procedures/poles_for_sensors_placement_v4 ## final target
 	touch $@
 
 ### Deploy through API

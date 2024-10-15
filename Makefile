@@ -21,15 +21,15 @@ include runner_make osm_make
 
 all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/ndpba_rva_h3 db/table/global_rva_h3 data/out/csv/foursquare_places_count.csv data/out/csv/foursquare_visits_count.csv db/table/osm_buildings_use db/index/osm_addresses_geom_idx data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/dev/uploads/upload_dev data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/dev/custom_axis/all_custom_axis deploy_indicators/dev/presets/all_presets deploy/s3/dev/reports/reports.tar.gz ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/dev/uploads/upload_dev data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/dev/custom_axis/all_custom_axis deploy_indicators/dev/presets/all_presets deploy/s3/dev/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Test target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-test: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/test/uploads/upload_test data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/test/custom_axis/all_custom_axis deploy_indicators/test/presets/all_presets deploy/s3/test/reports/reports.tar.gz ## [FINAL] Builds all targets for development. Run on every branch.
+test: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/test/uploads/upload_test data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/test/custom_axis/all_custom_axis deploy_indicators/test/presets/all_presets deploy/s3/test/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod_new_deploy: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy_indicators/prod/uploads/upload_prod deploy/prod/osrm-backend-by-car deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy_indicators/prod/presets/all_presets deploy/s3/prod/reports/reports.tar.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod_new_deploy: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy_indicators/prod/uploads/upload_prod deploy/prod/osrm-backend-by-car deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy_indicators/prod/presets/all_presets deploy/s3/prod/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -802,6 +802,69 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 	touch $@
 
 ### End GADM 4.10 export block ###
+
+### COD PCODES export block ###
+data/in/cod_pcodes: | data/in ## input directory
+	mkdir $@
+
+data/out/cod_pcodes: | data/out ## output directory
+	mkdir $@
+
+data/in/cod_pcodes/download_cod_pcodes_data: | data/in/cod_pcodes ## get data from feature server by api
+	rm -f $@_FAILED_LIST_1
+	## first attempt - download data with big patches - 500 feature per file
+	cd data/in/cod_pcodes; curl -s "https://codgis.itos.uga.edu/arcgis/rest/services/COD_External" | grep -oP '(?<=href=")[^"]*' | grep 'pcode\/FeatureServer' | parallel -j 1 'curl -s "https://codgis.itos.uga.edu{}" | grep ">Admin[0-9]"' | grep -oP '(?<=href=")[^"]*' | parallel -j 1 'bash get_patches_urls_list.sh {} 500' | parallel --colsep ' ' -j 1 'bash get_cod_pcodes.sh {1} {2} "$@__FAILED_LIST_500"'
+	## if smth weren't downloaded - split rest to 1 file per patch and retry
+	if [ -e $@__FAILED_LIST_500 ]; then cd data/in/cod_pcodes; cat $@_FAILED_LIST_500 | parallel --colsep ' ' 'bash split_chunks.sh {1} {2}' | parallel --colsep ' ' -j 1 'bash get_cod_pcodes.sh {1} {2} "$@__FAILED_LIST_1"'; fi
+	if [ -e $@__FAILED_LIST_1 ]; then echo "Some COD Pcode features weren't downloaded correctly - see $@__FAILED_LIST_1 for additional information." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@_FAILED_LIST_500
+	touch $@
+
+db/table/cod_pcodes_0_level: data/in/download_cod_pcodes_data | db/table ## load 0 level cod pcodes features to database
+	psql -c "drop table if exists cod_pcodes_0_level;"
+	psql -c "create table pcode_level_0 (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm0_en character varying, adm0_pcode character varying, adm0_ref character varying, adm0alt1_en character varying, adm0alt2_en character varying, area_sqkm double precision);"
+	cd data/in/cod_pcodes; ls *0.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_0_level -lco GEOMETRY_NAME=geom'
+	touch $@
+
+db/table/cod_pcodes_1_level: data/in/download_cod_pcodes_data | db/table ## load 1 level cod pcodes features to database
+	psql -c "drop table if exists cod_pcodes_1_level;"
+	psql -c "create table pcode_level_1 (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, regionname_en character varying, regionname_da character varying, regioncode character varying, shape__area double precision, shape__length double precision, adm1_en character varying, adm1_da character varying, adm1_pcode character varying, adm1_ref character varying, adm1alt1_en character varying, adm1alt2_en character varying, adm1alt1_da character varying, adm1alt2_da character varying, adm0_en character varying, adm0_da character varying, adm0_pcode character varying);"
+	cd data/in/cod_pcodes; ls *1.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_1_level -lco GEOMETRY_NAME=geom'
+	touch $@
+
+db/table/cod_pcodes_2_level: data/in/download_cod_pcodes_data | db/table ## load 2 level cod pcodes features to database
+	psql -c "drop table if exists cod_pcodes_2_level;"
+	psql -c "create table pcode_level_2 (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm2_en character varying, adm2_pcode character varying, adm2_ref character varying, adm2alt1_en character varying, adm2alt2_en character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
+	cd data/in/cod_pcodes; ls *2.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_2_level -lco GEOMETRY_NAME=geom'
+	touch $@
+
+db/table/cod_pcodes_3_level: data/in/download_cod_pcodes_data | db/table ## load 3 level cod pcodes features to database
+	psql -c "drop table if exists cod_pcodes_3_level;"
+	psql -c "create table pcode_level_3 (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm3_en character varying, adm3_pcode character varying, adm3_ref character varying, adm3alt1_en character varying, adm3alt2_en character varying, adm2_en character varying, adm2_pcode character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
+	cd data/in/cod_pcodes; ls *3.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_3_level -lco GEOMETRY_NAME=geom'
+	touch $@
+
+db/table/cod_pcodes_4_level: data/in/download_cod_pcodes_data | db/table ## load 4 level cod pcodes features to database
+	psql -c "drop table if exists cod_pcodes_4_level;"
+	psql -c "create table pcode_level_4 (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm4_en character varying, adm4_pcode character varying, adm4_ref character varying, adm4alt1_en character varying, adm4alt2_en character varying, adm3_en character varying, adm3_pcode character varying, adm2_en character varying, adm2_pcode character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
+	cd data/in/cod_pcodes; ls *4.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_4_level -lco GEOMETRY_NAME=geom'
+	touch $@
+
+db/table/cod_pcodes_general: db/table/cod_pcodes_0_level db/table/cod_pcodes_1_level db/table/cod_pcodes_2_level db/table/cod_pcodes_3_level db/table/cod_pcodes_4_level ## merge all levels cod pcodes to single dataset
+	psql -f tables/cod_pcodes_general.sql
+	touch $@
+
+data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg.gz: db/table/cod_pcodes_general | data/out/cod_pcodes ## extract cod pcodes general dataset to gpkg file
+	rm -f $@
+	ogr2ogr -f GPKG data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg PG:'dbname=gis' -sql "select * from cod_pcodes_general_dataset order by pcode" -lco "SPATIAL_INDEX=NO" -nln cod_pcodes_general
+	cd data/out/cod_pcodes; pigz -k cod_pcodes_general_dataset.gpkg
+	touch $@
+
+deploy/s3/cod_pcodes_general_dataset: data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg.gz | deploy ## deploy cod pcodes general dataset to s3
+	aws s3 cp data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/cod_pcodes_general_dataset.gpkg.gz --profile geocint_pipeline_sender --acl public-read
+	touch $@
+
+### End COD PCODES export block ###
 
 ### Kontur Boundaries block ###
 

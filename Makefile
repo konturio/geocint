@@ -811,7 +811,7 @@ data/out/cod_pcodes: | data/out ## output directory
 	mkdir $@
 
 data/in/cod_pcodes/download_cod_pcodes_data: | data/in/cod_pcodes ## get data from feature server by api
-	rm -f $@_FAILED_LIST_1
+	rm -f $@_FAILED_LIST_1 rm -f $@_FAILED_LIST_500
 	## first attempt - download data with big patches - 500 feature per file
 	curl -s "https://codgis.itos.uga.edu/arcgis/rest/services/COD_External" | grep -oP '(?<=href=")[^"]*' | grep 'pcode\/FeatureServer' | parallel -j 1 'curl -s "https://codgis.itos.uga.edu{}" | grep ">Admin[0-9]"' | grep -oP '(?<=href=")[^"]*' | parallel -j 1 'bash scripts/get_patches_urls_list.sh {} 500' | parallel --colsep ' ' -j 1 'bash scripts/get_cod_pcodes.sh {1} data/in/cod_pcodes/{2} "$@__FAILED_LIST_500"'
 	## if smth weren't downloaded - split rest to 1 file per patch and retry

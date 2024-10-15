@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# $1 - feature layer url
+# $1 - feature layer URL
+# $2 - output file name
+# $3 - failed list file
 
 # Prepare inputs
 api_url="$1"
-
 output_file=$2
 failed_list=$3
-stop=false
 
-echo $output_file
+echo "$1 $2"
 
 rm -rf $output_file
 
@@ -43,8 +43,15 @@ if echo "$body" | jq -e .error >/dev/null; then
     exit 1
 fi
 
-echo "$body" | jq -c '.features[] | {type: "Feature", properties: .attributes, geometry: {type: "Polygon", coordinates: .geometry.rings}}' >> $output_file
-    
+# Process the JSON with jq and catch parse errors
+if ! echo "$body" | jq -c '.features[] | {type: "Feature", properties: .attributes, geometry: {type: "Polygon", coordinates: .geometry.rings}}' >> $output_file; then
+    echo "Error: jq parse error at processing"
+    echo "$1 $2" >> $failed_list
+    rm -rf $output_file
+    exit 1
+fi
+
+   
 # add comma between features, to make geojson valid
 sed -i '3,$s/^/,/; $!s/^,/,/' $output_file
 

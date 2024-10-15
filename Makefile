@@ -813,9 +813,9 @@ data/out/cod_pcodes: | data/out ## output directory
 data/in/cod_pcodes/download_cod_pcodes_data: | data/in/cod_pcodes ## get data from feature server by api
 	rm -f $@_FAILED_LIST_1
 	## first attempt - download data with big patches - 500 feature per file
-	cd data/in/cod_pcodes; curl -s "https://codgis.itos.uga.edu/arcgis/rest/services/COD_External" | grep -oP '(?<=href=")[^"]*' | grep 'pcode\/FeatureServer' | parallel -j 1 'curl -s "https://codgis.itos.uga.edu{}" | grep ">Admin[0-9]"' | grep -oP '(?<=href=")[^"]*' | parallel -j 1 'bash get_patches_urls_list.sh {} 500' | parallel --colsep ' ' -j 1 'bash get_cod_pcodes.sh {1} {2} "$@__FAILED_LIST_500"'
+	curl -s "https://codgis.itos.uga.edu/arcgis/rest/services/COD_External" | grep -oP '(?<=href=")[^"]*' | grep 'pcode\/FeatureServer' | parallel -j 1 'curl -s "https://codgis.itos.uga.edu{}" | grep ">Admin[0-9]"' | grep -oP '(?<=href=")[^"]*' | parallel -j 1 'bash scripts/get_patches_urls_list.sh {} 500' | parallel --colsep ' ' -j 1 'bash scripts/get_cod_pcodes.sh {1} data/in/cod_pcodes/{2} "$@__FAILED_LIST_500"'
 	## if smth weren't downloaded - split rest to 1 file per patch and retry
-	if [ -e $@__FAILED_LIST_500 ]; then cd data/in/cod_pcodes; cat $@_FAILED_LIST_500 | parallel --colsep ' ' 'bash split_chunks.sh {1} {2}' | parallel --colsep ' ' -j 1 'bash get_cod_pcodes.sh {1} {2} "$@__FAILED_LIST_1"'; fi
+	if [ -e $@__FAILED_LIST_500 ]; then cat $@_FAILED_LIST_500 | parallel --colsep ' ' 'bash scripts/split_patches_to_single_feature.sh {1} {2}' | parallel --colsep ' ' -j 1 'bash scripts/get_cod_pcodes.sh {1} data/in/cod_pcodes/{2} "$@__FAILED_LIST_1"'; fi
 	if [ -e $@__FAILED_LIST_1 ]; then echo "Some COD Pcode features weren't downloaded correctly - see $@__FAILED_LIST_1 for additional information." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
 	rm -f $@_FAILED_LIST_500
 	touch $@

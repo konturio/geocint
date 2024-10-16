@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Split big patches to single features and generate pairs download url + output file for each feature
+
 # Parameters:
 # $1 - input URL (example: "https://codgis.itos.uga.edu/arcgis/rest/services/COD_External/PHL_pcode/FeatureServer/2/query?where=1=1&outFields=*&returnGeometry=true&f=json&resultRecordCount=500&resultOffset=0")
 # $2 - output file name (example: "PHL_pcode_0_88_level_2.geojson")

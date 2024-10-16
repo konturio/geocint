@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Base on url generate pairs download url + output file 
+# example - https://codgis.itos.uga.edu/arcgis/rest/services/COD_External/AFG_pcode/FeatureServer/1/query?where=1=1&outFields=*&returnGeometry=true&f=json&resultRecordCount=500&resultOffset=0 AFG_pcode_0_34_level_1.geojson
+
 # Parameters:
 # $1 - part of the layer URL (example: "/arcgis/rest/services/COD_External/PHL_pcode/FeatureServer/0")
 # $2 - number of records per batch (result_record_count)

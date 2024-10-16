@@ -24,7 +24,7 @@ fi
 base_url=$(echo "$1" | sed 's/resultRecordCount=[0-9]\+&resultOffset=[0-9]\+//')
 
 # Generate URLs for each feature and corresponding output file names
-for ((i=lower_bound; i<=upper_bound; i++)); do
+for ((i=lower_bound; i<upper_bound; i++)); do
     # Generate URL for a single feature (adjust resultRecordCount to 1 and use resultOffset for the feature index)
     single_feature_url="${base_url}resultRecordCount=1&resultOffset=${i}"
     

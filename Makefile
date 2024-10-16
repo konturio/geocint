@@ -79,6 +79,12 @@ data/out/csv: | data/out ## Directory for csv dumps of data tables
 data/out/wildfire_sensors_placement: | data/out ## Directory for data about wildfire sensors placement
 	mkdir -p $@
 
+data/in/cod_pcodes: | data/in ## input directory for cod pcodes dataset
+	mkdir $@
+
+data/out/cod_pcodes: | data/out ## output directory for cod pcodes dataset
+	mkdir $@
+
 data/in/gadm: | data/in ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
 	mkdir -p $@
 
@@ -804,21 +810,6 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 ### End GADM 4.10 export block ###
 
 ### COD PCODES export block ###
-data/in/cod_pcodes: | data/in ## input directory
-	mkdir $@
-
-data/out/cod_pcodes: | data/out ## output directory
-	mkdir $@
-
-data/in/cod_pcodes/download_cod_pcodes_data: | data/in/cod_pcodes ## get data from feature server by api
-	rm -f $@_FAILED_LIST_1 rm -f $@_FAILED_LIST_500
-	## first attempt - download data with big patches - 500 feature per file
-	curl -s "https://codgis.itos.uga.edu/arcgis/rest/services/COD_External" | grep -oP '(?<=href=")[^"]*' | grep 'pcode\/FeatureServer' | parallel -j 1 'curl -s "https://codgis.itos.uga.edu{}" | grep ">Admin[0-9]"' | grep -oP '(?<=href=")[^"]*' | parallel -j 1 'bash scripts/get_patches_urls_list.sh {} 500' | parallel --colsep ' ' -j 1 'bash scripts/get_cod_pcodes.sh {1} data/in/cod_pcodes/{2} "$@__FAILED_LIST_500"'
-	## if smth weren't downloaded - split rest to 1 file per patch and retry
-	if [ -e $@__FAILED_LIST_500 ]; then cat $@_FAILED_LIST_500 | parallel --colsep ' ' 'bash scripts/split_patches_to_single_feature.sh {1} {2}' | parallel --colsep ' ' -j 1 'bash scripts/get_cod_pcodes.sh {1} data/in/cod_pcodes/{2} "$@__FAILED_LIST_1"'; fi
-	if [ -e $@__FAILED_LIST_1 ]; then echo "Some COD Pcode features weren't downloaded correctly - see $@__FAILED_LIST_1 for additional information." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
-	rm -f $@_FAILED_LIST_500
-	touch $@
 
 data/in/cod_pcodes/download_cod_pcodes_data: | data/in/cod_pcodes ## get data from feature server by api
 	rm -f $@__FAILED_LIST_1 $@__FAILED_LIST_500
@@ -842,31 +833,31 @@ data/in/cod_pcodes/download_cod_pcodes_data: | data/in/cod_pcodes ## get data fr
 
 db/table/cod_pcodes_0_level: data/in/cod_pcodes/download_cod_pcodes_data | db/table ## load 0 level cod pcodes features to database
 	psql -c "drop table if exists cod_pcodes_0_level;"
-	psql -c "create table cod_pcode_0_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm0_en character varying, adm0_pcode character varying, adm0_ref character varying, adm0alt1_en character varying, adm0alt2_en character varying, area_sqkm double precision);"
-	cd data/in/cod_pcodes; ls *0.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_0_level -lco GEOMETRY_NAME=geom'
+	psql -c "create table cod_pcodes_0_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm0_en character varying, adm0_pcode character varying, adm0_ref character varying, adm0alt1_en character varying, adm0alt2_en character varying, area_sqkm double precision);"
+	cd data/in/cod_pcodes; ls *0.geojson | parallel -j 1 'sleep 5; ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_0_level -lco GEOMETRY_NAME=geom'
 	touch $@
 
 db/table/cod_pcodes_1_level: data/in/cod_pcodes/download_cod_pcodes_data | db/table ## load 1 level cod pcodes features to database
 	psql -c "drop table if exists cod_pcodes_1_level;"
-	psql -c "create table cod_pcode_1_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, regionname_en character varying, regionname_da character varying, regioncode character varying, shape__area double precision, shape__length double precision, adm1_en character varying, adm1_da character varying, adm1_pcode character varying, adm1_ref character varying, adm1alt1_en character varying, adm1alt2_en character varying, adm1alt1_da character varying, adm1alt2_da character varying, adm0_en character varying, adm0_da character varying, adm0_pcode character varying);"
+	psql -c "create table cod_pcodes_1_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, regionname_en character varying, regionname_da character varying, regioncode character varying, shape__area double precision, shape__length double precision, adm1_en character varying, adm1_da character varying, adm1_pcode character varying, adm1_ref character varying, adm1alt1_en character varying, adm1alt2_en character varying, adm1alt1_da character varying, adm1alt2_da character varying, adm0_en character varying, adm0_da character varying, adm0_pcode character varying);"
 	cd data/in/cod_pcodes; ls *1.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_1_level -lco GEOMETRY_NAME=geom'
 	touch $@
 
 db/table/cod_pcodes_2_level: data/in/cod_pcodes/download_cod_pcodes_data | db/table ## load 2 level cod pcodes features to database
 	psql -c "drop table if exists cod_pcodes_2_level;"
-	psql -c "create table cod_pcode_2_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm2_en character varying, adm2_pcode character varying, adm2_ref character varying, adm2alt1_en character varying, adm2alt2_en character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
+	psql -c "create table cod_pcodes_2_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm2_en character varying, adm2_pcode character varying, adm2_ref character varying, adm2alt1_en character varying, adm2alt2_en character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
 	cd data/in/cod_pcodes; ls *2.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_2_level -lco GEOMETRY_NAME=geom'
 	touch $@
 
 db/table/cod_pcodes_3_level: data/in/cod_pcodes/download_cod_pcodes_data | db/table ## load 3 level cod pcodes features to database
 	psql -c "drop table if exists cod_pcodes_3_level;"
-	psql -c "create table cod_pcode_3_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm3_en character varying, adm3_pcode character varying, adm3_ref character varying, adm3alt1_en character varying, adm3alt2_en character varying, adm2_en character varying, adm2_pcode character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
+	psql -c "create table cod_pcodes_3_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm3_en character varying, adm3_pcode character varying, adm3_ref character varying, adm3alt1_en character varying, adm3alt2_en character varying, adm2_en character varying, adm2_pcode character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
 	cd data/in/cod_pcodes; ls *3.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_3_level -lco GEOMETRY_NAME=geom'
 	touch $@
 
 db/table/cod_pcodes_4_level: data/in/cod_pcodes/download_cod_pcodes_data | db/table ## load 4 level cod pcodes features to database
 	psql -c "drop table if exists cod_pcodes_4_level;"
-	psql -c "create table cod_pcode_4_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm4_en character varying, adm4_pcode character varying, adm4_ref character varying, adm4alt1_en character varying, adm4alt2_en character varying, adm3_en character varying, adm3_pcode character varying, adm2_en character varying, adm2_pcode character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
+	psql -c "create table cod_pcodes_4_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm4_en character varying, adm4_pcode character varying, adm4_ref character varying, adm4alt1_en character varying, adm4alt2_en character varying, adm3_en character varying, adm3_pcode character varying, adm2_en character varying, adm2_pcode character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
 	cd data/in/cod_pcodes; ls *4.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_4_level -lco GEOMETRY_NAME=geom'
 	touch $@
 

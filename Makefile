@@ -867,7 +867,7 @@ db/table/cod_pcodes_general: db/table/cod_pcodes_0_level db/table/cod_pcodes_1_l
 
 data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg.gz: db/table/cod_pcodes_general | data/out/cod_pcodes ## extract cod pcodes general dataset to gpkg file
 	rm -f $@
-	ogr2ogr -f GPKG data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg PG:'dbname=gis' -sql "select * from cod_pcodes_general_dataset order by pcode" -lco "SPATIAL_INDEX=NO" -nln cod_pcodes_general
+	ogr2ogr -f GPKG data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg PG:'dbname=gis' -sql "select * from cod_pcodes_general order by pcode" -lco "SPATIAL_INDEX=NO" -nln cod_pcodes_general
 	cd data/out/cod_pcodes; pigz -k cod_pcodes_general_dataset.gpkg
 	touch $@
 

@@ -16,8 +16,6 @@ rm -rf $output_file
 # Initialize output file with FeatureCollection structure
 echo '{ "type": "FeatureCollection", "features": [' > $output_file
 
-# first_chunk=true
-
 # Execute the request and save the HTTP status code
 response=$(curl -w "HTTPSTATUS:%{http_code}" -H "Cache-Control: no-cache, max-age=0" "$api_url")
 
@@ -50,7 +48,6 @@ if ! echo "$body" | jq -c '.features[] | {type: "Feature", properties: .attribut
     rm -rf $output_file
     exit 1
 fi
-
    
 # add comma between features, to make geojson valid
 sed -i '3,$s/^/,/; $!s/^,/,/' $output_file

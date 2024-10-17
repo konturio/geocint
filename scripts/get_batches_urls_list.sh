@@ -31,9 +31,6 @@ if [ -z "$total_record_count" ] || [ "$total_record_count" -eq 0 ]; then
     exit 1
 fi
 
-# Write the layer URL and total record count to layers_feature_count.csv
-echo "${base_url}${layer_url},${total_record_count}" >> layers_feature_count.csv
-
 # Generate URLs for each batch of records
 result_offset=0
 level=$(echo $layer_url | sed 's#.*/FeatureServer/##')  # Extract the layer level (e.g., 0)

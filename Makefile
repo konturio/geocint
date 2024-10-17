@@ -813,16 +813,16 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 
 data/in/cod_pcodes/download_cod_pcodes_data: | data/in/cod_pcodes ## get data from feature server by api
 	rm -f $@__FAILED_LIST_1 $@__FAILED_LIST_500
-	## first attempt - download data with big patches - 500 features per file
-	curl -s "https://codgis.itos.uga.edu/arcgis/rest/services/COD_External" | grep -oP '(?<=href=")[^"]*' | grep 'pcode\/FeatureServer' | parallel -j 1 'curl -s "https://codgis.itos.uga.edu{}" | grep ">Admin[0-9]"' | grep -oP '(?<=href=")[^"]*' | parallel -j 1 'bash scripts/get_patches_urls_list.sh {} 500' | parallel --colsep ' ' -j 1 'bash scripts/get_cod_pcodes.sh {1} data/in/cod_pcodes/{2} "$@__FAILED_LIST_500"' || true
+	## first attempt - download data with big batches - 500 features per file
+	curl -s "https://codgis.itos.uga.edu/arcgis/rest/services/COD_External" | grep -oP '(?<=href=")[^"]*' | grep 'pcode\/FeatureServer' | parallel -j 1 'curl -s "https://codgis.itos.uga.edu{}" | grep ">Admin[0-9]"' | grep -oP '(?<=href=")[^"]*' | parallel -j 1 'bash scripts/get_batches_urls_list.sh {} 500' | parallel --colsep ' ' -j 1 'bash scripts/get_cod_pcodes.sh {1} data/in/cod_pcodes/{2} "$@__FAILED_LIST_500"' || true
 	## if something wasn't downloaded - split rest to 1 file per patch and retry
-	if [ -e $@__FAILED_LIST_500 ]; then cat $@__FAILED_LIST_500 | parallel --colsep ' ' 'bash scripts/split_patches_to_single_feature.sh {1} {2}' > $@__FAILED_LIST_1; fi
+	if [ -e $@__FAILED_LIST_500 ]; then cat $@__FAILED_LIST_500 | parallel --colsep ' ' 'bash scripts/split_batches_to_single_feature.sh {1} {2}' > $@__FAILED_LIST_1; fi
 	## Retry download up to 20 times for failed  downloads
 	retry_count=0; \
 	while [ -e $@__FAILED_LIST_1 ] && [ $$retry_count -lt 20 ]; do \
 		echo "Retry attempt #$$retry_count for failed downloads..."; \
 		mv $@__FAILED_LIST_1 $@__RETRY_LIST_1; \
-		cat $@__RETRY_LIST_1 | parallel --colsep ' ' 'bash scripts/get_cod_pcodes.sh {1} data/in/cod_pcodes/{2} "$@__FAILED_LIST_1"'; \
+		cat $@__RETRY_LIST_1 | parallel --colsep ' ' 'bash scripts/get_cod_pcodes.sh {1} {2} "$@__FAILED_LIST_1"'; \
 		rm -f $@__RETRY_LIST_1; \
 		retry_count=$$((retry_count + 1)); \
 	done || true

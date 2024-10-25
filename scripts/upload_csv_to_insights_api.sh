@@ -16,12 +16,15 @@
 case $1 in
 prod)
   upload_endpoint="https://prod-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload"
+  upload_check="https://prod-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload/status"
   ;;
 test)
   upload_endpoint="https://test-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload"
+  upload_check="https://test-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload/status"
   ;;
 dev)
   upload_endpoint="https://dev-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload"
+  upload_check="https://dev-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload/status"
   ;;
 *)
   echo "Error. Unsupported realm"
@@ -85,6 +88,29 @@ fi
 
 if [ $response_status != 200 ]; then
   echo "$(date '+%F %H:%M:%S') Error. Failed to $action layer. $layer_label $layer_id Status code: $response_status"
+  exit 1
+fi
+
+upload_id=${request_result::-6}
+
+echo "$(date '+%F %H:%M:%S') got upload id $upload_id"
+
+curl_request="curl -s -w "\":::\"%{http_code}" --location '$upload_check/$upload_id'   -H 'Authorization: Bearer $token'"
+
+echo "$curl_request"
+
+while true; do
+    request_result=$(eval $curl_request)
+    rc=$(sed 's/.*:::\(.*\)/\1/' <<< $request_result)
+    [[ "$rc" != 202 ]] && break
+    echo $request_result
+    sleep 300
+done
+
+echo $request_result
+
+if [ "$rc" != 200 ]; then
+  echo "$(date '+%F %H:%M:%S') Error. Failed to $action layer. Upload check failed. $layer_label $layer_id Status code: $rc"
   exit 1
 fi
 

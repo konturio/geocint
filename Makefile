@@ -3107,7 +3107,7 @@ db/table/humanitarian_dev_index_2022_h3: db/table/kontur_boundaries db/table/hum
 ### END Humanitarian Development Index
 
 ### Inform Risk Index
-db/table/humanitarian_dev_index_2022: | db/table ## Human Development Index (HDI)
+db/table/inform_risk_profile_2025: | db/table ## Inform Risc Index
 	psql -c "drop table if exists inform_risk_profile_2025_in;"
 	psql -c 'create table inform_risk_profile_2025_in (country text, iso3 text, hasc text, inform_risk float, risk_class integer, rank integer, hazard_and_exposure float, natural_0_to_10 float, earthquake float, river_flood float, tsunami float, tropical_cyclone float, coastal_flood float, drought float, epidemic float, human float, projected_conflict_probability float, current_conflict_intensity float, vulnerability float, socio_economic_vulnerability float, development_and_deprivation float, inequality float, economic_dependency float, vulnerable_groups float, uprooted_people float, health_conditions float, children_u5 float, recent_shocks float, food_security float, other_vulnerable_groups float, lack_of_coping_capacity float, institutional float, drr float, governance float, infrastructure float, communication float, physical_infrastructure float, access_to_health_care float, number_of_missing_indicators integer, missing_indicators_pct integer, countries_in_hvc integer, recentness_data_average_years float);'
 	cat static_data/inform_risk_index/inform_risk_2025_v069.csv | psql -c "copy inform_risk_profile_2025_in from stdin with csv header;"
@@ -3115,7 +3115,7 @@ db/table/humanitarian_dev_index_2022: | db/table ## Human Development Index (HDI
 	psql -c 'create table inform_risk_profile_2025 as (select country, hasc, inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care from inform_risk_profile_2025);'	
 	touch $@
 
-db/table/inform_risk_profile_2025_h3: db/table/kontur_boundaries db/table/humanitarian_dev_index_2022 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviews of Human Development Index (HDI)
+db/table/inform_risk_profile_2025_h3: db/table/kontur_boundaries db/table/inform_risk_profile_2025 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviews of Human Development Index (HDI)
 	psql -c "call transform_hasc_to_h3('inform_risk_profile_2025', 'inform_risk_profile_2025_h3', 'hasc', '{inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care}'::text[], 8);"
 	psql -c "call generate_overviews('inform_risk_profile_2025_h3', '{inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care}'::text[], '{max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,min,min,min,min,min,min,min}'::text[], 8);"
 	touch $@
@@ -3502,21 +3502,6 @@ data/out/csv/disaster_internal_displacements.csv: db/table/idmc_country_2023_h3 
 
 data/out/csv/hdi_2022.csv: db/table/humanitarian_dev_index_2022_h3 | data/out/csv ## extract hdi_2022 to csv file 
 	psql -q -X -c "copy (select h3, hdi_2022 from humanitarian_dev_index_2022_h3 where h3 is not null and hdi_2022 is not null order by h3) to stdout with delimiter ',' csv;" > $@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 data/out/csv/inform_risk.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract inform_risk to csv file
 	psql -q -X -c "copy (select h3, inform_risk from inform_risk_profile_2025_h3 where h3 is not null and inform_risk is not null order by h3) to stdout with delimiter ',' csv;" > $@

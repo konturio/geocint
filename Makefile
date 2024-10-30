@@ -290,7 +290,7 @@ db/table/covid19_population_h3_r8: db/table/kontur_population_h3 db/table/covid1
 	psql -f tables/covid19_population_h3_r8.sql
 	touch $@
 
-db/table/covid19_h3: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries db/procedure/generate_overviews | db/table ## calculate cases rate, dither and generate overviews of covid19_population_h3_r8
+db/table/covid19_h3: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/procedure/generate_overviews db/table ## calculate cases rate, dither and generate overviews of covid19_population_h3_r8
 	psql -f tables/covid19_h3.sql
 	psql -c "call generate_overviews('covid19_h3', '{date, population, total_population, confirmed, recovered, dead}'::text[], '{max, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
@@ -320,7 +320,7 @@ db/table/covid19_vaccine_accept_us_counties: data/in/covid19/vaccination/vaccine
 	psql -f tables/covid19_vaccine_accept_us_counties.sql
 	touch $@
 
-db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_us_counties db/procedure/generate_overviews | db/table  ## Aggregated data on COVID-19 vaccine acceptance in US based on Carnegie Mellon University dataset distributed on H3 hexagon grid.
+db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_us_counties | db/procedure/generate_overviews db/table  ## Aggregated data on COVID-19 vaccine acceptance in US based on Carnegie Mellon University dataset distributed on H3 hexagon grid.
 	psql -f tables/covid19_vaccine_accept_us_counties_h3.sql
 	psql -c "call generate_overviews('covid19_vaccine_accept_us_counties_h3', '{vaccine_value}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -388,7 +388,7 @@ db/table/facebook_medium_voltage_distribution_in: data/in/facebook/medium_voltag
 			"psql -c \"\copy facebook_medium_voltage_distribution_in (lat, lon, value) from '{}' with csv header delimiter ',';\""
 	touch $@
 
-db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in db/procedure/generate_overviews | db/table  ## Put Facebook Medium Voltage Distribution on H3
+db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/procedure/generate_overviews db/table  ## Put Facebook Medium Voltage Distribution on H3
 	psql -f tables/facebook_medium_voltage_distribution_h3.sql
 	psql -c "call generate_overviews('facebook_medium_voltage_distribution_h3', '{powerlines}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -438,7 +438,7 @@ db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last
 	psql -c "drop table facebook_roads_old; drop table osm_roads_increment;"
 	touch $@
 
-db/table/facebook_roads_h3: db/table/facebook_roads db/procedure/generate_overviews | db/table ## Build h3 overviews for Facebook roads at all levels.
+db/table/facebook_roads_h3: db/table/facebook_roads | db/procedure/generate_overviews db/table ## Build h3 overviews for Facebook roads at all levels.
 	psql -f tables/facebook_roads_h3.sql
 	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -467,7 +467,7 @@ db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_seg
 	psql -c "alter index if exists osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx rename to osm_road_segments_seg_id_node_from_node_to_seg_geom_idx;"
 	touch $@
 
-db/table/osm_road_segments_h3: db/table/osm_road_segments db/procedure/generate_overviews | db/table ## osm road segments aggregated to h3
+db/table/osm_road_segments_h3: db/table/osm_road_segments | db/procedure/generate_overviews db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_h3.sql
 	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -476,7 +476,7 @@ db/table/osm_road_segments_6_months: db/table/osm_roads db/table/osm_meta | db/t
 	psql -f tables/osm_road_segments_6_months.sql
 	touch $@
 
-db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months db/procedure/generate_overviews | db/table ## osm road segments aggregated to h3
+db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months | db/procedure/generate_overviews db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_6_months_h3.sql
 	psql -c "call generate_overviews('osm_road_segments_6_months_h3', '{highway_length_6_months}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -662,7 +662,7 @@ db/table/mapswipe_hot_tasking_data: data/mid/mapswipe/ym_files/update | db/table
 	ls -S data/mid/mapswipe/ym_files/*.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln mapswipe_hot_tasking_data -nlt POLYGON --config PG_USE_COPY YES'
 	touch $@
 
-db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 db/procedure/generate_overviews db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area | db/table ## Create h3 table with mapswipe data
+db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 | db/procedure/generate_overviews db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area db/table ## Create h3 table with mapswipe data
 	psql -f tables/mapswipe_hot_tasking_data_h3.sql
 	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('mapswipe_hot_tasking_data_h3_in', 'mapswipe_hot_tasking_data_h3', '{mapswipe_area}'::text[], 8);"
 	psql -c "drop table if exists mapswipe_hot_tasking_data_h3_in;"
@@ -744,7 +744,7 @@ db/table/gebco_2022_elevation_h3: db/table/gebco_2022_elevation | db/table ## GE
 	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2022_elevation -v table_name_h3=gebco_2022_elevation_h3 -v aggr_func=avg -v item_name=avg_elevation_gebco_2022
 	touch $@
 
-db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 db/table/land_polygons_h3_r8 db/procedure/generate_overviews | db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
+db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 db/table/land_polygons_h3_r8 | db/procedure/generate_overviews db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
 	psql -f tables/gebco_2022_h3.sql
 	psql -c "call generate_overviews('gebco_2022_h3', '{avg_slope_gebco_2022, avg_elevation_gebco_2022}'::text[], '{avg, avg}'::text[], 8);"
 	psql -c "create index on gebco_2022_h3 (h3);"
@@ -766,7 +766,7 @@ db/table/ndvi_2019_06_10: data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/tabl
 	psql -c "vacuum analyze ndvi_2019_06_10;"
 	touch $@
 
-db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 db/procedure/generate_overviews | db/table ## Generate h3 table with average NDVI from 1 to 8 resolution.
+db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/procedure/generate_overviews db/table ## Generate h3 table with average NDVI from 1 to 8 resolution.
 	psql -f tables/ndvi_2019_06_10_h3.sql
 	psql -c "call generate_overviews('ndvi_2019_06_10_h3', '{avg_ndvi}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);"
@@ -776,13 +776,13 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Cou
 	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r8 -v item_count=building_count
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 db/procedure/generate_overviews | db/table ## Count max amount of buildings at hexagons from all building datasets.
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 | db/procedure/generate_overviews db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
 	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 
-db/table/osm_building_levels_h3: db/table/osm_buildings | db/table ## Calculate max and average levels of OSM buildings at hexagons.
+db/table/osm_building_levels_h3: db/table/osm_buildings | db/procedure/generate_overviews db/table ## Calculate max and average levels of OSM buildings at hexagons.
 	psql -f tables/osm_building_levels_h3.sql
 	psql -c "call generate_overviews('osm_building_levels_h3', '{max_levels,avg_levels}'::text[], '{max,avg}'::text[], 8);"
 	touch $@
@@ -1223,7 +1223,7 @@ db/table/wikidata_naturalization_gap: | db/table ## Global collection of years o
 	psql -c "create index on wikidata_naturalization_gap using btree(hasc);"
 	touch $@
 
-db/table/wikidata_naturalization_gap_h3: db/table/kontur_boundaries db/table/wikidata_naturalization_gap db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of wikidata years_to_naturalisation and multiple_citizenship
+db/table/wikidata_naturalization_gap_h3: db/table/wikidata_naturalization_gap | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviws of wikidata years_to_naturalisation and multiple_citizenship
 	psql -c "call transform_hasc_to_h3('wikidata_naturalization_gap', 'wikidata_naturalization_gap_h3', 'hasc', '{years_to_naturalisation,multiple_citizenship}'::text[], 8);"
 	psql -c "call generate_overviews('wikidata_naturalization_gap_h3', '{years_to_naturalisation,multiple_citizenship}'::text[], '{max,min}'::text[], 8);"
 	touch $@
@@ -1398,7 +1398,7 @@ db/table/worldbank_tax_rate: | db/table ## Global Worldbank Tax Rate (source htt
 	psql -c "create index on worldbank_tax_rate using btree(hasc);"
 	touch $@
 
-db/table/worldbank_tax_rate_h3: db/table/kontur_boundaries db/table/worldbank_tax_rate db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of worldbank_tax_rate
+db/table/worldbank_tax_rate_h3: db/table/worldbank_tax_rate | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviws of worldbank_tax_rate
 	psql -c "call transform_hasc_to_h3('worldbank_tax_rate', 'worldbank_tax_rate_h3', 'hasc', '{t2019}'::text[], 8);"
 	psql -c "call generate_overviews('worldbank_tax_rate_h3', '{t2019}'::text[], '{max}'::text[], 8);"
 	touch $@
@@ -1411,7 +1411,7 @@ db/table/idmc_country_2023: | db/table ## IDMC internal displacemet 2023 (source
 	psql -c "create index on idmc_country_2023 using btree(iso3);"
 	touch $@
 
-db/table/idmc_country_2023_h3: db/table/idmc_country_2023 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3_percent_of_population | db/table/kontur_boundaries ## Create idmc_country_2023_h3 and genarate overviews
+db/table/idmc_country_2023_h3: db/table/idmc_country_2023 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3_percent_of_population db/table/kontur_boundaries ## Create idmc_country_2023_h3 and genarate overviews
 	psql -f tables/idmc_country_2023_h3.sql
 	touch $@
 
@@ -1423,7 +1423,7 @@ db/table/worldbank_inflation: | db/table ## Global Worldbank Headline consumer p
 	psql -c "create index on worldbank_inflation using btree(hasc);"
 	touch $@
 
-db/table/worldbank_inflation_h3: db/table/kontur_boundaries db/table/worldbank_inflation db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of worldbank_inflation
+db/table/worldbank_inflation_h3: db/table/worldbank_inflation | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviws of worldbank_inflation
 	psql -c "call transform_hasc_to_h3('worldbank_inflation', 'worldbank_inflation_h3', 'hasc', '{inflation}'::text[], 8);"
 	psql -c "call generate_overviews('worldbank_inflation_h3', '{inflation}'::text[], '{max}'::text[], 8);"
 	touch $@
@@ -1705,7 +1705,7 @@ db/table/kontur_population_v5: data/mid/kontur_population_v5/kontur_population_2
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_population_v5/kontur_population_20231101.gpkg -t_srs EPSG:4326 -nln kontur_population_v5 -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/kontur_population_v5_h3: db/table/kontur_population_v5 db/procedure/generate_overviews | db/table ## Generate h3 hexagon for population v5.
+db/table/kontur_population_v5_h3: db/table/kontur_population_v5 | db/procedure/generate_overviews db/table ## Generate h3 hexagon for population v5.
 	psql -f tables/kontur_population_v5_h3.sql
 	psql -c "call generate_overviews('kontur_population_v5_h3', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -2054,12 +2054,12 @@ db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table #
 	psql -f tables/osm_landuse_industrial.sql
 	touch $@
 
-db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial db/procedure/generate_overviews | db/table ## Aggregate industrial landuse area on H3 hexagons grid.
+db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/procedure/generate_overviews db/table ## Aggregate industrial landuse area on H3 hexagons grid.
 	psql -f tables/osm_landuse_industrial_h3.sql
 	psql -c "call generate_overviews('osm_landuse_industrial_h3', '{industrial_area}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## H3 hexagons grid with aggregated count volcanoes from OpenStreetMap dataset.
+db/table/osm_volcanos_h3: db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## H3 hexagons grid with aggregated count volcanoes from OpenStreetMap dataset.
 	# Extract volcanoes points from OpenStreetMap dataset.
 	psql -f tables/osm_volcanos.sql
 	# Count volcanoes within H3 grid hexagons of resolution = 8.
@@ -2072,7 +2072,7 @@ db/table/osm_places_eatery: db/index/osm_tags_idx | db/table ## Eatery extractio
 	psql -f tables/osm_places_eatery.sql
 	touch $@
 
-db/table/osm_places_eatery_h3: db/table/osm_places_eatery db/procedure/generate_overviews | db/table ## Eatery count h3 layer from OpenStreetMap.
+db/table/osm_places_eatery_h3: db/table/osm_places_eatery | db/procedure/generate_overviews db/table ## Eatery count h3 layer from OpenStreetMap.
 	# Count eatery places within H3 grid hexagons of resolution = 8.
 	psql -f tables/count_points_inside_h3.sql -v table=osm_places_eatery -v table_h3=osm_places_eatery_h3 -v item_count=eatery_count
 	# Generate overviews for resolution < 8 hexagons.
@@ -2083,7 +2083,7 @@ db/table/osm_places_food_shops: db/index/osm_tags_idx | db/table ## Extract food
 	psql -f tables/osm_places_food_shops.sql
 	touch $@
 
-db/table/osm_places_food_shops_h3: db/table/osm_places_food_shops db/procedure/generate_overviews | db/table ## Food shops count h3 layer from OpenStreetMap.
+db/table/osm_places_food_shops_h3: db/table/osm_places_food_shops | db/procedure/generate_overviews db/table ## Food shops count h3 layer from OpenStreetMap.
 	# Count eatery places within H3 grid hexagons of resolution = 8.
 	psql -f tables/count_points_inside_h3.sql -v table=osm_places_food_shops -v table_h3=osm_places_food_shops_h3 -v item_count=food_shops_count
 	# Generate overviews for resolution < 8 hexagons.
@@ -2127,7 +2127,7 @@ db/table/us_census_tract_stats: db/table/us_census_tracts_population_h3_r8 db/ta
 	psql -f tables/us_census_tracts_stats.sql
 	touch $@
 
-db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/procedure/generate_overviews db/table/us_census_tracts_population_h3_r8 | db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
+db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/table/us_census_tracts_population_h3_r8 | db/procedure/generate_overviews db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
 	psql -f tables/us_census_tracts_stats_h3.sql
 	psql -c "call generate_overviews('us_census_tracts_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
@@ -2281,7 +2281,7 @@ db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manag
 	psql -c "create index on global_rva_indexes using btree(hasc);"
 	touch $@
 
-db/table/global_rva_h3: db/table/kontur_boundaries db/table/global_rva_indexes db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of global rva indexes
+db/table/global_rva_h3: db/table/global_rva_indexes | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table ## Generation overviws of global rva indexes
 	psql -c "call transform_hasc_to_h3('global_rva_indexes', 'global_rva_h3', 'hasc', '{raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, mhe_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index, population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, vulnerability_index, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale, physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale, marine_protected_area_scale, environmental_capacity_index, coping_capacity_index, resilience_index, mhr_index}'::text[], 8);"
 	psql -c "call generate_overviews('global_rva_h3', '{raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, mhe_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index, population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, vulnerability_index, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale, physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale, marine_protected_area_scale, environmental_capacity_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
@@ -2292,7 +2292,7 @@ db/table/ndpba_rva_indexes: | db/table ## NDPBA RVA indexes
 	cat static_data/pdc_bivariate_manager/ndpba_rva.csv | psql -c "copy ndpba_rva_indexes from stdin with csv header;"
 	touch $@
 
-db/table/ndpba_rva_h3: db/table/kontur_boundaries db/table/ndpba_rva_indexes db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviews of ndpba rva indexes
+db/table/ndpba_rva_h3: db/table/ndpba_rva_indexes | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table ## Generation overviews of ndpba rva indexes
 	psql -c "call transform_hasc_to_h3('ndpba_rva_indexes', 'ndpba_rva_h3', 'hasc', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], 8);"
 	psql -c "call generate_overviews('ndpba_rva_h3', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
@@ -2327,17 +2327,17 @@ db/table/foursquare_visits: data/mid/foursquare/kontour_visits_csv | db/table ##
 	ls data/mid/foursquare/kontour_visits*.csv | parallel 'cat {} | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header; "'
 	touch $@
 
-db/table/foursquare_places_h3: db/table/foursquare_places db/procedure/generate_overviews | db/table ## Aggregate 4sq places count  on H3 hexagon grid.
+db/table/foursquare_places_h3: db/table/foursquare_places | db/procedure/generate_overviews db/table ## Aggregate 4sq places count  on H3 hexagon grid.
 	psql -f tables/foursquare_places_h3.sql
 	psql -c "call generate_overviews('foursquare_places_h3', '{foursquare_places_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/foursquare_visits_h3: db/table/foursquare_visits db/procedure/generate_overviews | db/table ## Aggregate 4sq visits count on H3 hexagon grid.
+db/table/foursquare_visits_h3: db/table/foursquare_visits | db/procedure/generate_overviews db/table ## Aggregate 4sq visits count on H3 hexagon grid.
 	psql -f tables/foursquare_visits_h3.sql
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/live_sensor_data_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/oam_global_coverage_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/oam_number_of_pixels_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3| db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/live_sensor_data_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/oam_global_coverage_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/oam_number_of_pixels_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -2400,7 +2400,7 @@ data/tile_logs/_download: | data/tile_logs data ## Download OpenStreetMap tiles 
 	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np -nc https://planet.openstreetmap.org/tile_logs/
 	touch $@
 
-db/table/tile_logs: data/tile_logs/_download db/procedure/generate_overviews | db/table ## OpenStreetMap tiles usage logs imported into database.
+db/table/tile_logs: data/tile_logs/_download | db/procedure/generate_overviews db/table ## OpenStreetMap tiles usage logs imported into database.
 	psql -c "drop table if exists tile_logs;"
 	psql -c "create table tile_logs (tile_date timestamptz, z int, x int, y int, view_count int, geom geometry generated always as (ST_Transform(ST_TileEnvelope(z, x, y), 4326)) stored);"
 	find data/tile_logs/ -type f -size +10M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs from stdin with csv'"
@@ -2412,7 +2412,7 @@ db/table/tile_logs: data/tile_logs/_download db/procedure/generate_overviews | d
 data/tile_logs/tiles-2022-02-23.txt.xz: | data/tile_logs/_download ## use txt.xz file as footprint not to run next target every run.
 	touch $@
 
-db/table/tile_logs_bf2402: db/procedure/generate_overviews | data/tile_logs/tiles-2022-02-23.txt.xz db/table ## OpenStreetMap tiles logs 30 days before 24.02.2022.
+db/table/tile_logs_bf2402: | db/procedure/generate_overviews data/tile_logs/tiles-2022-02-23.txt.xz db/table ## OpenStreetMap tiles logs 30 days before 24.02.2022.
 	psql -c "drop table if exists tile_logs_bf2402;"
 	psql -c "create table tile_logs_bf2402 (tile_date timestamptz, z int, x int, y int, view_count int);"
 	cat static_data/tile_list/tile_logs_list.txt | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs_bf2402 from stdin with csv'"
@@ -2620,7 +2620,7 @@ db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/l
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
 
-db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/hexagons_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## adjust total road length with linear regression from population
+db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/hexagons_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 | db/procedure/generate_overviews db/table ## adjust total road length with linear regression from population
 	psql -f tables/total_road_length_h3.sql
 	psql -c "call generate_overviews('total_road_length_h3', '{total_road_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -2659,7 +2659,7 @@ db/table/global_solar_atlas_ghi: data/mid/global_solar_atlas/GHI/unzip | db/tabl
 
 ## Global solar atlas - convert raster tables to h3 and create common table
 
-db/table/global_solar_atlas_h3: db/table/global_solar_atlas_ghi db/procedure/generate_overviews | db/table ## Global solar atlas - H3 hexagons table with average GTI, GHI, PVOUT values from 1 to 8 resolution
+db/table/global_solar_atlas_h3: db/table/global_solar_atlas_ghi | db/procedure/generate_overviews db/table ## Global solar atlas - H3 hexagons table with average GTI, GHI, PVOUT values from 1 to 8 resolution
 	psql -f tables/global_solar_atlas_h3.sql
 	psql -c "call generate_overviews('global_solar_atlas_h3', '{gsa_ghi}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on global_solar_atlas_h3 (h3);"
@@ -2771,7 +2771,7 @@ db/table/worldclim_max_temp: data/mid/worldclim/max_temp/maximal_temperatures.ti
 	touch $@
 
 ## Worldclim temperatures - create all tables and unite them to one
-db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldclim_min_temp db/table/worldclim_max_temp db/procedure/generate_overviews | db/table ## Worldclim temperatures - create summary H3 table
+db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldclim_min_temp db/table/worldclim_max_temp | db/procedure/generate_overviews db/table ## Worldclim temperatures - create summary H3 table
 	psql -f tables/worldclim_temperatures_h3.sql
 	psql -c "call generate_overviews('worldclim_temperatures_h3', '{worldclim_avg_temperature, worldclim_min_temperature, worldclim_max_temperature, worldclim_amp_temperature}'::text[], '{avg, min, max, max}'::text[], 8);"
 	psql -c "create index on worldclim_temperatures_h3 (h3);"
@@ -2812,7 +2812,7 @@ db/table/powerlines_proximity_h3_r8: db/table/powerlines_proximity | db/table ##
 
 ### City Waste management block ###
 
-db/table/waste_containers_h3: db/table/osm db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## create a table with the average number of waste containers within a hexagon or less than 75m apart per hexagon
+db/table/waste_containers_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## create a table with the average number of waste containers within a hexagon or less than 75m apart per hexagon
 	psql -f tables/waste_containers_h3.sql
 	psql -c "call generate_overviews('waste_containers_h3', '{waste_basket_coverage}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -2876,7 +2876,7 @@ db/table/power_substations_proximity_h3_r8: db/table/power_substations_proximity
 ### END Proximity to electric power substationss ###
 
 ### Unite all proximity maps to one and generate overviews
-db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/populated_areas_proximity_h3_r8 db/table/powerlines_proximity_h3_r8 db/table/land_polygons_h3_r8 db/procedure/generate_overviews | db/table ## Unite proximity maps to one table
+db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/populated_areas_proximity_h3_r8 db/table/powerlines_proximity_h3_r8 db/table/land_polygons_h3_r8 | db/procedure/generate_overviews db/table ## Unite proximity maps to one table
 	psql -f tables/proximities_h3.sql
 	psql -c "create index on proximities_h3 (h3);"
 	psql -c "call generate_overviews('proximities_h3', '{powerlines_proximity_m, populated_areas_proximity_m, power_substations_proximity_m}'::text[], '{avg, avg, avg}'::text[], 8);"
@@ -2884,7 +2884,7 @@ db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/pop
 
 ### Synthetic solar farms placement layer ###
 
-db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## create a table with synthetic solar farms placement suitability (MCDA)
+db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/table/kontur_population_h3 | db/procedure/generate_overviews db/table ## create a table with synthetic solar farms placement suitability (MCDA)
 	psql -f tables/solar_farms_placement_suitability_synthetic_h3.sql
 	psql -c "call generate_overviews('solar_farms_placement_suitability_synthetic_h3', '{solar_farms_placement_suitability}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on solar_farms_placement_suitability_synthetic_h3 (h3);"
@@ -2894,7 +2894,7 @@ db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3
 
 ### Existing Solar power panels layer ###
 
-db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## Get existing solar power panels layer
+db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## Get existing solar power panels layer
 	psql -f tables/existing_solar_power_panels_h3.sql
 	psql -c "call generate_overviews('existing_solar_power_panels_h3', '{solar_power_plants}'::text[], '{sum}'::text[], 8);"
 	psql -c "create index on existing_solar_power_panels_h3 (h3);"
@@ -2925,7 +2925,7 @@ db/table/safety_index_per_country: | db/table ## Get existing solar power panels
 	psql -c 'create table safety_index_per_country as (select iso3, iso2, name, p.maximum - safety_index as safety_index from safety_index_per_country_in, (select max(safety_index) maximum from safety_index_per_country_in) p);'
 	touch $@
 
-db/table/safety_index_h3: db/table/safety_index_per_country db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## transform hasc codes to h3 indexes and generate overviews
+db/table/safety_index_h3: db/table/safety_index_per_country | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## transform hasc codes to h3 indexes and generate overviews
 	psql -c "call transform_hasc_to_h3('safety_index_per_country', 'safety_index_h3', 'iso2', '{safety_index}'::text[], 8);"
 	psql -c "call generate_overviews('safety_index_h3', '{safety_index}'::text[], '{max}'::text[], 8);"
 	psql -c "create index on safety_index_h3 (h3);"
@@ -3085,7 +3085,7 @@ db/table/meta_forest_canopy_height: data/in/raster/meta_forest_canopy_height/dow
 	find -L data/in/raster/meta_forest_canopy_height/chm -name "*.tif" -type f | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=6 raster2pgsql -a -Y -s 3857 {} -t auto meta_forest_canopy_height | psql -q'
 	touch $@
 
-db/table/meta_forest_canopy_height_h3: db/table/meta_forest_canopy_height | db/table ## Count height of forest canopy into h3 hexagons and generate overviews.
+db/table/meta_forest_canopy_height_h3: db/table/meta_forest_canopy_height | db/procedure/generate_overviews db/table ## Count height of forest canopy into h3 hexagons and generate overviews.
 	psql -f tables/meta_forest_canopy_height_h3.sql
 	psql -c "call generate_overviews('meta_forest_canopy_height_h3', '{avg_forest_canopy_height,max_forest_canopy_height}'::text[], '{avg,max}'::text[], 8);"
 	touch $@
@@ -3099,7 +3099,7 @@ db/table/humanitarian_dev_index_2022: | db/table ## Human Development Index (HDI
 	psql -c 'create table humanitarian_dev_index_2022 as (select country, code, hasc, hdi_2022 from humanitarian_dev_index_2022_in);'
 	touch $@
 
-db/table/humanitarian_dev_index_2022_h3: db/table/humanitarian_dev_index_2022 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 |  db/table/kontur_boundaries ## Generation overviews of Human Development Index (HDI)
+db/table/humanitarian_dev_index_2022_h3: db/table/humanitarian_dev_index_2022 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviews of Human Development Index (HDI)
 	psql -c "call transform_hasc_to_h3('humanitarian_dev_index_2022', 'humanitarian_dev_index_2022_h3', 'hasc', '{hdi_2022}'::text[], 8);"
 	psql -c "call generate_overviews('humanitarian_dev_index_2022_h3', '{hdi_2022}'::text[], '{min}'::text[], 8);"
 	touch $@
@@ -3115,7 +3115,7 @@ db/table/inform_risk_profile_2025: | db/table ## Inform Risc Index
 	psql -c 'create table inform_risk_profile_2025 as (select country, hasc, inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care from inform_risk_profile_2025_in);'	
 	touch $@
 
-db/table/inform_risk_profile_2025_h3: db/table/inform_risk_profile_2025 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table/kontur_boundaries ## Generation overviews of Human Development Index (HDI)
+db/table/inform_risk_profile_2025_h3: db/table/inform_risk_profile_2025 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviews of Human Development Index (HDI)
 	psql -c "call transform_hasc_to_h3('inform_risk_profile_2025', 'inform_risk_profile_2025_h3', 'hasc', '{inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care}'::text[], 8);"
 	psql -c "call generate_overviews('inform_risk_profile_2025_h3', '{inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care}'::text[], '{max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,min,min,min,min,min,min,min}'::text[], 8);"
 	touch $@

@@ -1,73 +1,84 @@
 #!/bin/bash
-# $1 - prod, test or dev
-# $2 - csv file path (data/trees.csv)
-# $3 - layer id ("trees")
-# $4 - layer direction ("[[\"neutral\"], [\"neutral\"]]")
-# $5 - layer isBase (true)
-# $6 - layer isPublic (false)
-# $7 - layer copyrights ("[\"Kontur.io\",\"OSM Contributors\"]")
-# $8 - layer description ("very cool trees layer produced by Kontur")
-# $9 - layer coverage ("World")
-# $10 - layer update frequency ("daily")
-# $11 - layer unit_id ("n")
-# $12 - layer last_updated
+# $1 - environment: prod, test, or dev
+# $2 - csv file path (e.g., data/trees.csv)
+# $3 - layer id (e.g., "trees")
+# $4 - file path to determine last updated timestamp
 
-# define endpoints
+# Define endpoints based on environment
 case $1 in
-prod)
-  upload_endpoint="https://prod-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload"
-  upload_check="https://prod-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload/status"
-  ;;
-test)
-  upload_endpoint="https://test-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload"
-  upload_check="https://test-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload/status"
-  ;;
-dev)
-  upload_endpoint="https://dev-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload"
-  upload_check="https://dev-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload/status"
-  ;;
-*)
-  echo "Error. Unsupported realm"
-  exit 1
-  ;;
+  prod)
+    upload_endpoint="https://prod-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload"
+    upload_check="https://prod-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload/status"
+    ;;
+  test)
+    upload_endpoint="https://test-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload"
+    upload_check="https://test-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload/status"
+    ;;
+  dev)
+    upload_endpoint="https://dev-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload"
+    upload_check="https://dev-insights-api.k8s-01.konturlabs.com/insights-api/indicators/upload/status"
+    ;;
+  *)
+    echo "Error: Unsupported environment (use prod, test, or dev)"
+    exit 1
+    ;;
 esac
 
-# Prepare inputs
-token=$(bash scripts/get_auth_token.sh $1)
-layer_id="\"$3\""
-layer_label="\"$(psql -Xqtc "select param_label from bivariate_indicators where param_id = '$3';" | xargs)\""
-layer_direction=$4 #$(sed 's/"/\\"/g' <<<"$5")
-layer_isbase=$5
-layer_ispublic=$6
-if [ "$7" == "null" ]; then
-  layer_copyrights="null"
-else
-  layer_copyrights=$7
-fi
-layer_description="\"$8\""
-layer_coverage="\"${9}\""
-layer_update_freq="\"${10}\""
-layer_unit_id="\"${11}\""
-layer_emoji="\"$(psql -Xqtc "select emoji from bivariate_indicators where param_id = '$3';" | xargs)\""
+# Retrieve authentication token
+token=$(bash scripts/get_auth_token.sh "$1")
 
-layer_last_updated="\"${12}\""
+# Fetch multiple parameters in one query, excluding copyrights
+params=$(psql -Xqtc "
+  select json_build_object(
+    'label', param_label,
+    'direction', direction::text,
+    'is_base', is_base::text,
+    'is_public', is_public::text,
+    'description', description,
+    'coverage', coverage,
+    'update_frequency', update_frequency,
+    'unit_id', unit_id,
+    'emoji', emoji
+  )::text
+  from bivariate_indicators where param_id = '$3';
+")
 
-existed_uuid=$(bash scripts/update_indicators_list.sh $1 | jq -c '.[]' | jq -c 'select( .id == "'$3'" )' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
+# Parse the JSON response for individual variables
+layer_label=$(echo "$params" | jq -r '.label')
+layer_direction=$(echo "$params" | jq -r '.direction')
+layer_isbase=$(echo "$params" | jq -r '.is_base')
+layer_ispublic=$(echo "$params" | jq -r '.is_public')
+layer_description=$(echo "$params" | jq -r '.description')
+layer_coverage=$(echo "$params" | jq -r '.coverage')
+layer_update_freq=$(echo "$params" | jq -r '.update_frequency')
+layer_unit_id=$(echo "$params" | jq -r '.unit_id')
+layer_emoji=$(echo "$params" | jq -r '.emoji')
 
+# Retrieve and process copyrights separately
+layer_copyrights=$(psql -Xqtc "SELECT copyrights::text FROM bivariate_indicators WHERE param_id = '$3';" | sed 's/;/.,/g' | sed 's/, /,/g' | jq -c .)
+
+# Get last updated timestamp
+layer_last_updated="\"$(date -r "$4" +'%Y-%m-%dT%H:%M:%SZ')\""
+
+# Check if UUID for the layer exists
+existed_uuid=$(bash scripts/update_indicators_list.sh "$1" | jq -c '.[]' | jq -c 'select(.id == "'"$3"'")' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
+
+# Set the method and action for the curl request
 if [[ -z $existed_uuid ]]; then
   action="upload"
-  metod="POST"
-
-  parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}, \"emoji\": ${layer_emoji}, \"lastUpdated\": ${layer_last_updated}}"
+  method="POST"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"lastUpdated\": ${layer_last_updated}}"
 else
   action="update"
-  metod="PUT"
-
-  parameters_json="{\"id\": ${layer_id}, \"label\": ${layer_label}, \"uuid\": \"${existed_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": ${layer_description}, \"coverage\": ${layer_coverage}, \"updateFrequency\": ${layer_update_freq}, \"unitId\": ${layer_unit_id}, \"emoji\": ${layer_emoji}, \"lastUpdated\": ${layer_last_updated}}"
+  method="PUT"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existed_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"lastUpdated\": ${layer_last_updated}}"
 fi
 
-curl_request="curl -k -w "\":::\"%{http_code}" --location --request ${metod} ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$2\"'"
+# Execute the curl request to upload the file
+curl_request="curl -k -w ':::%{http_code}' --location --request ${method} ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$2\"'"
 
+# Output the formed request for execution
+echo ""
 echo "$curl_request"
 
 # Upload file
@@ -95,6 +106,9 @@ upload_id=${request_result::-6}
 
 echo "$(date '+%F %H:%M:%S') got upload id $upload_id"
 
+# wait 5 sec to let upload process start
+sleep 5
+
 curl_request="curl -s -w "\":::\"%{http_code}" --location '$upload_check/$upload_id'   -H 'Authorization: Bearer $token'"
 
 echo "$curl_request"
@@ -103,7 +117,7 @@ while true; do
     request_result=$(eval $curl_request)
     rc=$(sed 's/.*:::\(.*\)/\1/' <<< $request_result)
     [[ "$rc" != 202 ]] && break
-    echo $request_result
+    echo "$(date '+%F %H:%M:%S') $request_result"
     sleep 300
 done
 

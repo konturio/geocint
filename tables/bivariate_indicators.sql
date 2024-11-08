@@ -550,6 +550,105 @@ values ('disaster_internal_displacements', 'Disaster internal displacements', js
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('hdi_2022', 'The Human Development Index', jsonb_build_array('© 2024 United Nations Development Programme https://hdr.undp.org/data-center/human-development-index'), '[["bad"], ["good"]]'::jsonb, 'The Human Development Index (HDI) is a summary measure of average achievement in key dimensions of human development: a long and healthy life, being knowledgeable and having a decent standard of living. The HDI is the geometric mean of normalized indices for each of the three dimensions. The health dimension is assessed by life expectancy at birth, the education dimension is measured by mean of years of schooling for adults aged 25 years and more and expected years of schooling for children of school entering age. The standard of living dimension is measured by gross national income per capita. The HDI uses the logarithm of income, to reflect the diminishing importance of income with increasing GNI. The scores for the three HDI dimension indices are then aggregated into a composite index using geometric mean. The entire series of Human Development Index (HDI) values and rankings are recalculated every year using the same the most recent (revised) data and functional forms. The HDI rankings and values in the 2014 Human Development Report cannot therefore be compared directly to indices published in previous Reports. Please see hdr.undp.org for more information. The HDI was created to emphasize that people and their capabilities should be the ultimate criteria for assessing the development of a country, not economic growth alone. The HDI can also be used to question national policy choices, asking how two countries with the same level of GNI per capita can end up with different human development outcomes. These contrasts can stimulate debate about government policy priorities.', 'World', 'static', 'index', TRUE, '🧑🏻‍🤝‍🧑🏿');
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('inform_risk', 'INFORM Risk Index', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Composite index assessing humanitarian risk based on hazards, vulnerability, and coping capacity on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🌍');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('hazard_and_exposure', 'Hazard & Exposure', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Level of exposure to natural or human-made hazards affecting a population on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🌪️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('natural_0_to_10', 'Natural hazard', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'The metric for the natural hazard risk used in INFORM is the annual average exposed population (AAEP) or, when hazard maps for different return periods are not available, annual exposed population (AEP). Measure of a population’s exposure to natural hazards, including geophysical and meteorological risks on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🌋');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('earthquake', 'Earthquake hazard', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Exposure of a region to seismic risks due to earthquakes on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🌍');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('river_flood', 'River flood hazard', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'The River flood hazard reflects the probability of physical impact associated with river flooding events on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🌊');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('tsunami', 'Tsunami Hazard', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Population exposure to tsunami hazards in coastal regions on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🌊');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('tropical_cyclone', 'Tropical Cyclone hazard', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Population exposure to tropical cyclones, hurricanes, and typhoons on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🌀');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('coastal_flood', 'Coastal Flood hazard', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Risk of flooding in coastal areas affecting population and infrastructure on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🌊');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('drought', 'Drought hazard', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Likelihood of population exposure to severe water scarcity on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '☀️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('epidemic', 'Epidemic hazard', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Risk of population exposure to outbreaks of disease on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🦠');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('human', 'Human hazard', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Population exposure to risks caused by human activity, such as conflict on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '👤');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('projected_conflict_probability', 'Projected Conflict Probability', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Estimate of likelihood of future conflict impacting the population on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '💥');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('current_conflict_intensity', 'Current Conflict Intensity', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Measure of ongoing conflict severity affecting local populations on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '💣');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('vulnerability', 'Vulnerability', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Indicator measuring susceptibility of populations to suffer from adverse impacts on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🤕');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('socio_economic_vulnerability', 'Socio-Economic Vulnerability', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Level of social and economic disadvantage increasing exposure to risks on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '📉');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('development_and_deprivation', 'Development & Deprivation', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Socioeconomic disadvantage impacting resilience and coping abilities on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🏚️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('inequality', 'Inequality', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Mesure of susceptibility of populations to suffer from inequality impacts on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '⚖️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('economic_dependency', 'Economic Dependency', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Measure of a region’s dependency on external economic factors, impacting resilience on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '💸');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('vulnerable_groups', 'Vulnerable Groups', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Extent of vulnerability among specific population groups on a scale of 0 to 10..', 'World', 'annual', 'index', TRUE, '👥');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('uprooted_people', 'Uprooted People', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'The Uprooted people component is the arithmetic average of the absolute and relative value of uprooted people. The absolute value is presented using the log transformation while the uprooted people relative to the total population are transformed into indicator using the GNA criteria and then normalised into range from 0 to 10.', 'World', 'annual', 'index', TRUE, '🏠');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('health_conditions', 'Health Conditions', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Health condition subcomponent refers to people in a weak health conditions. It is calculated as the arithmetic average of the indicators for three deadly infectious diseases, AIDS, tuberculosis and malaria, which are considered as pandemics of low- and middle-income countries and then normalised into range from 0 to 10.', 'World', 'annual', 'index', TRUE, '🏥');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('children_u5', 'Children Under 5', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Percentage of children under age 5, indicating demographic vulnerability normalised into range from 0 to 10.', 'World', 'annual', 'index', TRUE, '👶');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('recent_shocks', 'Recent Shocks', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Recent shocks subcomponent accounts for increased vulnerability during the recovery period after a disaster and considers people affected by natural disasters in the past 3 years on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '⚡');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('food_security', 'Food Security', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["bad"], ["good"]]'::jsonb, 'Risk of food insecurity impacting vulnerable populations on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🍞');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('other_vulnerable_groups', 'Other Vulnerable Groups', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, ' Measure of other groups within a population with heightened vulnerability on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🙎');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('lack_of_coping_capacity', 'Lack of Coping Capacity', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["good"], ["bad"]]'::jsonb, 'Measure of a population’s limited ability to recover from shocks normalised into range from 0 to 10.', 'World', 'annual', 'index', TRUE, '🆘');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('institutional', 'Institutional Capacity', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["bad"], ["good"]]'::jsonb, 'Institutional resilience and governance affecting disaster response on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🏛️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('drr', 'Disaster Risk Reduction (DRR)', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["bad"], ["good"]]'::jsonb, 'Extent of disaster risk reduction initiatives improving resilience on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🌍');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('governance', 'Government stability', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["bad"], ["good"]]'::jsonb, 'Level of governance stability affecting overall risk levels on a scale of 0 to 10. The subjectivity of HFA Scores is counterweighted by arithmetical average with external indicators of Governance component, i.e. the Government Effectiveness and Corruption Perception Index. The Government Effectiveness captures perceptions of the quality of public services, the quality of the civil service and the degree of its independence from political pressures, the quality of policy formulation and implementation, and the credibility of the government’s commitment to such policies while the Corruption Perception Index adds another perspective, that is the level of misuse of political power for privatebenefit, which is not directly considered in the construction of the Government Effectiveness even though interrelated.', 'World', 'annual', 'index', TRUE, '📜');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('infrastructure', 'Infrastructure resilience', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["bad"], ["good"]]'::jsonb, 'Condition and resilience of essential infrastructure in a region on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🏗️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('communication', 'Communication Capacity', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["bad"], ["good"]]'::jsonb, 'Ability to disseminate information during crises affecting resilience on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '📡');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('physical_infrastructure', 'Physical Infrastructure', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["bad"], ["good"]]'::jsonb, 'Physical infrastructure component is the arithmetic average of different proxy measures. Inform mainly try to assess the accessibility as well as the redundancy of the lifeline systems, which are crucial in a crisis situation, i.e. roads, water and sanitation systems on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🏢');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('access_to_health_care', 'Access to Health Care', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["bad"], ["good"]]'::jsonb, 'Availability and quality of healthcare services on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🩺');
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

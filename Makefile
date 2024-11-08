@@ -290,7 +290,7 @@ db/table/covid19_population_h3_r8: db/table/kontur_population_h3 db/table/covid1
 	psql -f tables/covid19_population_h3_r8.sql
 	touch $@
 
-db/table/covid19_h3: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries db/procedure/generate_overviews | db/table ## calculate cases rate, dither and generate overviews of covid19_population_h3_r8
+db/table/covid19_h3: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/procedure/generate_overviews db/table ## calculate cases rate, dither and generate overviews of covid19_population_h3_r8
 	psql -f tables/covid19_h3.sql
 	psql -c "call generate_overviews('covid19_h3', '{date, population, total_population, confirmed, recovered, dead}'::text[], '{max, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
@@ -320,7 +320,7 @@ db/table/covid19_vaccine_accept_us_counties: data/in/covid19/vaccination/vaccine
 	psql -f tables/covid19_vaccine_accept_us_counties.sql
 	touch $@
 
-db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_us_counties db/procedure/generate_overviews | db/table  ## Aggregated data on COVID-19 vaccine acceptance in US based on Carnegie Mellon University dataset distributed on H3 hexagon grid.
+db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_us_counties | db/procedure/generate_overviews db/table  ## Aggregated data on COVID-19 vaccine acceptance in US based on Carnegie Mellon University dataset distributed on H3 hexagon grid.
 	psql -f tables/covid19_vaccine_accept_us_counties_h3.sql
 	psql -c "call generate_overviews('covid19_vaccine_accept_us_counties_h3', '{vaccine_value}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -388,7 +388,7 @@ db/table/facebook_medium_voltage_distribution_in: data/in/facebook/medium_voltag
 			"psql -c \"\copy facebook_medium_voltage_distribution_in (lat, lon, value) from '{}' with csv header delimiter ',';\""
 	touch $@
 
-db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in db/procedure/generate_overviews | db/table  ## Put Facebook Medium Voltage Distribution on H3
+db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/procedure/generate_overviews db/table  ## Put Facebook Medium Voltage Distribution on H3
 	psql -f tables/facebook_medium_voltage_distribution_h3.sql
 	psql -c "call generate_overviews('facebook_medium_voltage_distribution_h3', '{powerlines}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -438,7 +438,7 @@ db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last
 	psql -c "drop table facebook_roads_old; drop table osm_roads_increment;"
 	touch $@
 
-db/table/facebook_roads_h3: db/table/facebook_roads db/procedure/generate_overviews | db/table ## Build h3 overviews for Facebook roads at all levels.
+db/table/facebook_roads_h3: db/table/facebook_roads | db/procedure/generate_overviews db/table ## Build h3 overviews for Facebook roads at all levels.
 	psql -f tables/facebook_roads_h3.sql
 	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -467,7 +467,7 @@ db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_seg
 	psql -c "alter index if exists osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx rename to osm_road_segments_seg_id_node_from_node_to_seg_geom_idx;"
 	touch $@
 
-db/table/osm_road_segments_h3: db/table/osm_road_segments db/procedure/generate_overviews | db/table ## osm road segments aggregated to h3
+db/table/osm_road_segments_h3: db/table/osm_road_segments | db/procedure/generate_overviews db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_h3.sql
 	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -476,7 +476,7 @@ db/table/osm_road_segments_6_months: db/table/osm_roads db/table/osm_meta | db/t
 	psql -f tables/osm_road_segments_6_months.sql
 	touch $@
 
-db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months db/procedure/generate_overviews | db/table ## osm road segments aggregated to h3
+db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months | db/procedure/generate_overviews db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_6_months_h3.sql
 	psql -c "call generate_overviews('osm_road_segments_6_months_h3', '{highway_length_6_months}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -662,7 +662,7 @@ db/table/mapswipe_hot_tasking_data: data/mid/mapswipe/ym_files/update | db/table
 	ls -S data/mid/mapswipe/ym_files/*.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln mapswipe_hot_tasking_data -nlt POLYGON --config PG_USE_COPY YES'
 	touch $@
 
-db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 db/procedure/generate_overviews db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area | db/table ## Create h3 table with mapswipe data
+db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 | db/procedure/generate_overviews db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area db/table ## Create h3 table with mapswipe data
 	psql -f tables/mapswipe_hot_tasking_data_h3.sql
 	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('mapswipe_hot_tasking_data_h3_in', 'mapswipe_hot_tasking_data_h3', '{mapswipe_area}'::text[], 8);"
 	psql -c "drop table if exists mapswipe_hot_tasking_data_h3_in;"
@@ -744,7 +744,7 @@ db/table/gebco_2022_elevation_h3: db/table/gebco_2022_elevation | db/table ## GE
 	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2022_elevation -v table_name_h3=gebco_2022_elevation_h3 -v aggr_func=avg -v item_name=avg_elevation_gebco_2022
 	touch $@
 
-db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 db/table/land_polygons_h3_r8 db/procedure/generate_overviews | db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
+db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 db/table/land_polygons_h3_r8 | db/procedure/generate_overviews db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
 	psql -f tables/gebco_2022_h3.sql
 	psql -c "call generate_overviews('gebco_2022_h3', '{avg_slope_gebco_2022, avg_elevation_gebco_2022}'::text[], '{avg, avg}'::text[], 8);"
 	psql -c "create index on gebco_2022_h3 (h3);"
@@ -766,7 +766,7 @@ db/table/ndvi_2019_06_10: data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/tabl
 	psql -c "vacuum analyze ndvi_2019_06_10;"
 	touch $@
 
-db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 db/procedure/generate_overviews | db/table ## Generate h3 table with average NDVI from 1 to 8 resolution.
+db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/procedure/generate_overviews db/table ## Generate h3 table with average NDVI from 1 to 8 resolution.
 	psql -f tables/ndvi_2019_06_10_h3.sql
 	psql -c "call generate_overviews('ndvi_2019_06_10_h3', '{avg_ndvi}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);"
@@ -776,13 +776,13 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Cou
 	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r8 -v item_count=building_count
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 db/procedure/generate_overviews | db/table ## Count max amount of buildings at hexagons from all building datasets.
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 | db/procedure/generate_overviews db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
 	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 
-db/table/osm_building_levels_h3: db/table/osm_buildings | db/table ## Calculate max and average levels of OSM buildings at hexagons.
+db/table/osm_building_levels_h3: db/table/osm_buildings | db/procedure/generate_overviews db/table ## Calculate max and average levels of OSM buildings at hexagons.
 	psql -f tables/osm_building_levels_h3.sql
 	psql -c "call generate_overviews('osm_building_levels_h3', '{max_levels,avg_levels}'::text[], '{max,avg}'::text[], 8);"
 	touch $@
@@ -1223,7 +1223,7 @@ db/table/wikidata_naturalization_gap: | db/table ## Global collection of years o
 	psql -c "create index on wikidata_naturalization_gap using btree(hasc);"
 	touch $@
 
-db/table/wikidata_naturalization_gap_h3: db/table/kontur_boundaries db/table/wikidata_naturalization_gap db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of wikidata years_to_naturalisation and multiple_citizenship
+db/table/wikidata_naturalization_gap_h3: db/table/wikidata_naturalization_gap | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviws of wikidata years_to_naturalisation and multiple_citizenship
 	psql -c "call transform_hasc_to_h3('wikidata_naturalization_gap', 'wikidata_naturalization_gap_h3', 'hasc', '{years_to_naturalisation,multiple_citizenship}'::text[], 8);"
 	psql -c "call generate_overviews('wikidata_naturalization_gap_h3', '{years_to_naturalisation,multiple_citizenship}'::text[], '{max,min}'::text[], 8);"
 	touch $@
@@ -1398,7 +1398,7 @@ db/table/worldbank_tax_rate: | db/table ## Global Worldbank Tax Rate (source htt
 	psql -c "create index on worldbank_tax_rate using btree(hasc);"
 	touch $@
 
-db/table/worldbank_tax_rate_h3: db/table/kontur_boundaries db/table/worldbank_tax_rate db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of worldbank_tax_rate
+db/table/worldbank_tax_rate_h3: db/table/worldbank_tax_rate | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviws of worldbank_tax_rate
 	psql -c "call transform_hasc_to_h3('worldbank_tax_rate', 'worldbank_tax_rate_h3', 'hasc', '{t2019}'::text[], 8);"
 	psql -c "call generate_overviews('worldbank_tax_rate_h3', '{t2019}'::text[], '{max}'::text[], 8);"
 	touch $@
@@ -1411,7 +1411,7 @@ db/table/idmc_country_2023: | db/table ## IDMC internal displacemet 2023 (source
 	psql -c "create index on idmc_country_2023 using btree(iso3);"
 	touch $@
 
-db/table/idmc_country_2023_h3: db/table/idmc_country_2023 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3_percent_of_population | db/table/kontur_boundaries ## Create idmc_country_2023_h3 and genarate overviews
+db/table/idmc_country_2023_h3: db/table/idmc_country_2023 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3_percent_of_population db/table/kontur_boundaries ## Create idmc_country_2023_h3 and genarate overviews
 	psql -f tables/idmc_country_2023_h3.sql
 	touch $@
 
@@ -1423,7 +1423,7 @@ db/table/worldbank_inflation: | db/table ## Global Worldbank Headline consumer p
 	psql -c "create index on worldbank_inflation using btree(hasc);"
 	touch $@
 
-db/table/worldbank_inflation_h3: db/table/kontur_boundaries db/table/worldbank_inflation db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of worldbank_inflation
+db/table/worldbank_inflation_h3: db/table/worldbank_inflation | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviws of worldbank_inflation
 	psql -c "call transform_hasc_to_h3('worldbank_inflation', 'worldbank_inflation_h3', 'hasc', '{inflation}'::text[], 8);"
 	psql -c "call generate_overviews('worldbank_inflation_h3', '{inflation}'::text[], '{max}'::text[], 8);"
 	touch $@
@@ -1705,7 +1705,7 @@ db/table/kontur_population_v5: data/mid/kontur_population_v5/kontur_population_2
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_population_v5/kontur_population_20231101.gpkg -t_srs EPSG:4326 -nln kontur_population_v5 -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/kontur_population_v5_h3: db/table/kontur_population_v5 db/procedure/generate_overviews | db/table ## Generate h3 hexagon for population v5.
+db/table/kontur_population_v5_h3: db/table/kontur_population_v5 | db/procedure/generate_overviews db/table ## Generate h3 hexagon for population v5.
 	psql -f tables/kontur_population_v5_h3.sql
 	psql -c "call generate_overviews('kontur_population_v5_h3', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -2054,12 +2054,12 @@ db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table #
 	psql -f tables/osm_landuse_industrial.sql
 	touch $@
 
-db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial db/procedure/generate_overviews | db/table ## Aggregate industrial landuse area on H3 hexagons grid.
+db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/procedure/generate_overviews db/table ## Aggregate industrial landuse area on H3 hexagons grid.
 	psql -f tables/osm_landuse_industrial_h3.sql
 	psql -c "call generate_overviews('osm_landuse_industrial_h3', '{industrial_area}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## H3 hexagons grid with aggregated count volcanoes from OpenStreetMap dataset.
+db/table/osm_volcanos_h3: db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## H3 hexagons grid with aggregated count volcanoes from OpenStreetMap dataset.
 	# Extract volcanoes points from OpenStreetMap dataset.
 	psql -f tables/osm_volcanos.sql
 	# Count volcanoes within H3 grid hexagons of resolution = 8.
@@ -2072,7 +2072,7 @@ db/table/osm_places_eatery: db/index/osm_tags_idx | db/table ## Eatery extractio
 	psql -f tables/osm_places_eatery.sql
 	touch $@
 
-db/table/osm_places_eatery_h3: db/table/osm_places_eatery db/procedure/generate_overviews | db/table ## Eatery count h3 layer from OpenStreetMap.
+db/table/osm_places_eatery_h3: db/table/osm_places_eatery | db/procedure/generate_overviews db/table ## Eatery count h3 layer from OpenStreetMap.
 	# Count eatery places within H3 grid hexagons of resolution = 8.
 	psql -f tables/count_points_inside_h3.sql -v table=osm_places_eatery -v table_h3=osm_places_eatery_h3 -v item_count=eatery_count
 	# Generate overviews for resolution < 8 hexagons.
@@ -2083,7 +2083,7 @@ db/table/osm_places_food_shops: db/index/osm_tags_idx | db/table ## Extract food
 	psql -f tables/osm_places_food_shops.sql
 	touch $@
 
-db/table/osm_places_food_shops_h3: db/table/osm_places_food_shops db/procedure/generate_overviews | db/table ## Food shops count h3 layer from OpenStreetMap.
+db/table/osm_places_food_shops_h3: db/table/osm_places_food_shops | db/procedure/generate_overviews db/table ## Food shops count h3 layer from OpenStreetMap.
 	# Count eatery places within H3 grid hexagons of resolution = 8.
 	psql -f tables/count_points_inside_h3.sql -v table=osm_places_food_shops -v table_h3=osm_places_food_shops_h3 -v item_count=food_shops_count
 	# Generate overviews for resolution < 8 hexagons.
@@ -2127,7 +2127,7 @@ db/table/us_census_tract_stats: db/table/us_census_tracts_population_h3_r8 db/ta
 	psql -f tables/us_census_tracts_stats.sql
 	touch $@
 
-db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/procedure/generate_overviews db/table/us_census_tracts_population_h3_r8 | db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
+db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/table/us_census_tracts_population_h3_r8 | db/procedure/generate_overviews db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
 	psql -f tables/us_census_tracts_stats_h3.sql
 	psql -c "call generate_overviews('us_census_tracts_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
@@ -2281,7 +2281,7 @@ db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manag
 	psql -c "create index on global_rva_indexes using btree(hasc);"
 	touch $@
 
-db/table/global_rva_h3: db/table/kontur_boundaries db/table/global_rva_indexes db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviws of global rva indexes
+db/table/global_rva_h3: db/table/global_rva_indexes | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table ## Generation overviws of global rva indexes
 	psql -c "call transform_hasc_to_h3('global_rva_indexes', 'global_rva_h3', 'hasc', '{raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, mhe_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index, population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, vulnerability_index, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale, physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale, marine_protected_area_scale, environmental_capacity_index, coping_capacity_index, resilience_index, mhr_index}'::text[], 8);"
 	psql -c "call generate_overviews('global_rva_h3', '{raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, mhe_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index, population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, vulnerability_index, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale, physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale, marine_protected_area_scale, environmental_capacity_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
@@ -2292,7 +2292,7 @@ db/table/ndpba_rva_indexes: | db/table ## NDPBA RVA indexes
 	cat static_data/pdc_bivariate_manager/ndpba_rva.csv | psql -c "copy ndpba_rva_indexes from stdin with csv header;"
 	touch $@
 
-db/table/ndpba_rva_h3: db/table/kontur_boundaries db/table/ndpba_rva_indexes db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviews of ndpba rva indexes
+db/table/ndpba_rva_h3: db/table/ndpba_rva_indexes | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table ## Generation overviews of ndpba rva indexes
 	psql -c "call transform_hasc_to_h3('ndpba_rva_indexes', 'ndpba_rva_h3', 'hasc', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], 8);"
 	psql -c "call generate_overviews('ndpba_rva_h3', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
@@ -2327,17 +2327,17 @@ db/table/foursquare_visits: data/mid/foursquare/kontour_visits_csv | db/table ##
 	ls data/mid/foursquare/kontour_visits*.csv | parallel 'cat {} | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header; "'
 	touch $@
 
-db/table/foursquare_places_h3: db/table/foursquare_places db/procedure/generate_overviews | db/table ## Aggregate 4sq places count  on H3 hexagon grid.
+db/table/foursquare_places_h3: db/table/foursquare_places | db/procedure/generate_overviews db/table ## Aggregate 4sq places count  on H3 hexagon grid.
 	psql -f tables/foursquare_places_h3.sql
 	psql -c "call generate_overviews('foursquare_places_h3', '{foursquare_places_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/foursquare_visits_h3: db/table/foursquare_visits db/procedure/generate_overviews | db/table ## Aggregate 4sq visits count on H3 hexagon grid.
+db/table/foursquare_visits_h3: db/table/foursquare_visits | db/procedure/generate_overviews db/table ## Aggregate 4sq visits count on H3 hexagon grid.
 	psql -f tables/foursquare_visits_h3.sql
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/live_sensor_data_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/oam_global_coverage_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/oam_number_of_pixels_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3| db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/live_sensor_data_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/oam_global_coverage_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/oam_number_of_pixels_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql
 	touch $@
 
@@ -2400,7 +2400,7 @@ data/tile_logs/_download: | data/tile_logs data ## Download OpenStreetMap tiles 
 	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np -nc https://planet.openstreetmap.org/tile_logs/
 	touch $@
 
-db/table/tile_logs: data/tile_logs/_download db/procedure/generate_overviews | db/table ## OpenStreetMap tiles usage logs imported into database.
+db/table/tile_logs: data/tile_logs/_download | db/procedure/generate_overviews db/table ## OpenStreetMap tiles usage logs imported into database.
 	psql -c "drop table if exists tile_logs;"
 	psql -c "create table tile_logs (tile_date timestamptz, z int, x int, y int, view_count int, geom geometry generated always as (ST_Transform(ST_TileEnvelope(z, x, y), 4326)) stored);"
 	find data/tile_logs/ -type f -size +10M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs from stdin with csv'"
@@ -2412,7 +2412,7 @@ db/table/tile_logs: data/tile_logs/_download db/procedure/generate_overviews | d
 data/tile_logs/tiles-2022-02-23.txt.xz: | data/tile_logs/_download ## use txt.xz file as footprint not to run next target every run.
 	touch $@
 
-db/table/tile_logs_bf2402: db/procedure/generate_overviews | data/tile_logs/tiles-2022-02-23.txt.xz db/table ## OpenStreetMap tiles logs 30 days before 24.02.2022.
+db/table/tile_logs_bf2402: | db/procedure/generate_overviews data/tile_logs/tiles-2022-02-23.txt.xz db/table ## OpenStreetMap tiles logs 30 days before 24.02.2022.
 	psql -c "drop table if exists tile_logs_bf2402;"
 	psql -c "create table tile_logs_bf2402 (tile_date timestamptz, z int, x int, y int, view_count int);"
 	cat static_data/tile_list/tile_logs_list.txt | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs_bf2402 from stdin with csv'"
@@ -2620,7 +2620,7 @@ db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/l
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
 
-db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/hexagons_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## adjust total road length with linear regression from population
+db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/hexagons_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 | db/procedure/generate_overviews db/table ## adjust total road length with linear regression from population
 	psql -f tables/total_road_length_h3.sql
 	psql -c "call generate_overviews('total_road_length_h3', '{total_road_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -2659,7 +2659,7 @@ db/table/global_solar_atlas_ghi: data/mid/global_solar_atlas/GHI/unzip | db/tabl
 
 ## Global solar atlas - convert raster tables to h3 and create common table
 
-db/table/global_solar_atlas_h3: db/table/global_solar_atlas_ghi db/procedure/generate_overviews | db/table ## Global solar atlas - H3 hexagons table with average GTI, GHI, PVOUT values from 1 to 8 resolution
+db/table/global_solar_atlas_h3: db/table/global_solar_atlas_ghi | db/procedure/generate_overviews db/table ## Global solar atlas - H3 hexagons table with average GTI, GHI, PVOUT values from 1 to 8 resolution
 	psql -f tables/global_solar_atlas_h3.sql
 	psql -c "call generate_overviews('global_solar_atlas_h3', '{gsa_ghi}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on global_solar_atlas_h3 (h3);"
@@ -2771,7 +2771,7 @@ db/table/worldclim_max_temp: data/mid/worldclim/max_temp/maximal_temperatures.ti
 	touch $@
 
 ## Worldclim temperatures - create all tables and unite them to one
-db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldclim_min_temp db/table/worldclim_max_temp db/procedure/generate_overviews | db/table ## Worldclim temperatures - create summary H3 table
+db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldclim_min_temp db/table/worldclim_max_temp | db/procedure/generate_overviews db/table ## Worldclim temperatures - create summary H3 table
 	psql -f tables/worldclim_temperatures_h3.sql
 	psql -c "call generate_overviews('worldclim_temperatures_h3', '{worldclim_avg_temperature, worldclim_min_temperature, worldclim_max_temperature, worldclim_amp_temperature}'::text[], '{avg, min, max, max}'::text[], 8);"
 	psql -c "create index on worldclim_temperatures_h3 (h3);"
@@ -2812,7 +2812,7 @@ db/table/powerlines_proximity_h3_r8: db/table/powerlines_proximity | db/table ##
 
 ### City Waste management block ###
 
-db/table/waste_containers_h3: db/table/osm db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## create a table with the average number of waste containers within a hexagon or less than 75m apart per hexagon
+db/table/waste_containers_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## create a table with the average number of waste containers within a hexagon or less than 75m apart per hexagon
 	psql -f tables/waste_containers_h3.sql
 	psql -c "call generate_overviews('waste_containers_h3', '{waste_basket_coverage}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -2876,7 +2876,7 @@ db/table/power_substations_proximity_h3_r8: db/table/power_substations_proximity
 ### END Proximity to electric power substationss ###
 
 ### Unite all proximity maps to one and generate overviews
-db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/populated_areas_proximity_h3_r8 db/table/powerlines_proximity_h3_r8 db/table/land_polygons_h3_r8 db/procedure/generate_overviews | db/table ## Unite proximity maps to one table
+db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/populated_areas_proximity_h3_r8 db/table/powerlines_proximity_h3_r8 db/table/land_polygons_h3_r8 | db/procedure/generate_overviews db/table ## Unite proximity maps to one table
 	psql -f tables/proximities_h3.sql
 	psql -c "create index on proximities_h3 (h3);"
 	psql -c "call generate_overviews('proximities_h3', '{powerlines_proximity_m, populated_areas_proximity_m, power_substations_proximity_m}'::text[], '{avg, avg, avg}'::text[], 8);"
@@ -2884,7 +2884,7 @@ db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/pop
 
 ### Synthetic solar farms placement layer ###
 
-db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## create a table with synthetic solar farms placement suitability (MCDA)
+db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/table/kontur_population_h3 | db/procedure/generate_overviews db/table ## create a table with synthetic solar farms placement suitability (MCDA)
 	psql -f tables/solar_farms_placement_suitability_synthetic_h3.sql
 	psql -c "call generate_overviews('solar_farms_placement_suitability_synthetic_h3', '{solar_farms_placement_suitability}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on solar_farms_placement_suitability_synthetic_h3 (h3);"
@@ -2894,7 +2894,7 @@ db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3
 
 ### Existing Solar power panels layer ###
 
-db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## Get existing solar power panels layer
+db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## Get existing solar power panels layer
 	psql -f tables/existing_solar_power_panels_h3.sql
 	psql -c "call generate_overviews('existing_solar_power_panels_h3', '{solar_power_plants}'::text[], '{sum}'::text[], 8);"
 	psql -c "create index on existing_solar_power_panels_h3 (h3);"
@@ -2925,7 +2925,7 @@ db/table/safety_index_per_country: | db/table ## Get existing solar power panels
 	psql -c 'create table safety_index_per_country as (select iso3, iso2, name, p.maximum - safety_index as safety_index from safety_index_per_country_in, (select max(safety_index) maximum from safety_index_per_country_in) p);'
 	touch $@
 
-db/table/safety_index_h3: db/table/safety_index_per_country db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## transform hasc codes to h3 indexes and generate overviews
+db/table/safety_index_h3: db/table/safety_index_per_country | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## transform hasc codes to h3 indexes and generate overviews
 	psql -c "call transform_hasc_to_h3('safety_index_per_country', 'safety_index_h3', 'iso2', '{safety_index}'::text[], 8);"
 	psql -c "call generate_overviews('safety_index_h3', '{safety_index}'::text[], '{max}'::text[], 8);"
 	psql -c "create index on safety_index_h3 (h3);"
@@ -3085,13 +3085,12 @@ db/table/meta_forest_canopy_height: data/in/raster/meta_forest_canopy_height/dow
 	find -L data/in/raster/meta_forest_canopy_height/chm -name "*.tif" -type f | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=6 raster2pgsql -a -Y -s 3857 {} -t auto meta_forest_canopy_height | psql -q'
 	touch $@
 
-db/table/meta_forest_canopy_height_h3: db/table/meta_forest_canopy_height | db/table ## Count height of forest canopy into h3 hexagons and generate overviews.
+db/table/meta_forest_canopy_height_h3: db/table/meta_forest_canopy_height | db/procedure/generate_overviews db/table ## Count height of forest canopy into h3 hexagons and generate overviews.
 	psql -f tables/meta_forest_canopy_height_h3.sql
 	psql -c "call generate_overviews('meta_forest_canopy_height_h3', '{avg_forest_canopy_height,max_forest_canopy_height}'::text[], '{avg,max}'::text[], 8);"
 	touch $@
 
 ### Humanitarian Development Index
-
 db/table/humanitarian_dev_index_2022: | db/table ## Human Development Index (HDI)
 	psql -c "drop table if exists humanitarian_dev_index_2022_in;"
 	psql -c 'create table humanitarian_dev_index_2022_in(country text, code text, hasc text, hdi_2022 numeric, hdi_rank_2022 integer, hdi_rank_2021 integer, inequality_adjusted_hdi_2022 numeric, inequality_adjusted_hdi_overal_loss_pct_2022 numeric, inequality_adjusted_hdi_difference_2022 integer, coefficient_human_inequality_2022 numeric, inequality_in_life_expectancy_pct_2022 numeric, inequality_adjusted_life_expectancy_index_2022 numeric, inequality_in_education_pct_2022 numeric, inequality_adjusted_education_index_2022 numeric, inequality_in_income_pct_2022 numeric, inequality_adjusted_income_index_2022 numeric, income_shares_held_by_poorest_40_percent_2010_2022 numeric, income_shares_held_by_richest_10_percent_2010_2022 numeric, income_shares_held_by_richest_1_percent_2021 numeric, gini_coefficient_2010_2022 numeric, life_expectancy_at_birth_years_2022 numeric, expected_years_of_schooling_2022 numeric, man_years_of_schooling_2022 numeric, gni_per_capita_2017_ppp_usd_2022 numeric, gni_per_capita_rank_minus_hdi_rank_2022 numeric);'
@@ -3100,12 +3099,28 @@ db/table/humanitarian_dev_index_2022: | db/table ## Human Development Index (HDI
 	psql -c 'create table humanitarian_dev_index_2022 as (select country, code, hasc, hdi_2022 from humanitarian_dev_index_2022_in);'
 	touch $@
 
-db/table/humanitarian_dev_index_2022_h3: db/table/kontur_boundaries db/table/humanitarian_dev_index_2022 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 | db/table ## Generation overviews of Human Development Index (HDI)
+db/table/humanitarian_dev_index_2022_h3: db/table/humanitarian_dev_index_2022 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviews of Human Development Index (HDI)
 	psql -c "call transform_hasc_to_h3('humanitarian_dev_index_2022', 'humanitarian_dev_index_2022_h3', 'hasc', '{hdi_2022}'::text[], 8);"
 	psql -c "call generate_overviews('humanitarian_dev_index_2022_h3', '{hdi_2022}'::text[], '{min}'::text[], 8);"
 	touch $@
 
 ### END Humanitarian Development Index
+
+### Inform Risk Index
+db/table/inform_risk_profile_2025: | db/table ## Inform Risc Index
+	psql -c "drop table if exists inform_risk_profile_2025_in;"
+	psql -c 'create table inform_risk_profile_2025_in (country text, iso3 text, hasc text, inform_risk float, risk_class integer, rank integer, hazard_and_exposure float, natural_0_to_10 float, earthquake float, river_flood float, tsunami float, tropical_cyclone float, coastal_flood float, drought float, epidemic float, human float, projected_conflict_probability float, current_conflict_intensity float, vulnerability float, socio_economic_vulnerability float, development_and_deprivation float, inequality float, economic_dependency float, vulnerable_groups float, uprooted_people float, health_conditions float, children_u5 float, recent_shocks float, food_security float, other_vulnerable_groups float, lack_of_coping_capacity float, institutional float, drr float, governance float, infrastructure float, communication float, physical_infrastructure float, access_to_health_care float, number_of_missing_indicators integer, missing_indicators_pct integer, countries_in_hvc integer, recentness_data_average_years float);'
+	cat static_data/inform_risk_index/inform_risk_2025_v069.csv | psql -c "copy inform_risk_profile_2025_in from stdin with csv header;"
+	psql -c 'drop table if exists inform_risk_profile_2025;'
+	psql -c 'create table inform_risk_profile_2025 as (select country, hasc, inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care from inform_risk_profile_2025_in);'	
+	touch $@
+
+db/table/inform_risk_profile_2025_h3: db/table/inform_risk_profile_2025 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviews of Human Development Index (HDI)
+	psql -c "call transform_hasc_to_h3('inform_risk_profile_2025', 'inform_risk_profile_2025_h3', 'hasc', '{inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care}'::text[], 8);"
+	psql -c "call generate_overviews('inform_risk_profile_2025_h3', '{inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care}'::text[], '{max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,min,min,min,min,min,min,min}'::text[], 8);"
+	touch $@
+
+### END Inform Risk Index
 
 ### N5 Wildfire sensors placement block
 db/function/st_weightedcentroids: | db/function ## Converts text into a float or a NULL.
@@ -3488,6 +3503,105 @@ data/out/csv/disaster_internal_displacements.csv: db/table/idmc_country_2023_h3 
 data/out/csv/hdi_2022.csv: db/table/humanitarian_dev_index_2022_h3 | data/out/csv ## extract hdi_2022 to csv file 
 	psql -q -X -c "copy (select h3, hdi_2022 from humanitarian_dev_index_2022_h3 where h3 is not null and hdi_2022 is not null order by h3) to stdout with delimiter ',' csv;" > $@
 
+data/out/csv/inform_risk.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract inform_risk to csv file
+	psql -q -X -c "copy (select h3, inform_risk from inform_risk_profile_2025_h3 where h3 is not null and inform_risk is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/hazard_and_exposure.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract hazard_and_exposure to csv file
+	psql -q -X -c "copy (select h3, hazard_and_exposure from inform_risk_profile_2025_h3 where h3 is not null and hazard_and_exposure is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/natural_0_to_10.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract natural_0_to_10 to csv file
+	psql -q -X -c "copy (select h3, natural_0_to_10 from inform_risk_profile_2025_h3 where h3 is not null and natural_0_to_10 is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/earthquake.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract earthquake to csv file
+	psql -q -X -c "copy (select h3, earthquake from inform_risk_profile_2025_h3 where h3 is not null and earthquake is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/river_flood.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract river_flood to csv file
+	psql -q -X -c "copy (select h3, river_flood from inform_risk_profile_2025_h3 where h3 is not null and river_flood is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/tsunami.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract tsunami to csv file
+	psql -q -X -c "copy (select h3, tsunami from inform_risk_profile_2025_h3 where h3 is not null and tsunami is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/tropical_cyclone.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract tropical_cyclone to csv file
+	psql -q -X -c "copy (select h3, tropical_cyclone from inform_risk_profile_2025_h3 where h3 is not null and tropical_cyclone is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/coastal_flood.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract coastal_flood to csv file
+	psql -q -X -c "copy (select h3, coastal_flood from inform_risk_profile_2025_h3 where h3 is not null and coastal_flood is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/drought.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract drought to csv file
+	psql -q -X -c "copy (select h3, drought from inform_risk_profile_2025_h3 where h3 is not null and drought is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/epidemic.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract epidemic to csv file
+	psql -q -X -c "copy (select h3, epidemic from inform_risk_profile_2025_h3 where h3 is not null and epidemic is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/human.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract human to csv file
+	psql -q -X -c "copy (select h3, human from inform_risk_profile_2025_h3 where h3 is not null and human is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/projected_conflict_probability.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract projected_conflict_probability to csv file
+	psql -q -X -c "copy (select h3, projected_conflict_probability from inform_risk_profile_2025_h3 where h3 is not null and projected_conflict_probability is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/current_conflict_intensity.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract current_conflict_intensity to csv file
+	psql -q -X -c "copy (select h3, current_conflict_intensity from inform_risk_profile_2025_h3 where h3 is not null and current_conflict_intensity is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/vulnerability.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract vulnerability to csv file
+	psql -q -X -c "copy (select h3, vulnerability from inform_risk_profile_2025_h3 where h3 is not null and vulnerability is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/socio_economic_vulnerability.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract socio_economic_vulnerability to csv file
+	psql -q -X -c "copy (select h3, socio_economic_vulnerability from inform_risk_profile_2025_h3 where h3 is not null and socio_economic_vulnerability is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/development_and_deprivation.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract development_and_deprivation to csv file
+	psql -q -X -c "copy (select h3, development_and_deprivation from inform_risk_profile_2025_h3 where h3 is not null and development_and_deprivation is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/inequality.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract inequality to csv file
+	psql -q -X -c "copy (select h3, inequality from inform_risk_profile_2025_h3 where h3 is not null and inequality is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/economic_dependency.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract economic_dependency to csv file
+	psql -q -X -c "copy (select h3, economic_dependency from inform_risk_profile_2025_h3 where h3 is not null and economic_dependency is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/vulnerable_groups.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract vulnerable_groups to csv file
+	psql -q -X -c "copy (select h3, vulnerable_groups from inform_risk_profile_2025_h3 where h3 is not null and vulnerable_groups is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/uprooted_people.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract uprooted_people to csv file
+	psql -q -X -c "copy (select h3, uprooted_people from inform_risk_profile_2025_h3 where h3 is not null and uprooted_people is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/health_conditions.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract health_conditions to csv file
+	psql -q -X -c "copy (select h3, health_conditions from inform_risk_profile_2025_h3 where h3 is not null and health_conditions is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/children_u5.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract children_u5 to csv file
+	psql -q -X -c "copy (select h3, children_u5 from inform_risk_profile_2025_h3 where h3 is not null and children_u5 is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/recent_shocks.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract recent_shocks to csv file
+	psql -q -X -c "copy (select h3, recent_shocks from inform_risk_profile_2025_h3 where h3 is not null and recent_shocks is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/food_security.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract food_security to csv file
+	psql -q -X -c "copy (select h3, food_security from inform_risk_profile_2025_h3 where h3 is not null and food_security is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/other_vulnerable_groups.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract other_vulnerable_groups to csv file
+	psql -q -X -c "copy (select h3, other_vulnerable_groups from inform_risk_profile_2025_h3 where h3 is not null and other_vulnerable_groups is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/lack_of_coping_capacity.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract lack_of_coping_capacity to csv file
+	psql -q -X -c "copy (select h3, lack_of_coping_capacity from inform_risk_profile_2025_h3 where h3 is not null and lack_of_coping_capacity is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/institutional.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract institutional to csv file
+	psql -q -X -c "copy (select h3, institutional from inform_risk_profile_2025_h3 where h3 is not null and institutional is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/drr.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract drr to csv file
+	psql -q -X -c "copy (select h3, drr from inform_risk_profile_2025_h3 where h3 is not null and drr is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/governance.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract governance to csv file
+	psql -q -X -c "copy (select h3, governance from inform_risk_profile_2025_h3 where h3 is not null and governance is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/infrastructure.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract infrastructure to csv file
+	psql -q -X -c "copy (select h3, infrastructure from inform_risk_profile_2025_h3 where h3 is not null and infrastructure is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/communication.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract communication to csv file
+	psql -q -X -c "copy (select h3, communication from inform_risk_profile_2025_h3 where h3 is not null and communication is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/physical_infrastructure.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract physical_infrastructure to csv file
+	psql -q -X -c "copy (select h3, physical_infrastructure from inform_risk_profile_2025_h3 where h3 is not null and physical_infrastructure is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/access_to_health_care.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract access_to_health_care to csv file
+	psql -q -X -c "copy (select h3, access_to_health_care from inform_risk_profile_2025_h3 where h3 is not null and access_to_health_care is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
 ### Deploy block ###
 ## Deploy dev ##
 db/table/insights_api_indicators_list_dev: | db/table ## Refresh insights_api_indicators_list_dev table before new deploy cycle
@@ -3497,422 +3611,554 @@ db/table/insights_api_indicators_list_dev: | db/table ## Refresh insights_api_in
 	touch $@
 
 deploy_indicators/dev/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/dev/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count.csv "count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count.csv "count" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/dev/uploads ## upload hazardous_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hazardous_days_count.csv "hazardous_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme disasters of any types were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hazardous_days_count.csv "hazardous_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/dev/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "" "World" "daily" "other" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/dev/uploads ## upload man_distance_to_fire_brigade to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_fire_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
 	touch $@
 
 deploy_indicators/dev/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/dev/uploads ## upload food_shops_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/food_shops_count.csv "food_shops_count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of places where you can buy fresh or packaged food products in a given area." "World" "daily" "n" "$$(date -r db/table/osm_places_food_shops_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/food_shops_count.csv "food_shops_count" db/table/osm_places_food_shops_h3
 	touch $@
 
 deploy_indicators/dev/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv | deploy_indicators/dev/uploads ## upload populated_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_area_km2.csv "populated_area_km2" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "km2" "$$(date -r db/table/kontur_population_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_area_km2.csv "populated_area_km2" db/table/kontur_population_h3
 	touch $@
 
 deploy_indicators/dev/uploads/count_6_months_upload: data/out/csv/count_6_months.csv | deploy_indicators/dev/uploads ## upload count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count_6_months.csv "count_6_months" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of objects mapped in OpenStreetMap in the last 6 months." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count_6_months.csv "count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/dev/uploads ## upload view_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count.csv "view_count" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of tile requests in a given area for the last 30 days." "World" "daily" "n" "$$(date -r db/table/tile_logs +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count.csv "view_count" db/table/tile_logs
 	touch $@
 
 deploy_indicators/dev/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/dev/uploads ## upload avgmax_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avgmax_ts.csv "avgmax_ts" "[[\"bad\", \"unimportant\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Average of latest OpenStreetMap edit dates in a given area." "World" "daily" "unixtime" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avgmax_ts.csv "avgmax_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/max_ts_upload: data/out/csv/max_ts.csv | deploy_indicators/dev/uploads ## upload max_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_ts.csv "max_ts" "[[\"bad\", \"unimportant\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Date of latest OpenStreetMap edit in a given area at highest resolution." "World" "daily" "unixtime" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_ts.csv "max_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_indicators/dev/uploads ## upload min_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_ts.csv "min_ts" "[[\"good\"], [\"neutral\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Date of earliest OpenStreetMap edit in a given area." "World" "daily" "unixtime" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_ts.csv "min_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/dev/uploads ## upload osm_users to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_users.csv "osm_users" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of users who have edited a given area in OpenStreetMap." "World" "daily" "ppl" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_users.csv "osm_users" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/dev/uploads ## upload building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_count.csv "building_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of buildings in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_count.csv "building_count" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv | deploy_indicators/dev/uploads ## upload building_count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_count_6_months.csv "building_count_6_months" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of buildings mapped in OpenStreetMap in the last 6 months." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_count_6_months.csv "building_count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/highway_length_upload: data/out/csv/highway_length.csv | deploy_indicators/dev/uploads ## upload highway_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length.csv "highway_length" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total length of roads in a given area according to OpenStreetMap." "World" "daily" "km" "$$(date -r db/table/osm_road_segments_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length.csv "highway_length" db/table/osm_road_segments_h3
 	touch $@
 
 deploy_indicators/dev/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv | deploy_indicators/dev/uploads ## upload highway_length_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_6_months.csv "highway_length_6_months" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Length of roads mapped in OpenStreetMap in the last 6 months." "World" "daily" "km" "$$(date -r db/table/osm_road_segments_6_months_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_6_months.csv "highway_length_6_months" db/table/osm_road_segments_6_months_h3
 	touch $@
 
 deploy_indicators/dev/uploads/total_hours_upload: data/out/csv/total_hours.csv | deploy_indicators/dev/uploads ## upload total_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_hours.csv "total_hours" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of OpenStreetMap mapping hours by all users in the last 2 years. A mapping hour is an hour in which a user uploaded at least one tagged object." "World" "daily" "h" "$$(date -r db/table/user_hours_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_hours.csv "total_hours" db/table/user_hours_h3
 	touch $@
 
 deploy_indicators/dev/uploads/local_hours_upload: data/out/csv/local_hours.csv | deploy_indicators/dev/uploads ## upload local_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/local_hours.csv "local_hours" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of OpenStreetMap mapping hours by active local mappers in the last 2 years. A mapping hour is an hour in which a user uploaded at least one tagged object. Mapper is considered active if they contributed more than 30 mapping hours in the last 2 years. The position of the active mapper is estimated by the region of their highest activity." "World" "daily" "h" "$$(date -r db/table/user_hours_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/local_hours.csv "local_hours" db/table/user_hours_h3
 	touch $@
 
 deploy_indicators/dev/uploads/forest_upload: data/out/csv/forest.csv | deploy_indicators/dev/uploads ## upload forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/forest.csv "forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by forest - where tree canopy is more than 15%." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/forest.csv "forest" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv | deploy_indicators/dev/uploads ## upload evergreen_needle_leaved_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by either closed or open evergreen needleleaf forest. Almost all needleleaf trees remain green all year. Canopy is never without green foliage. Closed forest has tree canopy >70%. Open forest has top layer - trees 15-70 % - and second layer - mix of shrubs and grassland." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/shrubs_upload: data/out/csv/shrubs.csv | deploy_indicators/dev/uploads ## upload shrubs to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/shrubs.csv "shrubs" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Shrubland, or area where vegetation is dominated by woody perennial plants generally less than 5 meters in height, with persistent and woody stems and without any defined main stem. The shrub foliage can be either evergreen or deciduous." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/shrubs.csv "shrubs" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/herbage_upload: data/out/csv/herbage.csv | deploy_indicators/dev/uploads ## upload herbage to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/herbage.csv "herbage" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by herbaceous plants. These plants have no persistent woody stems above ground and lack definite firm structure. Tree and shrub cover is less than 10%." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/herbage.csv "herbage" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv | deploy_indicators/dev/uploads ## upload unknown_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/unknown_forest.csv "unknown_forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by forest that does not match defined forest types." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/unknown_forest.csv "unknown_forest" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/cropland_upload: data/out/csv/cropland.csv | deploy_indicators/dev/uploads ## upload cropland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/cropland.csv "cropland" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Cropland, Lands covered with temporary crops followed by harvest and a bare soil period (e.g., single and multiple cropping systems). Note that perennial woody crops will be classified as the appropriate forest or shrub land cover type." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/cropland.csv "cropland" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/wetland_upload: data/out/csv/wetland.csv | deploy_indicators/dev/uploads ## upload wetland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wetland.csv "wetland" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Wetland, Lands with a permanent mixture of water and herbaceous or woody vegetation. The vegetation can be present in either salt, brackish, or fresh water." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wetland.csv "wetland" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv | deploy_indicators/dev/uploads ## upload moss_lichen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/moss_lichen.csv "moss_lichen" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Land with moss and lichen coverage." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/moss_lichen.csv "moss_lichen" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv | deploy_indicators/dev/uploads ## upload bare_vegetation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/bare_vegetation.csv "bare_vegetation" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Bare or sparse vegetation. Lands with exposed soil, sand, or rocks and never has more than 10 % vegetated cover during any time of the year." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/bare_vegetation.csv "bare_vegetation" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/builtup_upload: data/out/csv/builtup.csv | deploy_indicators/dev/uploads ## upload builtup to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/builtup.csv "builtup" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Land covered by buildings and other man-made structures." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/builtup.csv "builtup" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/snow_ice_upload: data/out/csv/snow_ice.csv | deploy_indicators/dev/uploads ## upload snow_ice to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/snow_ice.csv "snow_ice" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Snow and Ice. Lands under snow or ice cover throughout the year." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/snow_ice.csv "snow_ice" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/permanent_water_upload: data/out/csv/permanent_water.csv | deploy_indicators/dev/uploads ## upload permanent_water to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/permanent_water.csv "permanent_water" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Permanent water bodies. Lakes, reservoirs, and rivers. Can be either fresh or salt-water bodies." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/permanent_water.csv "permanent_water" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/dev/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicators/dev/uploads ## upload gdp to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gdp.csv "gdp" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© 2019 The World Bank Group, CC-BY 4.0\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, Myroslava Lesiv, Nandin-Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"@ OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "A country GDP (Gross Domestic Product) per capita multiplied by the population in a given area. For areas covering multiple countries, a sum of their respective GDP portions is used. GDP is the standard measure of the value created through the production of goods and services in a country during a certain period." "World" "static" "USD" "$$(date -r db/table/gdp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gdp.csv "gdp" db/table/gdp_h3
 	touch $@
 
 deploy_indicators/dev/uploads/population_prev_upload: data/out/csv/population_prev.csv | deploy_indicators/dev/uploads ## upload population_prev to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population_prev.csv "population_prev" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to previous version of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data." "World" "daily" "ppl" "$$(date -r db/table/kontur_population_v5_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population_prev.csv "population_prev" db/table/kontur_population_v5_h3
 	touch $@
 
 deploy_indicators/dev/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/dev/uploads ## upload total_building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_building_count.csv "total_building_count" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Estimated number of buildings in a given area based on various data sources." "World" "daily" "n" "$$(date -r db/table/building_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_building_count.csv "total_building_count" db/table/building_count_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/dev/uploads ## upload wildfires to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfires.csv "wildfires" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002\", \"NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML\"]" "Number of days per year when a thermal anomaly was recorded in the last 13 months." "World" "daily" "days" "$$(date -r db/table/global_fires_stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfires.csv "wildfires" db/table/global_fires_stat_h3
 	touch $@
 
 deploy_indicators/dev/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/dev/uploads ## upload earthquake_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/earthquake_days_count.csv "earthquake_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme earthquakes were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/earthquake_days_count.csv "earthquake_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/dev/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv | deploy_indicators/dev/uploads ## upload drought_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drought_days_count.csv "drought_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme droughts were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drought_days_count.csv "drought_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/dev/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv | deploy_indicators/dev/uploads ## upload cyclone_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/cyclone_days_count.csv "cyclone_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme cyclones were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/cyclone_days_count.csv "cyclone_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/dev/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv | deploy_indicators/dev/uploads ## upload wildfire_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfire_days_count.csv "wildfire_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme wildfires were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfire_days_count.csv "wildfire_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/dev/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv | deploy_indicators/dev/uploads ## upload volcano_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/volcano_days_count.csv "volcano_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme volcanos were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/volcano_days_count.csv "volcano_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/dev/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv | deploy_indicators/dev/uploads ## upload flood_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/flood_days_count.csv "flood_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme floods were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/dev/uploads/covid19_confirmed_upload: data/out/csv/covid19_confirmed.csv | deploy_indicators/dev/uploads ## upload covid19_confirmed to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/covid19_confirmed.csv "covid19_confirmed" "[[\"good\"], [\"bad\"]]" false true "[\"© Data from JHU CSSE COVID-19 Dataset\"]" "Number of COVID-19 confirmed cases for the entire observation period according to the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University (JHU)." "World" "daily" "n" "$$(date -r db/table/covid19_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/covid19_confirmed.csv "covid19_confirmed" db/table/covid19_h3
 	touch $@
 
 deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/dev/uploads ## upload avg_slope_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface slope." "World" "static" "deg" "$$(date -r db/table/gebco_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
 deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/dev/uploads ## upload avg_elevation_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface elevation in meters." "World" "static" "m" "$$(date -r db/table/gebco_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
 deploy_indicators/dev/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/dev/uploads ## upload industrial_area to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/industrial_area.csv "industrial_area" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Areas of land used for industrial purposes, which may include facilities such as workshops, factories and warehouses, and their associated infrastructure (car parks, service roads, yards, etc.)." "World" "daily" "km2" "$$(date -r db/table/osm_landuse_industrial_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/industrial_area.csv "industrial_area" db/table/osm_landuse_industrial_h3
 	touch $@
 
 deploy_indicators/dev/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv | deploy_indicators/dev/uploads ## upload avg_ndvi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_ndvi.csv "avg_ndvi" "[[\"bad\"], [\"good\"]]" false true "[\"© Data from Sentinel-2 L2A 120m Mosaic, CC-BY 4.0, https://forum.sentinel-hub.com/c/aws-sentinel\"]" "Average values of Normalized Difference Vegetation Index (NDVI), as of June 2019. Negative values of NDVI (values approaching -1) correspond to water. Values close to zero (-0.1 to 0.1) generally correspond to barren areas of rock, sand, or snow. Low, positive values represent shrub and grassland (approximately 0.2 to 0.4), while high values indicate temperate and tropical rainforests (values approaching 1)." "World" "static" "index" "$$(date -r db/table/ndvi_2019_06_10_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_ndvi.csv "avg_ndvi" db/table/ndvi_2019_06_10_h3
 	touch $@
 
 deploy_indicators/dev/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv | deploy_indicators/dev/uploads ## upload volcanos_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/volcanos_count.csv "volcanos_count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of volcanoes in a given area." "World" "daily" "n" "$$(date -r db/table/osm_volcanos_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/volcanos_count.csv "volcanos_count" db/table/osm_volcanos_h3
 	touch $@
 
 deploy_indicators/dev/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv | deploy_indicators/dev/uploads ## upload pop_under_5_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_under_5_total.csv "pop_under_5_total" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of children (ages 0-5) in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_under_5_total.csv "pop_under_5_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/dev/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv | deploy_indicators/dev/uploads ## upload pop_over_65_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_over_65_total.csv "pop_over_65_total" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of elderly people (ages 65+) in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_over_65_total.csv "pop_over_65_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/dev/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv | deploy_indicators/dev/uploads ## upload poverty_families_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/poverty_families_total.csv "poverty_families_total" "[[\"unimportant\", \"good\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of households living below the poverty line in the United States." "The United States of America" "static" "n" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/poverty_families_total.csv "poverty_families_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/dev/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv | deploy_indicators/dev/uploads ## upload pop_disability_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_disability_total.csv "pop_disability_total" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of people with disabilities in the United States based on the U.S. Census Bureaus American Community Survey (ACS). This page describes how disability is defined and collected in the ACS: https://www.census.gov/topics/health/disability/guidance/data-collection-acs.html" "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_disability_total.csv "pop_disability_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/dev/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv | deploy_indicators/dev/uploads ## upload pop_not_well_eng_speak to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" "[[\"good\"], [\"important\", \"bad\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of people who have difficulty speaking English in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/dev/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv | deploy_indicators/dev/uploads ## upload pop_without_car to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_without_car.csv "pop_without_car" "[[\"neutral\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of working people without a car in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_without_car.csv "pop_without_car" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv | deploy_indicators/dev/uploads ## upload days_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum temperature exceeding 32°C (90°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science)." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/dev/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv | deploy_indicators/dev/uploads ## upload days_maxtemp_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum temperature exceeding 32°C (90°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science).The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv | deploy_indicators/dev/uploads ## upload days_mintemp_above_25c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily minimum temperature exceeding 25°C (77°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). The lowest temperature during the day happens at night when temperatures dip after sunset. The human experience of a “hot” night is relative to location, so a threshold of 20°C is often used for higher latitudes (Europe and the US) and a threshold of 25°C is often used for tropical and equatorial regions." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/dev/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv | deploy_indicators/dev/uploads ## upload days_mintemp_above_25c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily minimum temperature exceeding 25°C (77°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). The lowest temperature during the day happens at night when temperatures dip after sunset. The human experience of a “hot” night is relative to location, so a threshold of 20°C is often used for higher latitudes (Europe and the US) and a threshold of 25°C is often used for tropical and equatorial regions. The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv | deploy_indicators/dev/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F) and 55% humidity." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv | deploy_indicators/dev/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F) and 55% humidity. The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/dev/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/dev/uploads ## upload man_distance_to_hospital to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_hospitals_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" db/table/isodist_hospitals_h3
 	touch $@
 
 deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/dev/uploads ## upload man_distance_to_bomb_shelters to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_bomb_shelters_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
 	touch $@
 
 deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/dev/uploads ## upload man_distance_to_charging_stations to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_charging_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
 	touch $@
 
 deploy_indicators/dev/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/dev/uploads ## upload total_road_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_road_length.csv "total_road_length" "[[\"unimportant\"], [\"important\"]]" true true "[\"©2019 Facebook, Inc. and its affiliates https://github.com/facebookmicrosites/Open-Mapping-At-Facebook/blob/main/LICENSE.md\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"© Kontur https://kontur.io/\"]" "Estimated total road length according to Meta (Facebook) AI and OpenStreetMap data. For places where Meta (Facebook) roads data are unavailable, the estimation is based on statistical regression from Kontur Population data." "World" "daily" "km" "$$(date -r db/table/total_road_length_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_road_length.csv "total_road_length" db/table/total_road_length_h3
 	touch $@
 
 deploy_indicators/dev/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/dev/uploads ## upload view_count_bf2402 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count_bf2402.csv "view_count_bf2402" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"© Kontur\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of tile requests in a given area for the 30 days before Feb 24, 2022." "World" "daily" "n" "$$(date -r db/table/tile_logs_bf2402 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402
 	touch $@
 
 deploy_indicators/dev/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/dev/uploads ## upload powerlines to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines.csv "powerlines" "[[\"bad\"], [\"good\"]]" false true "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines.csv "powerlines" db/table/facebook_medium_voltage_distribution_h3
 	touch $@
 
 deploy_indicators/dev/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/dev/uploads ## upload eatery_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/eatery_count.csv "eatery_count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of places where you can buy and eat food (such as restaurants, cafés, fast-food outlets, etc.) in a given area." "World" "daily" "n" "$$(date -r db/table/osm_places_eatery_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/eatery_count.csv "eatery_count" db/table/osm_places_eatery_h3
 	touch $@
 
 deploy_indicators/dev/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv | deploy_indicators/dev/uploads ## upload night_lights_intensity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/night_lights_intensity.csv "night_lights_intensity" "[[\"unimportant\"], [\"important\"]]" false true "[\"Earth Observation Group © 2021. https://eogdata.mines.edu/products/vnl/#reference\", \"C. D. Elvidge, K. E. Baugh, M. Zhizhin, and F.-C. Hsu, “Why VIIRS data are superior to DMSP for mapping nighttime lights,” Asia-Pacific Advanced Network 35, vol. 35, p. 62, 2013.\", \"C. D. Elvidge, M. Zhizhin, T. Ghosh, F-C. Hsu, “Annual time series of global VIIRS nighttime lights derived from monthly averages: 2012 to 2019”, Remote Sensing (In press)\"]" "Remote sensing of nighttime light emissions offers a unique perspective for investigations into human behaviors. The Visible Infrared Imaging Radiometer Suite (VIIRS) instruments aboard the Suomi NPP and NOAA-20 satellites provide global daily measurements of nighttime light." "World" "static" "nW_cm2_sr" "$$(date -r db/table/night_lights_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/night_lights_intensity.csv "night_lights_intensity" db/table/night_lights_h3
 	touch $@
 
 deploy_indicators/dev/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv | deploy_indicators/dev/uploads ## upload mapswipe_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" "[[\"unimportant\"], [\"important\"]]" false true "[\"Copyright © 2022 MapSwipe https://mapswipe.org/en/privacy.html\"]" "Places were MapSwipe users have detected some human activity through features (i.e. buildings, roadways, waterways, etc.) on satellite images." "World" "daily" "km2" "$$(date -r db/table/mapswipe_hot_tasking_data_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
 	touch $@
 
 deploy_indicators/dev/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv | deploy_indicators/dev/uploads ## upload gsa_ghi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gsa_ghi.csv "gsa_ghi" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use\"]" "Total amount of shortwave terrestrial irradiance received by a surface horizontal to the ground." "World (-60:60 latitudes)" "static" "W_m2" "$$(date -r db/table/global_solar_atlas_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gsa_ghi.csv "gsa_ghi" db/table/global_solar_atlas_h3
 	touch $@
 
 deploy_indicators/dev/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_avg_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly average air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/dev/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_min_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" "[[\"bad\"], [\"good\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly minimum air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/dev/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_max_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly maximum air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/dev/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_amp_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly amplitude of air temperatures according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/dev/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv | deploy_indicators/dev/uploads ## upload powerlines_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" "[[\"important\"], [\"unimportant\"]]" false true "[\"Copyright © OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"© 2020 The World Bank Group, CC-BY 4.0\"]" "Distance to closest powerline" "World" "static" "m" "$$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" db/table/proximities_h3
 	touch $@
 
 deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/dev/uploads ## upload waste_basket_coverage_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of waste containers in a given area." "World" "daily" "n" "$$(date -r db/table/waste_containers_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_containers_h3
 	touch $@
 
 deploy_indicators/dev/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/dev/uploads ## upload populated_areas_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Distance to closest Kontur Population cell with population > 80 ppl" "World" "daily" "m" "$$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" db/table/proximities_h3
 	touch $@
 
 deploy_indicators/dev/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv | deploy_indicators/dev/uploads ## upload power_substations_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" "[[\"good\"], [\"bad\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Distance to closest power substation" "World" "daily" "m" "$$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" db/table/proximities_h3
 	touch $@
 
 deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | deploy_indicators/dev/uploads ## upload solar_farms_placement_suitability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" "[[\"bad\"], [\"good\"]]" false true "[\"Copyright © Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\", \"Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use\"]" "Multi-criteria analysis based layer dedicated to estimation of suitability of solar farms placement. 0 means absolutely unsuitable, 1 means perfectly suitable. Analysis is based on solar irradiace, powerlines grid proximity, power substations proximity, elevation slope, minimal and maximal temperatures, populated areas proximity" "World (-60:60 latitudes)" "daily" "index" "$$(date -r db/table/solar_farms_placement_suitability_synthetic_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
 	touch $@
 
 deploy_indicators/dev/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/dev/uploads ## upload residential to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/residential.csv "residential" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\"]" "Estimation of residential population percentage according to GHS-POP dataset (2015)" "World" "static" "fract" "$$(date -r db/table/residential_pop_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/residential.csv "residential" db/table/residential_pop_h3
 	touch $@
 
 deploy_indicators/dev/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/dev/uploads ## upload solar_power_plants to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_power_plants.csv "solar_power_plants" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of solar power plants in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/existing_solar_power_panels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
 	touch $@
 
 deploy_indicators/dev/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/dev/uploads ## upload safety_index to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/safety_index.csv "safety_index" "[[\"bad\"], [\"good\"]]" false true "[\"© The Institute for Economics and Peace Limited 2022 https://www.visionofhumanity.org/\"]" "The Global Peace Index covers 99.7% of the world’s population, and is calculated using 23 qualitative and quantitative indicators from highly respected sources, and measures the state of peace across three domains: the level of Societal Safety and Security, the extent of Ongoing Domestic and International Conflict, and the degree of Militarisation." "World" "static" "index" "$$(date -r db/table/safety_index_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
 	touch $@
 
 deploy_indicators/dev/uploads/population_upload: data/out/csv/population.csv | deploy_indicators/dev/uploads ## upload population to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population.csv "population" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data. The datasets detailed methodology is available here: https://data.humdata.org/dataset/kontur-population-dataset" "World" "daily" "ppl" "$$(date -r db/table/kontur_population_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population.csv "population" db/table/kontur_population_h3
 	touch $@
 
 deploy_indicators/dev/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv | deploy_indicators/dev/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.\"]" "Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery." "World" "static" "m" "$$(date -r db/table/meta_forest_canopy_height_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
 deploy_indicators/dev/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv | deploy_indicators/dev/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.\"]" "Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery." "World" "static" "m" "$$(date -r db/table/meta_forest_canopy_height_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
 deploy_indicators/dev/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv | deploy_indicators/dev/uploads ## upload worldbank_tax_rate to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" "[[\"good\"], [\"bad\"]]" false true "[\"© 2024 The World Bank Group, Doing Business project (http://www.doingbusiness.org/). NOTE: Doing Business has been discontinued as of 9/16/2021. For more information: https://bit.ly/3CLCbme\"]" "Total tax rate measures the amount of taxes and mandatory contributions payable by businesses after accounting for allowable deductions and exemptions as a share of commercial profits. Taxes withheld (such as personal income tax) or collected and remitted to tax authorities (such as value added taxes, sales taxes or goods and service taxes) are excluded." "World" "static" "perc" "$$(date -r db/table/worldbank_tax_rate_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
 	touch $@
 
 deploy_indicators/dev/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv | deploy_indicators/dev/uploads ## upload years_to_naturalisation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" "[[\"good\"], [\"bad\"]]" false true "[\"This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.\"]" "The duration of legal residence before a national of a foreign state, without any cultural, historical, or marriage ties or connections to the state in question, can request citizenship under that states naturalization laws." "World" "static" "years" "$$(date -r db/table/wikidata_naturalization_gap_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
 deploy_indicators/dev/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv | deploy_indicators/dev/uploads ## upload multiple_citizenship to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/multiple_citizenship.csv "multiple_citizenship" "[[\"bad\"], [\"good\"]]" false true "[\"This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.\"]" "Possibility to have dual (multiple) citizenship: 1 - no, 2 - with restrictions regulated by local legislation, 3 - dual (multiple) citizenship is allowed." "World" "static" "other" "$$(date -r db/table/wikidata_naturalization_gap_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/multiple_citizenship.csv "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
 deploy_indicators/dev/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv | deploy_indicators/dev/uploads ## upload ghs_max_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.\"]" "GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces." "World" "static" "m" "$$(date -r db/table/ghs_building_height_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv | deploy_indicators/dev/uploads ## upload ghs_avg_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.\"]" "GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces." "World" "static" "m" "$$(date -r db/table/ghs_building_height_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv | deploy_indicators/dev/uploads ## upload max_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" "[[\"good\"], [\"bad\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Maximal levels of buildings in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_building_levels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
 deploy_indicators/dev/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv | deploy_indicators/dev/uploads ## upload avg_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" "[[\"good\"], [\"bad\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Average levels of buildings in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_building_levels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
 deploy_indicators/dev/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv | deploy_indicators/dev/uploads ## upload osm_hotels_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_hotels_count.csv "osm_hotels_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of hotels in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_hotels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_hotels_count.csv "osm_hotels_count" db/table/osm_hotels_h3
 	touch $@
 
 deploy_indicators/dev/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv | deploy_indicators/dev/uploads ## upload max_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Max hotel level assesment from OSM." "World" "daily" "n" "$$(date -r db/table/osm_hotels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
 deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv | deploy_indicators/dev/uploads ## upload avg_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Average hotel level asesment from OSM." "World" "daily" "n" "$$(date -r db/table/osm_hotels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
 deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/dev/uploads ## upload osm_historical_sites_and_museums_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of historical sites and museums in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/dev/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/dev/uploads ## upload osm_art_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of art venues in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/dev/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv | deploy_indicators/dev/uploads ## upload osm_entertainment_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of entertainment venues OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/dev/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv | deploy_indicators/dev/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of cultural and community centers in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/dev/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv | deploy_indicators/dev/uploads ## upload worldbank_inflation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldbank_inflation.csv "worldbank_inflation" "[[\"bad\"], [\"good\"]]" false true "[\"Ha, Jongrim, M. Ayhan Kose, and Franziska Ohnsorge (2023). One-Stop Source: A Global Database of Inflation. Journal of International Money and Finance 137 (October): 102896\"]" "Inflation, measured by the Consumer Price Index (CPI), is the annual change in prices of a typical basket of goods and services purchased by households. Data are drawn from multiple databases: OECD.Stat, the IMF World Economic Outlook database and International Financial Statistics, ILOSTAT, UNdata and country-specific sources including central banks and statistical offices." "World" "static" "perc" "$$(date -r db/table/worldbank_inflation_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldbank_inflation.csv "worldbank_inflation" db/table/worldbank_inflation_h3
 	touch $@
 
 deploy_indicators/dev/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv | deploy_indicators/dev/uploads ## upload osm_pharmacy_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of pharmacy in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_pharmacy_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" db/table/osm_pharmacy_h3
 	touch $@
 
 deploy_indicators/dev/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv | deploy_indicators/dev/uploads ## upload conflict_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of IDPs (rounded figures at the national level), as a result of conflicts and violence as of the end of the reporting year." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/dev/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv | deploy_indicators/dev/uploads ## upload disaster_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of IDPs (rounded figures at the national level), as a result of disasters as of the end of the reporting year." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/dev/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv | deploy_indicators/dev/uploads ## upload conflict_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of internal displacements reported (rounded figures at national level), as a result of conflict and violence over the 2023." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/dev/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv | deploy_indicators/dev/uploads ## upload disaster_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of internal displacements reported (rounded figures at national level), as a result of disasters over the 2023." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/dev/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv | deploy_indicators/dev/uploads ## upload hdi_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hdi_2022.csv "hdi_2022" "[[\"bad\"], [\"good\"]]" false true "[\"© 2024 United Nations Development Programme https://hdr.undp.org/data-center/human-development-index\"]" "The Human Development Index (HDI) is a summary measure of average achievement in key dimensions of human development: a long and healthy life, being knowledgeable and having a decent standard of living. The HDI is the geometric mean of normalized indices for each of the three dimensions. The health dimension is assessed by life expectancy at birth, the education dimension is measured by mean of years of schooling for adults aged 25 years and more and expected years of schooling for children of school entering age. The standard of living dimension is measured by gross national income per capita. The HDI uses the logarithm of income, to reflect the diminishing importance of income with increasing GNI. The scores for the three HDI dimension indices are then aggregated into a composite index using geometric mean. The entire series of Human Development Index (HDI) values and rankings are recalculated every year using the same the most recent (revised) data and functional forms. The HDI rankings and values in the 2014 Human Development Report cannot therefore be compared directly to indices published in previous Reports. Please see hdr.undp.org for more information. The HDI was created to emphasize that people and their capabilities should be the ultimate criteria for assessing the development of a country, not economic growth alone. The HDI can also be used to question national policy choices, asking how two countries with the same level of GNI per capita can end up with different human development outcomes. These contrasts can stimulate debate about government policy priorities." "World" "static" "index" "$$(date -r db/table/humanitarian_dev_index_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hdi_2022.csv "hdi_2022" db/table/humanitarian_dev_index_2022_h3
 	touch $@
 
-deploy_indicators/dev/uploads/upload_dev: deploy_indicators/dev/uploads/population_upload deploy_indicators/dev/uploads/view_count_upload deploy_indicators/dev/uploads/count_upload deploy_indicators/dev/uploads/populated_area_km2_upload deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload deploy_indicators/dev/uploads/local_hours_upload deploy_indicators/dev/uploads/total_hours_upload deploy_indicators/dev/uploads/avgmax_ts_upload deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/view_count_bf2402_upload deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/dev/uploads/total_building_count_upload deploy_indicators/dev/uploads/count_6_months_upload deploy_indicators/dev/uploads/building_count_6_months_upload deploy_indicators/dev/uploads/highway_length_6_months_upload deploy_indicators/dev/uploads/osm_users_upload deploy_indicators/dev/uploads/residential_upload deploy_indicators/dev/uploads/gdp_upload deploy_indicators/dev/uploads/min_ts_upload deploy_indicators/dev/uploads/max_ts_upload deploy_indicators/dev/uploads/wildfires_upload deploy_indicators/dev/uploads/covid19_confirmed_upload deploy_indicators/dev/uploads/population_prev_upload deploy_indicators/dev/uploads/industrial_area_upload deploy_indicators/dev/uploads/volcanos_count_upload deploy_indicators/dev/uploads/pop_under_5_total_upload deploy_indicators/dev/uploads/pop_over_65_total_upload deploy_indicators/dev/uploads/poverty_families_total_upload deploy_indicators/dev/uploads/pop_disability_total_upload deploy_indicators/dev/uploads/pop_not_well_eng_speak_upload deploy_indicators/dev/uploads/pop_without_car_upload deploy_indicators/dev/uploads/man_distance_to_hospital_upload deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload  deploy_indicators/dev/uploads/eatery_count_upload deploy_indicators/dev/uploads/food_shops_count_upload deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload deploy_indicators/dev/uploads/mapswipe_area_km2_upload deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload deploy_indicators/dev/uploads/forest_upload deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/dev/uploads/shrubs_upload deploy_indicators/dev/uploads/herbage_upload deploy_indicators/dev/uploads/unknown_forest_upload deploy_indicators/dev/uploads/avg_ndvi_upload deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/dev/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/dev/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/dev/uploads/hazardous_days_count_upload deploy_indicators/dev/uploads/earthquake_days_count_upload deploy_indicators/dev/uploads/wildfire_days_count_upload deploy_indicators/dev/uploads/drought_days_count_upload deploy_indicators/dev/uploads/cyclone_days_count_upload deploy_indicators/dev/uploads/volcano_days_count_upload deploy_indicators/dev/uploads/flood_days_count_upload deploy_indicators/dev/uploads/powerlines_upload deploy_indicators/dev/uploads/night_lights_intensity_upload deploy_indicators/dev/uploads/gsa_ghi_upload deploy_indicators/dev/uploads/worldclim_avg_temperature_upload deploy_indicators/dev/uploads/worldclim_min_temperature_upload deploy_indicators/dev/uploads/worldclim_max_temperature_upload deploy_indicators/dev/uploads/worldclim_amp_temperature_upload deploy_indicators/dev/uploads/powerlines_proximity_m_upload deploy_indicators/dev/uploads/populated_areas_proximity_m_upload deploy_indicators/dev/uploads/power_substations_proximity_m_upload deploy_indicators/dev/uploads/solar_power_plants_upload deploy_indicators/dev/uploads/safety_index_upload deploy_indicators/dev/uploads/avg_forest_canopy_height_upload deploy_indicators/dev/uploads/max_forest_canopy_height_upload deploy_indicators/dev/uploads/worldbank_tax_rate_upload deploy_indicators/dev/uploads/years_to_naturalisation_upload deploy_indicators/dev/uploads/multiple_citizenship_upload deploy_indicators/dev/uploads/ghs_max_building_height_upload deploy_indicators/dev/uploads/ghs_avg_building_height_upload deploy_indicators/dev/uploads/max_osm_building_levels_upload deploy_indicators/dev/uploads/avg_osm_building_levels_upload deploy_indicators/dev/uploads/osm_hotels_count_upload deploy_indicators/dev/uploads/max_osm_hotels_assesment_upload deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/dev/uploads/osm_art_venues_count_upload deploy_indicators/dev/uploads/osm_entertainment_venues_count_upload deploy_indicators/dev/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/dev/uploads/worldbank_inflation_upload deploy_indicators/dev/uploads/cropland_upload deploy_indicators/dev/uploads/wetland_upload deploy_indicators/dev/uploads/moss_lichen_upload deploy_indicators/dev/uploads/bare_vegetation_upload deploy_indicators/dev/uploads/builtup_upload deploy_indicators/dev/uploads/snow_ice_upload deploy_indicators/dev/uploads/permanent_water_upload deploy_indicators/dev/uploads/osm_pharmacy_count_upload deploy_indicators/dev/uploads/conflict_stock_displacement_upload deploy_indicators/dev/uploads/disaster_stock_displacement_upload deploy_indicators/dev/uploads/conflict_internal_displacements_upload deploy_indicators/dev/uploads/disaster_internal_displacements_upload deploy_indicators/dev/uploads/hdi_2022_upload | deploy_indicators/dev/uploads ## Control of layer uplodings to Insigths API for DEV without one and area_km2
+deploy_indicators/dev/uploads/inform_risk_upload: data/out/csv/inform_risk.csv | deploy_indicators/dev/uploads ## upload inform_risk to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/inform_risk.csv "inform_risk" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv | deploy_indicators/dev/uploads ## upload hazard_and_exposure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hazard_and_exposure.csv "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv | deploy_indicators/dev/uploads ## upload natural_0_to_10 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/natural_0_to_10.csv "natural_0_to_10" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/earthquake_upload: data/out/csv/earthquake.csv | deploy_indicators/dev/uploads ## upload earthquake to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/earthquake.csv "earthquake" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/river_flood_upload: data/out/csv/river_flood.csv | deploy_indicators/dev/uploads ## upload river_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/river_flood.csv "river_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/tsunami_upload: data/out/csv/tsunami.csv | deploy_indicators/dev/uploads ## upload tsunami to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/tsunami.csv "tsunami" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv | deploy_indicators/dev/uploads ## upload tropical_cyclone to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/tropical_cyclone.csv "tropical_cyclone" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv | deploy_indicators/dev/uploads ## upload coastal_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/coastal_flood.csv "coastal_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/drought_upload: data/out/csv/drought.csv | deploy_indicators/dev/uploads ## upload drought to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drought.csv "drought" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/epidemic_upload: data/out/csv/epidemic.csv | deploy_indicators/dev/uploads ## upload epidemic to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/epidemic.csv "epidemic" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/human_upload: data/out/csv/human.csv | deploy_indicators/dev/uploads ## upload human to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/human.csv "human" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv | deploy_indicators/dev/uploads ## upload projected_conflict_probability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/projected_conflict_probability.csv "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv | deploy_indicators/dev/uploads ## upload current_conflict_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/current_conflict_intensity.csv "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/vulnerability_upload: data/out/csv/vulnerability.csv | deploy_indicators/dev/uploads ## upload vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerability.csv "vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv | deploy_indicators/dev/uploads ## upload socio_economic_vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/socio_economic_vulnerability.csv "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv | deploy_indicators/dev/uploads ## upload development_and_deprivation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/development_and_deprivation.csv "development_and_deprivation" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/inequality_upload: data/out/csv/inequality.csv | deploy_indicators/dev/uploads ## upload inequality to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/inequality.csv "inequality" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv | deploy_indicators/dev/uploads ## upload economic_dependency to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/economic_dependency.csv "economic_dependency" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv | deploy_indicators/dev/uploads ## upload vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerable_groups.csv "vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv | deploy_indicators/dev/uploads ## upload uprooted_people to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/uprooted_people.csv "uprooted_people" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/health_conditions_upload: data/out/csv/health_conditions.csv | deploy_indicators/dev/uploads ## upload health_conditions to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/health_conditions.csv "health_conditions" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/children_u5_upload: data/out/csv/children_u5.csv | deploy_indicators/dev/uploads ## upload children_u5 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/children_u5.csv "children_u5" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv | deploy_indicators/dev/uploads ## upload recent_shocks to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/recent_shocks.csv "recent_shocks" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/food_security_upload: data/out/csv/food_security.csv | deploy_indicators/dev/uploads ## upload food_security to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/food_security.csv "food_security" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv | deploy_indicators/dev/uploads ## upload other_vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/other_vulnerable_groups.csv "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv | deploy_indicators/dev/uploads ## upload lack_of_coping_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/lack_of_coping_capacity.csv "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/institutional_upload: data/out/csv/institutional.csv | deploy_indicators/dev/uploads ## upload institutional to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/institutional.csv "institutional" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/drr_upload: data/out/csv/drr.csv | deploy_indicators/dev/uploads ## upload drr to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drr.csv "drr" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/governance_upload: data/out/csv/governance.csv | deploy_indicators/dev/uploads ## upload governance to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/governance.csv "governance" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/infrastructure_upload: data/out/csv/infrastructure.csv | deploy_indicators/dev/uploads ## upload infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/infrastructure.csv "infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/communication_upload: data/out/csv/communication.csv | deploy_indicators/dev/uploads ## upload communication to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/communication.csv "communication" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv | deploy_indicators/dev/uploads ## upload physical_infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/physical_infrastructure.csv "physical_infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv | deploy_indicators/dev/uploads ## upload access_to_health_care to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/access_to_health_care.csv "access_to_health_care" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/upload_dev: deploy_indicators/dev/uploads/population_upload deploy_indicators/dev/uploads/view_count_upload deploy_indicators/dev/uploads/count_upload deploy_indicators/dev/uploads/populated_area_km2_upload deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload deploy_indicators/dev/uploads/local_hours_upload deploy_indicators/dev/uploads/total_hours_upload deploy_indicators/dev/uploads/avgmax_ts_upload deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/view_count_bf2402_upload deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/dev/uploads/total_building_count_upload deploy_indicators/dev/uploads/count_6_months_upload deploy_indicators/dev/uploads/building_count_6_months_upload deploy_indicators/dev/uploads/highway_length_6_months_upload deploy_indicators/dev/uploads/osm_users_upload deploy_indicators/dev/uploads/residential_upload deploy_indicators/dev/uploads/gdp_upload deploy_indicators/dev/uploads/min_ts_upload deploy_indicators/dev/uploads/max_ts_upload deploy_indicators/dev/uploads/wildfires_upload deploy_indicators/dev/uploads/covid19_confirmed_upload deploy_indicators/dev/uploads/population_prev_upload deploy_indicators/dev/uploads/industrial_area_upload deploy_indicators/dev/uploads/volcanos_count_upload deploy_indicators/dev/uploads/pop_under_5_total_upload deploy_indicators/dev/uploads/pop_over_65_total_upload deploy_indicators/dev/uploads/poverty_families_total_upload deploy_indicators/dev/uploads/pop_disability_total_upload deploy_indicators/dev/uploads/pop_not_well_eng_speak_upload deploy_indicators/dev/uploads/pop_without_car_upload deploy_indicators/dev/uploads/man_distance_to_hospital_upload deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload  deploy_indicators/dev/uploads/eatery_count_upload deploy_indicators/dev/uploads/food_shops_count_upload deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload deploy_indicators/dev/uploads/mapswipe_area_km2_upload deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload deploy_indicators/dev/uploads/forest_upload deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/dev/uploads/shrubs_upload deploy_indicators/dev/uploads/herbage_upload deploy_indicators/dev/uploads/unknown_forest_upload deploy_indicators/dev/uploads/avg_ndvi_upload deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/dev/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/dev/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/dev/uploads/hazardous_days_count_upload deploy_indicators/dev/uploads/earthquake_days_count_upload deploy_indicators/dev/uploads/wildfire_days_count_upload deploy_indicators/dev/uploads/drought_days_count_upload deploy_indicators/dev/uploads/cyclone_days_count_upload deploy_indicators/dev/uploads/volcano_days_count_upload deploy_indicators/dev/uploads/flood_days_count_upload deploy_indicators/dev/uploads/powerlines_upload deploy_indicators/dev/uploads/night_lights_intensity_upload deploy_indicators/dev/uploads/gsa_ghi_upload deploy_indicators/dev/uploads/worldclim_avg_temperature_upload deploy_indicators/dev/uploads/worldclim_min_temperature_upload deploy_indicators/dev/uploads/worldclim_max_temperature_upload deploy_indicators/dev/uploads/worldclim_amp_temperature_upload deploy_indicators/dev/uploads/powerlines_proximity_m_upload deploy_indicators/dev/uploads/populated_areas_proximity_m_upload deploy_indicators/dev/uploads/power_substations_proximity_m_upload deploy_indicators/dev/uploads/solar_power_plants_upload deploy_indicators/dev/uploads/safety_index_upload deploy_indicators/dev/uploads/avg_forest_canopy_height_upload deploy_indicators/dev/uploads/max_forest_canopy_height_upload deploy_indicators/dev/uploads/worldbank_tax_rate_upload deploy_indicators/dev/uploads/years_to_naturalisation_upload deploy_indicators/dev/uploads/multiple_citizenship_upload deploy_indicators/dev/uploads/ghs_max_building_height_upload deploy_indicators/dev/uploads/ghs_avg_building_height_upload deploy_indicators/dev/uploads/max_osm_building_levels_upload deploy_indicators/dev/uploads/avg_osm_building_levels_upload deploy_indicators/dev/uploads/osm_hotels_count_upload deploy_indicators/dev/uploads/max_osm_hotels_assesment_upload deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/dev/uploads/osm_art_venues_count_upload deploy_indicators/dev/uploads/osm_entertainment_venues_count_upload deploy_indicators/dev/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/dev/uploads/worldbank_inflation_upload deploy_indicators/dev/uploads/cropland_upload deploy_indicators/dev/uploads/wetland_upload deploy_indicators/dev/uploads/moss_lichen_upload deploy_indicators/dev/uploads/bare_vegetation_upload deploy_indicators/dev/uploads/builtup_upload deploy_indicators/dev/uploads/snow_ice_upload deploy_indicators/dev/uploads/permanent_water_upload deploy_indicators/dev/uploads/osm_pharmacy_count_upload deploy_indicators/dev/uploads/conflict_stock_displacement_upload deploy_indicators/dev/uploads/disaster_stock_displacement_upload deploy_indicators/dev/uploads/conflict_internal_displacements_upload deploy_indicators/dev/uploads/disaster_internal_displacements_upload deploy_indicators/dev/uploads/hdi_2022_upload deploy_indicators/dev/uploads/inform_risk_upload deploy_indicators/dev/uploads/hazard_and_exposure_upload deploy_indicators/dev/uploads/natural_0_to_10_upload deploy_indicators/dev/uploads/earthquake_upload deploy_indicators/dev/uploads/river_flood_upload deploy_indicators/dev/uploads/tsunami_upload deploy_indicators/dev/uploads/tropical_cyclone_upload deploy_indicators/dev/uploads/coastal_flood_upload deploy_indicators/dev/uploads/drought_upload deploy_indicators/dev/uploads/epidemic_upload deploy_indicators/dev/uploads/human_upload deploy_indicators/dev/uploads/projected_conflict_probability_upload deploy_indicators/dev/uploads/current_conflict_intensity_upload deploy_indicators/dev/uploads/vulnerability_upload deploy_indicators/dev/uploads/socio_economic_vulnerability_upload deploy_indicators/dev/uploads/development_and_deprivation_upload deploy_indicators/dev/uploads/inequality_upload deploy_indicators/dev/uploads/economic_dependency_upload deploy_indicators/dev/uploads/vulnerable_groups_upload deploy_indicators/dev/uploads/uprooted_people_upload deploy_indicators/dev/uploads/health_conditions_upload deploy_indicators/dev/uploads/children_u5_upload deploy_indicators/dev/uploads/recent_shocks_upload deploy_indicators/dev/uploads/food_security_upload deploy_indicators/dev/uploads/other_vulnerable_groups_upload deploy_indicators/dev/uploads/lack_of_coping_capacity_upload deploy_indicators/dev/uploads/institutional_upload deploy_indicators/dev/uploads/drr_upload deploy_indicators/dev/uploads/governance_upload deploy_indicators/dev/uploads/infrastructure_upload deploy_indicators/dev/uploads/communication_upload deploy_indicators/dev/uploads/physical_infrastructure_upload deploy_indicators/dev/uploads/access_to_health_care_upload | deploy_indicators/dev/uploads ## Control of layer uplodings to Insigths API for DEV without one and area_km2
 	touch $@
 
 deploy_indicators/dev/custom_axis/population_area_km2: deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for population area_km2 axis on dev.
@@ -4252,422 +4498,554 @@ db/table/insights_api_indicators_list_test: | db/table ## Refresh insights_api_i
 	touch $@
 
 deploy_indicators/test/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/test/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count.csv "count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count.csv "count" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/test/uploads ## upload hazardous_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hazardous_days_count.csv "hazardous_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme disasters of any types were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hazardous_days_count.csv "hazardous_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/test/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "" "World" "daily" "other" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/test/uploads ## upload man_distance_to_fire_brigade to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_fire_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
 	touch $@
 
 deploy_indicators/test/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/test/uploads ## upload food_shops_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/food_shops_count.csv "food_shops_count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of places where you can buy fresh or packaged food products in a given area." "World" "daily" "n" "$$(date -r db/table/osm_places_food_shops_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/food_shops_count.csv "food_shops_count" db/table/osm_places_food_shops_h3
 	touch $@
 
 deploy_indicators/test/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv | deploy_indicators/test/uploads ## upload populated_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_area_km2.csv "populated_area_km2" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "km2" "$$(date -r db/table/kontur_population_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_area_km2.csv "populated_area_km2" db/table/kontur_population_h3
 	touch $@
 
 deploy_indicators/test/uploads/count_6_months_upload: data/out/csv/count_6_months.csv | deploy_indicators/test/uploads ## upload count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count_6_months.csv "count_6_months" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of objects mapped in OpenStreetMap in the last 6 months." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count_6_months.csv "count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/test/uploads ## upload view_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count.csv "view_count" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of tile requests in a given area for the last 30 days." "World" "daily" "n" "$$(date -r db/table/tile_logs +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count.csv "view_count" db/table/tile_logs
 	touch $@
 
 deploy_indicators/test/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/test/uploads ## upload avgmax_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avgmax_ts.csv "avgmax_ts" "[[\"bad\", \"unimportant\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Average of latest OpenStreetMap edit dates in a given area." "World" "daily" "unixtime" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avgmax_ts.csv "avgmax_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/max_ts_upload: data/out/csv/max_ts.csv | deploy_indicators/test/uploads ## upload max_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_ts.csv "max_ts" "[[\"bad\", \"unimportant\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Date of latest OpenStreetMap edit in a given area at highest resolution." "World" "daily" "unixtime" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_ts.csv "max_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_indicators/test/uploads ## upload min_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_ts.csv "min_ts" "[[\"good\"], [\"neutral\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Date of earliest OpenStreetMap edit in a given area." "World" "daily" "unixtime" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_ts.csv "min_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/test/uploads ## upload osm_users to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_users.csv "osm_users" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of users who have edited a given area in OpenStreetMap." "World" "daily" "ppl" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_users.csv "osm_users" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/test/uploads ## upload building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_count.csv "building_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of buildings in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_count.csv "building_count" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv | deploy_indicators/test/uploads ## upload building_count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_count_6_months.csv "building_count_6_months" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of buildings mapped in OpenStreetMap in the last 6 months." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_count_6_months.csv "building_count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/highway_length_upload: data/out/csv/highway_length.csv | deploy_indicators/test/uploads ## upload highway_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/highway_length.csv "highway_length" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total length of roads in a given area according to OpenStreetMap." "World" "daily" "km" "$$(date -r db/table/osm_road_segments_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/highway_length.csv "highway_length" db/table/osm_road_segments_h3
 	touch $@
 
 deploy_indicators/test/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv | deploy_indicators/test/uploads ## upload highway_length_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/highway_length_6_months.csv "highway_length_6_months" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Length of roads mapped in OpenStreetMap in the last 6 months." "World" "daily" "km" "$$(date -r db/table/osm_road_segments_6_months_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/highway_length_6_months.csv "highway_length_6_months" db/table/osm_road_segments_6_months_h3
 	touch $@
 
 deploy_indicators/test/uploads/total_hours_upload: data/out/csv/total_hours.csv | deploy_indicators/test/uploads ## upload total_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_hours.csv "total_hours" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of OpenStreetMap mapping hours by all users in the last 2 years. A mapping hour is an hour in which a user uploaded at least one tagged object." "World" "daily" "h" "$$(date -r db/table/user_hours_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_hours.csv "total_hours" db/table/user_hours_h3
 	touch $@
 
 deploy_indicators/test/uploads/local_hours_upload: data/out/csv/local_hours.csv | deploy_indicators/test/uploads ## upload local_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/local_hours.csv "local_hours" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of OpenStreetMap mapping hours by active local mappers in the last 2 years. A mapping hour is an hour in which a user uploaded at least one tagged object. Mapper is considered active if they contributed more than 30 mapping hours in the last 2 years. The position of the active mapper is estimated by the region of their highest activity." "World" "daily" "h" "$$(date -r db/table/user_hours_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/local_hours.csv "local_hours" db/table/user_hours_h3
 	touch $@
 
 deploy_indicators/test/uploads/forest_upload: data/out/csv/forest.csv | deploy_indicators/test/uploads ## upload forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/forest.csv "forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by forest - where tree canopy is more than 15%." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/forest.csv "forest" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv | deploy_indicators/test/uploads ## upload evergreen_needle_leaved_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by either closed or open evergreen needleleaf forest. Almost all needleleaf trees remain green all year. Canopy is never without green foliage. Closed forest has tree canopy >70%. Open forest has top layer - trees 15-70 % - and second layer - mix of shrubs and grassland." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/shrubs_upload: data/out/csv/shrubs.csv | deploy_indicators/test/uploads ## upload shrubs to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/shrubs.csv "shrubs" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Shrubland, or area where vegetation is dominated by woody perennial plants generally less than 5 meters in height, with persistent and woody stems and without any defined main stem. The shrub foliage can be either evergreen or deciduous." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/shrubs.csv "shrubs" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/herbage_upload: data/out/csv/herbage.csv | deploy_indicators/test/uploads ## upload herbage to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/herbage.csv "herbage" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by herbaceous plants. These plants have no persistent woody stems above ground and lack definite firm structure. Tree and shrub cover is less than 10%." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/herbage.csv "herbage" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv | deploy_indicators/test/uploads ## upload unknown_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/unknown_forest.csv "unknown_forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by forest that does not match defined forest types." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/unknown_forest.csv "unknown_forest" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/cropland_upload: data/out/csv/cropland.csv | deploy_indicators/test/uploads ## upload cropland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/cropland.csv "cropland" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Cropland, Lands covered with temporary crops followed by harvest and a bare soil period (e.g., single and multiple cropping systems). Note that perennial woody crops will be classified as the appropriate forest or shrub land cover type." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/cropland.csv "cropland" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/wetland_upload: data/out/csv/wetland.csv | deploy_indicators/test/uploads ## upload wetland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wetland.csv "wetland" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Wetland, Lands with a permanent mixture of water and herbaceous or woody vegetation. The vegetation can be present in either salt, brackish, or fresh water." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wetland.csv "wetland" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv | deploy_indicators/test/uploads ## upload moss_lichen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/moss_lichen.csv "moss_lichen" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Land with moss and lichen coverage." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/moss_lichen.csv "moss_lichen" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv | deploy_indicators/test/uploads ## upload bare_vegetation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/bare_vegetation.csv "bare_vegetation" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Bare or sparse vegetation. Lands with exposed soil, sand, or rocks and never has more than 10 % vegetated cover during any time of the year." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/bare_vegetation.csv "bare_vegetation" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/builtup_upload: data/out/csv/builtup.csv | deploy_indicators/test/uploads ## upload builtup to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/builtup.csv "builtup" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Land covered by buildings and other man-made structures." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/builtup.csv "builtup" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/snow_ice_upload: data/out/csv/snow_ice.csv | deploy_indicators/test/uploads ## upload snow_ice to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/snow_ice.csv "snow_ice" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Snow and Ice. Lands under snow or ice cover throughout the year." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/snow_ice.csv "snow_ice" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/permanent_water_upload: data/out/csv/permanent_water.csv | deploy_indicators/test/uploads ## upload permanent_water to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/permanent_water.csv "permanent_water" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Permanent water bodies. Lakes, reservoirs, and rivers. Can be either fresh or salt-water bodies." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/permanent_water.csv "permanent_water" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/test/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicators/test/uploads ## upload gdp to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gdp.csv "gdp" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© 2019 The World Bank Group, CC-BY 4.0\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, Myroslava Lesiv, Nandin-Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"@ OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "A country GDP (Gross Domestic Product) per capita multiplied by the population in a given area. For areas covering multiple countries, a sum of their respective GDP portions is used. GDP is the standard measure of the value created through the production of goods and services in a country during a certain period." "World" "static" "USD" "$$(date -r db/table/gdp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gdp.csv "gdp" db/table/gdp_h3
 	touch $@
 
 deploy_indicators/test/uploads/population_prev_upload: data/out/csv/population_prev.csv | deploy_indicators/test/uploads ## upload population_prev to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population_prev.csv "population_prev" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to previous version of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data." "World" "daily" "ppl" "$$(date -r db/table/kontur_population_v5_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population_prev.csv "population_prev" db/table/kontur_population_v5_h3
 	touch $@
 
 deploy_indicators/test/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/test/uploads ## upload total_building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_building_count.csv "total_building_count" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Estimated number of buildings in a given area based on various data sources." "World" "daily" "n" "$$(date -r db/table/building_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_building_count.csv "total_building_count" db/table/building_count_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/test/uploads ## upload wildfires to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfires.csv "wildfires" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002\", \"NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML\"]" "Number of days per year when a thermal anomaly was recorded in the last 13 months." "World" "daily" "days" "$$(date -r db/table/global_fires_stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfires.csv "wildfires" db/table/global_fires_stat_h3
 	touch $@
 
 deploy_indicators/test/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/test/uploads ## upload earthquake_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/earthquake_days_count.csv "earthquake_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme earthquakes were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/earthquake_days_count.csv "earthquake_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/test/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv | deploy_indicators/test/uploads ## upload drought_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drought_days_count.csv "drought_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme droughts were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drought_days_count.csv "drought_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/test/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv | deploy_indicators/test/uploads ## upload cyclone_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/cyclone_days_count.csv "cyclone_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme cyclones were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/cyclone_days_count.csv "cyclone_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/test/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv | deploy_indicators/test/uploads ## upload wildfire_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfire_days_count.csv "wildfire_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme wildfires were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfire_days_count.csv "wildfire_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/test/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv | deploy_indicators/test/uploads ## upload volcano_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/volcano_days_count.csv "volcano_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme volcanos were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/volcano_days_count.csv "volcano_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/test/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv | deploy_indicators/test/uploads ## upload flood_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/flood_days_count.csv "flood_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme floods were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/test/uploads/covid19_confirmed_upload: data/out/csv/covid19_confirmed.csv | deploy_indicators/test/uploads ## upload covid19_confirmed to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/covid19_confirmed.csv "covid19_confirmed" "[[\"good\"], [\"bad\"]]" false true "[\"© Data from JHU CSSE COVID-19 Dataset\"]" "Number of COVID-19 confirmed cases for the entire observation period according to the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University (JHU)." "World" "daily" "n" "$$(date -r db/table/covid19_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/covid19_confirmed.csv "covid19_confirmed" db/table/covid19_h3
 	touch $@
 
 deploy_indicators/test/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/test/uploads ## upload avg_slope_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface slope." "World" "static" "deg" "$$(date -r db/table/gebco_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
 deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/test/uploads ## upload avg_elevation_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface elevation in meters." "World" "static" "m" "$$(date -r db/table/gebco_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
 deploy_indicators/test/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/test/uploads ## upload industrial_area to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/industrial_area.csv "industrial_area" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Areas of land used for industrial purposes, which may include facilities such as workshops, factories and warehouses, and their associated infrastructure (car parks, service roads, yards, etc.)." "World" "daily" "km2" "$$(date -r db/table/osm_landuse_industrial_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/industrial_area.csv "industrial_area" db/table/osm_landuse_industrial_h3
 	touch $@
 
 deploy_indicators/test/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv | deploy_indicators/test/uploads ## upload avg_ndvi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_ndvi.csv "avg_ndvi" "[[\"bad\"], [\"good\"]]" false true "[\"© Data from Sentinel-2 L2A 120m Mosaic, CC-BY 4.0, https://forum.sentinel-hub.com/c/aws-sentinel\"]" "Average values of Normalized Difference Vegetation Index (NDVI), as of June 2019. Negative values of NDVI (values approaching -1) correspond to water. Values close to zero (-0.1 to 0.1) generally correspond to barren areas of rock, sand, or snow. Low, positive values represent shrub and grassland (approximately 0.2 to 0.4), while high values indicate temperate and tropical rainforests (values approaching 1)." "World" "static" "index" "$$(date -r db/table/ndvi_2019_06_10_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_ndvi.csv "avg_ndvi" db/table/ndvi_2019_06_10_h3
 	touch $@
 
 deploy_indicators/test/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv | deploy_indicators/test/uploads ## upload volcanos_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/volcanos_count.csv "volcanos_count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of volcanoes in a given area." "World" "daily" "n" "$$(date -r db/table/osm_volcanos_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/volcanos_count.csv "volcanos_count" db/table/osm_volcanos_h3
 	touch $@
 
 deploy_indicators/test/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv | deploy_indicators/test/uploads ## upload pop_under_5_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_under_5_total.csv "pop_under_5_total" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of children (ages 0-5) in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_under_5_total.csv "pop_under_5_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/test/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv | deploy_indicators/test/uploads ## upload pop_over_65_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_over_65_total.csv "pop_over_65_total" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of elderly people (ages 65+) in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_over_65_total.csv "pop_over_65_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/test/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv | deploy_indicators/test/uploads ## upload poverty_families_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/poverty_families_total.csv "poverty_families_total" "[[\"unimportant\", \"good\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of households living below the poverty line in the United States." "The United States of America" "static" "n" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/poverty_families_total.csv "poverty_families_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/test/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv | deploy_indicators/test/uploads ## upload pop_disability_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_disability_total.csv "pop_disability_total" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of people with disabilities in the United States based on the U.S. Census Bureaus American Community Survey (ACS). This page describes how disability is defined and collected in the ACS: https://www.census.gov/topics/health/disability/guidance/data-collection-acs.html" "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_disability_total.csv "pop_disability_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/test/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv | deploy_indicators/test/uploads ## upload pop_not_well_eng_speak to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" "[[\"good\"], [\"important\", \"bad\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of people who have difficulty speaking English in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/test/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv | deploy_indicators/test/uploads ## upload pop_without_car to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_without_car.csv "pop_without_car" "[[\"neutral\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of working people without a car in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_without_car.csv "pop_without_car" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv | deploy_indicators/test/uploads ## upload days_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum temperature exceeding 32°C (90°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science)." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv | deploy_indicators/test/uploads ## upload days_maxtemp_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum temperature exceeding 32°C (90°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science).The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv | deploy_indicators/test/uploads ## upload days_mintemp_above_25c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily minimum temperature exceeding 25°C (77°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). The lowest temperature during the day happens at night when temperatures dip after sunset. The human experience of a “hot” night is relative to location, so a threshold of 20°C is often used for higher latitudes (Europe and the US) and a threshold of 25°C is often used for tropical and equatorial regions." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv | deploy_indicators/test/uploads ## upload days_mintemp_above_25c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily minimum temperature exceeding 25°C (77°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). The lowest temperature during the day happens at night when temperatures dip after sunset. The human experience of a “hot” night is relative to location, so a threshold of 20°C is often used for higher latitudes (Europe and the US) and a threshold of 25°C is often used for tropical and equatorial regions. The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv | deploy_indicators/test/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F) and 55% humidity." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv | deploy_indicators/test/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F) and 55% humidity. The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/test/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/test/uploads ## upload man_distance_to_hospital to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_hospitals_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" db/table/isodist_hospitals_h3
 	touch $@
 
 deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/test/uploads ## upload man_distance_to_bomb_shelters to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_bomb_shelters_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
 	touch $@
 
 deploy_indicators/test/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/test/uploads ## upload man_distance_to_charging_stations to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_charging_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
 	touch $@
 
 deploy_indicators/test/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/test/uploads ## upload total_road_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_road_length.csv "total_road_length" "[[\"unimportant\"], [\"important\"]]" true true "[\"©2019 Facebook, Inc. and its affiliates https://github.com/facebookmicrosites/Open-Mapping-At-Facebook/blob/main/LICENSE.md\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"© Kontur https://kontur.io/\"]" "Estimated total road length according to Meta (Facebook) AI and OpenStreetMap data. For places where Meta (Facebook) roads data are unavailable, the estimation is based on statistical regression from Kontur Population data." "World" "daily" "km" "$$(date -r db/table/total_road_length_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_road_length.csv "total_road_length" db/table/total_road_length_h3
 	touch $@
 
 deploy_indicators/test/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/test/uploads ## upload view_count_bf2402 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count_bf2402.csv "view_count_bf2402" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"© Kontur\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of tile requests in a given area for the 30 days before Feb 24, 2022." "World" "daily" "n" "$$(date -r db/table/tile_logs_bf2402 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402
 	touch $@
 
 deploy_indicators/test/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/test/uploads ## upload powerlines to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines.csv "powerlines" "[[\"bad\"], [\"good\"]]" false true "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines.csv "powerlines" db/table/facebook_medium_voltage_distribution_h3
 	touch $@
 
 deploy_indicators/test/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/test/uploads ## upload eatery_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/eatery_count.csv "eatery_count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of places where you can buy and eat food (such as restaurants, cafés, fast-food outlets, etc.) in a given area." "World" "daily" "n" "$$(date -r db/table/osm_places_eatery_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/eatery_count.csv "eatery_count" db/table/osm_places_eatery_h3
 	touch $@
 
 deploy_indicators/test/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv | deploy_indicators/test/uploads ## upload night_lights_intensity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/night_lights_intensity.csv "night_lights_intensity" "[[\"unimportant\"], [\"important\"]]" false true "[\"Earth Observation Group © 2021. https://eogdata.mines.edu/products/vnl/#reference\", \"C. D. Elvidge, K. E. Baugh, M. Zhizhin, and F.-C. Hsu, “Why VIIRS data are superior to DMSP for mapping nighttime lights,” Asia-Pacific Advanced Network 35, vol. 35, p. 62, 2013.\", \"C. D. Elvidge, M. Zhizhin, T. Ghosh, F-C. Hsu, “Annual time series of global VIIRS nighttime lights derived from monthly averages: 2012 to 2019”, Remote Sensing (In press)\"]" "Remote sensing of nighttime light emissions offers a unique perspective for investigations into human behaviors. The Visible Infrared Imaging Radiometer Suite (VIIRS) instruments aboard the Suomi NPP and NOAA-20 satellites provide global daily measurements of nighttime light." "World" "static" "nW_cm2_sr" "$$(date -r db/table/night_lights_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/night_lights_intensity.csv "night_lights_intensity" db/table/night_lights_h3
 	touch $@
 
 deploy_indicators/test/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv | deploy_indicators/test/uploads ## upload mapswipe_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" "[[\"unimportant\"], [\"important\"]]" false true "[\"Copyright © 2022 MapSwipe https://mapswipe.org/en/privacy.html\"]" "Places were MapSwipe users have detected some human activity through features (i.e. buildings, roadways, waterways, etc.) on satellite images." "World" "daily" "km2" "$$(date -r db/table/mapswipe_hot_tasking_data_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
 	touch $@
 
 deploy_indicators/test/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv | deploy_indicators/test/uploads ## upload gsa_ghi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gsa_ghi.csv "gsa_ghi" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use\"]" "Total amount of shortwave terrestrial irradiance received by a surface horizontal to the ground." "World (-60:60 latitudes)" "static" "W_m2" "$$(date -r db/table/global_solar_atlas_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gsa_ghi.csv "gsa_ghi" db/table/global_solar_atlas_h3
 	touch $@
 
 deploy_indicators/test/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_avg_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly average air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/test/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_min_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" "[[\"bad\"], [\"good\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly minimum air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/test/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_max_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly maximum air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/test/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_amp_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly amplitude of air temperatures according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/test/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv | deploy_indicators/test/uploads ## upload powerlines_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" "[[\"important\"], [\"unimportant\"]]" false true "[\"Copyright © OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"© 2020 The World Bank Group, CC-BY 4.0\"]" "Distance to closest powerline" "World" "static" "m" "$$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" db/table/proximities_h3
 	touch $@
 
 deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/test/uploads ## upload waste_basket_coverage_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of waste containers in a given area." "World" "daily" "n" "$$(date -r db/table/waste_containers_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_containers_h3
 	touch $@
 
 deploy_indicators/test/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/test/uploads ## upload populated_areas_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Distance to closest Kontur Population cell with population > 80 ppl" "World" "daily" "m" "$$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" db/table/proximities_h3
 	touch $@
 
 deploy_indicators/test/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv | deploy_indicators/test/uploads ## upload power_substations_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" "[[\"good\"], [\"bad\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Distance to closest power substation" "World" "daily" "m" "$$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" db/table/proximities_h3
 	touch $@
 
 deploy_indicators/test/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | deploy_indicators/test/uploads ## upload solar_farms_placement_suitability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" "[[\"bad\"], [\"good\"]]" false true "[\"Copyright © Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\", \"Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use\"]" "Multi-criteria analysis based layer dedicated to estimation of suitability of solar farms placement. 0 means absolutely unsuitable, 1 means perfectly suitable. Analysis is based on solar irradiace, powerlines grid proximity, power substations proximity, elevation slope, minimal and maximal temperatures, populated areas proximity" "World (-60:60 latitudes)" "daily" "index" "$$(date -r db/table/solar_farms_placement_suitability_synthetic_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
 	touch $@
 
 deploy_indicators/test/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/test/uploads ## upload residential to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/residential.csv "residential" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\"]" "Estimation of residential population percentage according to GHS-POP dataset (2015)" "World" "static" "fract" "$$(date -r db/table/residential_pop_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/residential.csv "residential" db/table/residential_pop_h3
 	touch $@
 
 deploy_indicators/test/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/test/uploads ## upload solar_power_plants to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_power_plants.csv "solar_power_plants" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of solar power plants in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/existing_solar_power_panels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
 	touch $@
 
 deploy_indicators/test/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/test/uploads ## upload safety_index to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/safety_index.csv "safety_index" "[[\"bad\"], [\"good\"]]" false true "[\"© The Institute for Economics and Peace Limited 2022 https://www.visionofhumanity.org/\"]" "The Global Peace Index covers 99.7% of the world’s population, and is calculated using 23 qualitative and quantitative indicators from highly respected sources, and measures the state of peace across three domains: the level of Societal Safety and Security, the extent of Ongoing Domestic and International Conflict, and the degree of Militarisation." "World" "static" "index" "$$(date -r db/table/safety_index_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
 	touch $@
 
 deploy_indicators/test/uploads/population_upload: data/out/csv/population.csv | deploy_indicators/test/uploads ## upload population to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population.csv "population" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data. The datasets detailed methodology is available here: https://data.humdata.org/dataset/kontur-population-dataset" "World" "daily" "ppl" "$$(date -r db/table/kontur_population_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population.csv "population" db/table/kontur_population_h3
 	touch $@
 
 deploy_indicators/test/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv | deploy_indicators/test/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.\"]" "Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery." "World" "static" "m" "$$(date -r db/table/meta_forest_canopy_height_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
 deploy_indicators/test/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv | deploy_indicators/test/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.\"]" "Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery." "World" "static" "m" "$$(date -r db/table/meta_forest_canopy_height_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
 deploy_indicators/test/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv | deploy_indicators/test/uploads ## upload worldbank_tax_rate to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldbank_tax_rate.csv "worldbank_total_tax_2019" "[[\"good\"], [\"bad\"]]" false true "[\"© 2024 The World Bank Group, Doing Business project (http://www.doingbusiness.org/). NOTE: Doing Business has been discontinued as of 9/16/2021. For more information: https://bit.ly/3CLCbme\"]" "Total tax rate measures the amount of taxes and mandatory contributions payable by businesses after accounting for allowable deductions and exemptions as a share of commercial profits. Taxes withheld (such as personal income tax) or collected and remitted to tax authorities (such as value added taxes, sales taxes or goods and service taxes) are excluded." "World" "static" "perc" "$$(date -r db/table/worldbank_tax_rate_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
 	touch $@
 
 deploy_indicators/test/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv | deploy_indicators/test/uploads ## upload years_to_naturalisation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" "[[\"good\"], [\"bad\"]]" false true "[\"This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.\"]" "The duration of legal residence before a national of a foreign state, without any cultural, historical, or marriage ties or connections to the state in question, can request citizenship under that states naturalization laws." "World" "static" "years" "$$(date -r db/table/wikidata_naturalization_gap_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
 deploy_indicators/test/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv | deploy_indicators/test/uploads ## upload multiple_citizenship to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/multiple_citizenship.csv "multiple_citizenship" "[[\"bad\"], [\"good\"]]" false true "[\"This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.\"]" "Possibility to have dual (multiple) citizenship: 1 - no, 2 - with restrictions regulated by local legislation, 3 - dual (multiple) citizenship is allowed." "World" "static" "other" "$$(date -r db/table/wikidata_naturalization_gap_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/multiple_citizenship.csv "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
 deploy_indicators/test/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv | deploy_indicators/test/uploads ## upload ghs_max_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.\"]" "GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces." "World" "static" "m" "$$(date -r db/table/ghs_building_height_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv | deploy_indicators/test/uploads ## upload ghs_avg_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.\"]" "GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces." "World" "static" "m" "$$(date -r db/table/ghs_building_height_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv | deploy_indicators/test/uploads ## upload max_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" "[[\"good\"], [\"bad\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Maximal levels of buildings in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_building_levels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
 deploy_indicators/test/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv | deploy_indicators/test/uploads ## upload avg_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" "[[\"good\"], [\"bad\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Average levels of buildings in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_building_levels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
 deploy_indicators/test/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv | deploy_indicators/test/uploads ## upload osm_hotels_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_hotels_count.csv "osm_hotels_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of hotels in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_hotels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_hotels_count.csv "osm_hotels_count" db/table/osm_hotels_h3
 	touch $@
 
 deploy_indicators/test/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv | deploy_indicators/test/uploads ## upload max_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Max hotel level assesment from OSM." "World" "daily" "n" "$$(date -r db/table/osm_hotels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
 deploy_indicators/test/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv | deploy_indicators/test/uploads ## upload avg_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Average hotel level asesment from OSM." "World" "daily" "n" "$$(date -r db/table/osm_hotels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
 deploy_indicators/test/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/test/uploads ## upload osm_historical_sites_and_museums_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of historical sites and museums in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/test/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/test/uploads ## upload osm_art_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of art venues in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/test/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv | deploy_indicators/test/uploads ## upload osm_entertainment_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of entertainment venues OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/test/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv | deploy_indicators/test/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of cultural and community centers in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/test/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv | deploy_indicators/test/uploads ## upload worldbank_inflation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldbank_inflation.csv "worldbank_inflation" "[[\"bad\"], [\"good\"]]" false true "[\"Ha, Jongrim, M. Ayhan Kose, and Franziska Ohnsorge (2023). One-Stop Source: A Global Database of Inflation. Journal of International Money and Finance 137 (October): 102896\"]" "Inflation, measured by the Consumer Price Index (CPI), is the annual change in prices of a typical basket of goods and services purchased by households. Data are drawn from multiple databases: OECD.Stat, the IMF World Economic Outlook database and International Financial Statistics, ILOSTAT, UNdata and country-specific sources including central banks and statistical offices." "World" "static" "perc" "$$(date -r db/table/worldbank_inflation_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldbank_inflation.csv "worldbank_inflation" db/table/worldbank_inflation_h3
 	touch $@
 
 deploy_indicators/test/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv | deploy_indicators/test/uploads ## upload osm_pharmacy_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of pharmacy in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_pharmacy_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" db/table/osm_pharmacy_h3
 	touch $@
 
 deploy_indicators/test/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv | deploy_indicators/test/uploads ## upload conflict_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of IDPs (rounded figures at the national level), as a result of conflicts and violence as of the end of the reporting year." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/test/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv | deploy_indicators/test/uploads ## upload disaster_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of IDPs (rounded figures at the national level), as a result of disasters as of the end of the reporting year." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/test/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv | deploy_indicators/test/uploads ## upload conflict_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of internal displacements reported (rounded figures at national level), as a result of conflict and violence over the 2023." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/test/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv | deploy_indicators/test/uploads ## upload disaster_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of internal displacements reported (rounded figures at national level), as a result of disasters over the 2023." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/test/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv | deploy_indicators/test/uploads ## upload hdi_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hdi_2022.csv "hdi_2022" "[[\"bad\"], [\"good\"]]" false true "[\"© 2024 United Nations Development Programme https://hdr.undp.org/data-center/human-development-index\"]" "The Human Development Index (HDI) is a summary measure of average achievement in key dimensions of human development: a long and healthy life, being knowledgeable and having a decent standard of living. The HDI is the geometric mean of normalized indices for each of the three dimensions. The health dimension is assessed by life expectancy at birth, the education dimension is measured by mean of years of schooling for adults aged 25 years and more and expected years of schooling for children of school entering age. The standard of living dimension is measured by gross national income per capita. The HDI uses the logarithm of income, to reflect the diminishing importance of income with increasing GNI. The scores for the three HDI dimension indices are then aggregated into a composite index using geometric mean. The entire series of Human Development Index (HDI) values and rankings are recalculated every year using the same the most recent (revised) data and functional forms. The HDI rankings and values in the 2014 Human Development Report cannot therefore be compared directly to indices published in previous Reports. Please see hdr.undp.org for more information. The HDI was created to emphasize that people and their capabilities should be the ultimate criteria for assessing the development of a country, not economic growth alone. The HDI can also be used to question national policy choices, asking how two countries with the same level of GNI per capita can end up with different human development outcomes. These contrasts can stimulate debate about government policy priorities." "World" "static" "index" "$$(date -r db/table/humanitarian_dev_index_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hdi_2022.csv "hdi_2022" db/table/humanitarian_dev_index_2022_h3
 	touch $@
 
-deploy_indicators/test/uploads/upload_test: deploy_indicators/test/uploads/population_upload deploy_indicators/test/uploads/view_count_upload deploy_indicators/test/uploads/count_upload deploy_indicators/test/uploads/populated_area_km2_upload deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload deploy_indicators/test/uploads/local_hours_upload deploy_indicators/test/uploads/total_hours_upload deploy_indicators/test/uploads/avgmax_ts_upload deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/view_count_bf2402_upload deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/test/uploads/total_building_count_upload deploy_indicators/test/uploads/count_6_months_upload deploy_indicators/test/uploads/building_count_6_months_upload deploy_indicators/test/uploads/highway_length_6_months_upload deploy_indicators/test/uploads/osm_users_upload deploy_indicators/test/uploads/residential_upload deploy_indicators/test/uploads/gdp_upload deploy_indicators/test/uploads/min_ts_upload deploy_indicators/test/uploads/max_ts_upload deploy_indicators/test/uploads/wildfires_upload deploy_indicators/test/uploads/covid19_confirmed_upload deploy_indicators/test/uploads/population_prev_upload deploy_indicators/test/uploads/industrial_area_upload deploy_indicators/test/uploads/volcanos_count_upload deploy_indicators/test/uploads/pop_under_5_total_upload deploy_indicators/test/uploads/pop_over_65_total_upload deploy_indicators/test/uploads/poverty_families_total_upload deploy_indicators/test/uploads/pop_disability_total_upload deploy_indicators/test/uploads/pop_not_well_eng_speak_upload deploy_indicators/test/uploads/pop_without_car_upload deploy_indicators/test/uploads/man_distance_to_hospital_upload deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/man_distance_to_charging_stations_upload  deploy_indicators/test/uploads/eatery_count_upload deploy_indicators/test/uploads/food_shops_count_upload deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/solar_farms_placement_suitability_upload deploy_indicators/test/uploads/mapswipe_area_km2_upload deploy_indicators/test/uploads/avg_slope_gebco_2022_upload deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload deploy_indicators/test/uploads/forest_upload deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/test/uploads/shrubs_upload deploy_indicators/test/uploads/herbage_upload deploy_indicators/test/uploads/unknown_forest_upload deploy_indicators/test/uploads/avg_ndvi_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/hazardous_days_count_upload deploy_indicators/test/uploads/earthquake_days_count_upload deploy_indicators/test/uploads/wildfire_days_count_upload deploy_indicators/test/uploads/drought_days_count_upload deploy_indicators/test/uploads/cyclone_days_count_upload deploy_indicators/test/uploads/volcano_days_count_upload deploy_indicators/test/uploads/flood_days_count_upload deploy_indicators/test/uploads/powerlines_upload deploy_indicators/test/uploads/night_lights_intensity_upload deploy_indicators/test/uploads/gsa_ghi_upload deploy_indicators/test/uploads/worldclim_avg_temperature_upload deploy_indicators/test/uploads/worldclim_min_temperature_upload deploy_indicators/test/uploads/worldclim_max_temperature_upload deploy_indicators/test/uploads/worldclim_amp_temperature_upload deploy_indicators/test/uploads/powerlines_proximity_m_upload deploy_indicators/test/uploads/populated_areas_proximity_m_upload deploy_indicators/test/uploads/power_substations_proximity_m_upload deploy_indicators/test/uploads/solar_power_plants_upload deploy_indicators/test/uploads/safety_index_upload deploy_indicators/test/uploads/avg_forest_canopy_height_upload deploy_indicators/test/uploads/max_forest_canopy_height_upload deploy_indicators/test/uploads/worldbank_tax_rate_upload deploy_indicators/test/uploads/years_to_naturalisation_upload deploy_indicators/test/uploads/multiple_citizenship_upload deploy_indicators/test/uploads/ghs_max_building_height_upload deploy_indicators/test/uploads/ghs_avg_building_height_upload deploy_indicators/test/uploads/max_osm_building_levels_upload deploy_indicators/test/uploads/avg_osm_building_levels_upload deploy_indicators/test/uploads/osm_hotels_count_upload deploy_indicators/test/uploads/max_osm_hotels_assesment_upload deploy_indicators/test/uploads/avg_osm_hotels_assesment_upload deploy_indicators/test/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/test/uploads/osm_art_venues_count_upload deploy_indicators/test/uploads/osm_entertainment_venues_count_upload deploy_indicators/test/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/test/uploads/worldbank_inflation_upload deploy_indicators/test/uploads/cropland_upload deploy_indicators/test/uploads/wetland_upload deploy_indicators/test/uploads/moss_lichen_upload deploy_indicators/test/uploads/bare_vegetation_upload deploy_indicators/test/uploads/builtup_upload deploy_indicators/test/uploads/snow_ice_upload deploy_indicators/test/uploads/permanent_water_upload deploy_indicators/test/uploads/osm_pharmacy_count_upload deploy_indicators/test/uploads/conflict_stock_displacement_upload deploy_indicators/test/uploads/disaster_stock_displacement_upload deploy_indicators/test/uploads/conflict_internal_displacements_upload deploy_indicators/test/uploads/disaster_internal_displacements_upload deploy_indicators/test/uploads/hdi_2022_upload | deploy_indicators/test/uploads ## Control of layer uplodings to Insigths API for TEST - without area_km2 and one
+deploy_indicators/test/uploads/inform_risk_upload: data/out/csv/inform_risk.csv | deploy_indicators/test/uploads ## upload inform_risk to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/inform_risk.csv "inform_risk" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv | deploy_indicators/test/uploads ## upload hazard_and_exposure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hazard_and_exposure.csv "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv | deploy_indicators/test/uploads ## upload natural_0_to_10 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/natural_0_to_10.csv "natural_0_to_10" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/earthquake_upload: data/out/csv/earthquake.csv | deploy_indicators/test/uploads ## upload earthquake to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/earthquake.csv "earthquake" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/river_flood_upload: data/out/csv/river_flood.csv | deploy_indicators/test/uploads ## upload river_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/river_flood.csv "river_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/tsunami_upload: data/out/csv/tsunami.csv | deploy_indicators/test/uploads ## upload tsunami to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/tsunami.csv "tsunami" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv | deploy_indicators/test/uploads ## upload tropical_cyclone to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/tropical_cyclone.csv "tropical_cyclone" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv | deploy_indicators/test/uploads ## upload coastal_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/coastal_flood.csv "coastal_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/drought_upload: data/out/csv/drought.csv | deploy_indicators/test/uploads ## upload drought to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drought.csv "drought" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/epidemic_upload: data/out/csv/epidemic.csv | deploy_indicators/test/uploads ## upload epidemic to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/epidemic.csv "epidemic" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/human_upload: data/out/csv/human.csv | deploy_indicators/test/uploads ## upload human to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/human.csv "human" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv | deploy_indicators/test/uploads ## upload projected_conflict_probability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/projected_conflict_probability.csv "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv | deploy_indicators/test/uploads ## upload current_conflict_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/current_conflict_intensity.csv "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/vulnerability_upload: data/out/csv/vulnerability.csv | deploy_indicators/test/uploads ## upload vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/vulnerability.csv "vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv | deploy_indicators/test/uploads ## upload socio_economic_vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/socio_economic_vulnerability.csv "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv | deploy_indicators/test/uploads ## upload development_and_deprivation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/development_and_deprivation.csv "development_and_deprivation" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/inequality_upload: data/out/csv/inequality.csv | deploy_indicators/test/uploads ## upload inequality to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/inequality.csv "inequality" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv | deploy_indicators/test/uploads ## upload economic_dependency to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/economic_dependency.csv "economic_dependency" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv | deploy_indicators/test/uploads ## upload vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/vulnerable_groups.csv "vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv | deploy_indicators/test/uploads ## upload uprooted_people to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/uprooted_people.csv "uprooted_people" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/health_conditions_upload: data/out/csv/health_conditions.csv | deploy_indicators/test/uploads ## upload health_conditions to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/health_conditions.csv "health_conditions" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/children_u5_upload: data/out/csv/children_u5.csv | deploy_indicators/test/uploads ## upload children_u5 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/children_u5.csv "children_u5" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv | deploy_indicators/test/uploads ## upload recent_shocks to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/recent_shocks.csv "recent_shocks" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/food_security_upload: data/out/csv/food_security.csv | deploy_indicators/test/uploads ## upload food_security to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/food_security.csv "food_security" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv | deploy_indicators/test/uploads ## upload other_vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/other_vulnerable_groups.csv "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv | deploy_indicators/test/uploads ## upload lack_of_coping_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/lack_of_coping_capacity.csv "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/institutional_upload: data/out/csv/institutional.csv | deploy_indicators/test/uploads ## upload institutional to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/institutional.csv "institutional" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/drr_upload: data/out/csv/drr.csv | deploy_indicators/test/uploads ## upload drr to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drr.csv "drr" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/governance_upload: data/out/csv/governance.csv | deploy_indicators/test/uploads ## upload governance to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/governance.csv "governance" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/infrastructure_upload: data/out/csv/infrastructure.csv | deploy_indicators/test/uploads ## upload infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/infrastructure.csv "infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/communication_upload: data/out/csv/communication.csv | deploy_indicators/test/uploads ## upload communication to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/communication.csv "communication" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv | deploy_indicators/test/uploads ## upload physical_infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/physical_infrastructure.csv "physical_infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv | deploy_indicators/test/uploads ## upload access_to_health_care to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/access_to_health_care.csv "access_to_health_care" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/upload_test: deploy_indicators/test/uploads/population_upload deploy_indicators/test/uploads/view_count_upload deploy_indicators/test/uploads/count_upload deploy_indicators/test/uploads/populated_area_km2_upload deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload deploy_indicators/test/uploads/local_hours_upload deploy_indicators/test/uploads/total_hours_upload deploy_indicators/test/uploads/avgmax_ts_upload deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/view_count_bf2402_upload deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/test/uploads/total_building_count_upload deploy_indicators/test/uploads/count_6_months_upload deploy_indicators/test/uploads/building_count_6_months_upload deploy_indicators/test/uploads/highway_length_6_months_upload deploy_indicators/test/uploads/osm_users_upload deploy_indicators/test/uploads/residential_upload deploy_indicators/test/uploads/gdp_upload deploy_indicators/test/uploads/min_ts_upload deploy_indicators/test/uploads/max_ts_upload deploy_indicators/test/uploads/wildfires_upload deploy_indicators/test/uploads/covid19_confirmed_upload deploy_indicators/test/uploads/population_prev_upload deploy_indicators/test/uploads/industrial_area_upload deploy_indicators/test/uploads/volcanos_count_upload deploy_indicators/test/uploads/pop_under_5_total_upload deploy_indicators/test/uploads/pop_over_65_total_upload deploy_indicators/test/uploads/poverty_families_total_upload deploy_indicators/test/uploads/pop_disability_total_upload deploy_indicators/test/uploads/pop_not_well_eng_speak_upload deploy_indicators/test/uploads/pop_without_car_upload deploy_indicators/test/uploads/man_distance_to_hospital_upload deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/man_distance_to_charging_stations_upload  deploy_indicators/test/uploads/eatery_count_upload deploy_indicators/test/uploads/food_shops_count_upload deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/solar_farms_placement_suitability_upload deploy_indicators/test/uploads/mapswipe_area_km2_upload deploy_indicators/test/uploads/avg_slope_gebco_2022_upload deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload deploy_indicators/test/uploads/forest_upload deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/test/uploads/shrubs_upload deploy_indicators/test/uploads/herbage_upload deploy_indicators/test/uploads/unknown_forest_upload deploy_indicators/test/uploads/avg_ndvi_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/hazardous_days_count_upload deploy_indicators/test/uploads/earthquake_days_count_upload deploy_indicators/test/uploads/wildfire_days_count_upload deploy_indicators/test/uploads/drought_days_count_upload deploy_indicators/test/uploads/cyclone_days_count_upload deploy_indicators/test/uploads/volcano_days_count_upload deploy_indicators/test/uploads/flood_days_count_upload deploy_indicators/test/uploads/powerlines_upload deploy_indicators/test/uploads/night_lights_intensity_upload deploy_indicators/test/uploads/gsa_ghi_upload deploy_indicators/test/uploads/worldclim_avg_temperature_upload deploy_indicators/test/uploads/worldclim_min_temperature_upload deploy_indicators/test/uploads/worldclim_max_temperature_upload deploy_indicators/test/uploads/worldclim_amp_temperature_upload deploy_indicators/test/uploads/powerlines_proximity_m_upload deploy_indicators/test/uploads/populated_areas_proximity_m_upload deploy_indicators/test/uploads/power_substations_proximity_m_upload deploy_indicators/test/uploads/solar_power_plants_upload deploy_indicators/test/uploads/safety_index_upload deploy_indicators/test/uploads/avg_forest_canopy_height_upload deploy_indicators/test/uploads/max_forest_canopy_height_upload deploy_indicators/test/uploads/worldbank_tax_rate_upload deploy_indicators/test/uploads/years_to_naturalisation_upload deploy_indicators/test/uploads/multiple_citizenship_upload deploy_indicators/test/uploads/ghs_max_building_height_upload deploy_indicators/test/uploads/ghs_avg_building_height_upload deploy_indicators/test/uploads/max_osm_building_levels_upload deploy_indicators/test/uploads/avg_osm_building_levels_upload deploy_indicators/test/uploads/osm_hotels_count_upload deploy_indicators/test/uploads/max_osm_hotels_assesment_upload deploy_indicators/test/uploads/avg_osm_hotels_assesment_upload deploy_indicators/test/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/test/uploads/osm_art_venues_count_upload deploy_indicators/test/uploads/osm_entertainment_venues_count_upload deploy_indicators/test/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/test/uploads/worldbank_inflation_upload deploy_indicators/test/uploads/cropland_upload deploy_indicators/test/uploads/wetland_upload deploy_indicators/test/uploads/moss_lichen_upload deploy_indicators/test/uploads/bare_vegetation_upload deploy_indicators/test/uploads/builtup_upload deploy_indicators/test/uploads/snow_ice_upload deploy_indicators/test/uploads/permanent_water_upload deploy_indicators/test/uploads/osm_pharmacy_count_upload deploy_indicators/test/uploads/conflict_stock_displacement_upload deploy_indicators/test/uploads/disaster_stock_displacement_upload deploy_indicators/test/uploads/conflict_internal_displacements_upload deploy_indicators/test/uploads/disaster_internal_displacements_upload deploy_indicators/test/uploads/hdi_2022_upload deploy_indicators/test/uploads/inform_risk_upload deploy_indicators/test/uploads/hazard_and_exposure_upload deploy_indicators/test/uploads/natural_0_to_10_upload deploy_indicators/test/uploads/earthquake_upload deploy_indicators/test/uploads/river_flood_upload deploy_indicators/test/uploads/tsunami_upload deploy_indicators/test/uploads/tropical_cyclone_upload deploy_indicators/test/uploads/coastal_flood_upload deploy_indicators/test/uploads/drought_upload deploy_indicators/test/uploads/epidemic_upload deploy_indicators/test/uploads/human_upload deploy_indicators/test/uploads/projected_conflict_probability_upload deploy_indicators/test/uploads/current_conflict_intensity_upload deploy_indicators/test/uploads/vulnerability_upload deploy_indicators/test/uploads/socio_economic_vulnerability_upload deploy_indicators/test/uploads/development_and_deprivation_upload deploy_indicators/test/uploads/inequality_upload deploy_indicators/test/uploads/economic_dependency_upload deploy_indicators/test/uploads/vulnerable_groups_upload deploy_indicators/test/uploads/uprooted_people_upload deploy_indicators/test/uploads/health_conditions_upload deploy_indicators/test/uploads/children_u5_upload deploy_indicators/test/uploads/recent_shocks_upload deploy_indicators/test/uploads/food_security_upload deploy_indicators/test/uploads/other_vulnerable_groups_upload deploy_indicators/test/uploads/lack_of_coping_capacity_upload deploy_indicators/test/uploads/institutional_upload deploy_indicators/test/uploads/drr_upload deploy_indicators/test/uploads/governance_upload deploy_indicators/test/uploads/infrastructure_upload deploy_indicators/test/uploads/communication_upload deploy_indicators/test/uploads/physical_infrastructure_upload deploy_indicators/test/uploads/access_to_health_care_upload| deploy_indicators/test/uploads ## Control of layer uplodings to Insigths API for TEST - without area_km2 and one
 	touch $@
 
 ## Custom axis updates block
@@ -5011,422 +5389,554 @@ db/table/insights_api_indicators_list_prod: | db/table ## Refresh insights_api_i
 	touch $@
 
 deploy_indicators/prod/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/prod/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count.csv "count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of objects in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count.csv "count" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/prod/uploads ## upload hazardous_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hazardous_days_count.csv "hazardous_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme disasters of any types were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hazardous_days_count.csv "hazardous_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "" "World" "daily" "other" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/prod/uploads ## upload man_distance_to_fire_brigade to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_fire_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
 	touch $@
 
 deploy_indicators/prod/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/prod/uploads ## upload food_shops_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/food_shops_count.csv "food_shops_count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of places where you can buy fresh or packaged food products in a given area." "World" "daily" "n" "$$(date -r db/table/osm_places_food_shops_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/food_shops_count.csv "food_shops_count" db/table/osm_places_food_shops_h3
 	touch $@
 
 deploy_indicators/prod/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv | deploy_indicators/prod/uploads ## upload populated_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_area_km2.csv "populated_area_km2" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "km2" "$$(date -r db/table/kontur_population_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_area_km2.csv "populated_area_km2" db/table/kontur_population_h3
 	touch $@
 
 deploy_indicators/prod/uploads/count_6_months_upload: data/out/csv/count_6_months.csv | deploy_indicators/prod/uploads ## upload count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count_6_months.csv "count_6_months" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of objects mapped in OpenStreetMap in the last 6 months." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count_6_months.csv "count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/prod/uploads ## upload view_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count.csv "view_count" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of tile requests in a given area for the last 30 days." "World" "daily" "n" "$$(date -r db/table/tile_logs +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count.csv "view_count" db/table/tile_logs
 	touch $@
 
 deploy_indicators/prod/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/prod/uploads ## upload avgmax_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avgmax_ts.csv "avgmax_ts" "[[\"bad\", \"unimportant\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Average of latest OpenStreetMap edit dates in a given area." "World" "daily" "unixtime" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avgmax_ts.csv "avgmax_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/max_ts_upload: data/out/csv/max_ts.csv | deploy_indicators/prod/uploads ## upload max_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_ts.csv "max_ts" "[[\"bad\", \"unimportant\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Date of latest OpenStreetMap edit in a given area at highest resolution." "World" "daily" "unixtime" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_ts.csv "max_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_indicators/prod/uploads ## upload min_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_ts.csv "min_ts" "[[\"good\"], [\"neutral\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Date of earliest OpenStreetMap edit in a given area." "World" "daily" "unixtime" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_ts.csv "min_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/prod/uploads ## upload osm_users to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_users.csv "osm_users" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of users who have edited a given area in OpenStreetMap." "World" "daily" "ppl" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_users.csv "osm_users" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/prod/uploads ## upload building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count.csv "building_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of buildings in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count.csv "building_count" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv | deploy_indicators/prod/uploads ## upload building_count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count_6_months.csv "building_count_6_months" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of buildings mapped in OpenStreetMap in the last 6 months." "World" "daily" "n" "$$(date -r db/table/osm_object_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count_6_months.csv "building_count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/highway_length_upload: data/out/csv/highway_length.csv | deploy_indicators/prod/uploads ## upload highway_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length.csv "highway_length" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total length of roads in a given area according to OpenStreetMap." "World" "daily" "km" "$$(date -r db/table/osm_road_segments_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length.csv "highway_length" db/table/osm_road_segments_h3
 	touch $@
 
 deploy_indicators/prod/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv | deploy_indicators/prod/uploads ## upload highway_length_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length_6_months.csv "highway_length_6_months" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Length of roads mapped in OpenStreetMap in the last 6 months." "World" "daily" "km" "$$(date -r db/table/osm_road_segments_6_months_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length_6_months.csv "highway_length_6_months" db/table/osm_road_segments_6_months_h3
 	touch $@
 
 deploy_indicators/prod/uploads/total_hours_upload: data/out/csv/total_hours.csv | deploy_indicators/prod/uploads ## upload total_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_hours.csv "total_hours" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of OpenStreetMap mapping hours by all users in the last 2 years. A mapping hour is an hour in which a user uploaded at least one tagged object." "World" "daily" "h" "$$(date -r db/table/user_hours_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_hours.csv "total_hours" db/table/user_hours_h3
 	touch $@
 
 deploy_indicators/prod/uploads/local_hours_upload: data/out/csv/local_hours.csv | deploy_indicators/prod/uploads ## upload local_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/local_hours.csv "local_hours" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of OpenStreetMap mapping hours by active local mappers in the last 2 years. A mapping hour is an hour in which a user uploaded at least one tagged object. Mapper is considered active if they contributed more than 30 mapping hours in the last 2 years. The position of the active mapper is estimated by the region of their highest activity." "World" "daily" "h" "$$(date -r db/table/user_hours_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/local_hours.csv "local_hours" db/table/user_hours_h3
 	touch $@
 
 deploy_indicators/prod/uploads/forest_upload: data/out/csv/forest.csv | deploy_indicators/prod/uploads ## upload forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/forest.csv "forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by forest - where tree canopy is more than 15%." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/forest.csv "forest" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv | deploy_indicators/prod/uploads ## upload evergreen_needle_leaved_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by either closed or open evergreen needleleaf forest. Almost all needleleaf trees remain green all year. Canopy is never without green foliage. Closed forest has tree canopy >70%. Open forest has top layer - trees 15-70 % - and second layer - mix of shrubs and grassland." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/shrubs_upload: data/out/csv/shrubs.csv | deploy_indicators/prod/uploads ## upload shrubs to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/shrubs.csv "shrubs" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Shrubland, or area where vegetation is dominated by woody perennial plants generally less than 5 meters in height, with persistent and woody stems and without any defined main stem. The shrub foliage can be either evergreen or deciduous." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/shrubs.csv "shrubs" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/herbage_upload: data/out/csv/herbage.csv | deploy_indicators/prod/uploads ## upload herbage to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/herbage.csv "herbage" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by herbaceous plants. These plants have no persistent woody stems above ground and lack definite firm structure. Tree and shrub cover is less than 10%." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/herbage.csv "herbage" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv | deploy_indicators/prod/uploads ## upload unknown_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/unknown_forest.csv "unknown_forest" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Area covered by forest that does not match defined forest types." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/unknown_forest.csv "unknown_forest" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/cropland_upload: data/out/csv/cropland.csv | deploy_indicators/prod/uploads ## upload cropland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cropland.csv "cropland" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Cropland, Lands covered with temporary crops followed by harvest and a bare soil period (e.g., single and multiple cropping systems). Note that perennial woody crops will be classified as the appropriate forest or shrub land cover type." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cropland.csv "cropland" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/wetland_upload: data/out/csv/wetland.csv | deploy_indicators/prod/uploads ## upload wetland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wetland.csv "wetland" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Wetland, Lands with a permanent mixture of water and herbaceous or woody vegetation. The vegetation can be present in either salt, brackish, or fresh water." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wetland.csv "wetland" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv | deploy_indicators/prod/uploads ## upload moss_lichen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/moss_lichen.csv "moss_lichen" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Land with moss and lichen coverage." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/moss_lichen.csv "moss_lichen" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv | deploy_indicators/prod/uploads ## upload bare_vegetation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/bare_vegetation.csv "bare_vegetation" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Bare or sparse vegetation. Lands with exposed soil, sand, or rocks and never has more than 10 % vegetated cover during any time of the year." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/bare_vegetation.csv "bare_vegetation" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/builtup_upload: data/out/csv/builtup.csv | deploy_indicators/prod/uploads ## upload builtup to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/builtup.csv "builtup" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Land covered by buildings and other man-made structures." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/builtup.csv "builtup" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/snow_ice_upload: data/out/csv/snow_ice.csv | deploy_indicators/prod/uploads ## upload snow_ice to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/snow_ice.csv "snow_ice" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Snow and Ice. Lands under snow or ice cover throughout the year." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/snow_ice.csv "snow_ice" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/permanent_water_upload: data/out/csv/permanent_water.csv | deploy_indicators/prod/uploads ## upload permanent_water to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/permanent_water.csv "permanent_water" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\"]" "Permanent water bodies. Lakes, reservoirs, and rivers. Can be either fresh or salt-water bodies." "World" "static" "km2" "$$(date -r db/table/copernicus_landcover_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/permanent_water.csv "permanent_water" db/table/copernicus_landcover_h3
 	touch $@
 
 deploy_indicators/prod/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicators/prod/uploads ## upload gdp to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gdp.csv "gdp" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© 2019 The World Bank Group, CC-BY 4.0\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, Myroslava Lesiv, Nandin-Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"@ OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "A country GDP (Gross Domestic Product) per capita multiplied by the population in a given area. For areas covering multiple countries, a sum of their respective GDP portions is used. GDP is the standard measure of the value created through the production of goods and services in a country during a certain period." "World" "static" "USD" "$$(date -r db/table/gdp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gdp.csv "gdp" db/table/gdp_h3
 	touch $@
 
 deploy_indicators/prod/uploads/population_prev_upload: data/out/csv/population_prev.csv | deploy_indicators/prod/uploads ## upload population_prev to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population_prev.csv "population_prev" "[[\"unimportant\"], [\"important\"]]" false true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to previous version of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data." "World" "daily" "ppl" "$$(date -r db/table/kontur_population_v5_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population_prev.csv "population_prev" db/table/kontur_population_v5_h3
 	touch $@
 
 deploy_indicators/prod/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/prod/uploads ## upload total_building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_building_count.csv "total_building_count" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Estimated number of buildings in a given area based on various data sources." "World" "daily" "n" "$$(date -r db/table/building_count_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_building_count.csv "total_building_count" db/table/building_count_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/prod/uploads ## upload wildfires to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfires.csv "wildfires" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© NRT VIIRS 375 m Active Fire product VJ114IMGTDL_NRT. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/VIIRS/VJ114IMGT_NRT.002\", \"NRT VIIRS 375 m Active Fire product VNP14IMGT. Available on-line [https://earthdata.nasa.gov/firms]. doi:10.5067/FIRMS/VIIRS/VNP14IMGT_NRT.002\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14DL. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14DL.NRT.006\", \"MODIS Collection 6 NRT Hotspot / Active Fire Detections MCD14ML. Available on-line [https://earthdata.nasa.gov/firms]. doi: 10.5067/FIRMS/MODIS/MCD14ML\"]" "Number of days per year when a thermal anomaly was recorded in the last 13 months." "World" "daily" "days" "$$(date -r db/table/global_fires_stat_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfires.csv "wildfires" db/table/global_fires_stat_h3
 	touch $@
 
 deploy_indicators/prod/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/prod/uploads ## upload earthquake_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/earthquake_days_count.csv "earthquake_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme earthquakes were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/earthquake_days_count.csv "earthquake_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/prod/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv | deploy_indicators/prod/uploads ## upload drought_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drought_days_count.csv "drought_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme droughts were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drought_days_count.csv "drought_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/prod/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv | deploy_indicators/prod/uploads ## upload cyclone_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cyclone_days_count.csv "cyclone_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme cyclones were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cyclone_days_count.csv "cyclone_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/prod/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv | deploy_indicators/prod/uploads ## upload wildfire_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfire_days_count.csv "wildfire_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme wildfires were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfire_days_count.csv "wildfire_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/prod/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv | deploy_indicators/prod/uploads ## upload volcano_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcano_days_count.csv "volcano_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme volcanos were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcano_days_count.csv "volcano_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/prod/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv | deploy_indicators/prod/uploads ## upload flood_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/flood_days_count.csv "flood_days_count" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"Events data from Kontur Event Feed (https://www.kontur.io/portfolio/event-feed)\"]" "Number of days in the last year when severe and extreme floods were recorded." "World" "daily" "days" "$$(date -r db/table/disaster_event_episodes_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
 deploy_indicators/prod/uploads/covid19_confirmed_upload: data/out/csv/covid19_confirmed.csv | deploy_indicators/prod/uploads ## upload covid19_confirmed to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/covid19_confirmed.csv "covid19_confirmed" "[[\"good\"], [\"bad\"]]" false true "[\"© Data from JHU CSSE COVID-19 Dataset\"]" "Number of COVID-19 confirmed cases for the entire observation period according to the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University (JHU)." "World" "daily" "n" "$$(date -r db/table/covid19_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/covid19_confirmed.csv "covid19_confirmed" db/table/covid19_h3
 	touch $@
 
 deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/prod/uploads ## upload avg_slope_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface slope." "World" "static" "deg" "$$(date -r db/table/gebco_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
 deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/prod/uploads ## upload avg_elevation_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Data from General Bathymatric Chart of the Oceans, www.gebco.net\"]" "Average surface elevation in meters." "World" "static" "m" "$$(date -r db/table/gebco_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
 deploy_indicators/prod/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/prod/uploads ## upload industrial_area to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/industrial_area.csv "industrial_area" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Areas of land used for industrial purposes, which may include facilities such as workshops, factories and warehouses, and their associated infrastructure (car parks, service roads, yards, etc.)." "World" "daily" "km2" "$$(date -r db/table/osm_landuse_industrial_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/industrial_area.csv "industrial_area" db/table/osm_landuse_industrial_h3
 	touch $@
 
 deploy_indicators/prod/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv | deploy_indicators/prod/uploads ## upload avg_ndvi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_ndvi.csv "avg_ndvi" "[[\"bad\"], [\"good\"]]" false true "[\"© Data from Sentinel-2 L2A 120m Mosaic, CC-BY 4.0, https://forum.sentinel-hub.com/c/aws-sentinel\"]" "Average values of Normalized Difference Vegetation Index (NDVI), as of June 2019. Negative values of NDVI (values approaching -1) correspond to water. Values close to zero (-0.1 to 0.1) generally correspond to barren areas of rock, sand, or snow. Low, positive values represent shrub and grassland (approximately 0.2 to 0.4), while high values indicate temperate and tropical rainforests (values approaching 1)." "World" "static" "index" "$$(date -r db/table/ndvi_2019_06_10_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_ndvi.csv "avg_ndvi" db/table/ndvi_2019_06_10_h3
 	touch $@
 
 deploy_indicators/prod/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv | deploy_indicators/prod/uploads ## upload volcanos_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcanos_count.csv "volcanos_count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of volcanoes in a given area." "World" "daily" "n" "$$(date -r db/table/osm_volcanos_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcanos_count.csv "volcanos_count" db/table/osm_volcanos_h3
 	touch $@
 
 deploy_indicators/prod/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv | deploy_indicators/prod/uploads ## upload pop_under_5_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_under_5_total.csv "pop_under_5_total" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of children (ages 0-5) in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_under_5_total.csv "pop_under_5_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/prod/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv | deploy_indicators/prod/uploads ## upload pop_over_65_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_over_65_total.csv "pop_over_65_total" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of elderly people (ages 65+) in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_over_65_total.csv "pop_over_65_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/prod/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv | deploy_indicators/prod/uploads ## upload poverty_families_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/poverty_families_total.csv "poverty_families_total" "[[\"unimportant\", \"good\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of households living below the poverty line in the United States." "The United States of America" "static" "n" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/poverty_families_total.csv "poverty_families_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/prod/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv | deploy_indicators/prod/uploads ## upload pop_disability_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_disability_total.csv "pop_disability_total" "[[\"unimportant\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of people with disabilities in the United States based on the U.S. Census Bureaus American Community Survey (ACS). This page describes how disability is defined and collected in the ACS: https://www.census.gov/topics/health/disability/guidance/data-collection-acs.html" "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_disability_total.csv "pop_disability_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv | deploy_indicators/prod/uploads ## upload pop_not_well_eng_speak to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" "[[\"good\"], [\"important\", \"bad\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of people who have difficulty speaking English in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/prod/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv | deploy_indicators/prod/uploads ## upload pop_without_car to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_without_car.csv "pop_without_car" "[[\"neutral\"], [\"important\"]]" false true "[\"© United States Census Bureau. 2019 5-Year American Community Survey (ACS). https://www.census.gov/en.html\"]" "Number of working people without a car in the United States." "The United States of America" "static" "ppl" "$$(date -r db/table/us_census_tracts_stats_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_without_car.csv "pop_without_car" db/table/us_census_tracts_stats_h3
 	touch $@
 
 deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload days_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum temperature exceeding 32°C (90°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science)." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv | deploy_indicators/prod/uploads ## upload days_maxtemp_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum temperature exceeding 32°C (90°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science).The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv | deploy_indicators/prod/uploads ## upload days_mintemp_above_25c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily minimum temperature exceeding 25°C (77°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). The lowest temperature during the day happens at night when temperatures dip after sunset. The human experience of a “hot” night is relative to location, so a threshold of 20°C is often used for higher latitudes (Europe and the US) and a threshold of 25°C is often used for tropical and equatorial regions." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv | deploy_indicators/prod/uploads ## upload days_mintemp_above_25c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily minimum temperature exceeding 25°C (77°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). The lowest temperature during the day happens at night when temperatures dip after sunset. The human experience of a “hot” night is relative to location, so a threshold of 20°C is often used for higher latitudes (Europe and the US) and a threshold of 25°C is often used for tropical and equatorial regions. The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the “recent” climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F) and 55% humidity." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv | deploy_indicators/prod/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" "[[\"good\"], [\"bad\"]]" false true "[\"© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0\"]" "Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the “potential” climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science). Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F) and 55% humidity. The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values." "World (-60:60 latitudes)" "static" "days" "$$(date -r db/table/pf_maxtemp_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
 deploy_indicators/prod/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/prod/uploads ## upload man_distance_to_hospital to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_hospitals_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" db/table/isodist_hospitals_h3
 	touch $@
 
 deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/prod/uploads ## upload man_distance_to_bomb_shelters to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_bomb_shelters_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
 	touch $@
 
 deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/prod/uploads ## upload man_distance_to_charging_stations to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" "[[\"good\"], [\"bad\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "" "World" "daily" "ppl_km2" "$$(date -r db/table/isodist_charging_stations_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
 	touch $@
 
 deploy_indicators/prod/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/prod/uploads ## upload total_road_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_road_length.csv "total_road_length" "[[\"unimportant\"], [\"important\"]]" true true "[\"©2019 Facebook, Inc. and its affiliates https://github.com/facebookmicrosites/Open-Mapping-At-Facebook/blob/main/LICENSE.md\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"© Kontur https://kontur.io/\"]" "Estimated total road length according to Meta (Facebook) AI and OpenStreetMap data. For places where Meta (Facebook) roads data are unavailable, the estimation is based on statistical regression from Kontur Population data." "World" "daily" "km" "$$(date -r db/table/total_road_length_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_road_length.csv "total_road_length" db/table/total_road_length_h3
 	touch $@
 
 deploy_indicators/prod/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/prod/uploads ## upload view_count_bf2402 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count_bf2402.csv "view_count_bf2402" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"© Kontur\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of tile requests in a given area for the 30 days before Feb 24, 2022." "World" "daily" "n" "$$(date -r db/table/tile_logs_bf2402 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402
 	touch $@
 
 deploy_indicators/prod/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/prod/uploads ## upload powerlines to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines.csv "powerlines" "[[\"bad\"], [\"good\"]]" false true "[\"©9999 Facebook, Inc. and its affiliates https://dataforgood.facebook.com/dfg/tools/electrical-distribution-grid-maps\"]" "Facebook has produced a model to help map global medium voltage (MV) grid infrastructure, i.e. the distribution lines which connect high-voltage transmission infrastructure to consumer-serving low-voltage distribution. The data found here are model outputs for six select African countries: Malawi, Nigeria, Uganda, DRC, Cote D’Ivoire, and Zambia. The grid maps are produced using a new methodology that employs various publicly-available datasets (night time satellite imagery, roads, political boundaries, etc) to predict the location of existing MV grid infrastructure." "World" "static" "other" "$$(date -r db/table/facebook_medium_voltage_distribution_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines.csv "powerlines" db/table/facebook_medium_voltage_distribution_h3
 	touch $@
 
 deploy_indicators/prod/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/prod/uploads ## upload eatery_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/eatery_count.csv "eatery_count" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of places where you can buy and eat food (such as restaurants, cafés, fast-food outlets, etc.) in a given area." "World" "daily" "n" "$$(date -r db/table/osm_places_eatery_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/eatery_count.csv "eatery_count" db/table/osm_places_eatery_h3
 	touch $@
 
 deploy_indicators/prod/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv | deploy_indicators/prod/uploads ## upload night_lights_intensity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/night_lights_intensity.csv "night_lights_intensity" "[[\"unimportant\"], [\"important\"]]" false true "[\"Earth Observation Group © 2021. https://eogdata.mines.edu/products/vnl/#reference\", \"C. D. Elvidge, K. E. Baugh, M. Zhizhin, and F.-C. Hsu, “Why VIIRS data are superior to DMSP for mapping nighttime lights,” Asia-Pacific Advanced Network 35, vol. 35, p. 62, 2013.\", \"C. D. Elvidge, M. Zhizhin, T. Ghosh, F-C. Hsu, “Annual time series of global VIIRS nighttime lights derived from monthly averages: 2012 to 2019”, Remote Sensing (In press)\"]" "Remote sensing of nighttime light emissions offers a unique perspective for investigations into human behaviors. The Visible Infrared Imaging Radiometer Suite (VIIRS) instruments aboard the Suomi NPP and NOAA-20 satellites provide global daily measurements of nighttime light." "World" "static" "nW_cm2_sr" "$$(date -r db/table/night_lights_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/night_lights_intensity.csv "night_lights_intensity" db/table/night_lights_h3
 	touch $@
 
 deploy_indicators/prod/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv | deploy_indicators/prod/uploads ## upload mapswipe_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" "[[\"unimportant\"], [\"important\"]]" false true "[\"Copyright © 2022 MapSwipe https://mapswipe.org/en/privacy.html\"]" "Places were MapSwipe users have detected some human activity through features (i.e. buildings, roadways, waterways, etc.) on satellite images." "World" "daily" "km2" "$$(date -r db/table/mapswipe_hot_tasking_data_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
 	touch $@
 
 deploy_indicators/prod/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv | deploy_indicators/prod/uploads ## upload gsa_ghi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gsa_ghi.csv "gsa_ghi" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use\"]" "Total amount of shortwave terrestrial irradiance received by a surface horizontal to the ground." "World (-60:60 latitudes)" "static" "W_m2" "$$(date -r db/table/global_solar_atlas_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gsa_ghi.csv "gsa_ghi" db/table/global_solar_atlas_h3
 	touch $@
 
 deploy_indicators/prod/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_avg_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly average air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/prod/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_min_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" "[[\"bad\"], [\"good\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly minimum air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/prod/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_max_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly maximum air temperature according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/prod/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_amp_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\"]" "Monthly amplitude of air temperatures according to WorldClim data for the years 1970-2000." "World" "static" "celc_deg" "$$(date -r db/table/worldclim_temperatures_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
 deploy_indicators/prod/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv | deploy_indicators/prod/uploads ## upload powerlines_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" "[[\"important\"], [\"unimportant\"]]" false true "[\"Copyright © OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"© 2020 The World Bank Group, CC-BY 4.0\"]" "Distance to closest powerline" "World" "static" "m" "$$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" db/table/proximities_h3
 	touch $@
 
 deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/prod/uploads ## upload waste_basket_coverage_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" "[[\"bad\"], [\"good\"]]" false true "[\"© Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of waste containers in a given area." "World" "daily" "n" "$$(date -r db/table/waste_containers_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_containers_h3
 	touch $@
 
 deploy_indicators/prod/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/prod/uploads ## upload populated_areas_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" "[[\"good\"], [\"bad\"]]" false true "[\"Copyright © Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Distance to closest Kontur Population cell with population > 80 ppl" "World" "daily" "m" "$$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" db/table/proximities_h3
 	touch $@
 
 deploy_indicators/prod/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv | deploy_indicators/prod/uploads ## upload power_substations_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" "[[\"good\"], [\"bad\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Distance to closest power substation" "World" "daily" "m" "$$(date -r db/table/proximities_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" db/table/proximities_h3
 	touch $@
 
 deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | deploy_indicators/prod/uploads ## upload solar_farms_placement_suitability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" "[[\"bad\"], [\"good\"]]" false true "[\"Copyright © Kontur https://kontur.io/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\", \"Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html\", \"Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use\"]" "Multi-criteria analysis based layer dedicated to estimation of suitability of solar farms placement. 0 means absolutely unsuitable, 1 means perfectly suitable. Analysis is based on solar irradiace, powerlines grid proximity, power substations proximity, elevation slope, minimal and maximal temperatures, populated areas proximity" "World (-60:60 latitudes)" "daily" "index" "$$(date -r db/table/solar_farms_placement_suitability_synthetic_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
 	touch $@
 
 deploy_indicators/prod/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/prod/uploads ## upload residential to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/residential.csv "residential" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\"]" "Estimation of residential population percentage according to GHS-POP dataset (2015)" "World" "static" "fract" "$$(date -r db/table/residential_pop_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/residential.csv "residential" db/table/residential_pop_h3
 	touch $@
 
 deploy_indicators/prod/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/prod/uploads ## upload solar_power_plants to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_power_plants.csv "solar_power_plants" "[[\"unimportant\"], [\"important\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Total number of solar power plants in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/existing_solar_power_panels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
 	touch $@
 
 deploy_indicators/prod/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/prod/uploads ## upload safety_index to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/safety_index.csv "safety_index" "[[\"bad\"], [\"good\"]]" false true "[\"© The Institute for Economics and Peace Limited 2022 https://www.visionofhumanity.org/\"]" "The Global Peace Index covers 99.7% of the world’s population, and is calculated using 23 qualitative and quantitative indicators from highly respected sources, and measures the state of peace across three domains: the level of Societal Safety and Security, the extent of Ongoing Domestic and International Conflict, and the degree of Militarisation." "World" "static" "index" "$$(date -r db/table/safety_index_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
 	touch $@
 
 deploy_indicators/prod/uploads/population_upload: data/out/csv/population.csv | deploy_indicators/prod/uploads ## upload population to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population.csv "population" "[[\"unimportant\"], [\"important\"]]" true true "[\"© Kontur https://kontur.io/\", \"Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/\", \"Dataset: Schiavina, Marcello., Freire, Sergio., MacManus, Kytt (2019): GHS population grid multitemporal (1975, 1990, 2000, 2015) R2019A. European Commission, Joint Research Centre (JRC) DOI: 10.2905/42E8BE89-54FF-464E-BE7B-BF9E64DA5218 PID: http://data.europa.eu/89h/0c6b9751-a71f-4062-830b-43c9f432370f Concept & Methodology: Freire, Sergio., MacManus, Kytt., Pesaresi, Martino., Doxsey-Whitfield, Erin., Mills, Jane (2016): Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World., Association of Geographic Information Laboratories in Europe (AGILE). AGILE 2016\", \"Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050\", \"Microsoft Buildings: Australia, Canada, Tanzania, Uganda, USA: This data is licensed by Microsoft under the Open Data Commons Open Database License (ODbL).\", \"NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/\", \"Geoalert Urban Mapping: Chechnya, Moscow region, Tyva - https://github.com/Geoalert/urban-mapping\", \"Unconstrained Individual countries 2020 (100m resolution): WorldPop - https://www.worldpop.org/\", \"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of people living in a given area according to Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data. The datasets detailed methodology is available here: https://data.humdata.org/dataset/kontur-population-dataset" "World" "daily" "ppl" "$$(date -r db/table/kontur_population_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population.csv "population" db/table/kontur_population_h3
 	touch $@
 
 deploy_indicators/prod/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv | deploy_indicators/prod/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.\"]" "Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery." "World" "static" "m" "$$(date -r db/table/meta_forest_canopy_height_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
 deploy_indicators/prod/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv | deploy_indicators/prod/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" "[[\"bad\", \"unimportant\"], [\"good\", \"important\"]]" false true "[\"High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.\"]" "Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery." "World" "static" "m" "$$(date -r db/table/meta_forest_canopy_height_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
 deploy_indicators/prod/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv | deploy_indicators/prod/uploads ## upload worldbank_tax_rate to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" "[[\"good\"], [\"bad\"]]" false true "[\"© 2024 The World Bank Group, Doing Business project (http://www.doingbusiness.org/). NOTE: Doing Business has been discontinued as of 9/16/2021. For more information: https://bit.ly/3CLCbme\"]" "Total tax rate measures the amount of taxes and mandatory contributions payable by businesses after accounting for allowable deductions and exemptions as a share of commercial profits. Taxes withheld (such as personal income tax) or collected and remitted to tax authorities (such as value added taxes, sales taxes or goods and service taxes) are excluded." "World" "static" "perc" "$$(date -r db/table/worldbank_tax_rate_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
 	touch $@
 
 deploy_indicators/prod/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv | deploy_indicators/prod/uploads ## upload years_to_naturalisation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" "[[\"good\"], [\"bad\"]]" false true "[\"This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.\"]" "The duration of legal residence before a national of a foreign state, without any cultural, historical, or marriage ties or connections to the state in question, can request citizenship under that states naturalization laws." "World" "static" "years" "$$(date -r db/table/wikidata_naturalization_gap_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
 deploy_indicators/prod/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv | deploy_indicators/prod/uploads ## upload multiple_citizenship to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/multiple_citizenship.csv "multiple_citizenship" "[[\"bad\"], [\"good\"]]" false true "[\"This dataset use material from the Wikipedia article https://en.wikipedia.org/wiki/Naturalization, which is released under the https://en.wikipedia.org/wiki/Wikipedia:Text_of_the_Creative_Commons_Attribution-ShareAlike_4.0_International_License.\"]" "Possibility to have dual (multiple) citizenship: 1 - no, 2 - with restrictions regulated by local legislation, 3 - dual (multiple) citizenship is allowed." "World" "static" "other" "$$(date -r db/table/wikidata_naturalization_gap_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/multiple_citizenship.csv "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
 deploy_indicators/prod/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv | deploy_indicators/prod/uploads ## upload ghs_max_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.\"]" "GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces." "World" "static" "m" "$$(date -r db/table/ghs_building_height_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv | deploy_indicators/prod/uploads ## upload ghs_avg_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" "[[\"unimportant\"], [\"important\"]]" false true "[\"Dataset: Schiavina, M., Melchiorri, M., Pesaresi, M., Politis, P., Carneiro Freire, S.M., Maffenini, L., Florio, P., Ehrlich, D., Goch, K., Carioli, A., Uhl, J., Tommasi, P. and Kemper, T., GHSL Data Package 2023, Publications Office of the European Union, Luxembourg, 2023, ISBN 978-92-68-02341-9 (online), doi:10.2760/098587 (online), JRC133256.\"]" "GHS Average of the Net Building Height (ANBH). Values are expressed as decimals (Float) reporting about the average height of the built surfaces." "World" "static" "m" "$$(date -r db/table/ghs_building_height_grid_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv | deploy_indicators/prod/uploads ## upload max_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" "[[\"good\"], [\"bad\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Maximal levels of buildings in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_building_levels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
 deploy_indicators/prod/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv | deploy_indicators/prod/uploads ## upload avg_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" "[[\"good\"], [\"bad\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Average levels of buildings in a given area according to OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_building_levels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
 deploy_indicators/prod/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv | deploy_indicators/prod/uploads ## upload osm_hotels_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_hotels_count.csv "osm_hotels_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of hotels in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_hotels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_hotels_count.csv "osm_hotels_count" db/table/osm_hotels_h3
 	touch $@
 
 deploy_indicators/prod/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv | deploy_indicators/prod/uploads ## upload max_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Max hotel level assesment from OSM." "World" "daily" "n" "$$(date -r db/table/osm_hotels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
 deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv | deploy_indicators/prod/uploads ## upload avg_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Average hotel level asesment from OSM." "World" "daily" "n" "$$(date -r db/table/osm_hotels_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
 deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/prod/uploads ## upload osm_historical_sites_and_museums_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of historical sites and museums in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/prod/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/prod/uploads ## upload osm_art_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of art venues in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/prod/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv | deploy_indicators/prod/uploads ## upload osm_entertainment_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of entertainment venues OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/prod/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv | deploy_indicators/prod/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of cultural and community centers in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_culture_venues_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
 	touch $@
 
 deploy_indicators/prod/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv | deploy_indicators/prod/uploads ## upload worldbank_inflation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldbank_inflation.csv "worldbank_inflation" "[[\"bad\"], [\"good\"]]" false true "[\"Ha, Jongrim, M. Ayhan Kose, and Franziska Ohnsorge (2023). One-Stop Source: A Global Database of Inflation. Journal of International Money and Finance 137 (October): 102896\"]" "Inflation, measured by the Consumer Price Index (CPI), is the annual change in prices of a typical basket of goods and services purchased by households. Data are drawn from multiple databases: OECD.Stat, the IMF World Economic Outlook database and International Financial Statistics, ILOSTAT, UNdata and country-specific sources including central banks and statistical offices." "World" "static" "perc" "$$(date -r db/table/worldbank_inflation_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldbank_inflation.csv "worldbank_inflation" db/table/worldbank_inflation_h3
 	touch $@
 
 deploy_indicators/prod/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv | deploy_indicators/prod/uploads ## upload osm_pharmacy_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" "[[\"bad\"], [\"good\"]]" false true "[\"© OpenStreetMap contributors https://www.openstreetmap.org/copyright\"]" "Number of pharmacy in OpenStreetMap." "World" "daily" "n" "$$(date -r db/table/osm_pharmacy_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" db/table/osm_pharmacy_h3
 	touch $@
 
 deploy_indicators/prod/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv | deploy_indicators/prod/uploads ## upload conflict_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of IDPs (rounded figures at the national level), as a result of conflicts and violence as of the end of the reporting year." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/prod/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv | deploy_indicators/prod/uploads ## upload disaster_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of IDPs (rounded figures at the national level), as a result of disasters as of the end of the reporting year." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/prod/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv | deploy_indicators/prod/uploads ## upload conflict_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of internal displacements reported (rounded figures at national level), as a result of conflict and violence over the 2023." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/prod/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv | deploy_indicators/prod/uploads ## upload disaster_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" "[[\"good\", \"unimportant\"], [\"bad\", \"important\"]]" false true "[\"© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries\", \"© 2012-2024 Internal Displacement Monitoring Centre (IDMC)\"]" "Percent of total population of internal displacements reported (rounded figures at national level), as a result of disasters over the 2023." "World" "static" "perc" "$$(date -r db/table/idmc_country_2023_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
 deploy_indicators/prod/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv | deploy_indicators/prod/uploads ## upload hdi_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hdi_2022.csv "hdi_2022" "[[\"bad\"], [\"good\"]]" false true "[\"© 2024 United Nations Development Programme https://hdr.undp.org/data-center/human-development-index\"]" "The Human Development Index (HDI) is a summary measure of average achievement in key dimensions of human development: a long and healthy life, being knowledgeable and having a decent standard of living. The HDI is the geometric mean of normalized indices for each of the three dimensions. The health dimension is assessed by life expectancy at birth, the education dimension is measured by mean of years of schooling for adults aged 25 years and more and expected years of schooling for children of school entering age. The standard of living dimension is measured by gross national income per capita. The HDI uses the logarithm of income, to reflect the diminishing importance of income with increasing GNI. The scores for the three HDI dimension indices are then aggregated into a composite index using geometric mean. The entire series of Human Development Index (HDI) values and rankings are recalculated every year using the same the most recent (revised) data and functional forms. The HDI rankings and values in the 2014 Human Development Report cannot therefore be compared directly to indices published in previous Reports. Please see hdr.undp.org for more information. The HDI was created to emphasize that people and their capabilities should be the ultimate criteria for assessing the development of a country, not economic growth alone. The HDI can also be used to question national policy choices, asking how two countries with the same level of GNI per capita can end up with different human development outcomes. These contrasts can stimulate debate about government policy priorities." "World" "static" "index" "$$(date -r db/table/humanitarian_dev_index_2022_h3 +'%Y-%m-%dT%H:%M:%SZ')"
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hdi_2022.csv "hdi_2022" db/table/humanitarian_dev_index_2022_h3
 	touch $@
 
-deploy_indicators/prod/uploads/upload_prod: deploy_indicators/prod/uploads/population_upload deploy_indicators/prod/uploads/view_count_upload deploy_indicators/prod/uploads/count_upload deploy_indicators/prod/uploads/populated_area_km2_upload deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload deploy_indicators/prod/uploads/local_hours_upload deploy_indicators/prod/uploads/total_hours_upload deploy_indicators/prod/uploads/avgmax_ts_upload deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/view_count_bf2402_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/prod/uploads/total_building_count_upload deploy_indicators/prod/uploads/count_6_months_upload deploy_indicators/prod/uploads/building_count_6_months_upload deploy_indicators/prod/uploads/highway_length_6_months_upload deploy_indicators/prod/uploads/osm_users_upload deploy_indicators/prod/uploads/residential_upload deploy_indicators/prod/uploads/gdp_upload deploy_indicators/prod/uploads/min_ts_upload deploy_indicators/prod/uploads/max_ts_upload deploy_indicators/prod/uploads/wildfires_upload deploy_indicators/prod/uploads/covid19_confirmed_upload deploy_indicators/prod/uploads/population_prev_upload deploy_indicators/prod/uploads/industrial_area_upload deploy_indicators/prod/uploads/volcanos_count_upload deploy_indicators/prod/uploads/pop_under_5_total_upload deploy_indicators/prod/uploads/pop_over_65_total_upload deploy_indicators/prod/uploads/poverty_families_total_upload deploy_indicators/prod/uploads/pop_disability_total_upload deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload deploy_indicators/prod/uploads/pop_without_car_upload deploy_indicators/prod/uploads/man_distance_to_hospital_upload deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  deploy_indicators/prod/uploads/eatery_count_upload deploy_indicators/prod/uploads/food_shops_count_upload deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload deploy_indicators/prod/uploads/mapswipe_area_km2_upload deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload deploy_indicators/prod/uploads/forest_upload deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/prod/uploads/shrubs_upload deploy_indicators/prod/uploads/herbage_upload deploy_indicators/prod/uploads/unknown_forest_upload deploy_indicators/prod/uploads/avg_ndvi_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/hazardous_days_count_upload deploy_indicators/prod/uploads/earthquake_days_count_upload deploy_indicators/prod/uploads/wildfire_days_count_upload deploy_indicators/prod/uploads/drought_days_count_upload deploy_indicators/prod/uploads/cyclone_days_count_upload deploy_indicators/prod/uploads/volcano_days_count_upload deploy_indicators/prod/uploads/flood_days_count_upload deploy_indicators/prod/uploads/powerlines_upload deploy_indicators/prod/uploads/night_lights_intensity_upload deploy_indicators/prod/uploads/gsa_ghi_upload deploy_indicators/prod/uploads/worldclim_avg_temperature_upload deploy_indicators/prod/uploads/worldclim_min_temperature_upload deploy_indicators/prod/uploads/worldclim_max_temperature_upload deploy_indicators/prod/uploads/worldclim_amp_temperature_upload deploy_indicators/prod/uploads/powerlines_proximity_m_upload deploy_indicators/prod/uploads/populated_areas_proximity_m_upload deploy_indicators/prod/uploads/power_substations_proximity_m_upload deploy_indicators/prod/uploads/solar_power_plants_upload deploy_indicators/prod/uploads/safety_index_upload deploy_indicators/prod/uploads/avg_forest_canopy_height_upload deploy_indicators/prod/uploads/max_forest_canopy_height_upload deploy_indicators/prod/uploads/worldbank_tax_rate_upload deploy_indicators/prod/uploads/years_to_naturalisation_upload deploy_indicators/prod/uploads/multiple_citizenship_upload deploy_indicators/prod/uploads/ghs_max_building_height_upload deploy_indicators/prod/uploads/ghs_avg_building_height_upload deploy_indicators/prod/uploads/max_osm_building_levels_upload deploy_indicators/prod/uploads/avg_osm_building_levels_upload deploy_indicators/prod/uploads/osm_hotels_count_upload deploy_indicators/prod/uploads/max_osm_hotels_assesment_upload deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/prod/uploads/osm_art_venues_count_upload deploy_indicators/prod/uploads/osm_entertainment_venues_count_upload deploy_indicators/prod/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/prod/uploads/worldbank_inflation_upload deploy_indicators/prod/uploads/cropland_upload deploy_indicators/prod/uploads/wetland_upload deploy_indicators/prod/uploads/moss_lichen_upload deploy_indicators/prod/uploads/bare_vegetation_upload deploy_indicators/prod/uploads/builtup_upload deploy_indicators/prod/uploads/snow_ice_upload deploy_indicators/prod/uploads/permanent_water_upload deploy_indicators/prod/uploads/osm_pharmacy_count_upload deploy_indicators/prod/uploads/conflict_stock_displacement_upload deploy_indicators/prod/uploads/disaster_stock_displacement_upload deploy_indicators/prod/uploads/conflict_internal_displacements_upload deploy_indicators/prod/uploads/disaster_internal_displacements_upload deploy_indicators/prod/uploads/hdi_2022_upload | deploy_indicators/prod/uploads ## Control of layer uplodings to Insigths API for prod without one and area_km2
+deploy_indicators/prod/uploads/inform_risk_upload: data/out/csv/inform_risk.csv | deploy_indicators/prod/uploads ## upload inform_risk to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/inform_risk.csv "inform_risk" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv | deploy_indicators/prod/uploads ## upload hazard_and_exposure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hazard_and_exposure.csv "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv | deploy_indicators/prod/uploads ## upload natural_0_to_10 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/natural_0_to_10.csv "natural_0_to_10" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/earthquake_upload: data/out/csv/earthquake.csv | deploy_indicators/prod/uploads ## upload earthquake to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/earthquake.csv "earthquake" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/river_flood_upload: data/out/csv/river_flood.csv | deploy_indicators/prod/uploads ## upload river_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/river_flood.csv "river_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/tsunami_upload: data/out/csv/tsunami.csv | deploy_indicators/prod/uploads ## upload tsunami to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/tsunami.csv "tsunami" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv | deploy_indicators/prod/uploads ## upload tropical_cyclone to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/tropical_cyclone.csv "tropical_cyclone" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv | deploy_indicators/prod/uploads ## upload coastal_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/coastal_flood.csv "coastal_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/drought_upload: data/out/csv/drought.csv | deploy_indicators/prod/uploads ## upload drought to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drought.csv "drought" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/epidemic_upload: data/out/csv/epidemic.csv | deploy_indicators/prod/uploads ## upload epidemic to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/epidemic.csv "epidemic" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/human_upload: data/out/csv/human.csv | deploy_indicators/prod/uploads ## upload human to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/human.csv "human" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv | deploy_indicators/prod/uploads ## upload projected_conflict_probability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/projected_conflict_probability.csv "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv | deploy_indicators/prod/uploads ## upload current_conflict_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/current_conflict_intensity.csv "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/vulnerability_upload: data/out/csv/vulnerability.csv | deploy_indicators/prod/uploads ## upload vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/vulnerability.csv "vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv | deploy_indicators/prod/uploads ## upload socio_economic_vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/socio_economic_vulnerability.csv "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv | deploy_indicators/prod/uploads ## upload development_and_deprivation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/development_and_deprivation.csv "development_and_deprivation" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/inequality_upload: data/out/csv/inequality.csv | deploy_indicators/prod/uploads ## upload inequality to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/inequality.csv "inequality" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv | deploy_indicators/prod/uploads ## upload economic_dependency to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/economic_dependency.csv "economic_dependency" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv | deploy_indicators/prod/uploads ## upload vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/vulnerable_groups.csv "vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv | deploy_indicators/prod/uploads ## upload uprooted_people to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/uprooted_people.csv "uprooted_people" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/health_conditions_upload: data/out/csv/health_conditions.csv | deploy_indicators/prod/uploads ## upload health_conditions to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/health_conditions.csv "health_conditions" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/children_u5_upload: data/out/csv/children_u5.csv | deploy_indicators/prod/uploads ## upload children_u5 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/children_u5.csv "children_u5" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv | deploy_indicators/prod/uploads ## upload recent_shocks to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/recent_shocks.csv "recent_shocks" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/food_security_upload: data/out/csv/food_security.csv | deploy_indicators/prod/uploads ## upload food_security to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/food_security.csv "food_security" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv | deploy_indicators/prod/uploads ## upload other_vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/other_vulnerable_groups.csv "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv | deploy_indicators/prod/uploads ## upload lack_of_coping_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/lack_of_coping_capacity.csv "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/institutional_upload: data/out/csv/institutional.csv | deploy_indicators/prod/uploads ## upload institutional to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/institutional.csv "institutional" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/drr_upload: data/out/csv/drr.csv | deploy_indicators/prod/uploads ## upload drr to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drr.csv "drr" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/governance_upload: data/out/csv/governance.csv | deploy_indicators/prod/uploads ## upload governance to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/governance.csv "governance" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/infrastructure_upload: data/out/csv/infrastructure.csv | deploy_indicators/prod/uploads ## upload infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/infrastructure.csv "infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/communication_upload: data/out/csv/communication.csv | deploy_indicators/prod/uploads ## upload communication to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/communication.csv "communication" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv | deploy_indicators/prod/uploads ## upload physical_infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/physical_infrastructure.csv "physical_infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv | deploy_indicators/prod/uploads ## upload access_to_health_care to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/access_to_health_care.csv "access_to_health_care" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/upload_prod: deploy_indicators/prod/uploads/population_upload deploy_indicators/prod/uploads/view_count_upload deploy_indicators/prod/uploads/count_upload deploy_indicators/prod/uploads/populated_area_km2_upload deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload deploy_indicators/prod/uploads/local_hours_upload deploy_indicators/prod/uploads/total_hours_upload deploy_indicators/prod/uploads/avgmax_ts_upload deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/view_count_bf2402_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/prod/uploads/total_building_count_upload deploy_indicators/prod/uploads/count_6_months_upload deploy_indicators/prod/uploads/building_count_6_months_upload deploy_indicators/prod/uploads/highway_length_6_months_upload deploy_indicators/prod/uploads/osm_users_upload deploy_indicators/prod/uploads/residential_upload deploy_indicators/prod/uploads/gdp_upload deploy_indicators/prod/uploads/min_ts_upload deploy_indicators/prod/uploads/max_ts_upload deploy_indicators/prod/uploads/wildfires_upload deploy_indicators/prod/uploads/covid19_confirmed_upload deploy_indicators/prod/uploads/population_prev_upload deploy_indicators/prod/uploads/industrial_area_upload deploy_indicators/prod/uploads/volcanos_count_upload deploy_indicators/prod/uploads/pop_under_5_total_upload deploy_indicators/prod/uploads/pop_over_65_total_upload deploy_indicators/prod/uploads/poverty_families_total_upload deploy_indicators/prod/uploads/pop_disability_total_upload deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload deploy_indicators/prod/uploads/pop_without_car_upload deploy_indicators/prod/uploads/man_distance_to_hospital_upload deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  deploy_indicators/prod/uploads/eatery_count_upload deploy_indicators/prod/uploads/food_shops_count_upload deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload deploy_indicators/prod/uploads/mapswipe_area_km2_upload deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload deploy_indicators/prod/uploads/forest_upload deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/prod/uploads/shrubs_upload deploy_indicators/prod/uploads/herbage_upload deploy_indicators/prod/uploads/unknown_forest_upload deploy_indicators/prod/uploads/avg_ndvi_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/hazardous_days_count_upload deploy_indicators/prod/uploads/earthquake_days_count_upload deploy_indicators/prod/uploads/wildfire_days_count_upload deploy_indicators/prod/uploads/drought_days_count_upload deploy_indicators/prod/uploads/cyclone_days_count_upload deploy_indicators/prod/uploads/volcano_days_count_upload deploy_indicators/prod/uploads/flood_days_count_upload deploy_indicators/prod/uploads/powerlines_upload deploy_indicators/prod/uploads/night_lights_intensity_upload deploy_indicators/prod/uploads/gsa_ghi_upload deploy_indicators/prod/uploads/worldclim_avg_temperature_upload deploy_indicators/prod/uploads/worldclim_min_temperature_upload deploy_indicators/prod/uploads/worldclim_max_temperature_upload deploy_indicators/prod/uploads/worldclim_amp_temperature_upload deploy_indicators/prod/uploads/powerlines_proximity_m_upload deploy_indicators/prod/uploads/populated_areas_proximity_m_upload deploy_indicators/prod/uploads/power_substations_proximity_m_upload deploy_indicators/prod/uploads/solar_power_plants_upload deploy_indicators/prod/uploads/safety_index_upload deploy_indicators/prod/uploads/avg_forest_canopy_height_upload deploy_indicators/prod/uploads/max_forest_canopy_height_upload deploy_indicators/prod/uploads/worldbank_tax_rate_upload deploy_indicators/prod/uploads/years_to_naturalisation_upload deploy_indicators/prod/uploads/multiple_citizenship_upload deploy_indicators/prod/uploads/ghs_max_building_height_upload deploy_indicators/prod/uploads/ghs_avg_building_height_upload deploy_indicators/prod/uploads/max_osm_building_levels_upload deploy_indicators/prod/uploads/avg_osm_building_levels_upload deploy_indicators/prod/uploads/osm_hotels_count_upload deploy_indicators/prod/uploads/max_osm_hotels_assesment_upload deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/prod/uploads/osm_art_venues_count_upload deploy_indicators/prod/uploads/osm_entertainment_venues_count_upload deploy_indicators/prod/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/prod/uploads/worldbank_inflation_upload deploy_indicators/prod/uploads/cropland_upload deploy_indicators/prod/uploads/wetland_upload deploy_indicators/prod/uploads/moss_lichen_upload deploy_indicators/prod/uploads/bare_vegetation_upload deploy_indicators/prod/uploads/builtup_upload deploy_indicators/prod/uploads/snow_ice_upload deploy_indicators/prod/uploads/permanent_water_upload deploy_indicators/prod/uploads/osm_pharmacy_count_upload deploy_indicators/prod/uploads/conflict_stock_displacement_upload deploy_indicators/prod/uploads/disaster_stock_displacement_upload deploy_indicators/prod/uploads/conflict_internal_displacements_upload deploy_indicators/prod/uploads/disaster_internal_displacements_upload deploy_indicators/prod/uploads/hdi_2022_upload deploy_indicators/prod/uploads/inform_risk_upload deploy_indicators/prod/uploads/hazard_and_exposure_upload deploy_indicators/prod/uploads/natural_0_to_10_upload deploy_indicators/prod/uploads/earthquake_upload deploy_indicators/prod/uploads/river_flood_upload deploy_indicators/prod/uploads/tsunami_upload deploy_indicators/prod/uploads/tropical_cyclone_upload deploy_indicators/prod/uploads/coastal_flood_upload deploy_indicators/prod/uploads/drought_upload deploy_indicators/prod/uploads/epidemic_upload deploy_indicators/prod/uploads/human_upload deploy_indicators/prod/uploads/projected_conflict_probability_upload deploy_indicators/prod/uploads/current_conflict_intensity_upload deploy_indicators/prod/uploads/vulnerability_upload deploy_indicators/prod/uploads/socio_economic_vulnerability_upload deploy_indicators/prod/uploads/development_and_deprivation_upload deploy_indicators/prod/uploads/inequality_upload deploy_indicators/prod/uploads/economic_dependency_upload deploy_indicators/prod/uploads/vulnerable_groups_upload deploy_indicators/prod/uploads/uprooted_people_upload deploy_indicators/prod/uploads/health_conditions_upload deploy_indicators/prod/uploads/children_u5_upload deploy_indicators/prod/uploads/recent_shocks_upload deploy_indicators/prod/uploads/food_security_upload deploy_indicators/prod/uploads/other_vulnerable_groups_upload deploy_indicators/prod/uploads/lack_of_coping_capacity_upload deploy_indicators/prod/uploads/institutional_upload deploy_indicators/prod/uploads/drr_upload deploy_indicators/prod/uploads/governance_upload deploy_indicators/prod/uploads/infrastructure_upload deploy_indicators/prod/uploads/communication_upload deploy_indicators/prod/uploads/physical_infrastructure_upload deploy_indicators/prod/uploads/access_to_health_care_upload | deploy_indicators/prod/uploads ## Control of layer uplodings to Insigths API for prod without one and area_km2
 	touch $@
 
 deploy_indicators/prod/custom_axis/population_area_km2: deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for population area_km2 axis on prod.

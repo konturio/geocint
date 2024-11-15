@@ -34,7 +34,7 @@ make -j basemap_tiles
 
 if [[ "$ENV_NAME" == "dev" ]]
 then
-  make -j data/planet-latest.osm.pbf
+  make -j deploy/dev/basemap
 elif [[ "$ENV_NAME" == "test" ]]
 then
   make -j deploy/test/basemap

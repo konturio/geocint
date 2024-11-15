@@ -148,7 +148,6 @@ kothic/src/komap.py: ## Clone Kothic from GIT
 	git clone -b master --single-branch https://github.com/kothic/kothic.git
 
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
-# 	cd tile_generator; go get; go build -o tile_generator
 	cd tile_generator; go get && go build -o tile_generator && chmod +x tile_generator
 
 

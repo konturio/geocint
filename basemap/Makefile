@@ -148,7 +148,8 @@ kothic/src/komap.py: ## Clone Kothic from GIT
 	git clone -b master --single-branch https://github.com/kothic/kothic.git
 
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
-	cd tile_generator; go get; go build -o tile_generator
+	cd tile_generator; go get && go build -o tile_generator && chmod +x tile_generator
+
 
 data/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
 	python2 kothic/src/komap.py \

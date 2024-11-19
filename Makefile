@@ -2886,3 +2886,6 @@ data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_upda
 	touch $@
 
 ### End update customviz using hdxloader ###
+
+data/out/csv/population_11.csv: ## extract population high res
+	psql -q -X -c "copy (select h3, population from kp_h3r11 where h3 is not null and population is not null and population > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/population_11.csv

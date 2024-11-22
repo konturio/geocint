@@ -572,23 +572,23 @@ deploy/geocint/basemap_mapcss: data/basemap/metadata/dev/style_ninja.json data/b
 	touch $@
 
 deploy/s3/basemap.mbtiles: data/basemap.mbtiles | deploy/s3 ## deploy basemap.mbtiles to S3
-	aws s3 cp data/basemap.mbtiles $(S3_BASEMAP_PATH)
+	aws s3 cp data/basemap.mbtiles $(S3_BASEMAP_PATH) --endpoint-url $(S3_ENDPOINT)
 	touch $@
 
 deploy/dev/basemap: data/basemap/metadata/dev/style_night_non_latin_languages.json data/basemap/metadata/dev/style_night_latin_languages.json data/basemap/metadata/dev/style_ninja.json data/basemap/metadata/dev/style_ninja_latin_languages.json data/basemap/metadata/dev/style_ninja_non_latin_languages.json data/basemap/metadata/dev/style_day.json data/basemap/metadata/dev/style_day_en.json data/basemap/metadata/dev/style_night.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/dev ## Transfer and deploy tar archive with tiles, glyphs and styles on DEV server.
-	aws s3 cp --recursive data/basemap/metadata/dev s3://basemap-locker01/DEV/styles
-	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/DEV/glyphs
-	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/DEV/sprite
+	aws s3 cp --recursive data/basemap/metadata/dev s3://basemap-locker01/DEV/styles --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/DEV/glyphs --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/DEV/sprite --endpoint-url $(S3_ENDPOINT)
 	touch $@
 
 deploy/test/basemap: data/basemap/metadata/test/style_night_non_latin_languages.json data/basemap/metadata/test/style_night_latin_languages.json data/basemap/metadata/test/style_ninja.json data/basemap/metadata/test/style_day.json data/basemap/metadata/test/style_day_en.json data/basemap/metadata/test/style_ninja_latin_languages.json data/basemap/metadata/test/style_ninja_non_latin_languages.json data/basemap/metadata/test/style_night.json data/basemap/metadata/test/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/test ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST server.
-	aws s3 cp --recursive data/basemap/metadata/test s3://basemap-locker01/TEST/styles
-	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/TEST/glyphs
-	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/TEST/sprite
+	aws s3 cp --recursive data/basemap/metadata/test s3://basemap-locker01/TEST/styles --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/TEST/glyphs --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/TEST/sprite --endpoint-url $(S3_ENDPOINT)
 	touch $@
 
 deploy/prod/basemap: data/basemap/metadata/prod/style_night_non_latin_languages.json data/basemap/metadata/prod/style_night_latin_languages.json data/basemap/metadata/prod/style_ninja.json data/basemap/metadata/prod/style_day.json data/basemap/metadata/prod/style_day_en.json data/basemap/metadata/prod/style_ninja_latin_languages.json data/basemap/metadata/prod/style_ninja_non_latin_languages.json data/basemap/metadata/prod/style_night.json data/basemap/metadata/prod/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/prod ## Transfer and deploy tar archive with tiles, glyphs and styles on PROD server.
-	aws s3 cp --recursive data/basemap/metadata/prod s3://basemap-locker01/PROD/styles
-	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/PROD/glyphs
-	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/PROD/sprite
+	aws s3 cp --recursive data/basemap/metadata/prod s3://basemap-locker01/PROD/styles --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/PROD/glyphs --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/PROD/sprite --endpoint-url $(S3_ENDPOINT)
 	touch $@

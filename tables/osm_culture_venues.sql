@@ -1,6 +1,6 @@
 drop table if exists osm_culture_venues;
 create table osm_culture_venues as (
-    select  osm_type,
+    select  distinct on (osm_id, osm_type) osm_type,
             osm_id,
             geog::geometry as geom,
             case
@@ -47,5 +47,5 @@ create table osm_culture_venues as (
                                             'internet_cafe','place_of_mourning',
                                             'social_facility','training')
 
-    order by _ST_SortableHash(geog::geometry)
+    order by 1,2,_ST_SortableHash(geog::geometry)
 );

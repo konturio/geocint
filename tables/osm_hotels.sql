@@ -1,6 +1,6 @@
 drop table if exists osm_hotels_in;
 create table osm_hotels_in as (
-    select  osm_type,
+    select  distinct on (osm_id, osm_type) osm_type,
             osm_id,
             geog::geometry as geom,
             tags ->> 'stars' as stars,
@@ -64,7 +64,7 @@ create table osm_hotels as (
             operator,
             tags
     from osm_hotels_in
-    order by _ST_SortableHash(geom)
+    order by 1,2,_ST_SortableHash(geom)
 );
 
 drop table if exists osm_hotels_in;

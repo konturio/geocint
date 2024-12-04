@@ -656,13 +656,31 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('osm_atms_count', 'ATMs count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of ATMs in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏧');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_kindergartens_count', 'ATMs count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of kindergartens in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '👶');
+values ('osm_kindergartens_count', 'Kindergartens count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of kindergartens in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '👶');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('osm_schools_count', 'Schools count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of schools in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🎒');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_universities_count', 'Universities count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of universities in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🎓');
+values ('osm_colleges_count', 'Colleges and Affiliates Count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of colleges and affiliates in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '👩🏾‍🏫');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_universities_count', 'Higher Education Institutions and Affiliates Count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of higher education institutions and affiliates in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🎓');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_defibrillators_count', 'Defibrillators count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of defibrillators in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🆘');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_airports_count', 'Airports count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of airports in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🛬');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_railway_stations_count', 'Railway stations count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of railway stations in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🚉');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_public_transport_stops_count', 'Public transport stops count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of public transports stops, except railways stations in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🚏');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_car_parkings_count', 'Car parkings count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of car parkings in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🛬');
 
 -- set indicator is_base to become denominators
 update bivariate_indicators

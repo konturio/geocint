@@ -10,5 +10,4 @@ create table osm_culture_venues_h3 as (
     group by 1
 );
 
-
 call generate_overviews('osm_culture_venues_h3', '{osm_historical_sites_and_museums_count,osm_art_venues_count,osm_entertainment_venues_count,osm_cultural_and_comunity_centers_count}'::text[], '{sum,sum,sum,sum}'::text[], 8);

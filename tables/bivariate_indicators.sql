@@ -314,13 +314,14 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('days_maxwetbulb_over_32c_1c', 'Days above 32°C wet-bulb (+1°C scenario)', jsonb_build_array(
         '© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0'),
         '[["good"], ["bad"]]'::jsonb, 'Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the "recent" climate warming scenario of +1.0°C. In 2017 the average surface temperature passed 1.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science).
-Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F)  and 55% humidity.', 'World (-60:60 latitudes)', 'static', 'days', TRUE, '🌞');
+Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F)  and 55% humidity. For each warming scenario, the number of days exceeding 32°C (90°F) wet-bulb are identified from daily maximum wet-bulb temperatures computed using daily maximum temperature and daily minimum relative humidity, variables that are projected by climate models.
+The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values.', 'World (-60:60 latitudes)', 'static', 'days', TRUE, '🌞');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('days_maxwetbulb_over_32c_2c', 'Days above 32°C wet-bulb (+2°C scenario)', jsonb_build_array(
         '© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0'),
         '[["good"], ["bad"]]'::jsonb, 'Number of days per year with a daily maximum wet-bulb temperature exceeding 32°C (90°F) at the "potential" climate warming scenario of +2.0°C. On the current path of emissions, in the 2040s the average surface temperature will likely pass 2.0°C above the pre-industrial 1850-1900 average (a standard baseline time period in climate science).
-Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F)  and 55% humidity.
+Wet-bulb temperature is calculated using temperature and humidity. High wet-bulb temperatures can impair the human body’s ability to self-cool through sweating. 32°C or 90°F wet-bulb can occur at 32°C (90°F) air temperature and 99% relative humidity, or 40°C (104°F)  and 55% humidity.For each warming scenario, the number of days exceeding 32°C (90°F) wet-bulb are identified from daily maximum wet-bulb temperatures computed using daily maximum temperature and daily minimum relative humidity, variables that are projected by climate models.
 The displayed values are from a range of simulated years from multiple models. Actual outcomes may prove to be higher or lower than the displayed values.', 'World (-60:60 latitudes)', 'static', 'days', TRUE, '🌞🔥');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
@@ -516,16 +517,16 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('oam_number_of_pixels', 'OpenAerialMap coverage pixels number', jsonb_build_array('© Kontur https://kontur.io','All imagery is publicly licensed and made available through the Humanitarian OpenStreetMap Team‘s Open Imagery Network (OIN) Node. All imagery contained in OIN is licensed CC-BY 4.0, with attribution as contributors of Open Imagery Network. All imagery is available to be traced in OpenStreetMap. © OpenAerialMap'), '[["bad"], ["good"]]'::jsonb, 'Number of pixels of OpenAerialMap images.', 'World', 'every_30min', 'n', TRUE, '🗺️🔍');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_historical_sites_and_museums_count', 'Historical sites and museums count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of historical sites and museums in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏰');
+values ('osm_historical_sites_and_museums_count', 'Historical sites and museums', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of historical sites and museums in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏰');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_art_venues_count', 'Art venues count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of art venues in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🖼️🖌️');
+values ('osm_art_venues_count', 'Art venues', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of art venues in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🖼️🖌️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_entertainment_venues_count', 'Entertainment venues count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of entertainment venues OpenStreetMap.', 'World', 'daily', 'n', TRUE, '📽️');
+values ('osm_entertainment_venues_count', 'Entertainment venues', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of entertainment venues OpenStreetMap.', 'World', 'daily', 'n', TRUE, '📽️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_cultural_and_comunity_centers_count', 'Cultural and community centers count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of cultural and community centers in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🫂');
+values ('osm_cultural_and_comunity_centers_count', 'Cultural and community centers', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of cultural and community centers in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🫂');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('worldbank_inflation', 'Price inflation rate', jsonb_build_array(
@@ -533,7 +534,7 @@ values ('worldbank_inflation', 'Price inflation rate', jsonb_build_array(
         '[["good"], ["bad"]]'::jsonb, 'Inflation, measured by the Consumer Price Index (CPI), is the annual change in prices of a typical basket of goods and services purchased by households. Data are drawn from multiple databases: OECD.Stat, the IMF World Economic Outlook database and International Financial Statistics, ILOSTAT, UNdata and country-specific sources including central banks and statistical offices.', 'World', 'static', 'perc', TRUE, '💸');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_pharmacy_count', 'Pharmacy count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of pharmacy in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '⚕️💊');
+values ('osm_pharmacy_count', 'Pharmacies', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of pharmacy in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '⚕️💊');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('conflict_stock_displacement', 'Conflict stock displacement', jsonb_build_array('© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries', '© 2012-2024 Internal Displacement Monitoring Centre (IDMC)'), '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Percent of total population of IDPs (rounded figures at the national level), as a result of conflicts and violence as of the end of the reporting year.', 'World', 'static', 'perc', TRUE, '🆘🧑🏻‍🤝‍🧑🏿');
@@ -650,37 +651,37 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('access_to_health_care', 'Access to Health Care', jsonb_build_array('© INFORM Initiative https://www.inform-index.org/'), '[["bad"], ["good"]]'::jsonb, 'Availability and quality of healthcare services on a scale of 0 to 10.', 'World', 'annual', 'index', TRUE, '🩺');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_banks_count', 'Banks count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of banks in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏦');
+values ('osm_banks_count', 'Banks', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of banks in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏦');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_atms_count', 'ATMs count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of ATMs in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏧');
+values ('osm_atms_count', 'ATMs', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of ATMs in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏧');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_kindergartens_count', 'Kindergartens count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of kindergartens in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '👶');
+values ('osm_kindergartens_count', 'Kindergartens', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of kindergartens in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '👶');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_schools_count', 'Schools count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of schools in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🎒');
+values ('osm_schools_count', 'Schools', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of schools in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🎒');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_colleges_count', 'Colleges and Affiliates Count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of colleges and affiliates in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '👩🏾‍🏫');
+values ('osm_colleges_count', 'Colleges and Affiliates', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of colleges and affiliates in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '👩🏾‍🏫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_universities_count', 'Higher Education Institutions and Affiliates Count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of higher education institutions and affiliates in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🎓');
+values ('osm_universities_count', 'Higher Education Institutions and Affiliates', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of higher education institutions and affiliates in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🎓');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_defibrillators_count', 'Defibrillators count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of defibrillators in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🆘');
+values ('osm_defibrillators_count', 'Defibrillators', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of defibrillators in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🆘');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_airports_count', 'Airports count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of airports in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🛬');
+values ('osm_airports_count', 'Airports', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of airports in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🛬');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_railway_stations_count', 'Railway stations count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of railway stations in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🚉');
+values ('osm_railway_stations_count', 'Railway stations', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of railway stations in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🚉');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_public_transport_stops_count', 'Public transport stops count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of public transports stops, except railways stations in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🚏');
+values ('osm_public_transport_stops_count', 'Public transport stops', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of public transports stops, except railways stations in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🚏');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_car_parkings_count', 'Car parkings count', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of car parkings in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🛬');
+values ('osm_car_parkings_count', 'Car parkings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of car parkings in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🅿️');
 
 -- set indicator is_base to become denominators
 update bivariate_indicators

@@ -18,10 +18,7 @@ create table osm_transport_facilities as (
                      or (tags ->> 'railway' = 'station'
                      and (tags ->> 'building' = 'train_station' or tags ->> 'subway' = 'yes'))
                     then 'public_transport_stops'
-                when tags ->> 'amenity' in ('parking', 'parking_space')
-                     or tags ? 'parking'
-                    then 'car_parking'
-            end as type,
+                end as type,
             tags ->> 'name' as name,
             tags
     from osm o
@@ -30,7 +27,5 @@ create table osm_transport_facilities as (
           or tags ->> 'railway' = 'station'
           or ((tags ->> 'highway' = 'bus_stop' or tags ->> 'public_transport' = 'stop_position' or tags ->> 'railway' = 'tram_stop')
           and (not (tags ? 'train') or tags ->> 'train' != 'yes'))
-          or (tags ->> 'amenity' in ('parking', 'parking_space')
-          or (tags ? 'parking' and tags ->> 'parking' not in ('no','disabled')))
     order by 1,2,_ST_SortableHash(geog::geometry)
 );

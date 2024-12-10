@@ -681,7 +681,7 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('osm_public_transport_stops_count', 'Public transport stops', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of public transports stops, except railways stations in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🚏');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('osm_car_parkings_count', 'Car parkings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of car parkings in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🅿️');
+values ('osm_car_parkings_capacity', 'Car parkings capacity', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of car parking spaces in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🅿️');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('osm_heritage_sites_count', 'Heritage sites', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of heritage sites in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🗿');

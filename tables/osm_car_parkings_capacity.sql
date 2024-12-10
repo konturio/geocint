@@ -2,8 +2,8 @@
 -- holds the world record for the largest parking lot in the world.
 -- The lot, which can accomodate an estimated 20,000 vehicles was opened in 1981.
 
-drop table if exists osm_parkings_capacity_in;
-create table osm_parkings_capacity_in as (
+drop table if exists osm_car_parkings_capacity_in;
+create table osm_car_parkings_capacity_in as (
     select  distinct on (osm_id, osm_type) osm_type,
             osm_id,
             ST_Area(geog) as area,
@@ -22,14 +22,14 @@ create table osm_parkings_capacity_in as (
     order by 1,2,_ST_SortableHash(geog::geometry)
 );
 
-drop table if exists osm_parkings_capacity_mid1;
-create table osm_parkings_capacity_mid1 as (
+drop table if exists osm_car_parkings_capacity_mid1;
+create table osm_car_parkings_capacity_mid1 as (
     select osm_id,
            osm_type,
            area,
            capacity,
            ST_Normalize(geog::geometry)         as geom
-    from osm_parkings_capacity_in
+    from osm_car_parkings_capacity_in
     where gtype in ('ST_MultiPolygon', 'ST_Polygon')
     union all
     select osm_id,
@@ -37,31 +37,36 @@ create table osm_parkings_capacity_mid1 as (
            ST_Area(ST_MakePolygon(geog::geometry)::geography) as area,
            capacity,
            ST_Normalize(geog::geometry)         as geom
-    from osm_parkings_capacity_in
+    from osm_car_parkings_capacity_in
     where gtype = 'ST_LineString'
           and ST_IsClosed(geog::geometry)
     union all
     select osm_id,
            osm_type,
            null as area,
-           capacity,
+           case
+               when capacity = 0 then 1
+               else capacity
+           end as capacity,
            ST_Normalize(geog::geometry)         as geom
-    from osm_parkings_capacity_in
+    from osm_car_parkings_capacity_in
     where capacity is not null
           and ((gtype = 'ST_LineString' and not ST_IsClosed(geog::geometry))
                 or gtype = 'ST_Point')
 );
 
+drop table if exists osm_car_parkings_capacity_in;
+
 -- calculate regression coefficients
-drop table if exists osm_parkings_capacity;
+drop table if exists osm_car_parkings_capacity;
 with regression as (select regr_slope(capacity, area)     as slope,
                            regr_intercept(capacity, area) as intercept
-                    from osm_parkings_capacity_mid1
+                    from osm_car_parkings_capacity_mid1
                     where area is not null
                           and capacity is not null)
 -- calculate where it doesn't exists
-select osm_id                        as h3,
-       osm_type                      as resolution,
+select osm_id                        as osm_id,
+       osm_type                      as osm_type,
        case
            when capacity is null or (capacity = 0 and area is not null)
                 then coalesce(area * regression.slope + regression.intercept, 0.0101)
@@ -69,6 +74,8 @@ select osm_id                        as h3,
        end                           as capacity,
        area,
        geom
-into osm_parkings_capacity
+into osm_car_parkings_capacity
 from regression,
-     osm_parkings_capacity_mid1;
+     osm_car_parkings_capacity_mid1;
+
+drop table if exists osm_car_parkings_capacity_mid1;

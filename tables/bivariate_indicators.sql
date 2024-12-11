@@ -247,9 +247,9 @@ values ('avg_ndvi', 'NDVI', jsonb_build_array(
     '[["bad"], ["good"]]'::jsonb, 'Average values of Normalized Difference Vegetation Index (NDVI), as of June 2019. Negative values of NDVI (values approaching -1) correspond to water. Values close to zero (-0.1 to 0.1) generally correspond to barren areas of rock, sand, or snow. Low, positive values represent shrub and grassland (approximately 0.2 to 0.4), while high values indicate temperate and tropical rainforests (values approaching 1).', 'World', 'static', 'index', TRUE, '🌿');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('industrial_area', 'Industrial area', jsonb_build_array(
+values ('industrial_area', 'OSM Industrial area', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["unimportant"], ["important"]]'::jsonb, 'Areas of land used for industrial purposes, which may include facilities such as workshops, factories and warehouses, and their associated infrastructure (car parks, service roads, yards, etc.).', 'World', 'daily', 'km2', TRUE, '🏭');
+        '[["unimportant"], ["important"]]'::jsonb, 'Areas of land used for industrial purposes in OpenStreetMap, which may include facilities such as workshops, factories and warehouses, and their associated infrastructure (car parks, service roads, yards, etc.). Data may be incomplete.', 'World', 'daily', 'km2', TRUE, '🏭');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('volcanos_count', 'Volcanoes', jsonb_build_array(

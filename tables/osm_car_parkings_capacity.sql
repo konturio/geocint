@@ -45,14 +45,13 @@ create table osm_car_parkings_capacity_mid1 as (
            osm_type,
            null as area,
            case
-               when capacity = 0 then 1
+               when capacity = 0 or capacity is null then 1
                else capacity
            end as capacity,
            ST_Normalize(geog::geometry)         as geom
     from osm_car_parkings_capacity_in
-    where capacity is not null
-          and ((gtype = 'ST_LineString' and not ST_IsClosed(geog::geometry))
-                or gtype = 'ST_Point')
+    where (gtype = 'ST_LineString' and not ST_IsClosed(geog::geometry))
+          or gtype = 'ST_Point'
 );
 
 drop table if exists osm_car_parkings_capacity_in;

@@ -4,22 +4,22 @@
 
 drop table if exists osm_car_parkings_capacity_in;
 create table osm_car_parkings_capacity_in as (
-    select  distinct on (osm_id, osm_type) osm_type,
+    select  osm_type,
             osm_id,
-            ST_Area(geog) as area,
-            ST_GeometryType(geog::geometry)    as gtype,
+            ST_Area(geog)                   as area,
+            ST_GeometryType(geog::geometry) as gtype,
             case
                 when tags ->> 'leisure' = 'stadium' then null -- so as not to confuse stadium capacity with the parking capacity
                 when parse_integer(tags ->> 'capacity') < 0 then abs(parse_integer(tags ->> 'capacity'))
                 when parse_integer(tags ->> 'capacity') > 25000 then null
                 else parse_integer(tags ->> 'capacity')
-            end as capacity,
+            end                             as capacity,
             tags,
-            geog as geog
+            geog                            as geog
     from osm o
     where (tags ->> 'amenity' in ('parking', 'parking_space')
           or (tags ? 'parking' and tags ->> 'parking' not in ('no','disabled')))
-    order by 1,2,_ST_SortableHash(geog::geometry)
+    order by _ST_SortableHash(geog::geometry)
 );
 
 drop table if exists osm_car_parkings_capacity_mid1;
@@ -28,27 +28,18 @@ create table osm_car_parkings_capacity_mid1 as (
            osm_type,
            area,
            capacity,
-           ST_Normalize(geog::geometry)         as geom
+           ST_Normalize(geog::geometry) as geom
     from osm_car_parkings_capacity_in
     where gtype in ('ST_MultiPolygon', 'ST_Polygon')
     union all
     select osm_id,
            osm_type,
-           ST_Area(ST_MakePolygon(geog::geometry)::geography) as area,
-           capacity,
-           ST_Normalize(geog::geometry)         as geom
-    from osm_car_parkings_capacity_in
-    where gtype = 'ST_LineString'
-          and ST_IsClosed(geog::geometry)
-    union all
-    select osm_id,
-           osm_type,
-           null as area,
+           null                         as area,
            case
                when capacity = 0 or capacity is null then 1
                else capacity
-           end as capacity,
-           ST_Normalize(geog::geometry)         as geom
+           end                          as capacity,
+           ST_Normalize(geog::geometry) as geom
     from osm_car_parkings_capacity_in
     where (gtype = 'ST_LineString' and not ST_IsClosed(geog::geometry))
           or gtype = 'ST_Point'

@@ -19,7 +19,7 @@ create table osm_heritage_sites as (
     from osm o
     where tags ? 'heritage'
           and tags ->> 'heritage' != 'no'
-    order by 1, 2
+    order by 1, 2, ST_Dimension(ST_Normalize(geog::geometry)) desc
 );
 
 create index on osm_heritage_sites using gist(geom);

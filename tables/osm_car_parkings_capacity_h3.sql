@@ -11,8 +11,8 @@ create table osm_car_parkings_capacity_h3_in as (
 create index on osm_car_parkings_capacity_h3_in using gist(geom);
 
 -- distribute capacity across hexagons proportionally to the area/length of the intersecting segment
-drop table if exists osm_car_parkings_capacity_h32;
-create table osm_car_parkings_capacity_h32 as (
+drop table if exists osm_car_parkings_capacity_h3;
+create table osm_car_parkings_capacity_h3 as (
     select h3,
            sum(osm_car_parkings_capacity) as osm_car_parkings_capacity,
            resolution

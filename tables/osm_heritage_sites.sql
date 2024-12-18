@@ -4,7 +4,7 @@ create table osm_heritage_sites as (
         osm_type,
         osm_id,
         case
-            when tags ->> 'heritage' = 'unesco' then 1
+            when tags ->> 'heritage' = 'UNESCO' then 1
             when tags ->> 'heritage' = 'federal' then 2
             when tags ->> 'heritage' = 'regional' then 4
             when tags ->> 'heritage' ~ '^\d+(;\d+)+$' then (

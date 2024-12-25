@@ -3,7 +3,11 @@ create table osm_heritage_sites as (
     select distinct on (osm_id, osm_type)
         osm_type,
         osm_id,
-        parse_integer(tags ->> 'heritage')  as heritage_admin_level,
+        case
+            when parse_integer(tags ->> 'heritage') between 0 and 11
+                then parse_integer(tags ->> 'heritage')  
+            else null
+        end                                 as heritage_admin_level,
         tags ->> 'heritage:operator'        as heritage_operator,
         tags,
         ST_Normalize(geog::geometry)        as geom

@@ -683,6 +683,12 @@ values ('osm_public_transport_stops_count', 'Public transport stops', jsonb_buil
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('osm_car_parkings_count', 'Car parkings', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of car parkings in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🅿️');
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('osm_heritage_sites_count', 'Heritage sites', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of heritage sites in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🗿');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('min_osm_heritage_admin_level',  'Heritage Protection Level', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["important"], ["neutral"]]'::jsonb, 'The most significant recognized administrative level of heritage protection within each hex cell. For instance, a lower numeric value might correspond to an internationally recognized (e.g., UNESCO) site, while higher values may indicate national, regional, or local protections.', 'World', 'daily', 'n', TRUE, '🏰');
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

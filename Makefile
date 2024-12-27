@@ -701,7 +701,7 @@ db/table/osm_building_count_grid_h3_r11: db/table/osm_buildings | db/table ## Co
 	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r11 -v item_count=building_count
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r11 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 db/procedure/generate_overviews | db/table ## Count max amount of buildings at hexagons from all building datasets.
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r11 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 | db/procedure/generate_overviews db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
 	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 11);"
 	touch $@
@@ -1076,6 +1076,35 @@ deploy/s3/prod/reports/prod_reports_public: deploy/geocint/reports/prod/reports.
 	touch $@
 
 ### End Disaster Ninja Reports block ###
+
+### World Sattlement Footprint block ###
+data/in/wsf: ## Directory for wsf population raster files
+	mkdir -p $@
+
+data/mid/wsf: ## Directory for wsf population unzipped raster files
+	mkdir -p $@
+
+data/in/wsf/wsf20241211T162735Z-001.zip: | data/in/wsf ## download data
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/population/wsf20241211T162735Z-001.zip $@ --profile geocint_pipeline_sender
+
+data/mid/wsf/unzip: data/in/wsf/wsf20241211T162735Z-001.zip | data/mid/wsf ## Unzip population raster files in parallel
+	rm -f data/mid/wsf/*
+	unzip -o data/in/wsf/wsf20241211T162735Z-001.zip -d data/mid/wsf/
+	rm -f data/mid/wsf/*.qml
+	touch $@
+
+db/table/wsf_population_raster: data/mid/wsf/unzip  ## Import into db population raster files in parallel
+	psql -c "drop table if exists wsf_population_raster;"
+	raster2pgsql -p -Y -s 4326 data/mid/wsf/*pop202407_ADM1.tif -t auto wsf_population_raster | psql -q
+	ls data/mid/wsf/*pop202407_ADM1.tif | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=4 raster2pgsql -a -Y -s 4326 {} -t auto wsf_population_raster | psql -q'
+	touch $@
+
+db/table/wsf_population_h3: db/table/wsf_population_raster ## Create table with h3 index and population from raster tables in parallel
+	psql -f tables/population_raster_grid_h3_r11.sql -v population_raster=wsf_population_raster -v population_raster_grid_h3_r11=wsf_population_h3
+	psql -c "call generate_overviews('wsf_population_h3', '{population}'::text[], '{sum}'::text[], 11);"
+	touch $@
+
+### END World Sattlement Footprint block ###
 
 data/in/iso_codes.csv: | data/in ## Download ISO codes for countries from wikidata.
 	wget 'https://query.wikidata.org/sparql?query=SELECT DISTINCT ?isoNumeric ?isoAlpha2 ?isoAlpha3 ?countryLabel WHERE {?country wdt:P31/wdt:P279* wd:Q56061; wdt:P299 ?isoNumeric; wdt:P297 ?isoAlpha2; wdt:P298 ?isoAlpha3. SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }}' --retry-on-http-error=500 --header "Accept: text/csv" -O $@
@@ -2889,3 +2918,9 @@ data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_upda
 
 data/out/csv/population_11.csv: ## extract population high res
 	psql -q -X -c "copy (select h3, population from kp_h3r11 where h3 is not null and population is not null and population > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/population_11.csv
+
+data/out/csv/population_night_sample.csv: db/table/wsf_population_h3 ## extract population high res
+	psql -q -X -c "copy (select h3, population from wsf_population_h3 where h3 is not null and population is not null and population > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/population_night_sample.csv
+
+deploy_indicators/test/uploads/population_night_sample_upload: data/out/csv/population_night_sample.csv  ## upload population to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population_night_sample.csv "population_night_sample" db/table/wsf_population_h3

@@ -689,6 +689,45 @@ values ('osm_heritage_sites_count', 'Heritage sites', jsonb_build_array('© Open
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('min_osm_heritage_admin_level',  'Heritage Protection Level', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["important"], ["neutral"]]'::jsonb, 'The most significant recognized administrative level of heritage protection within each hex cell. For instance, a lower numeric value might correspond to an internationally recognized (e.g., UNESCO) site, while higher values may indicate national, regional, or local protections.', 'World', 'daily', 'n', TRUE, '🏰');
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('foursquare_os_places_count', 'Foursquare open source places', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Total count of POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '📍');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('coffee_shops_fsq_count', 'Coffee shops', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of coffee shops POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '☕');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('kebab_restaurants_fsq_count', 'Kebab restaurants', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of kebab restaurants POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🥙');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('business_and_professional_services_fsq_count', 'Business services', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of business and professional services POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🏢');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('dining_and_drinking_fsq_count', 'Dining and drinking', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of dining and drinking POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🍽️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('retail_fsq_count', 'Retail', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of retail POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🛍️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('community_and_government_fsq_count', 'Community and government', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of community and government POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🏛️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('travel_and_transportation_fsq_count', 'Travel and transportation', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of travel and transportation POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '✈️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('landmarks_and_outdoors_fsq_count', 'Landmarks and outdoors', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of landmarks and outdoor POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🏞️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('health_and_medicine_fsq_count', 'Health and medicine', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of health and medicine POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '⚕️');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('arts_and_entertainment_fsq_count', 'Arts and entertainment', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of arts and entertainment POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🎨');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('sports_and_recreation_fsq_count', 'Sports and recreation', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of sports and recreation POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '⚽');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
+values ('events_fsq_count', 'Events', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of events POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🎉');
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

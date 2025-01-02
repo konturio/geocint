@@ -690,7 +690,7 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('min_osm_heritage_admin_level',  'Heritage Protection Level', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["important"], ["neutral"]]'::jsonb, 'The most significant recognized administrative level of heritage protection within each hex cell. For instance, a lower numeric value might correspond to an internationally recognized (e.g., UNESCO) site, while higher values may indicate national, regional, or local protections.', 'World', 'daily', 'n', TRUE, '🏰');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
-values ('foursquare_os_places_count', 'Places count', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Total count of POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '📍');
+values ('foursquare_os_places_count', 'Foursquare open source places', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Total count of POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '📍');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('coffee_shops_fsq_count', 'Coffee shops', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of coffee shops POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '☕');

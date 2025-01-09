@@ -36,7 +36,7 @@ declare
 begin
     -- Get the list of all files in the directory
     for file_name in
-        select fls from (select pg_ls_dir('/home/gis/test/fsqr') as fls) as f
+        select fls from (select pg_ls_dir('data/in/foursquare/foursquare_os_places') as fls) as f
         where fls like 'places-%.zstd.parquet'
     loop
 
@@ -74,7 +74,7 @@ begin
                 fsq_category_labels text[],
                 geom bytea,
                 bbox jsonb
-            ) server parquet_srv options (filename ''/home/gis/test/fsqr/%s'');',
+            ) server parquet_srv options (filename ''data/in/foursquare/foursquare_os_places/%s'');',
             file_name
         );
 
@@ -135,7 +135,7 @@ create foreign table temp_parquet_table (
     level5_category_name text,
     level6_category_id text,
     level6_category_name text
-) server parquet_srv options (filename '/home/gis/test/fsqr/categories.zstd.parquet');
+) server parquet_srv options (filename 'data/in/foursquare/foursquare_os_places/categories.zstd.parquet');
 
 drop table if exists foursquare_os_places_categories;
 create table foursquare_os_places_categories as (

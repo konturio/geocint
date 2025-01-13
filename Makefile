@@ -2393,10 +2393,10 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits | db/procedure/generat
 	touch $@
 
 data/in/foursquare/foursquare_os_places/download: | data/in/foursquare/foursquare_os_places ## download input data
-	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/places/parquet . --recursive --profile geocint_pipeline_sender
-	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/categories/parquet . --recursive --profile geocint_pipeline_sender
+	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/places/parquet data/in/foursquare/foursquare_os_places/ --recursive --profile geocint_pipeline_sender
+	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/categories/parquet data/in/foursquare/foursquare_os_places/ --recursive --profile geocint_pipeline_sender
 
-db/table/foursquare_os_places: data/in/foursquare_os_places/download | db/table ## load data to database
+db/table/foursquare_os_places: data/in/foursquare/foursquare_os_places/download | db/table ## load data to database
 	psql -f tables/foursquare_os_places_import.sql
 	touch $@
 

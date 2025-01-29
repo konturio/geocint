@@ -2393,15 +2393,29 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits | db/procedure/generat
 	touch $@
 
 data/in/foursquare/foursquare_os_places/download: | data/in/foursquare/foursquare_os_places ## download input data
-	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/places/parquet . --recursive --profile geocint_pipeline_sender
-	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/categories/parquet . --recursive --profile geocint_pipeline_sender
-
-db/table/foursquare_os_places: data/in/foursquare_os_places/download | db/table ## load data to database
-	psql -f tables/foursquare_os_places_import.sql
+	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/places/parquet data/in/foursquare/foursquare_os_places/ --recursive --profile geocint_pipeline_sender
+	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/categories/parquet data/in/foursquare/foursquare_os_places/ --recursive --profile geocint_pipeline_sender
 	touch $@
 
-db/table/foursquare_os_places_h3: db/table/foursquare_os_places | db/table ## transform foursquare data to h3
+db/table/foursquare_os_places: data/in/foursquare/foursquare_os_places/download | db/table ## load data to database
+	psql -c "create server if not exists parquet_srv foreign data wrapper parquet_fdw options (public 'true');"
+	psql -c "drop table if exists foursquare_os_places;"
+	psql -c "create table foursquare_os_places (fsq_place_id text,name text,latitude double precision,longitude double precision,address text,locality text,region text,postcode text,admin_region text,post_town text,po_box text,country text,date_created text,date_refreshed text,date_closed text,tel text,website text,email text,facebook_id bigint,instagram text,twitter text,fsq_category_ids text[],fsq_category_labels text[],geom bytea);"
+	ls ${GEOCINT_WORK_DIRECTORY}/geocint/data/in/foursquare_os_places/places-*.zstd.parquet | parallel -j 1 "psql -f tables/foursquare_os_places_import.sql -v parquet_file='{}'"
+	psql -c "create index on foursquare_os_places using gin(fsq_category_ids);"
+	touch $@
+
+db/table/foursquare_os_places_categories: data/in/foursquare/foursquare_os_places/download | db/table ## load categories to database
+	psql -c "drop foreign table if exists temp_parquet_table;"
+	psql -c "create foreign table temp_parquet_table (category_id text, category_level int, category_name text, category_label text, level1_category_id text, level1_category_name text, level2_category_id text, level2_category_name text, level3_category_id text, level3_category_name text, level4_category_id text, level4_category_name text, level5_category_id text, level5_category_name text, level6_category_id text, level6_category_name text) server parquet_srv options (filename '${GEOCINT_WORK_DIRECTORY}/geocint/data/in/foursquare/foursquare_os_places/categories.zstd.parquet');"
+	psql -c "drop table if exists foursquare_os_places_categories;"
+	psql -c "create table foursquare_os_places_categories as (select * from temp_parquet_table);"
+	psql -c "drop foreign table if exists temp_parquet_table;"
+	touch $@
+
+db/table/foursquare_os_places_h3: db/table/foursquare_os_places db/table/foursquare_os_places_categories | db/table ## transform foursquare data to h3
 	psql -f tables/foursquare_os_places_h3.sql
+	touch $@
 
 db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/live_sensor_data_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/oam_global_coverage_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/oam_number_of_pixels_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 db/table/osm_financial_venues_h3 db/table/osm_education_venues_h3 db/table/osm_emergency_facilities_h3 db/table/osm_transport_facilities_h3 db/table/osm_car_parkings_capacity_h3 db/table/osm_heritage_sites_h3 db/table/foursquare_os_places_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
 	psql -f tables/stat_h3.sql

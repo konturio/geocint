@@ -426,7 +426,7 @@ values ('waste_basket_coverage_area_km2', 'Waste containers', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('populated_areas_proximity_m', 'Densely populated area proximity', jsonb_build_array(
         'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, 'Distance to closest Kontur Population cell with population > 80 ppl', 'World', 'daily', 'm', TRUE, '🏡👫');
+        '[["good"], ["bad"]]'::jsonb, 'Distance to closest Kontur Population cell with population > 80 ppl. This indicator is valid for non-populated areas between cities.', 'World', 'daily', 'm', TRUE, '🏡👫');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji)
 values ('power_substations_proximity_m', 'Power substations proximity', jsonb_build_array(

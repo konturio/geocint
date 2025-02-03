@@ -1,13 +1,11 @@
 drop table if exists osm_buildings_parts_in;
 create table osm_buildings_parts_in as (
-    select osm_type,
-           osm_id,
-           geog::geometry                            as geom,
+    select geog::geometry                            as geom,
            parse_integer(tags ->> 'building:levels') as levels,
-           parse_float(tags ->> 'height')            as height,
-           tags
+           parse_float(tags ->> 'height')            as height
     from osm o
     where tags ? 'building:part'
+          and (tags ? 'building:levels' or tags ? 'height')
 );
 
 drop table if exists osm_building_levels_h3;

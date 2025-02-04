@@ -1100,8 +1100,12 @@ db/table/wsf_population_raster: data/mid/wsf/unzip  ## Import into db population
 	touch $@
 
 db/table/wsf_population_h3: db/table/wsf_population_raster ## Create table with h3 index and population from raster tables in parallel
-	psql -f tables/population_raster_grid_h3_r11.sql -v population_raster=wsf_population_raster -v population_raster_grid_h3_r11=wsf_population_h3
-	psql -c "call generate_overviews('wsf_population_h3', '{population}'::text[], '{sum}'::text[], 11);"
+	psql -f tables/wsf_population_h3.sql
+	touch $@
+
+db/table/wsf_mask_h3_r11: | db/table/kontur_boundaries ## create h3 r11 mask for available wsf data
+	psql -c "select h3_polygon_to_cells(geom, 11) as h3 into wsf_mask from kontur_boundaries where hasc_wiki in ('UZ', 'MD', 'TM');"
+	psql -c "create index on wsf_mask using btree(h3);"
 	touch $@
 
 ### END World Sattlement Footprint block ###
@@ -1324,7 +1328,7 @@ db/procedure/insert_projection_54009: | db/procedure ## Add ESRI-54009 projectio
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r11: db/table/hrsl_population_grid_h3_r11 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r11 | db/table ## General table for population data at hexagons.
+db/table/population_grid_h3_r11: db/table/hrsl_population_grid_h3_r11 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r11 db/table/wsf_population_h3 | db/table/wsf_mask_h3_r11 db/table ## General table for population data at hexagons.
 	psql -f tables/population_grid_h3_r11.sql
 	touch $@
 

@@ -787,7 +787,6 @@ db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table
 
 db/table/osm_building_levels_h3: db/table/osm_buildings | db/procedure/generate_overviews db/table ## Calculate max and average levels of OSM buildings at hexagons.
 	psql -f tables/osm_building_levels_h3.sql
-	psql -c "call generate_overviews('osm_building_levels_h3', '{max_levels,avg_levels}'::text[], '{max,avg}'::text[], 8);"
 	touch $@
 
 ### GADM 4.10 export block -- Database of Global Administrative Areas ###

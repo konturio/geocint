@@ -38,7 +38,8 @@ params=$(psql -Xqtc "
     'coverage', coverage,
     'update_frequency', update_frequency,
     'unit_id', unit_id,
-    'emoji', emoji
+    'emoji', emoji,
+    'downscale', downscale
   )::text
   from bivariate_indicators where param_id = '$3';
 ")
@@ -53,6 +54,7 @@ layer_coverage=$(echo "$params" | jq -r '.coverage')
 layer_update_freq=$(echo "$params" | jq -r '.update_frequency')
 layer_unit_id=$(echo "$params" | jq -r '.unit_id')
 layer_emoji=$(echo "$params" | jq -r '.emoji')
+layer_downscale=$(echo "$params" | jq -r '.downscale')
 
 # Retrieve and process copyrights separately
 layer_copyrights=$(psql -Xqtc "SELECT copyrights::text FROM bivariate_indicators WHERE param_id = '$3';" | sed 's/;/.,/g' | sed 's/, /,/g' | jq -c .)
@@ -67,11 +69,11 @@ existed_uuid=$(bash scripts/update_indicators_list.sh "$1" | jq -c '.[]' | jq -c
 if [[ -z $existed_uuid ]]; then
   action="upload"
   method="POST"
-  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"lastUpdated\": ${layer_last_updated}}"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"lastUpdated\": ${layer_last_updated}}"
 else
   action="update"
   method="PUT"
-  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existed_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"lastUpdated\": ${layer_last_updated}}"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existed_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"lastUpdated\": ${layer_last_updated}}"
 fi
 
 # Execute the curl request to upload the file

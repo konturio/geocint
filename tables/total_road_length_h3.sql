@@ -15,8 +15,10 @@ create table total_road_length_h3_temp_in as (
          on fb.h3 = osm.h3
          full outer join microsoft_roads_h3 mcr
          on fb.h3 = mcr.h3
-    where (coalesce(fb.resolution, osm.resolution) = 8)
+    where (coalesce(fb.resolution, osm.resolution, mcr.resolution) = 11)
 );
+
+create index on total_road_length_h3_temp_in using gist(geom);
 
 -- add facebook roads length before filtering
 create table total_road_length_h3_temp as (
@@ -28,9 +30,9 @@ create table total_road_length_h3_temp as (
            h.h3 as no_facebook_mark,
            coalesce(fin.fb_roads_in_length, 0) as fb_roads_in_length
     from total_road_length_h3_temp_in t
-         left join hexagons_for_regression h
-         on t.h3 = h.h3
-         left join facebook_roads_in_h3_r8 fin
+         left join areas_for_regression h
+         on ST_Intersects(t.geom,h.geom)
+         left join facebook_roads_in_h3_r11 fin
          on t.h3 = fin.h3
 );
 
@@ -45,7 +47,7 @@ with regression as (select regr_slope(trl.total_road_length, pop.population)    
                                  percentile_disc(0.95) within group (order by pop.population) pop_upper_threshold
                           from kontur_population_h3 pop
                           where (pop.population > 0)
-                            and (pop.resolution = 8)) as pop_thr,
+                            and (pop.resolution = 11)) as pop_thr,
 
                          (select percentile_disc(0.01) within group (order by trl.total_road_length) road_lower_threshold,
                                  percentile_disc(0.99) within group (order by trl.total_road_length) road_upper_threshold

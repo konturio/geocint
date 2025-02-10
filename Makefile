@@ -322,8 +322,8 @@ db/table/facebook_roads_last_filtered: db/table/facebook_roads_in | db/table ## 
 	psql -c "create table if not exists facebook_roads_last_filtered as (select '2006-01-01'::date::timestamp as ts);"
 	touch $@
 
-db/table/hexagons_for_regression: db/table/kontur_boundaries db/table/land_polygons_h3_r8 ## Create table with hexes only from countries where facebook data were not published
-	psql -f tables/hexagons_for_regression.sql
+db/table/areas_for_regression: db/table/kontur_boundaries ## Create table with areas only from countries where facebook data were not published
+	psql -f tables/areas_for_regression.sql
 	touch $@
 
 db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last_filtered db/table/osm_roads | db/table ## Filter Facebook roads.
@@ -2284,7 +2284,7 @@ db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/l
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
 
-db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/hexagons_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/table/microsoft_roads_h3 | db/procedure/generate_overviews db/table ## adjust total road length with linear regression from population
+db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/areas_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/table/microsoft_roads_h3 | db/procedure/generate_overviews db/table ## adjust total road length with linear regression from population
 	psql -f tables/total_road_length_h3.sql
 	psql -c "call generate_overviews('total_road_length_h3', '{total_road_length}'::text[], '{sum}'::text[], 8);"
 	touch $@

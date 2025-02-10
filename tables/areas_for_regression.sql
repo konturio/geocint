@@ -1,6 +1,6 @@
 -- Table with geometry where there were no Facebook roads originally
-drop table if exists hexagons_for_regression_in;
-create table hexagons_for_regression_in as (
+drop table if exists areas_for_regression;
+create table areas_for_regression as (
 	-- Iran, North Korea, Syria, Alaska, Greenland
 	select ST_Subdivide(geom, 50) as geom
 	from kontur_boundaries
@@ -23,18 +23,4 @@ create table hexagons_for_regression_in as (
     where hasc_wiki = 'CA'
 );
 
-drop table if exists hexagons_for_regression_mid;
-create table hexagons_for_regression_mid as (
-	select ST_Transform(geom, 3857) as geom
-	from hexagons_for_regression_in
-);
-
-create index on hexagons_for_regression_mid using gist(geom);
-
-drop table if exists hexagons_for_regression;
-create table hexagons_for_regression as (
-	select l.h3
-	from land_polygons_h3_r8 l,
-	     hexagons_for_regression_mid h
-	where ST_Intersects(l.geom, h.geom)
-);
+create index on areas_for_regression using gist(geom);

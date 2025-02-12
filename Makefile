@@ -308,10 +308,13 @@ data/mid/facebook_roads/extracted: data/in/facebook_roads/validity_controlled | 
 	touch $@
 
 db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## Loading Facebook roads into db.
+	psql -c "drop table if exists facebook_roads_raw;"
+	psql -c "create table facebook_roads_raw (way_fbid text, highway_tag text, geom geometry(geometry, 4326));"
+	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_raw'
 	psql -c "drop table if exists facebook_roads_in;"
-	psql -c "create table facebook_roads_in (way_fbid text, highway_tag text, geom geometry(geometry, 4326));"
-	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_in'
+	psql -c "create table facebook_roads_in as (select way_fbid, highway_tag, st_segmentize(geom::geography, 25)::geometry as geom from facebook_roads_raw);"
 	psql -c "vacuum analyse facebook_roads_in;"
+	psql -c "drop table if exists facebook_roads_raw;"
 	touch $@
 
 db/table/facebook_roads_in_h3_r11: db/table/facebook_roads_in | db/table ## Build h3 overviews for prefiltered Facebook roads at all levels.

@@ -3,7 +3,9 @@ create table osm_road_segments_h3  as (
     select
         11::int                                                as resolution,
         h3_lat_lng_to_cell(ST_StartPoint(seg_geom)::point, 11) as h3,
-        sum(length) as highway_length
-    from osm_road_segments
+        sum(ST_Length(s.geom::geography))                      as highway_length
+    from osm_road_segments r,
+         ST_DumpSegments(st_segmentize(r.seg_geom::geography, 25)::geometry) s
     where seg_geom is not null
-    group by h3);
+    group by h3
+);

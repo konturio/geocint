@@ -27,7 +27,9 @@ create table total_road_length_h3_temp as (
            t.fb_roads_length,
            t.highway_length,
            t.total_road_length,
-           h.h3 as no_facebook_mark,
+           case 
+               when h.geom is not null then t.h3
+           end                                 as no_facebook_mark,
            coalesce(fin.fb_roads_in_length, 0) as fb_roads_in_length
     from total_road_length_h3_temp_in t
          left join areas_for_regression h

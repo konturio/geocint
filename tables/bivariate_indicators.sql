@@ -48,7 +48,7 @@ values ('populated_area_km2', 'populated area', jsonb_build_array(
         'NZ Building Outlines data sourced from the LINZ Data Service - https://data.linz.govt.nz/',
         'Geoalert Urban Mapping: Chechnya, Moscow region, Tyva, Tashkent, Bukhara, Samarkand, Navoi, Chirchiq - https://github.com/Geoalert/urban-mapping',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["unimportant"], ["important"]]'::jsonb, 'Populated area to the actual release of Kontur Population dataset (2023.11.01).', 'World', 'daily', 'km2', TRUE, '🏡','proportional');
+        '[["unimportant"], ["important"]]'::jsonb, 'Populated area according to the actual release of Kontur Population dataset (2023.11.01).', 'World', 'daily', 'km2', TRUE, '🏡','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('population_next_gen', 'population (next generation)', jsonb_build_array(

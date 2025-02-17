@@ -7,5 +7,4 @@ create table kontur_population_v5_h3 as (
     from kontur_population_v5
 );
 
-
 call generate_overviews('kontur_population_v5_h3', '{population, populated_area_km2}'::text[], '{sum, sum}'::text[], 8);

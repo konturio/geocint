@@ -1,23 +1,29 @@
 drop table if exists osm_unmapped_places_report_in;
 create table osm_unmapped_places_report_in as (
     select row_number() over() id,
-           ST_PointOnSurface(ST_Transform(geom, 4326)) as geom,
-           null::text                                  as hasc,
-           null::text                                  as country,
-           population                                  as population,
-           view_count                                  as view_count,
-           h3                                          as h3,
+           ST_PointOnSurface(ST_Transform(p.geom, 4326)) as geom,
+           null::text                                    as hasc,
+           null::text                                    as country,
+           p.population                                  as population,
+           v.view_count                                  as view_count,
+           v.h3                                          as h3,
 
             -- Generate link for JOSM remote desktop:
            'hrefIcon_[Edit in JOSM](http://localhost:8111/load_and_zoom?' ||
            'left=' || ST_XMin(envelope) || '&right=' || ST_XMax(envelope) ||
            '&top=' || ST_YMax(envelope) || '&bottom=' || ST_YMin(envelope) || ')' as place
-    from stat_h3, ST_Envelope(ST_Transform(geom, 4326)) as envelope
-    where population > 1
-      and view_count > 1000
-      and count = 0
-    order by floor(log10(population / area_km2)) desc,
-             view_count desc
+    from
+      tile_logs_h3 v
+      join kontur_population_h3 p on (v.h3 = p.h3)
+      left join osm_object_count_grid_h3 c on (v.h3 = c.h3)
+      ST_Envelope(ST_Transform(p.geom, 4326)) as envelope
+    where
+      p.population > 1
+      and v.view_count > 1000
+      and c.count = 0
+    order by
+      floor(log10(population / area_km2)) desc,
+      view_count desc
 );
 
 update osm_unmapped_places_report_in o

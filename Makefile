@@ -65,7 +65,7 @@ data/out/global_fires: | data/out ## Data generated within project Global Fires.
 data/out/docker: | data/out ## Docker images.
 	mkdir -p $@
 
-data/out/population: | data/out ## Directory for storing data_stat_h3 and bivariate datasets dump.
+data/out/population: | data/out ## Directory for storing and bivariate datasets dump.
 	mkdir -p $@
 
 data/out/kontur_boundaries: | data/out ## Directory for Kontur Boundaries final dataset.
@@ -724,11 +724,11 @@ db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundarie
 	psql -f tables/osm_gadm_comparison.sql
 	touch $@
 
-db/table/osm_unmapped_places_report: db/table/stat_h3 db/table/hdx_boundaries | db/table ## Report with a list of vieved but unmapped populated places
+db/table/osm_unmapped_places_report: db/table/osm_object_count_grid db/table/kontur_population_h3 db/table/tile_logs_h3 db/table/hdx_boundaries | db/table ## Report with a list of viewed but unmapped populated places
 	psql -f tables/osm_unmapped_places_report.sql
 	touch $@
 
-db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries | db/table ## Report with a list places where Facebook has more roads than OpenStreetMap
+db/table/osm_missing_roads: db/table/osm_object_count_grid_h3 db/table/building_count_grid_h3 db/table/facebook_roads_h3 db/table/osm_admin_boundaries | db/table ## Report with a list places where Facebook has more roads than OpenStreetMap
 	psql -f tables/osm_missing_roads.sql
 	touch $@
 
@@ -1713,43 +1713,6 @@ db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visit
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_forest_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/kontur_population_v3_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/tile_logs_bf2402 db/table/global_rva_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
-	psql -f tables/stat_h3.sql
-	touch $@
-
-db/table/stat_h3_zeros_check: db/table/stat_h3 | db/table ## control that there is no indicators in stat_h3 where all values on 8th resolution are zeros.
-	psql -qXc "copy (select column_name::text FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'stat_h3' and column_name not in ('h3', 'geom', 'zoom', 'resolution')) to stdout with csv;" | parallel "bash scripts/psql_query_number_of_records_at_stat_h3.sh {}" | xargs -I {} bash scripts/check_value_is_not_zero_with_description.sh {}
-	touch $@
-
-db/table/stat_h3_quality: db/table/stat_h3 db/table/stat_h3_zeros_check | db/table ## summarized statistics aggregated on H3 hexagons between resolutions.
-	psql -f tables/stat_h3_quality.sql
-	touch $@
-
-db/table/bivariate_axis: db/table/bivariate_indicators db/table/stat_h3 db/table/stat_h3_quality | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
-	psql -f tables/bivariate_axis.sql
-	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' 'psql -f tables/bivariate_axis_stops.sql -v numerator={1} -v denominator={2}'
-	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | tee /dev/tty | parallel --colsep ',' 'psql -f tables/bivariate_axis_quality_estimate.sql -v numerator={1} -v denominator={2}'
-	psql -f tables/bivariate_axis_updates.sql
-	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' "psql -f tables/bivariate_axis_analytics.sql -v numerator={1} -v denominator={2}"
-	psql -c "vacuum analyze bivariate_axis;"
-	touch $@
-
-db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3_quality db/table/bivariate_indicators | db/table ## Precalculated correlations for bivariate layers
-	psql -f tables/bivariate_axis_correlation.sql
-	touch $@
-
-db/table/bivariate_overlays: db/table/osm_meta db/table/tile_logs | db/table ## Several default indicator presets for Bivariate manager.
-	psql -f tables/bivariate_overlays.sql
-	touch $@
-
-db/table/bivariate_indicators: db/table/stat_h3 | db/table ## Bivariate indicators properties, and attribution used in Bivariate manager.
-	psql -f tables/bivariate_indicators.sql
-	touch $@
-
-db/table/bivariate_colors: db/table/stat_h3 | db/table ## Color pallets used for styling layers in Bivariate manager.
-	psql -f tables/bivariate_colors.sql
-	touch $@
-
 data/tile_logs: | data ## Directory for OpenStreetMap tiles usage statistics dataset.
 	mkdir -p $@
 
@@ -1872,92 +1835,6 @@ deploy/prod/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/prod ## Deploy 
 		rm -f "$$HOME/tmp/users_tiles.tar.bz2"; \
 	'
 	touch $@
-
-data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## Crafting production friendly SQL dump for stat_h3 table
-	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner --no-tablespaces -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') scripts/population_api_dump_footer.sql | pigz" > $@__TMP
-	mv $@__TMP $@
-	touch $@
-
-data/out/population/bivariate_tables_checks: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## series of bivariate tables quality checks
-	psql -AXt -c "select count(*) from bivariate_axis where quality = 'NaN' or quality is NULL;" |  xargs -I {} bash scripts/check_items_count.sh {} 0
-	psql -AXt -c "select count(*) from bivariate_axis_correlation where quality = 'NaN' or correlation = 'NaN' or quality is NULL or correlation is NULL;" |  xargs -I {} bash scripts/check_items_count.sh {} 0
-	touch $@
-
-data/out/population/bivariate_tables.sqld.gz: data/out/population/bivariate_tables_checks | data/out/population ## Crafting bivariate tables SQL dump
-	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays | pigz" > $@__TMP
-	mv $@__TMP $@
-	touch $@
-
-deploy/s3/test/stat_h3_dump: data/out/population/stat_h3.sqld.gz | deploy/s3/test ## Putting stat_h3 dump from local folder to AWS test folder in private bucket.
-	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz.bak --profile geocint_pipeline_sender || true
-	aws s3 cp data/out/population/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/stat_h3.sqld.gz --profile geocint_pipeline_sender
-	touch $@
-
-deploy/s3/test/bivariate_tables_dump: data/out/population/bivariate_tables.sqld.gz | deploy/s3/test ## Putting stat_h3 dump from local folder to AWS test folder in private bucket.
-	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
-	aws s3 cp data/out/population/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/test/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
-	touch $@
-
-deploy/dev/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/dev ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on TEST DVLP server.
-	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible zigzag_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
-	ansible zigzag_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
-	ansible zigzag_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/stat_h3.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible zigzag_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=milan.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
-	ansible zigzag_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
-	touch $@
-
-deploy/dev/cleanup_cache: deploy/dev/population_api_tables | deploy/dev ## Clear insights-api cache on DEV.
-	bash scripts/check_http_response_code.sh GET https://test-apps02.konturlabs.com/insights-api/cache/cleanUp 200
-	touch $@
-
-deploy/test/population_api_tables: deploy/s3/test/stat_h3_dump deploy/s3/test/bivariate_tables_dump | deploy/test ## Getting stat_h3 and bivariate tables dump from AWS private test folder and restoring it on TEST QA server.
-	ansible sonic_insights_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible sonic_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
-	ansible sonic_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
-	ansible sonic_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=london.kontur.io state=restore target=$$HOME/tmp/stat_h3.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible sonic_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=london.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible sonic_insights_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
-	ansible sonic_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
-	touch $@
-
-deploy/test/cleanup_cache: deploy/test/population_api_tables | deploy/test ## Clear insights-api cache on Test.
-	bash scripts/check_http_response_code.sh GET https://test-apps.konturlabs.com/insights-api/cache/cleanUp 200
-	touch $@
-
-deploy/s3/prod/stat_h3_dump: data/out/population/stat_h3.sqld.gz | deploy/s3/prod ## Copying stat_h3 table dump from server to AWS-prod one.
-	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz.bak --profile geocint_pipeline_sender || true
-	aws s3 cp data/out/population/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz --profile geocint_pipeline_sender
-	touch $@
-
-deploy/s3/prod/bivariate_tables_dump: data/out/population/bivariate_tables.sqld.gz | deploy/s3/prod ## Сopying bivariate tables dump from server to AWS-prod one.
-	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
-	aws s3 cp data/out/population/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
-	touch $@
-
-deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/stat_h3_dump deploy/s3/prod/bivariate_tables_dump data/out/population/stat_h3.sqld.gz data/out/population/bivariate_tables.sqld.gz | deploy/s3/prod ## Checking if dumps on AWS is not older than local file.
-	bash scripts/check_population_api_tables_dump_dates.sh
-	touch $@
-
-deploy/prod/population_api_tables: deploy/s3/prod/population_api_tables_check_mdate | deploy/prod ## Getting population_api_tables dump from AWS private prod folder and restoring it.
-	ansible lima_insights_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
-	ansible lima_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
-	ansible lima_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
-	ansible lima_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=paris.kontur.io state=restore target=$$HOME/tmp/stat_h3.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible lima_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=paris.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
-	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
-	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
-	touch $@
-
-deploy/prod/cleanup_cache: deploy/prod/population_api_tables | deploy/prod ## Clear insights-api cache on Prod.
-	bash scripts/check_http_response_code.sh GET https://apps.kontur.io/insights-api/cache/cleanUp 200
-	touch $@
-
 
 data/in/kontur_events: | data/in ## Download dir for kontur_events files.
 	mkdir -p $@

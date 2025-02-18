@@ -7,6 +7,7 @@ from typing import Dict, Set, Union
 from hdx.data.organization import Organization
 from hdx.data.dataset import Dataset
 from hdx.location.country import Country
+from hdx.data.user import User
 from slugify import slugify
 
 from hdxloader.dataset import (
@@ -20,7 +21,8 @@ from hdxloader.datasource import (
     Datasource,
 )
 
-
+# TO DO
+# Looks like we should move these variables to special configuration file
 ORGANIZATION_NAME = 'kontur'
 SCRIPT_NAME = 'HDX: Kontur Data Loader'
 
@@ -102,7 +104,8 @@ class Loader:
                 batch=self._uuid,
             )
 
-
+# TO DO
+# expected tags for type should be moved to separate config file, to avoid errors in case, when tasg were changed by HDX
 def get_datasets_for_dataset_type(dataset_type: DatasetType) -> Dict[str, Dataset]:
     def _is_dataset_ok_by_tags(
             dataset_: Dataset,
@@ -114,14 +117,14 @@ def get_datasets_for_dataset_type(dataset_type: DatasetType) -> Dict[str, Datase
         }
         expected_tags_for_type = {
             DatasetType.CountryAdministrativeDivisionWithAggregatedPopulation: {
-                'administrative divisions',
-                'baseline population',
-                'geodata',
+                  'baseline population', 
+                  'geodata', 
+                  'administrative boundaries-divisions'
             },
             DatasetType.CountryPopulationDensityFor400mH3Hexagons: {
-                'baseline population',
-                'distributions',
-                'geodata',
+                  'baseline population', 
+                  'geodata', 
+                  'population'
             },
         }
         skip_global = dataset_type in {
@@ -158,12 +161,15 @@ def get_datasets_for_dataset_type(dataset_type: DatasetType) -> Dict[str, Datase
 
 def create_datasets_for_all_hdx_countries(
         dataset_type: DatasetType,
-        owner: str
+        owner: str,
+        create_from_hasc_code: bool,
+        hasc_list: str,
+        create_private: bool
 ):
     we_are = Organization.read_from_hdx(identifier=ORGANIZATION_NAME)
     i_might_be = [
         _user
-        for _user in we_are.get_users()
+        for _user in User.get_all_users()
         if _user['name'] == owner
     ]
     assert i_might_be and len(i_might_be) == 1, f'No matching user found: {owner}'
@@ -183,6 +189,25 @@ def create_datasets_for_all_hdx_countries(
         if _country_iso3 not in countries_with_dataset
     }
 
+    # check if we should use create_from_hasc_code mod instead of creating all non-existing datasets
+    if create_from_hasc_code:
+        
+        assert hasc_list and len(hasc_list) >= 2, \
+            '--hasc-list should contains at least 1 valid hasc code (use comma to separate multiple codes; do not put comma at the end)'
+        
+        hascs = [x.upper() for x in hasc_list.split(',')]
+
+        # modify list of countries to include only what you need
+        countries_without_dataset = {
+            _country_iso3: _country
+            for _country_iso3, _country in countries_without_dataset.items()
+            if _country['#country+code+v_iso2'] in hascs
+        }
+
+    assert countries_without_dataset and len(hasc_list) > 0, \
+            'there is no countries without dataset for selected dataset type'
+
+
     new_datasets = []
 
     for country_iso3, country in countries_without_dataset.items():
@@ -198,8 +223,11 @@ def create_datasets_for_all_hdx_countries(
         )
         dataset.set_organization(we_are['id'])
         dataset.set_maintainer(i_am['id'])
-        dataset.set_date_of_dataset(datetime.datetime.now())
+        dataset.update({'dataset_date':"[{0}T00:00:00 TO {0}T23:59:59]".format(datetime.datetime.today().strftime('%Y-%m-%d'))})
         dataset.set_expected_update_frequency('-2')
+        
+        if create_private:
+            dataset.update({'private':True})
 
         new_datasets.append(dataset)
 

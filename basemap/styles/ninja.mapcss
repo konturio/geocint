@@ -142,7 +142,7 @@ area|z10-[natural=water] {width: 0.3; opacity: 0.2; color: black;}
 
 /* COUNTRIES,CITIES AND REGIONS */
 
-node|z1-7[place=country]    {text-padding: 3; text: name:en; font-size: 16; text-transform:uppercase; font-family: "Noto Sans Bold";}
+node|z1-7[place=country]    {text-padding: 3; text: name; font-size: 16; text-transform:uppercase; font-family: "Noto Sans Bold";}
 node|z4-14[place=city]      {text: name;   font-size: 14;}
 node|z3-14[capital=yes]     {text: name;   font-size: 16; font-family: "Open Sans Semibold" }
 node|z3-6[place=state], node|z3-6[place=province]      {text: name; text-transform: uppercase; font-size: 14; text-padding: 10 }

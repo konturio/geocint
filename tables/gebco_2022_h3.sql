@@ -7,4 +7,5 @@ create table gebco_2022_h3 as (
     from
         gebco_2022_elevation_h3 AS e
     full join gebco_2022_slopes_h3 AS s using (h3)
+    right join land_polygons_h3_r8 using (h3)
 );

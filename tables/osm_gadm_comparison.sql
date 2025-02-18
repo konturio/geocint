@@ -50,7 +50,7 @@ select  row_number() over(order by l.admin_level, l.gid, g.admin_level, g.gadm_n
 
         -- Generate link for JOSM remote desktop:
         'hrefIcon_[' || case when l.gid = g.gid then '' else 'tab_' end ||
-        g.osm_name || '](http://localhost:8111/load_object?new_layer=false&objects=' ||
+        g.osm_name || '](http://127.0.0.1:8111/load_object?new_layer=false&objects=' ||
         left(g.osm_type, 1) || g.osm_id || '&relation_members=true)'                        as "OSM name",
 
         case when l.gid = g.gid then '' else 'tab_' end || g.gadm_name                      as "GADM name"

@@ -28,3 +28,23 @@ create table bivariate_axis as (
          bivariate_indicators as b
     where b.is_base and a.param_id != b.param_id
 );
+
+-- During experiment we disabling three base indicators, but we still want to calculate overlays based on them, so we should add missing pairs to bivariate_axis
+insert into bivariate_axis (numerator, denominator, min_label, p25_label, p75_label, max_label, label)
+select numerator,
+       denominator,
+       ''::text as min_label,
+       ''::text as p25_label,
+       ''::text as p75_label,
+       ''::text as max_label,
+       ''::text as label
+from (select distinct x_numerator   as numerator,
+                      x_denominator as denominator
+      from bivariate_overlays
+      union
+      select distinct y_numerator   as numerator,
+                      y_denominator as denominator
+      from bivariate_overlays) a
+where not exists(
+        select * from bivariate_axis b where a.numerator = b.numerator and a.denominator = b.denominator
+    );

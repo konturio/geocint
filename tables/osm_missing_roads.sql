@@ -49,7 +49,7 @@ select
     fb_l as "Facebook roads length, km",
     diff,
     -- Generate link for JOSM remote desktop:
-    'hrefIcon_[Edit in JOSM](http://localhost:8111/load_and_zoom?new_layer=True' ||
+    'hrefIcon_[Edit in JOSM](http://127.0.0.1:8111/load_and_zoom?new_layer=True' ||
     '&left='    || ST_XMin(ST_Envelope(ST_Transform(geom, 4326))) ||
     '&right='  || ST_XMax(ST_Envelope(ST_Transform(geom, 4326))) ||
     '&top='    || ST_YMax(ST_Envelope(ST_Transform(geom, 4326))) ||

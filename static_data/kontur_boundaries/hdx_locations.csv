@@ -7,8 +7,8 @@ https://data.humdata.org/group/asm;asm;AS;American Samoa
 https://data.humdata.org/group/and;and;AD;Andorra
 https://data.humdata.org/group/ago;ago;AO;Angola
 https://data.humdata.org/group/aia;aia;AI;Anguilla
-https://data.humdata.org/group/ata;ata;AQ;Antartica
-https://data.humdata.org/group/atg;atg;AG;Antigua And Barbuda
+https://data.humdata.org/group/ata;ata;AQ;Antarctica
+https://data.humdata.org/group/atg;atg;AG;Antigua and Barbuda
 https://data.humdata.org/group/arg;arg;AR;Argentina
 https://data.humdata.org/group/arm;arm;AM;Armenia
 https://data.humdata.org/group/abw;abw;AW;Aruba
@@ -26,12 +26,13 @@ https://data.humdata.org/group/ben;ben;BJ;Benin
 https://data.humdata.org/group/bmu;bmu;BM;Bermuda
 https://data.humdata.org/group/btn;btn;BT;Bhutan
 https://data.humdata.org/group/bol;bol;BO;Bolivia (Plurinational State of)
-https://data.humdata.org/group/bes;bes;BQ;Bonaire, Saint Eustatius and Saba
-https://data.humdata.org/group/bih;bih;BA;Bosnia And Herzegowina
+https://data.humdata.org/group/bes;bes;BQ;Bonaire, Sint Eustatius and Saba
+https://data.humdata.org/group/bih;bih;BA;Bosnia and Herzegovina
 https://data.humdata.org/group/bwa;bwa;BW;Botswana
 https://data.humdata.org/group/bvt;bvt;BV;Bouvet Island
 https://data.humdata.org/group/bra;bra;BR;Brazil
 https://data.humdata.org/group/iot;iot;IO;British Indian Ocean Territory
+https://data.humdata.org/group/vgb;vgb;VG;British Virgin Islands
 https://data.humdata.org/group/brn;brn;BN;Brunei Darussalam
 https://data.humdata.org/group/bgr;bgr;BG;Bulgaria
 https://data.humdata.org/group/bfa;bfa;BF;Burkina Faso
@@ -77,7 +78,7 @@ https://data.humdata.org/group/fin;fin;FI;Finland
 https://data.humdata.org/group/fra;fra;FR;France
 https://data.humdata.org/group/guf;guf;GF;French Guiana
 https://data.humdata.org/group/pyf;pyf;PF;French Polynesia
-https://data.humdata.org/group/atf;atf;TF;French Southern Territories
+https://data.humdata.org/group/atf;atf;TF;French Southern and Antarctic Territories
 https://data.humdata.org/group/gab;gab;GA;Gabon
 https://data.humdata.org/group/gmb;gmb;GM;Gambia
 https://data.humdata.org/group/geo;geo;GE;Georgia
@@ -95,15 +96,15 @@ https://data.humdata.org/group/gin;gin;GN;Guinea
 https://data.humdata.org/group/gnb;gnb;GW;Guinea-Bissau
 https://data.humdata.org/group/guy;guy;GY;Guyana
 https://data.humdata.org/group/hti;hti;HT;Haiti
-https://data.humdata.org/group/hmd;hmd;HM;Heard And McDonald Islands
-https://data.humdata.org/group/vat;vat;VA;Holy See (Vatican City State)
+https://data.humdata.org/group/hmd;hmd;HM;Heard Island and McDonald Islands
+https://data.humdata.org/group/vat;vat;VA;Holy See
 https://data.humdata.org/group/hnd;hnd;HN;Honduras
-https://data.humdata.org/group/hkg;hkg;HK;Hong Kong
+https://data.humdata.org/group/hkg;hkg;HK;China, Hong Kong Special Administrative Region
 https://data.humdata.org/group/hun;hun;HU;Hungary
 https://data.humdata.org/group/isl;isl;IS;Iceland
 https://data.humdata.org/group/ind;ind;IN;India
 https://data.humdata.org/group/idn;idn;ID;Indonesia
-https://data.humdata.org/group/irn;irn;IR;Iran (Islamic Republic Of)
+https://data.humdata.org/group/irn;irn;IR;Iran (Islamic Republic of)
 https://data.humdata.org/group/irq;irq;IQ;Iraq
 https://data.humdata.org/group/irl;irl;IE;Ireland
 https://data.humdata.org/group/imn;imn;IM;Isle of Man
@@ -117,7 +118,8 @@ https://data.humdata.org/group/kaz;kaz;KZ;Kazakhstan
 https://data.humdata.org/group/ken;ken;KE;Kenya
 https://data.humdata.org/group/kir;kir;KI;Kiribati
 https://data.humdata.org/group/prk;prk;KP;Democratic People's Republic of Korea
-https://data.humdata.org/group/kor;kor;KR;Korea, Republic Of
+https://data.humdata.org/group/kor;kor;KR;Republic of Korea
+https://data.humdata.org/group/xkx;xkx;XK;Kosovo
 https://data.humdata.org/group/kwt;kwt;KW;Kuwait
 https://data.humdata.org/group/kgz;kgz;KG;Kyrgyzstan
 https://data.humdata.org/group/lao;lao;LA;Lao People's Democratic Republic
@@ -128,8 +130,8 @@ https://data.humdata.org/group/lbr;lbr;LR;Liberia
 https://data.humdata.org/group/lby;lby;LY;Libya
 https://data.humdata.org/group/lie;lie;LI;Liechtenstein
 https://data.humdata.org/group/ltu;ltu;LT;Lithuania
-https://data.humdata.org/group/lux;lux;LU;Luxemburg
-https://data.humdata.org/group/mac;mac;MO;Macau
+https://data.humdata.org/group/lux;lux;LU;Luxembourg
+https://data.humdata.org/group/mac;mac;MO;China, Macao Special Administrative Region
 https://data.humdata.org/group/mkd;mkd;MK;North Macedonia
 https://data.humdata.org/group/mdg;mdg;MG;Madagascar
 https://data.humdata.org/group/mwi;mwi;MW;Malawi
@@ -143,8 +145,8 @@ https://data.humdata.org/group/mrt;mrt;MR;Mauritania
 https://data.humdata.org/group/mus;mus;MU;Mauritius
 https://data.humdata.org/group/myt;myt;YT;Mayotte
 https://data.humdata.org/group/mex;mex;MX;Mexico
-https://data.humdata.org/group/fsm;fsm;FM;Micronesia, Federated States Of
-https://data.humdata.org/group/mda;mda;MD;Moldova, Republic Of
+https://data.humdata.org/group/fsm;fsm;FM;Micronesia (Federated States of)
+https://data.humdata.org/group/mda;mda;MD;Republic of Moldova
 https://data.humdata.org/group/mco;mco;MC;Monaco
 https://data.humdata.org/group/mng;mng;MN;Mongolia
 https://data.humdata.org/group/mne;mne;ME;Montenegro
@@ -179,20 +181,20 @@ https://data.humdata.org/group/pol;pol;PL;Poland
 https://data.humdata.org/group/prt;prt;PT;Portugal
 https://data.humdata.org/group/pri;pri;PR;Puerto Rico
 https://data.humdata.org/group/qat;qat;QA;Qatar
-https://data.humdata.org/group/reu;reu;RE;Reunion
+https://data.humdata.org/group/reu;reu;RE;Réunion
 https://data.humdata.org/group/rou;rou;RO;Romania
-https://data.humdata.org/group/rus;rus;RU;Russia
+https://data.humdata.org/group/rus;rus;RU;Russian Federation
 https://data.humdata.org/group/rwa;rwa;RW;Rwanda
 https://data.humdata.org/group/blm;blm;BL;Saint Barthélemy
-https://data.humdata.org/group/shn;shn;SH;St. Helena
-https://data.humdata.org/group/kna;kna;KN;Saint Kitts And Nevis
+https://data.humdata.org/group/shn;shn;SH;Saint Helena
+https://data.humdata.org/group/kna;kna;KN;Saint Kitts and Nevis
 https://data.humdata.org/group/lca;lca;LC;Saint Lucia
 https://data.humdata.org/group/maf;maf;MF;Saint Martin
-https://data.humdata.org/group/spm;spm;PM;St. Pierre And Miquelon
-https://data.humdata.org/group/vct;vct;VC;Saint Vincent And The Grenadines
+https://data.humdata.org/group/spm;spm;PM;Saint Pierre and Miquelon
+https://data.humdata.org/group/vct;vct;VC;Saint Vincent and the Grenadines
 https://data.humdata.org/group/wsm;wsm;WS;Samoa
 https://data.humdata.org/group/smr;smr;SM;San Marino
-https://data.humdata.org/group/stp;stp;ST;Sao Tome And Principe
+https://data.humdata.org/group/stp;stp;ST;Sao Tome and Principe
 https://data.humdata.org/group/sau;sau;SA;Saudi Arabia
 https://data.humdata.org/group/sen;sen;SN;Senegal
 https://data.humdata.org/group/srb;srb;RS;Serbia
@@ -200,23 +202,23 @@ https://data.humdata.org/group/syc;syc;SC;Seychelles
 https://data.humdata.org/group/sle;sle;SL;Sierra Leone
 https://data.humdata.org/group/sgp;sgp;SG;Singapore
 https://data.humdata.org/group/sxm;sxm;SX;Sint Maarten
-https://data.humdata.org/group/svk;svk;SK;Slovakia (Slovak Republic)
+https://data.humdata.org/group/svk;svk;SK;Slovakia
 https://data.humdata.org/group/svn;svn;SI;Slovenia
 https://data.humdata.org/group/slb;slb;SB;Solomon Islands
 https://data.humdata.org/group/som;som;SO;Somalia
 https://data.humdata.org/group/zaf;zaf;ZA;South Africa
-https://data.humdata.org/group/sgs;sgs;GS;South Georgia And South S.S.
+https://data.humdata.org/group/sgs;sgs;GS;South Georgia and the South Sandwich Islands
 https://data.humdata.org/group/ssd;ssd;SS;South Sudan
 https://data.humdata.org/group/esp;esp;ES;Spain
 https://data.humdata.org/group/lka;lka;LK;Sri Lanka
 https://data.humdata.org/group/sdn;sdn;SD;Sudan
 https://data.humdata.org/group/sur;sur;SR;Suriname
-https://data.humdata.org/group/sjm;sjm;SJ;Svalbard And Jan Mayen Islands
+https://data.humdata.org/group/sjm;sjm;SJ;Svalbard and Jan Mayen Islands
 https://data.humdata.org/group/swz;swz;SZ;Eswatini
 https://data.humdata.org/group/swe;swe;SE;Sweden
 https://data.humdata.org/group/che;che;CH;Switzerland
 https://data.humdata.org/group/syr;syr;SY;Syrian Arab Republic
-https://data.humdata.org/group/twn;twn;TW;Taiwan, Province Of China
+https://data.humdata.org/group/twn;twn;TW;Taiwan (Province of China)
 https://data.humdata.org/group/tjk;tjk;TJ;Tajikistan
 https://data.humdata.org/group/tza;tza;TZ;United Republic of Tanzania
 https://data.humdata.org/group/tha;tha;TH;Thailand
@@ -224,25 +226,26 @@ https://data.humdata.org/group/tls;tls;TL;Timor-Leste
 https://data.humdata.org/group/tgo;tgo;TG;Togo
 https://data.humdata.org/group/tkl;tkl;TK;Tokelau
 https://data.humdata.org/group/ton;ton;TO;Tonga
-https://data.humdata.org/group/tto;tto;TT;Trinidad And Tobago
+https://data.humdata.org/group/tto;tto;TT;Trinidad and Tobago
 https://data.humdata.org/group/tun;tun;TN;Tunisia
-https://data.humdata.org/group/tur;tur;TR;Turkey
+https://data.humdata.org/group/tur;tur;TR;Türkiye
 https://data.humdata.org/group/tkm;tkm;TM;Turkmenistan
-https://data.humdata.org/group/tca;tca;TC;Turks And Caicos Islands
+https://data.humdata.org/group/tca;tca;TC;Turks and Caicos Islands
 https://data.humdata.org/group/tuv;tuv;TV;Tuvalu
 https://data.humdata.org/group/uga;uga;UG;Uganda
 https://data.humdata.org/group/ukr;ukr;UA;Ukraine
 https://data.humdata.org/group/are;are;AE;United Arab Emirates
 https://data.humdata.org/group/gbr;gbr;GB;United Kingdom
 https://data.humdata.org/group/usa;usa;US;United States
-https://data.humdata.org/group/umi;umi;UM;U.S. Minor Islands
+https://data.humdata.org/group/umi;umi;UM;United States Minor Outlying Islands
 https://data.humdata.org/group/ury;ury;UY;Uruguay
 https://data.humdata.org/group/uzb;uzb;UZ;Uzbekistan
 https://data.humdata.org/group/vut;vut;VU;Vanuatu
-https://data.humdata.org/group/ven;ven;VE;Venezuela
+https://data.humdata.org/group/ven;ven;VE;Venezuela (Bolivarian Republic of)
 https://data.humdata.org/group/vnm;vnm;VN;Viet Nam
-https://data.humdata.org/group/vgb;vgb;VG;Virgin Islands (British)
-https://data.humdata.org/group/vir;vir;VI;Virgin Islands (U.S.)
+https://data.humdata.org/group/vir;vir;VI;United States Virgin Islands
+https://data.humdata.org/group/wlf;wlf;WF;Wallis and Futuna Islands
+https://data.humdata.org/group/esh;esh;EH;Western Sahara
 https://data.humdata.org/group/yem;yem;YE;Yemen
 https://data.humdata.org/group/zmb;zmb;ZM;Zambia
-https://data.humdata.org/group/zwe;zwe;ZW;Zimbabwe 
+https://data.humdata.org/group/zwe;zwe;ZW;Zimbabwe

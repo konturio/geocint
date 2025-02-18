@@ -1,0 +1,63 @@
+# general variables
+# set path to pipeline working directory
+GEOCINT_WORK_DIRECTORY=/home/gis
+# set name of postgres database
+PGDATABASE=gis
+# set name of postgres user
+PGUSER=gis
+# set password for postgresql
+PGPASSWORD=gis
+# list of extensions that should be created in PostgreSQL database
+# to create uuid-ossp run CREATE EXTENSION "uuid-ossp"; manually after database creation
+INSTALL_POSTGRESQL_EXTENSIONS=postgis,postgis_raster,postgis_sfcgal,postgis_topology,h3,h3_postgis,adminpack,btree_gist,citext,fuzzystrmatch,hstore,pg_freespacemap,pg_trgm,pgrowlocks,http
+
+# set to true to check installation scripts before each run
+CHECK_INSTALLATIONS_BEFORE_RUN=false
+
+# Regular expression listing folders in geocint folder that should not be deleted during startup
+KEEP_FOLDERS_REGEX='.*/\|.*/data[^.]*\|.*/db[^.]*\|.*/deploy[^.]*\|.*/logs[^.]*\|.*/report[^.]*\|.*/installation[^.]*\|.*/completeness_report[^.]*\|.*/basemap_azapasnik_8245[^.]*'
+KEEP_FILES_REGEX=".*/make_profile\.db[^.]*\|.*/make\.lock[^.]*"
+
+# variable to store additional paths, that should be added to the PATH variable
+# replase "gis" with your user name
+PATH_ARRAY='$HOME/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin::/usr/local/pgsql/bin:/usr/lib/postgresql/14/bin:$HOME/go:$HOME/go/bin:/usr/local/go/bin'
+
+# directories that should be added to env
+OPTIONAL_DIRECTORIES='. /home/gis/.event-api/credentials'
+# name of folder with your custom part of pipeline
+CUSTOM_PART_FOLDER_NAME=geocint-kontur
+
+# updates block
+# set to true to pull the geocint-runner repo before each run
+UPDATE_RUNNER=false
+# set to true to pull the geocint-openstreetmap repo before each run
+UPDATE_OSM_LOGIC=false
+# set to true to pull your repo before each run
+UPDATE_PRIVATE=false
+
+# targets block
+# list of targets that will be run automatically
+RUN_TARGETS='prod'
+
+# slack integration
+# name of the slack channel for sending messages from the pipeline
+SLACK_CHANNEL=geocint
+# name of the slack bot for sending messages from the pipeline
+# Use "" when your bot name consists of whitespaces
+SLACK_BOT_NAME="Geocint Nightly build"
+# name of the slack emoji that will be used as the bot's avatar for sending messages from the pipeline
+SLACK_BOT_EMOJI=cat
+# this is a slack integration token, replace 'your_slack_key' with your slack integration key
+SLACK_KEY=----------
+# this is a HDX API token, You can generate this token on https://data.humdata.org/user/kontur-hdx-robot/api-tokens
+HDX_API_TOKEN=
+
+# duplicate files
+# this variable contains filenames, that may be duplicated
+# add here the names of the files that got duplicated between geocint-runner, geocint-openstreetmap and your private repository
+# this files will not be copied from all the repositories
+# Use ',' as a delimiter
+# By default this variable contains README.md and LICENSE files that have duplicates
+# Keep in mind that if you want to add a file you should remove repository name from that file-path.
+# eg: geocint-runner/scripts/script_do_smth.py >>> scripts/script_do_smth.py
+ALLOW_DUPLICATE_FILES='README.md,LICENSE,.flake8,.pylintrc'

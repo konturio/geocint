@@ -1,0 +1,208 @@
+name,code,hasc,years_to_naturalisation,multiple_citizenship
+Afghanistan,afg,AF,5,1
+Albania,alb,AL,5,3
+Algeria,dza,DZ,7,3
+Andorra,and,AD,20,1
+Angola,ago,AO,10,3
+Anguilla,aia,AI,5,3
+Antigua and Barbuda,atg,AG,7,3
+Argentina,arg,AR,2,3
+Armenia,arm,AM,3,3
+Australia,aus,AU,4,3
+Austria,aut,AT,10,2
+Azerbaijan,aze,AZ,5,1
+Bahamas,bhs,BS,10,1
+Bahrain,bhr,BH,10,1
+Bangladesh,bgd,BD,5,2
+Barbados,brb,BB,5,3
+Belarus,blr,BY,5,3
+Belgium,bel,BE,5,3
+Belize,blz,BZ,5,3
+Benin,ben,BJ,10,3
+Bermuda,bmu,BM,5,3
+Bhutan,btn,BT,20,1
+Bolivia (Plurinational State of),bol,BO,3,3
+Bosnia and Herzegovina,bih,BA,8,2
+Botswana,bwa,BW,10,1
+Brazil,bra,BR,4,3
+British Indian Ocean Territory,iot,IO,5,3
+British Virgin Islands,vgb,VG,5,3
+Brunei Darussalam,brn,BN,10,1
+Bulgaria,bgr,BG,5,2
+Burkina Faso,bfa,BF,10,3
+Burundi,bdi,BI,10,3
+Cabo Verde,cpv,CV,5,3
+Cambodia,khm,KH,7,3
+Cameroon,cmr,CM,5,1
+Canada,can,CA,3,3
+Cayman Islands,cym,KY,5,3
+Central African Republic,caf,CF,35,2
+Chad,tcd,TD,15,3
+Chile,chl,CL,5,3
+China,chn,CN,,1
+Colombia,col,CO,8,3
+Comoros,com,KM,10,3
+Congo,cog,CG,10,1
+Costa Rica,cri,CR,7,3
+Croatia,hrv,HR,8,2
+Cuba,cub,CU,5,3
+Cyprus,cyp,CY,7,3
+Czechia,cze,CZ,5,3
+Côte d'Ivoire,civ,CI,5,2
+Democratic People's Republic of Korea,prk,KP,,1
+Democratic Republic of the Congo,cod,CD,5,1
+Denmark,dnk,DK,9,3
+Djibouti,dji,DJ,10,1
+Dominica,dma,DM,7,3
+Dominican Republic,dom,DO,2,2
+Ecuador,ecu,EC,5,3
+Egypt,egy,EG,10,2
+El Salvador,slv,SV,5,3
+Equatorial Guinea,gnq,GQ,10,1
+Eritrea,eri,ER,20,1
+Estonia,est,EE,8,2
+Eswatini,swz,SZ,5,1
+Ethiopia,eth,ET,4,1
+Falkland Islands (Malvinas),flk,FK,5,3
+Fiji,fji,FJ,5,3
+Finland,fin,FI,5,3
+France,fra,FR,5,3
+Gabon,gab,GA,10,1
+Gambia,gmb,GM,10,3
+Georgia,geo,GE,10,1
+Germany,deu,DE,5,2
+Ghana,gha,GH,5,3
+Gibraltar,gib,GI,5,3
+Greece,grc,GR,7,3
+Grenada,grd,GD,7,3
+Guatemala,gtm,GT,10,2
+Guinea,gin,GN,5,1
+Guinea-Bissau,gnb,GW,5,1
+Guyana,guy,GY,7,1
+Haiti,hti,HT,5,1
+Holy See,vat,VA,,3
+Honduras,hnd,HN,3,2
+Hungary,hun,HU,8,3
+Iceland,isl,IS,7,3
+India,ind,IN,12,1
+Indonesia,idn,ID,5,1
+Iran (Islamic Republic of),irn,IR,5,2
+Iraq,irq,IQ,10,3
+Ireland,irl,IE,5,2
+Israel,isr,IL,3,2
+Italy,ita,IT,10,3
+Jamaica,jam,JM,5,3
+Japan,jpn,JP,5,1
+Jordan,jor,JO,15,3
+Kazakhstan,kaz,KZ,5,1
+Kenya,ken,KE,7,3
+Kiribati,kir,KI,7,2
+Kuwait,kwt,KW,15,1
+Kyrgyzstan,kgz,KG,5,2
+Lao People's Democratic Republic,lao,LA,10,1
+Latvia,lva,LV,10,2
+Lebanon,lbn,LB,5,3
+Lesotho,lso,LS,5,3
+Liberia,lbr,LR,2,1
+Libya,lby,LY,10,1
+Liechtenstein,lie,LI,10,2
+Lithuania,ltu,LT,10,1
+Luxembourg,lux,LU,5,3
+Madagascar,mdg,MG,5,1
+Malawi,mwi,MW,7,3
+Malaysia,mys,MY,12,1
+Maldives,mdv,MV,12,3
+Mali,mli,ML,5,3
+Malta,mlt,MT,5,3
+Marshall Islands,mhl,MH,7,1
+Mauritania,mrt,MR,5,1
+Mauritius,mus,MU,5,2
+Mexico,mex,MX,5,2
+Micronesia (Federated States of),fsm,FM,5,1
+Monaco,mco,MC,10,1
+Mongolia,mng,MN,5,1
+Montenegro,mne,ME,10,2
+Montserrat,msr,MS,5,3
+Morocco,mar,MA,5,3
+Mozambique,moz,MZ,5,1
+Myanmar,mmr,MM,,1
+Namibia,nam,NA,5,1
+Nauru,nru,NR,7,3
+Nepal,npl,NP,15,1
+Netherlands,nld,NL,5,2
+New Zealand,nzl,NZ,5,3
+Nicaragua,nic,NI,4,2
+Niger,ner,NE,10,1
+Nigeria,nga,NG,15,3
+North Macedonia,mkd,MK,8,3
+Norway,nor,NO,8,3
+Oman,omn,OM,20,1
+Pakistan,pak,PK,5,2
+Palau,plw,PW,,1
+Panama,pan,PA,5,1
+Papua New Guinea,png,PG,8,1
+Paraguay,pry,PY,3,2
+Peru,per,PE,2,3
+Philippines,phl,PH,10,2
+Pitcairn,pcn,PN,5,3
+Poland,pol,PL,10,3
+Portugal,prt,PT,5,3
+Qatar,qat,QA,25,1
+Republic of Korea,kor,KR,5,2
+Republic of Moldova,mda,MD,10,3
+Romania,rou,RO,8,3
+Russian Federation,rus,RU,5,3
+Rwanda,rwa,RW,10,1
+Saint Helena,shn,SH,5,3
+Saint Kitts and Nevis,kna,KN,14,3
+Saint Lucia,lca,LC,7,2
+Saint Vincent and the Grenadines,vct,VC,7,3
+Samoa,wsm,WS,5,3
+San Marino,smr,SM,30,1
+Sao Tome and Principe,stp,ST,5,1
+Saudi Arabia,sau,SA,10,2
+Senegal,sen,SN,5,1
+Serbia,srb,RS,3,3
+Seychelles,syc,SC,10,2
+Sierra Leone,sle,SL,5,1
+Singapore,sgp,SG,2.5,1
+Slovakia,svk,SK,8,2
+Slovenia,svn,SI,10,2
+Solomon Islands,slb,SB,7,1
+Somalia,som,SO,7,1
+South Africa,zaf,ZA,5,3
+South Georgia and the South Sandwich Islands,sgs,GS,5,3
+South Sudan,ssd,SS,10,3
+Spain,esp,ES,10,2
+Sri Lanka,lka,LK,5,2
+Sudan,sdn,SD,10,3
+Suriname,sur,SR,5,1
+Sweden,swe,SE,5,3
+Switzerland,che,CH,10,3
+Syrian Arab Republic,syr,SY,5,3
+Taiwan (Province of China),twn,TW,5,2
+Tajikistan,tjk,TJ,5,2
+Thailand,tha,TH,5,2
+Timor-Leste,tls,TL,10,1
+Togo,tgo,TG,5,3
+Tonga,ton,TO,5,1
+Trinidad and Tobago,tto,TT,7,3
+Tunisia,tun,TN,5,3
+Turkmenistan,tkm,TM,7,1
+Turks and Caicos Islands,tca,TC,5,3
+Tuvalu,tuv,TV,7,3
+Türkiye,tur,TR,5,3
+Uganda,uga,UG,20,2
+Ukraine,ukr,UA,5,1
+United Arab Emirates,are,AE,30,2
+United Kingdom,gbr,GB,5,3
+United Republic of Tanzania,tza,TZ,5,1
+United States,usa,US,5,3
+Uruguay,ury,UY,5,3
+Uzbekistan,uzb,UZ,5,1
+Vanuatu,vut,VU,10,3
+Venezuela (Bolivarian Republic of),ven,VE,10,3
+Viet Nam,vnm,VN,5,2
+Yemen,yem,YE,5,1
+Zambia,zmb,ZM,5,1
+Zimbabwe,zwe,ZW,5,3

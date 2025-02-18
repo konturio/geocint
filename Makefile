@@ -1,56 +1,55 @@
-export PGDATABASE = gis
+## -------------- EXPORT BLOCK ------------------------
+
+# configuration file
+file := ${GEOCINT_WORK_DIRECTORY}/config.inc.sh
+# Add here export for every variable from configuration file that you are going to use in targets
+export PGDATABASE = $(shell sed -n -e '/^PGDATABASE/p' ${file} | cut -d "=" -f 2)
+export SLACK_CHANNEL = $(shell sed -n -e '/^SLACK_CHANNEL/p' ${file} | cut -d "=" -f 2)
+export SLACK_BOT_NAME = $(shell sed -n -e '/^SLACK_BOT_NAME/p' ${file} | cut -d "=" -f 2)
+export SLACK_BOT_EMOJI = $(shell sed -n -e '/^SLACK_BOT_EMOJI/p' ${file} | cut -d "=" -f 2)
+export SLACK_KEY = $(shell sed -n -e '/^SLACK_KEY/p' ${file} | cut -d "=" -f 2)
+export HDX_API_TOKEN = $(shell sed -n -e '/^HDX_API_TOKEN/p' ${file} | cut -d "=" -f 2)
+
 current_date:=$(shell date '+%Y%m%d')
 
-all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone ## [FINAL] Meta-target on top of all other targets, or targets on parking.
+# these makefiles stored in geocint-runner and geocint-openstreetmap repositories
+# runner_make contains basic set of targets for creation project folder structure
+# osm_make contains contain set of targets for osm data processing
+include runner_make osm_make
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/dev/users_tiles deploy/test/users_tiles deploy/geocint/isochrone_tables deploy/dev/cleanup_cache deploy/test/cleanup_cache data/out/kontur_population.gpkg.gz data/planet-check-refs data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/dev/reports deploy/test/reports deploy/s3/test/reports/test_reports_public deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes  ## [FINAL] Builds all targets for development. Run on every branch.
-	touch $@
-	echo "Dev target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
+## ------------- CONTROL BLOCK -------------------------
 
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache deploy/s3/kontur_boundaries deploy/prod/reports data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export db/table/covid19_vaccine_accept_us_counties_h3 data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/ndpba_rva_h3 db/table/global_rva_h3 data/out/csv/foursquare_places_count.csv data/out/csv/foursquare_visits_count.csv db/table/osm_buildings_use db/index/osm_addresses_geom_idx data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement ## [FINAL] Meta-target on top of all other targets, or targets on parking.
+
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/dev/uploads/upload_dev data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/dev/custom_axis/all_custom_axis deploy_indicators/dev/presets/all_presets deploy/s3/dev/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
-	echo "Prod target has built!" | python3 scripts/slack_message.py geocint "Nightly build" cat
+	echo "Test target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+
+test: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/test/uploads/upload_test data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/test/custom_axis/all_custom_axis deploy_indicators/test/presets/all_presets deploy/s3/test/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
+	touch $@
+	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+
+prod_new_deploy: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy_indicators/prod/uploads/upload_prod deploy/prod/osrm-backend-by-car deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy_indicators/prod/presets/all_presets deploy/s3/prod/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+	touch $@
+	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+
+prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache_old deploy/prod/osrm-backend-by-car deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy/s3/prod/reports/reports.tar.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+	touch $@
+	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt
+	profile_make_clean data/planet-latest-updated.osm.pbf data/in/covid19/_global_csv data/in/covid19/_us_csv data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check data/in/hot_projects/hot_projects data/in/live_sensor_data_h3.csv db/table/insights_api_indicators_list_test db/table/insights_api_indicators_list_dev db/table/insights_api_indicators_list_prod data/in/oam_global_coverage.csv data/in/oam_number_of_pixels.csv
 	psql -f scripts/clean.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
 	docker image prune --force --filter label=stage=osrm-backend
 
-data: ## Temporary file based datasets. Located on bcache. Some files could be returned to SSD.
-	mkdir -p $@
-
-db: ## Directory for storing database objects creation footprints.
-	mkdir -p $@
-
-db/function: | db ## Directory for storing database functions footprints.
-	mkdir -p $@
-
-db/procedure: | db ## Directory for storing database procedures footprints.
-	mkdir -p $@
-
-db/table: | db ## Directory for storing database tables footprints.
-	mkdir -p $@
-
-db/index: | db ## Directory for storing database indexes footprints.
-	mkdir -p $@
-
 data/tiles: | data ## Directory for storing generated vector tiles.
 	mkdir -p $@
 
-data/in: | data  ## Input data, downloaded from elsewhere.
-	mkdir -p $@
-
-data/in/raster: | data/in ## Directory for all the mega-terabyte geotiffs!
-	mkdir -p $@
-
-data/mid: | data ## Intermediate data (retiles, unpacks, reprojections, …) that can be removed daily.
-	mkdir -p $@
-
-data/out: | data ## Generated final data (tiles, dumps, etc).
+data/out/morocco_buildings: | data/out ## Data generated within project Morocco Buildings for Swiss Re.
 	mkdir -p $@
 
 data/in/global_fires: | data/in ## Data downloaded within project Global Fires.
@@ -65,7 +64,7 @@ data/out/global_fires: | data/out ## Data generated within project Global Fires.
 data/out/docker: | data/out ## Docker images.
 	mkdir -p $@
 
-data/out/population: | data/out ## Directory for storing and bivariate datasets dump.
+data/out/population: | data/out ## Directory for storing data_stat_h3 and bivariate datasets dump.
 	mkdir -p $@
 
 data/out/kontur_boundaries: | data/out ## Directory for Kontur Boundaries final dataset.
@@ -73,6 +72,18 @@ data/out/kontur_boundaries: | data/out ## Directory for Kontur Boundaries final 
 
 data/out/reports: | data/out ## Directory for OpenStreetMap quality reports.
 	mkdir -p $@
+
+data/out/csv: | data/out ## Directory for csv dumps of data tables
+	mkdir -p $@
+
+data/out/wildfire_sensors_placement: | data/out ## Directory for data about wildfire sensors placement
+	mkdir -p $@
+
+data/in/cod_pcodes: | data/in ## input directory for cod pcodes dataset
+	mkdir $@
+
+data/out/cod_pcodes: | data/out ## output directory for cod pcodes dataset
+	mkdir $@
 
 data/in/gadm: | data/in ## Directory for storing downloaded GADM (Database of Global Administrative Areas) datasets.
 	mkdir -p $@
@@ -98,6 +109,9 @@ data/in/foursquare: | data/in ## Directory for storing foursquare places and vis
 data/mid/foursquare: | data/mid ## Directory for storing unzipped foursquare data
 	mkdir -p $@
 
+data/in/foursquare/foursquare_os_places: | data/in/foursquare ## create input folder for foursquare os places
+	mkdir -p $@
+
 data/mid/wb/gdp: | data/mid ## Intermediate GDP (Gross domestic product) World Bank data.
 	mkdir -p $@
 
@@ -110,10 +124,10 @@ data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.
 data/in/raster/gebco_2022_geotiff: | data/in/raster ## Directory for GEBCO 2022 (General Bathymetric Chart of the Oceans) dataset.
 	mkdir -p $@
 
-data/mid/ndvi_2019_06_10: | data/mid ## Directory for NDVI rasters. Taken from https://medium.com/sentinel-hub/digital-twin-sandbox-sentinel-2-collection-available-to-everyone-20f3b5de846e
+data/in/raster/meta_forest_canopy_height: | data/in/raster ## Directory for High Resolution Forest Canopy Layer dataset.
 	mkdir -p $@
 
-deploy:  ## Directory for deployment targets footprints.
+data/mid/ndvi_2019_06_10: | data/mid ## Directory for NDVI rasters. Taken from https://medium.com/sentinel-hub/digital-twin-sandbox-sentinel-2-collection-available-to-everyone-20f3b5de846e
 	mkdir -p $@
 
 deploy/prod: | deploy ## folder for prod deployment footprints.
@@ -125,10 +139,46 @@ deploy/test: | deploy ## folder for test deployment footprints.
 deploy/dev: | deploy ## folder for dev deployment footprints.
 	mkdir -p $@
 
-deploy/geocint: | deploy ## We use geocint as a GIS development server.
+deploy_indicators: ## initial folder for Insights API footprints
 	mkdir -p $@
 
-deploy/s3: | deploy ## Target-created directory for deployments on S3.
+deploy_indicators/dev: | deploy_indicators ## folder for Insights API footprints for DEV instance
+	mkdir -p $@
+
+deploy_indicators/test: | deploy_indicators ## folder for Insights API footprints for TEST instance
+	mkdir -p $@
+
+deploy_indicators/prod: | deploy_indicators ## folder for Insights API footprints for PROD instance
+	mkdir -p $@
+
+deploy_indicators/dev/uploads: | deploy_indicators/dev ## folder for layer uploading to dev Insights API footprints
+	mkdir -p $@
+
+deploy_indicators/test/uploads: | deploy_indicators/test ## folder for layer uploading to test Insights API footprints
+	mkdir -p $@
+
+deploy_indicators/prod/uploads: | deploy_indicators/prod ## folder for layer uploading to prod Insights API footprints
+	mkdir -p $@
+
+deploy_indicators/dev/custom_axis: | deploy_indicators/dev ## Folder to store custom axis deployment fingerprints for dev instance.
+	mkdir -p $@
+
+deploy_indicators/test/custom_axis: | deploy_indicators/test ## Folder to store custom axis deployment fingerprints for test instance.
+	mkdir -p $@
+
+deploy_indicators/prod/custom_axis: | deploy_indicators/prod ## Folder to store custom axis deployment fingerprints for prod instance.
+	mkdir -p $@
+
+deploy_indicators/dev/presets: | deploy_indicators/dev ## Folder to store presets deployment fingerprints for dev instance.
+	mkdir -p $@
+
+deploy_indicators/test/presets: | deploy_indicators/test ## Folder to store presets deployment fingerprints for test instance.
+	mkdir -p $@
+
+deploy_indicators/prod/presets: | deploy_indicators/prod ## Folder to store presets deployment fingerprints for prod instance.
+	mkdir -p $@
+
+deploy/geocint: | deploy ## We use geocint as a GIS development server.
 	mkdir -p $@
 
 deploy/s3/test: | deploy/s3 ## Target-created directory for deployments on S3 test division.
@@ -168,57 +218,114 @@ deploy/geocint/reports/dev: | deploy/geocint ## Directory for storing deploy rea
 deploy/geocint/reports/prod: | deploy/geocint ## Directory for storing deploy ready OpenStreetMap quality report files (production).
 	mkdir -p $@
 
-data/planet-latest.osm.pbf: | data ## Download latest planet OSM pbf extraction through Bit torrent and rename it to planet-latest.osm.pbf.
-	rm -f data/planet-*.osm.pbf data/planet-latest.seq data/planet-latest.osm.pbf.meta.json
-	cd data; aria2c https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent --seed-time=0
-	mv data/planet-*.osm.pbf $@
-	rm -f data/planet-*.osm.pbf.torrent
-	touch $@
-
-data/planet-latest-updated.osm.pbf: data/planet-latest.osm.pbf | data ## Update planet-latest.osm.pbf OpenStreetMap extract with hourly diff.
-	rm -f data/planet-diff.osc
-	if [ -f data/planet-latest.seq ]; then pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -f data/planet-latest.seq -o data/planet-diff.osc; else pyosmium-get-changes -vv -s 50000 --server "https://planet.osm.org/replication/hour/" -O data/planet-latest.osm.pbf -f data/planet-latest.seq -o data/planet-diff.osc; fi ||true
-	rm -f data/planet-latest-updated.osm.pbf data/planet-latest-updated.osm.pbf.meta.json
-	osmium apply-changes data/planet-latest.osm.pbf data/planet-diff.osc -f pbf,pbf_compression=false -o data/planet-latest-updated.osm.pbf
-	# TODO: smoke check correctness of file
-	cp -lf data/planet-latest-updated.osm.pbf data/planet-latest.osm.pbf
-	touch $@
-
-data/planet-check-refs: data/planet-latest-updated.osm.pbf | data ## Check if planet-latest.osm.pbf OSM extraction is referentially complete using Osmium tool (osmcode.org/osmium-tool/manual.html#checking-references).
-	osmium check-refs -r --no-progress data/planet-latest.osm.pbf || touch data/planet-is-broken
-	touch $@
-
-db/table/osm: data/planet-latest-updated.osm.pbf | db/table ## Daily Planet OpenStreetMap dataset.
-	psql -c "drop table if exists osm;"
-	# Pin osmium to CPU1 and disable HT on it
-	OSMIUM_POOL_THREADS=8 OSMIUM_MAX_INPUT_QUEUE_SIZE=800 OSMIUM_MAX_OSMDATA_QUEUE_SIZE=800 OSMIUM_MAX_OUTPUT_QUEUE_SIZE=800 OSMIUM_MAX_WORK_QUEUE_SIZE=100 osmium export -i dense_mmap_array -c osmium.config.json -f pg data/planet-latest.osm.pbf  -v --progress | psql -1 -c 'create table osm(geog geography, osm_type text, osm_id bigint, osm_user text, ts timestamptz, way_nodes bigint[], tags jsonb);alter table osm alter geog set storage external, alter osm_type set storage main, alter osm_user set storage main, alter way_nodes set storage external, alter tags set storage external, set (fillfactor=100); copy osm from stdin freeze;'
-	psql -c "alter table osm set (parallel_workers = 32);"
-	touch $@
-
-db/table/osm_meta: data/planet-latest-updated.osm.pbf | db/table ## Metadata for daily Planet OpenStreetMap dataset.
-	psql -c "drop table if exists osm_meta;"
-	rm -f data/planet-latest-updated.osm.pbf.meta.json
-	osmium fileinfo data/planet-latest.osm.pbf -ej > data/planet-latest.osm.pbf.meta.json
-	cat data/planet-latest.osm.pbf.meta.json | jq -c . | psql -1 -c 'create table osm_meta(meta jsonb); copy osm_meta from stdin freeze;'
-	psql -AXt -c "select count((meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz) from osm_meta;" |  xargs -I {} bash scripts/check_items_count.sh {} 1
-	touch $@
-
-db/index/osm_tags_idx: db/table/osm | db/index ## GIN index on planet OpenStreetMap dataset tags column.
-	psql -c "create index osm_tags_idx on osm using gin (tags);"
+deploy/prod/osrm-backend-by-car: deploy/geocint/belarus-latest.osm.pbf | deploy/prod ## Send message through Amazon Simple Queue Service to trigger rebuild Belarus road graph in OSRM in Docker on remote server.
+	aws sqs send-message --output json --region eu-central-1 --queue-url https://sqs.eu-central-1.amazonaws.com/001426858141/PuppetmasterInbound.fifo --message-body '{"jsonrpc":"2.0","method":"rebuildDockerImage","params":{"imageName":"kontur-osrm-backend-by-car","osmPbfUrl":"https://geocint.kontur.io/gis/belarus-latest.osm.pbf"},"id":"'`uuid`'"}' --message-group-id rebuildDockerImage--kontur-osrm-backend-by-car
 	touch $@
 
 data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data ## Extract Belarus from planet-latest-updated.osm.pbf using Osmium tool.
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
 	touch $@
 
-db/table/us_counties_boundary: data/mid/gadm/gadm36_shp_files | db/table ## USA counties boundaries extracted from GADM (Database of Global Administrative Areas) admin_level_2 dataset.
-	psql -c 'drop table if exists gadm_us_counties_boundary;'
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/mid/gadm/gadm36_2.shp -sql "select name_1, name_2, gid_2, hasc_2 from gadm36_2 where gid_0 = 'USA'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
-	ogr2ogr -append -f PostgreSQL PG:"dbname='gis'" data/mid/gadm/gadm36_1.shp -sql "select name_0 as name_1, name_1 as name_2, gid_1 as gid_2, hasc_1 as hasc_2 from gadm36_1 where gid_0 = 'PRI'" -nln gadm_us_counties_boundary -nlt MULTIPOLYGON -lco GEOMETRY_NAME=geom
+data/in/covid19: | data/in  ## Directory for storing original file based datasets on COVID-19
+	mkdir -p $@
+
+data/in/covid19/_global_csv: | data/in/covid19 ## Download global daily COVID-19 data by confirmed/deaths/recovered cases in csv from github Data Repository by the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University.
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv" -O data/in/covid19/time_series_global_confirmed.csv
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv" -O data/in/covid19/time_series_global_deaths.csv
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv" -O data/in/covid19/time_series_global_recovered.csv
+	touch $@
+
+data/in/covid19/_us_csv: | data/in/covid19 ## Download US detailed daily COVID-19 data from github Data Repository by the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University.
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_US.csv" -O data/in/covid19/time_series_us_confirmed.csv
+	wget "https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_US.csv" -O data/in/covid19/time_series_us_deaths.csv
+	touch $@
+
+data/mid/covid19: | data/mid  ## Directory for storing temporary file based datasets on COVID-19
+	mkdir -p $@
+
+data/mid/covid19/normalized_csv: data/in/covid19/_global_csv | data/mid/covid19  ## Normalize detailed daily global COVID-19 data from the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University.
+	rm -f data/mid/covid19/time_series_global_*_normalized.csv
+	ls data/in/covid19/time_series_global* | parallel "python3 scripts/covid19_normalization.py {}"
+	touch $@
+
+db/table/covid19_in: data/mid/covid19/normalized_csv | db/table ## Normalized, merged, extracted latest data from CSSE (Center for Systems Science and Engineering) at Johns Hopkins University COVID-19 global datasets.
+	psql -c 'drop table if exists covid19_csv_in;'
+	psql -c 'drop table if exists covid19_in;'
+	psql -c 'create table covid19_csv_in (province text, country text, lat float, lon float, date timestamptz, value int, status text);'
+	cat data/mid/covid19/time_series_global_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_csv_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	psql -c "update covid19_csv_in set status='confirmed' where status is null;"
+	cat data/mid/covid19/time_series_global_deaths_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_csv_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	psql -c "update covid19_csv_in set status='dead' where status is null;"
+	cat data/mid/covid19/time_series_global_recovered_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_csv_in (province, country, lat, lon, date, value) from stdin with csv header;"
+	psql -c "update covid19_csv_in set status='recovered' where status is null;"
+	psql -c "create table covid19_in as (select province, country, lat, lon, status, max(date) as date, max(value) as value from covid19_csv_in group by 1,2,3,4,5);"
+	touch $@
+
+data/mid/covid19/normalized_us_confirmed_csv: data/in/covid19/_us_csv | data/mid/covid19 ## Normalize US COVID-19 data from the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University (confirmed cases).
+	rm -f data/mid/covid19/time_series_us_confirmed_normalized.csv
+	python3 scripts/covid19_us_confirmed_normalization.py data/in/covid19/time_series_us_confirmed.csv
+	touch $@
+
+db/table/covid19_us_confirmed_in: data/mid/covid19/normalized_us_confirmed_csv | db/table ## Normalized, merged data from CSSE (Center for Systems Science and Engineering) at Johns Hopkins University COVID-19 US datasets (confirmed cases).
+	psql -c 'drop table if exists covid19_us_confirmed_csv_in;'
+	psql -c 'create table covid19_us_confirmed_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, date timestamptz, value int);'
+	cat data/mid/covid19/time_series_us_confirmed_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_us_confirmed_csv_in (uid, iso2, iso3, code3, fips, admin2, province, country, lat, lon, combined_key, date, value) from stdin with csv header;"
+	psql -f tables/covid19_us_confirmed_in.sql
+	touch $@
+
+data/mid/covid19/normalized_us_deaths_csv: data/in/covid19/_us_csv | data/mid/covid19  ## Normalize US COVID-19 data from the CSSE (Center for Systems Science and Engineering) at Johns Hopkins University (deaths).
+	rm -f data/mid/covid19/time_series_us_deaths_normalized.csv
+	python3 scripts/covid19_us_deaths_normalization.py data/in/covid19/time_series_us_deaths.csv
+	touch $@
+
+db/table/covid19_us_deaths_in: data/mid/covid19/normalized_us_deaths_csv | db/table ## Normalized, merged data from CSSE (Center for Systems Science and Engineering) COVID-19 US datasets (deaths).
+	psql -c 'drop table if exists covid19_us_deaths_csv_in;'
+	psql -c 'create table covid19_us_deaths_csv_in (uid text, iso2 text, iso3 text, code3 text, fips text, admin2 text, province text, country text, lat float, lon float, combined_key text, population int, date timestamptz, value int);'
+	cat data/mid/covid19/time_series_us_deaths_normalized.csv | tail -n +1 | psql -c "set time zone utc;copy covid19_us_deaths_csv_in (uid, iso2, iso3, code3, fips, admin2, province, country, lat, lon, combined_key, population, date, value) from stdin with csv header;"
+	psql -f tables/covid19_us_deaths_in.sql
+	touch $@
+
+db/table/covid19_admin_boundaries: db/table/covid19_in db/index/osm_tags_idx ## Admin boundaries for COVID-19 CSSE (Center for Systems Science and Engineering) datasets extracted from OpenStreetMap (joined on coordinates and name matching).
+	psql -f tables/covid19_admin_boundaries.sql
+	touch $@
+
+db/table/covid19_population_h3_r8: db/table/kontur_population_h3 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/table ## Genereate table of Covid19 cases (worldwide and USA) in h3 8 resolution from Kontur population dataset and used boundaries
+	psql -f tables/covid19_population_h3_r8.sql
+	touch $@
+
+db/table/covid19_h3: db/table/covid19_population_h3_r8 db/table/covid19_us_counties db/table/covid19_admin_boundaries | db/procedure/generate_overviews db/table ## calculate cases rate, dither and generate overviews of covid19_population_h3_r8
+	psql -f tables/covid19_h3.sql
+	psql -c "call generate_overviews('covid19_h3', '{date, population, total_population, confirmed, recovered, dead}'::text[], '{max, sum, sum, sum, sum, sum}'::text[], 8);"
+	touch $@
+
+db/table/us_counties_boundary: db/table/gadm_boundaries | db/table ## USA counties boundaries extracted from GADM (Database of Global Administrative Areas) admin_level_2 dataset.
+	psql -f tables/gadm_us_counties_boundary.sql
 	psql -c 'drop table if exists us_counties_fips_codes;'
 	psql -c 'create table us_counties_fips_codes (state text, county text, hasc_code text, fips_code text);'
 	cat static_data/counties_fips_hasc.csv | psql -c "copy us_counties_fips_codes (state, county, hasc_code, fips_code) from stdin with csv header delimiter ',';"
 	psql -f tables/us_counties_boundary.sql
+	touch $@
+
+db/table/covid19_us_counties: db/table/covid19_us_confirmed_in db/table/covid19_us_deaths_in db/table/us_counties_boundary | db/table ## USA counties subdivided geometries
+	psql -f tables/covid19_us_counties.sql
+	touch $@
+
+data/in/covid19/vaccination: | data/in/covid19 ## Data on COVID-19 vaccination.
+	mkdir -p $@
+
+data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv: | data/in/covid19/vaccination ## Download data on COVID-19 vaccine acceptance in US from Carnegie Mellon University.
+	wget -q "https://api.covidcast.cmu.edu/epidata/covidcast/csv?signal=fb-survey:smoothed_covid_vaccinated&start_day=$(shell date -d '-30 days' +%Y-%m-%d)&end_day=$(shell date +%Y-%m-%d)&geo_type=county" -O $@
+
+db/table/covid19_vaccine_accept_us_counties: data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv db/table/us_counties_boundary ## Aggregated data on COVID-19 vaccine acceptance in US based on Carnegie Mellon University dataset.
+	psql -c 'drop table if exists covid19_vaccine_accept_us;'
+	psql -c 'create table covid19_vaccine_accept_us (ogc_fid serial not null, geo_value text, signal text, time_value timestamptz, issue timestamptz, lag int, value float, stderr float, sample_size float, geo_type text, data_source text);'
+	cat data/in/covid19/vaccination/vaccine_acceptance_us_counties.csv | psql -c 'copy covid19_vaccine_accept_us (ogc_fid, geo_value, signal, time_value, issue, lag, value, stderr, sample_size, geo_type, data_source) from stdin with csv header;'
+	psql -f tables/covid19_vaccine_accept_us_counties.sql
+	touch $@
+
+db/table/covid19_vaccine_accept_us_counties_h3: db/table/covid19_vaccine_accept_us_counties | db/procedure/generate_overviews db/table  ## Aggregated data on COVID-19 vaccine acceptance in US based on Carnegie Mellon University dataset distributed on H3 hexagon grid.
+	psql -f tables/covid19_vaccine_accept_us_counties_h3.sql
+	psql -c "call generate_overviews('covid19_vaccine_accept_us_counties_h3', '{vaccine_value}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
 data/belarus_boundary.geojson: db/table/osm db/index/osm_tags_idx ## Belarus boundary extracted from OpenStreetMap daily import.
@@ -229,8 +336,8 @@ db/function/osm_way_nodes_to_segments: | db/function ## Function to segmentize p
 	psql -f functions/osm_way_nodes_to_segments.sql
 	touch $@
 
-db/function/h3: | db/function ## Custom SQL functions to work with H3 hexagons grid (ST_HexagonFromH3, ST_Safe_HexagonFromH3, ST_H3Bucket) used in target SQL queries more than ones.
-	psql -f functions/h3.sql
+db/function/h3: | db/function ## Custom SQL functions to work with H3 hexagons grid (ST_H3Bucket) used in target SQL queries more than ones.
+	psql -f functions/st_h3bucket.sql
 	touch $@
 
 db/function/parse_float: | db/function ## Converts text into a float or a NULL.
@@ -241,16 +348,28 @@ db/function/parse_integer: | db/function ## Converts text levels into a integer 
 	psql -f functions/parse_integer.sql
 	touch $@
 
-db/function/calculate_h3_res: db/function/h3 ## Function to get H3 resolution that will fit label of given pixel size.
-	psql -f functions/calculate_h3_res.sql
+db/function/tile_zoom_level_to_h3_resolution: | db/function ## Function to get H3 resolution that will fit given tile zoom level
+	psql -f functions/tile_zoom_level_to_h3_resolution.sql
 	touch $@
 
-db/function/h3_raster_sum_to_h3: | db/function ## Aggregate sum raster values on H3 hexagon grid.
-	psql -f functions/h3_raster_sum_to_h3.sql
+data/out/tile_zoom_level_to_h3_resolution_test: db/function/tile_zoom_level_to_h3_resolution | data/out ## Test if current version of function returns same h3 resolutions as previous one
+	cat scripts/tile_zoom_level_to_h3_resolution_test.sql | psql -AXt |  xargs -I {} bash scripts/check_items_count.sh {} 1
+	touch $@
+
+db/function/h3_raster_agg_to_h3: | db/function ## Aggregate raster values on H3 hexagon grid (default sum, options - min, max, avg, count).
+	psql -f functions/h3_raster_agg_to_h3.sq
+	touch $@
+
+db/function/max_of_array: | db/function ## Get max value from int[]
+	psql -f functions/max_of_array.sql
 	touch $@
 
 db/procedure/generate_overviews: | db/procedure ## Generate overviews for H3 resolution < 8 using different aggregations.
 	psql -f procedures/generate_overviews.sql
+	touch $@
+
+db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area: | db/procedure ## Dither areas to not be bigger than 100% of hexagon's area for every resolution.
+	psql -f procedures/dither_area_to_not_bigger_than_100pc_of_hex_area.sql
 	touch $@
 
 data/in/facebook: | data/in  ## Directory for Facebook data
@@ -272,7 +391,7 @@ db/table/facebook_medium_voltage_distribution_in: data/in/facebook/medium_voltag
 			"psql -c \"\copy facebook_medium_voltage_distribution_in (lat, lon, value) from '{}' with csv header delimiter ',';\""
 	touch $@
 
-db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/table  ## Put Facebook Medium Voltage Distribution on H3
+db/table/facebook_medium_voltage_distribution_h3: db/table/facebook_medium_voltage_distribution_in | db/procedure/generate_overviews db/table  ## Put Facebook Medium Voltage Distribution on H3
 	psql -f tables/facebook_medium_voltage_distribution_h3.sql
 	psql -c "call generate_overviews('facebook_medium_voltage_distribution_h3', '{powerlines}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -287,14 +406,18 @@ data/in/facebook_roads/downloaded: | data/in/facebook_roads ## Download Facebook
 	wget -nc --input-file=static_data/facebookroads/downloadlist.txt --directory-prefix=data/in/facebook_roads
 	touch $@
 
-data/mid/facebook_roads/extracted: data/in/facebook_roads/downloaded | data/mid/facebook_roads ## Extract Facebook roads.
+data/in/facebook_roads/validity_controlled: data/in/facebook_roads/downloaded | data/in/facebook_roads ## Check Facebook roads downloaded archives validity
+	ls -1 data/in/facebook_roads/*.tar.gz | parallel --halt now,fail=1 gunzip -t {}
+	touch $@
+
+data/mid/facebook_roads/extracted: data/in/facebook_roads/validity_controlled | data/mid/facebook_roads ## Extract Facebook roads.
 	rm -f data/mid/facebook_roads/*.gpkg
 	ls data/in/facebook_roads/*.tar.gz | parallel 'tar -C data/mid/facebook_roads -xf {}'
 	touch $@
 
 db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## Loading Facebook roads into db.
 	psql -c "drop table if exists facebook_roads_in;"
-	psql -c "create table facebook_roads_in (way_fbid text, highway_tag text, geom geometry(geometry, 4326)) tablespace evo4tb;"
+	psql -c "create table facebook_roads_in (way_fbid text, highway_tag text, geom geometry(geometry, 4326));"
 	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_in'
 	psql -c "vacuum analyse facebook_roads_in;"
 	touch $@
@@ -318,7 +441,7 @@ db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last
 	psql -c "drop table facebook_roads_old; drop table osm_roads_increment;"
 	touch $@
 
-db/table/facebook_roads_h3: db/table/facebook_roads | db/table ## Build h3 overviews for Facebook roads at all levels.
+db/table/facebook_roads_h3: db/table/facebook_roads | db/procedure/generate_overviews db/table ## Build h3 overviews for Facebook roads at all levels.
 	psql -f tables/facebook_roads_h3.sql
 	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -332,10 +455,12 @@ db/table/osm_road_segments_new: db/function/osm_way_nodes_to_segments db/table/o
 	touch $@
 
 db/index/osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx: db/table/osm_road_segments_new | db/index ## Composite index on osm_road_segments_new table.
+	psql -c "drop index if exists osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx;"
 	psql -c "create index osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx on osm_road_segments_new (seg_id, node_from, node_to, seg_geom);"
 	touch $@
 
 db/index/osm_road_segments_new_seg_geom_idx: db/table/osm_road_segments_new | db/index ## Composite BRIN index on osm_road_segments_new table.
+	psql -c "drop index if exists osm_road_segments_new_seg_geom_walk_time_idx;"
 	psql -c "create index osm_road_segments_new_seg_geom_walk_time_idx on osm_road_segments_new using brin (seg_geom, walk_time);"
 	touch $@
 
@@ -345,7 +470,7 @@ db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_seg
 	psql -c "alter index if exists osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx rename to osm_road_segments_seg_id_node_from_node_to_seg_geom_idx;"
 	touch $@
 
-db/table/osm_road_segments_h3: db/table/osm_road_segments | db/table ## osm road segments aggregated to h3
+db/table/osm_road_segments_h3: db/table/osm_road_segments | db/procedure/generate_overviews db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_h3.sql
 	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -354,7 +479,7 @@ db/table/osm_road_segments_6_months: db/table/osm_roads db/table/osm_meta | db/t
 	psql -f tables/osm_road_segments_6_months.sql
 	touch $@
 
-db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months | db/table ## osm road segments aggregated to h3
+db/table/osm_road_segments_6_months_h3: db/table/osm_road_segments_6_months | db/procedure/generate_overviews db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_6_months_h3.sql
 	psql -c "call generate_overviews('osm_road_segments_6_months_h3', '{highway_length_6_months}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -391,7 +516,7 @@ db/table/hrsl_population_raster: data/in/raster/hrsl_cogs/download | db/table ##
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
 
-db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
+db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_agg_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r8=hrsl_population_grid_h3_r8
 	touch $@
 
@@ -403,23 +528,23 @@ db/table/osm_unpopulated: db/index/osm_tags_idx | db/table ## Unpopulated areas 
 	psql -f tables/osm_unpopulated.sql
 	touch $@
 
-db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 8 resolution.
+data/in/raster/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.zip: | data/in/raster ## Download GHS (Global Human Settlement) population grid dataset archive.
+	wget https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_GLOBE_R2023A/GHS_POP_E2020_GLOBE_R2023A_54009_100/V1-0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.zip -O $@
+	touch $@
+
+data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.tif: data/in/raster/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.zip | data/mid  ## GHS (Global Human Settlement) population grid dataset extracted.
+	mkdir -p data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0
+	unzip -o data/in/raster/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.zip -d data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/
+	touch $@
+
+db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.tif | db/table  ## GHS (Global Human Settlement) population grid dataset imported into database (technical details - ghsl.jrc.ec.europa.eu/ghs_pop2023.php).
+	psql -c "drop table if exists ghs_globe_population_raster"
+	raster2pgsql -M -Y -s 54009 data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.tif -t auto ghs_globe_population_raster | psql -q
+	touch $@
+
+db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_agg_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 8 resolution.
 	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r8=ghs_globe_population_grid_h3_r8
 	psql -c "delete from ghs_globe_population_grid_h3_r8 where population = 0;"
-	touch $@
-
-data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip: | data/in/raster ## Download GHS (Global Human Settlement) population grid dataset archive.
-	wget http://cidportal.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_POP_MT_GLOBE_R2019A/GHS_POP_E2015_GLOBE_R2019A_54009_250/V1-0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip -O $@
-	touch $@
-
-data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif: data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip | data/mid  ## GHS (Global Human Settlement) population grid dataset extracted.
-	mkdir -p data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0
-	unzip -o data/in/raster/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.zip -d data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/
-	touch $@
-
-db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif | db/table  ## GHS (Global Human Settlement) population grid dataset imported into database (technical details - ghsl.jrc.ec.europa.eu/ghs_pop2019.php).
-	psql -c "drop table if exists ghs_globe_population_raster"
-	raster2pgsql -M -Y -s 54009 data/mid/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0/GHS_POP_E2015_GLOBE_R2019A_54009_250_V1_0.tif -t auto ghs_globe_population_raster | psql -q
 	touch $@
 
 data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data/in/raster  ## Download GHS-SMOD (Global Human Settlement Model) grid dataset archive.
@@ -435,8 +560,28 @@ db/table/ghs_globe_residential_raster: data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54
 	raster2pgsql -M -Y -s 54009 data/mid/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.tif -t 256x256 ghs_globe_residential_raster | psql -q
 	touch $@
 
-db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 db/function/h3_raster_sum_to_h3 | db/table ## GHS-SMOD (Global Human Settlement Model) raster polygonized and reprojected with extracted centtroids (EPSG-3857).
+db/table/ghs_globe_residential_vector: db/table/ghs_globe_residential_raster db/procedure/insert_projection_54009 db/function/h3_raster_agg_to_h3 | db/table ## GHS-SMOD (Global Human Settlement Model) raster polygonized and reprojected with extracted centtroids (EPSG-3857).
 	psql -f tables/ghs_globe_residential_vector.sql
+	touch $@
+
+data/in/raster/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0.zip: | data/in/raster ## Download GHS (Global Human Settlement) Average of the Net Building Height (ANBH) raster (technical details - data.jrc.ec.europa.eu/dataset/85005901-3a49-48dd-9d19-6261354f56fe).
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0.zip $@ --profile geocint_pipeline_sender
+	touch $@
+
+data/mid/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0.tif: data/in/raster/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0.zip | data/mid  ## GHS (Global Human Settlement) (Global Human Settlement) Average of the Net Building Height (ANBH) dataset extracted.
+	mkdir -p data/mid/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0
+	unzip -o data/in/raster/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0.zip -d data/mid/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0/
+	touch $@
+
+db/table/ghs_building_height_raster: data/mid/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0.tif | db/table  ## GHS (Global Human Settlement) Average of the Net Building Height (ANBH) dataset imported into database
+	psql -c "drop table if exists ghs_building_height_raster"
+	raster2pgsql -M -Y -s 54009 data/mid/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0/GHS_BUILT_H_ANBH_E2018_GLOBE_R2023A_54009_100_V1_0.tif -t auto ghs_building_height_raster | psql -q
+	touch $@
+
+db/table/ghs_building_height_grid_h3: db/table/ghs_building_height_raster db/procedure/insert_projection_54009 db/function/h3_raster_agg_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 8 resolution.
+	psql -f tables/ghs_building_height_grid_h3.sql
+	psql -c "delete from ghs_building_height_grid_h3 where max_height = 0 or avg_height = 0;"
+	psql -c "call generate_overviews('ghs_building_height_grid_h3', '{max_height,avg_height}'::text[], '{max,avg}'::text[], 8);"
 	touch $@
 
 data/in/raster/copernicus_landcover: | data/in/raster ## Directory for Copernicus land cover data.
@@ -454,8 +599,10 @@ db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table 
 	psql -f tables/copernicus_builtup_h3.sql
 	touch $@
 
-db/table/copernicus_forest_h3: db/table/copernicus_landcover_raster | db/table ## Forest area in km2 by types from land cover raster into h3 hexagons on 8 resolution.
-	psql -f tables/copernicus_forest_h3.sql
+db/table/copernicus_landcover_h3: db/table/copernicus_landcover_raster db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area | db/table ## Forest area in km2 by types from land cover raster into h3 hexagons on 8 resolution.
+	psql -f tables/copernicus_landcover_h3.sql
+	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('copernicus_landcover_h3_in', 'copernicus_landcover_h3', '{forest_area, evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest, cropland, wetland, moss_lichen, bare_vegetation, builtup, snow_ice, permanent_water}'::text[], 8);"
+	psql -c "drop table if exists copernicus_landcover_h3_in;"
 	touch $@
 
 db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
@@ -473,7 +620,7 @@ data/mid/mapswipe/ym_files/unzip: data/in/mapswipe/mapswipe.zip | data/mid/mapsw
 
 data/in/mapswipe/projects_new.csv: | data/in/mapswipe ## Dowload actual overview of mapswipe projects.
 	rm -f data/in/mapswipe/projects_new.csv
-	wget https://apps.mapswipe.org/api/projects/projects.csv -O $@
+	wget https://apps.mapswipe.org/api/projects/projects.csv --no-check-certificate -O $@
 
 data/in/mapswipe/projects_old.csv: | data/in/mapswipe ## Dowload previous overview of mapswipe projects.
 	rm -f data/in/mapswipe/projects_old.csv
@@ -481,18 +628,18 @@ data/in/mapswipe/projects_old.csv: | data/in/mapswipe ## Dowload previous overvi
 	touch $@
 
 data/in/mapswipe/projects_old_update: data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv | data/in/mapswipe ## update previous mapswipe projects overview on s3.
-	aws s3 cp data/in/mapswipe/projects_old.csv s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/projects_old.csv --profile geocint_pipeline_sender
+	aws s3 cp data/in/mapswipe/projects_new.csv s3://geodata-eu-central-1-kontur/private/geocint/data/in/mapswipe/projects_old.csv --profile geocint_pipeline_sender
 	touch $@
 
 db/table/mapswipe_projects_new: data/in/mapswipe/projects_new.csv | db/table ## Loading new mapswipe overview data to database.
 	psql -c "drop table if exists mapswipe_projects_new;"
-	psql -c "create table mapswipe_projects_new (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
+	psql -c "create table mapswipe_projects_new (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, organization_name text, image text, created timestamp, custom_options text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
 	cat data/in/mapswipe/projects_new.csv | psql -c "copy mapswipe_projects_new from stdin with csv header;"
 	touch $@
 
-db/table/mapswipe_projects_old: data/in/mapswipe/projects_old.csv | db/table ## Loading new mapswipe overview data to database.
+db/table/mapswipe_projects_old: data/in/mapswipe/projects_old.csv | db/table ## Loading old mapswipe overview data to database.
 	psql -c "drop table if exists mapswipe_projects_old;"
-	psql -c "create table mapswipe_projects_old (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
+	psql -c "create table mapswipe_projects_old (idx smallint, project_id text, name text, project_details text, look_for text, project_type text, organization_name text, image text, created timestamp, custom_options text, tile_server_names text, status text, area_sqkm float, geom text, centroid text, progress float, number_of_users float, number_of_results float, number_of_results_progress float, day timestamp);"
 	cat data/in/mapswipe/projects_old.csv | psql -c "copy mapswipe_projects_old from stdin with csv header;"
 	touch $@
 
@@ -518,8 +665,10 @@ db/table/mapswipe_hot_tasking_data: data/mid/mapswipe/ym_files/update | db/table
 	ls -S data/mid/mapswipe/ym_files/*.geojson | parallel 'ogr2ogr -append -f PostgreSQL PG:"dbname=gis" {} -nln mapswipe_hot_tasking_data -nlt POLYGON --config PG_USE_COPY YES'
 	touch $@
 
-db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 db/procedure/generate_overviews | db/table ## Create h3 table with mapswipe data
+db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 | db/procedure/generate_overviews db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area db/table ## Create h3 table with mapswipe data
 	psql -f tables/mapswipe_hot_tasking_data_h3.sql
+	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('mapswipe_hot_tasking_data_h3_in', 'mapswipe_hot_tasking_data_h3', '{mapswipe_area}'::text[], 8);"
+	psql -c "drop table if exists mapswipe_hot_tasking_data_h3_in;"
 	touch $@
 
 data/in/raster/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz: | data/in/raster/VNL_v21_npp_2021_global  ## download, tile, pack and upload nightlights rasters
@@ -598,7 +747,7 @@ db/table/gebco_2022_elevation_h3: db/table/gebco_2022_elevation | db/table ## GE
 	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2022_elevation -v table_name_h3=gebco_2022_elevation_h3 -v aggr_func=avg -v item_name=avg_elevation_gebco_2022
 	touch $@
 
-db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 | db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
+db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 db/table/land_polygons_h3_r8 | db/procedure/generate_overviews db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
 	psql -f tables/gebco_2022_h3.sql
 	psql -c "call generate_overviews('gebco_2022_h3', '{avg_slope_gebco_2022, avg_elevation_gebco_2022}'::text[], '{avg, avg}'::text[], 8);"
 	psql -c "create index on gebco_2022_h3 (h3);"
@@ -620,7 +769,7 @@ db/table/ndvi_2019_06_10: data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/tabl
 	psql -c "vacuum analyze ndvi_2019_06_10;"
 	touch $@
 
-db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/table ## Generate h3 table with average NDVI from 1 to 8 resolution.
+db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/procedure/generate_overviews db/table ## Generate h3 table with average NDVI from 1 to 8 resolution.
 	psql -f tables/ndvi_2019_06_10_h3.sql
 	psql -c "call generate_overviews('ndvi_2019_06_10_h3', '{avg_ndvi}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);"
@@ -630,23 +779,27 @@ db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Cou
 	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r8 -v item_count=building_count
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 | db/table ## Count max amount of buildings at hexagons from all building datasets.
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 | db/procedure/generate_overviews db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
 	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-data/in/gadm/gadm36_levels_shp.zip: | data/in/gadm ## Download GADM (Database of Global Administrative Areas) boundaries dataset.
-	wget https://web.archive.org/web/20190829093806if_/https://data.biogeo.ucdavis.edu/data/gadm3.6/gadm36_levels_shp.zip -O $@
 
-data/mid/gadm/gadm36_shp_files: data/in/gadm/gadm36_levels_shp.zip | data/mid/gadm ## Extract GADM (Database of Global Administrative Areas) boundaries.
-	unzip -o data/in/gadm/gadm36_levels_shp.zip -d data/mid/gadm/
+db/table/osm_building_levels_h3: db/table/osm_buildings | db/procedure/generate_overviews db/table ## Calculate max and average levels of OSM buildings at hexagons.
+	psql -f tables/osm_building_levels_h3.sql
 	touch $@
 
-db/table/gadm_boundaries: data/mid/gadm/gadm36_shp_files | db/table ## GADM (Database of Global Administrative Areas) boundaries dataset.
-	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_0 -nlt MULTIPOLYGON data/mid/gadm/gadm36_0.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
-	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_1 -nlt MULTIPOLYGON data/mid/gadm/gadm36_1.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
-	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_2 -nlt MULTIPOLYGON data/mid/gadm/gadm36_2.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
-	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -nln gadm_level_3 -nlt MULTIPOLYGON data/mid/gadm/gadm36_3.shp  --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom -progress
+### GADM 4.10 export block -- Database of Global Administrative Areas ###
+
+data/in/gadm/gadm_410-levels.zip: | data/in/gadm ## Download GADM (Database of Global Administrative Areas) boundaries dataset.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/gadm_410-levels.zip $@ --profile geocint_pipeline_sender
+
+data/mid/gadm/gadm_410-levels.gpkg: data/in/gadm/gadm_410-levels.zip | data/mid/gadm ## Extract GADM (Database of Global Administrative Areas) boundaries.
+	unzip -o data/in/gadm/gadm_410-levels.zip -d data/mid/gadm/
+	touch $@
+
+db/table/gadm_boundaries: data/mid/gadm/gadm_410-levels.gpkg | db/table ## Load GADM boundaries for 0-3 administrative levels.
+	seq 0 3 | parallel --eta --progress 'ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=$$PGDATABASE" data/mid/gadm/gadm_410-levels.gpkg  -sql "select * from ADM_{}" -nln gadm_level_{} -nlt MULTIPOLYGON --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom'
 	psql -f tables/gadm_boundaries.sql
 	touch $@
 
@@ -656,15 +809,141 @@ db/table/gadm_countries_boundary: db/table/gadm_boundaries ## Country boundaries
 	psql -c "alter table gadm_countries_boundary alter column geom type geometry(multipolygon, 3857) using ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857);"
 	touch $@
 
-db/table/kontur_boundaries: db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes db/table/wikidata_population db/table/osm | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
+### End GADM 4.10 export block ###
+
+### COD PCODES export block ###
+
+data/in/cod_pcodes/download_cod_pcodes_data: | data/in/cod_pcodes ## get data from feature server by api
+	rm -f $@__FAILED_LIST_1 $@__FAILED_LIST_500
+	## first attempt - download data with big batches - 500 features per file
+	curl -s "https://codgis.itos.uga.edu/arcgis/rest/services/COD_External" | grep -oP '(?<=href=")[^"]*' | grep 'pcode\/FeatureServer' | parallel -j 1 'curl -s "https://codgis.itos.uga.edu{}" | grep ">Admin[0-9]"' | grep -oP '(?<=href=")[^"]*' | parallel -j 1 'bash scripts/get_batches_urls_list.sh {} 500' | parallel --colsep ' ' -j 1 'bash scripts/get_cod_pcodes.sh {1} data/in/cod_pcodes/{2} "$@__FAILED_LIST_500"' || true
+	## if something wasn't downloaded - split rest to 1 file per patch and retry
+	if [ -e $@__FAILED_LIST_500 ]; then cat $@__FAILED_LIST_500 | parallel --colsep ' ' 'bash scripts/split_batches_to_single_feature.sh {1} {2}' > $@__FAILED_LIST_1; fi
+	## Retry download up to 20 times for failed  downloads
+	retry_count=0; \
+	while [ -e $@__FAILED_LIST_1 ] && [ $$retry_count -lt 20 ]; do \
+		echo "Retry attempt #$$retry_count for failed downloads..."; \
+		mv $@__FAILED_LIST_1 $@__RETRY_LIST_1; \
+		cat $@__RETRY_LIST_1 | parallel --colsep ' ' 'bash scripts/get_cod_pcodes.sh {1} {2} "$@__FAILED_LIST_1"'; \
+		rm -f $@__RETRY_LIST_1; \
+		retry_count=$$((retry_count + 1)); \
+	done || true
+	## If still some files weren't downloaded after retries, send notification
+	if [ -e $@__FAILED_LIST_1 ]; then echo "Some COD Pcode features weren't downloaded correctly - see $@__FAILED_LIST_1 for additional information." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@__FAILED_LIST_500
+	touch $@
+
+db/table/cod_pcodes_0_level: data/in/cod_pcodes/download_cod_pcodes_data | db/table ## load 0 level cod pcodes features to database
+	psql -c "drop table if exists cod_pcodes_0_level;"
+	psql -c "create table cod_pcodes_0_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm0_en character varying, adm0_pcode character varying, adm0_ref character varying, adm0alt1_en character varying, adm0alt2_en character varying, area_sqkm double precision);"
+	cd data/in/cod_pcodes; ls *0.geojson | parallel -j 1 'sleep 5; ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_0_level -lco GEOMETRY_NAME=geom'
+	touch $@
+
+db/table/cod_pcodes_1_level: data/in/cod_pcodes/download_cod_pcodes_data | db/table ## load 1 level cod pcodes features to database
+	psql -c "drop table if exists cod_pcodes_1_level;"
+	psql -c "create table cod_pcodes_1_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, regionname_en character varying, regionname_da character varying, regioncode character varying, shape__area double precision, shape__length double precision, adm1_en character varying, adm1_da character varying, adm1_pcode character varying, adm1_ref character varying, adm1alt1_en character varying, adm1alt2_en character varying, adm1alt1_da character varying, adm1alt2_da character varying, adm0_en character varying, adm0_da character varying, adm0_pcode character varying);"
+	cd data/in/cod_pcodes; ls *1.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_1_level -lco GEOMETRY_NAME=geom'
+	touch $@
+
+db/table/cod_pcodes_2_level: data/in/cod_pcodes/download_cod_pcodes_data | db/table ## load 2 level cod pcodes features to database
+	psql -c "drop table if exists cod_pcodes_2_level;"
+	psql -c "create table cod_pcodes_2_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm2_en character varying, adm2_pcode character varying, adm2_ref character varying, adm2alt1_en character varying, adm2alt2_en character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
+	cd data/in/cod_pcodes; ls *2.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_2_level -lco GEOMETRY_NAME=geom'
+	touch $@
+
+db/table/cod_pcodes_3_level: data/in/cod_pcodes/download_cod_pcodes_data | db/table ## load 3 level cod pcodes features to database
+	psql -c "drop table if exists cod_pcodes_3_level;"
+	psql -c "create table cod_pcodes_3_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm3_en character varying, adm3_pcode character varying, adm3_ref character varying, adm3alt1_en character varying, adm3alt2_en character varying, adm2_en character varying, adm2_pcode character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
+	cd data/in/cod_pcodes; ls *3.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_3_level -lco GEOMETRY_NAME=geom'
+	touch $@
+
+db/table/cod_pcodes_4_level: data/in/cod_pcodes/download_cod_pcodes_data | db/table ## load 4 level cod pcodes features to database
+	psql -c "drop table if exists cod_pcodes_4_level;"
+	psql -c "create table cod_pcodes_4_level (geom geometry(Polygon,4326), objectid integer, date bigint, validon bigint, validto character varying, shape__area double precision, shape__length double precision, adm4_en character varying, adm4_pcode character varying, adm4_ref character varying, adm4alt1_en character varying, adm4alt2_en character varying, adm3_en character varying, adm3_pcode character varying, adm2_en character varying, adm2_pcode character varying, adm1_en character varying, adm1_pcode character varying, adm0_en character varying, adm0_pcode character varying, area_sqkm double precision);"
+	cd data/in/cod_pcodes; ls *4.geojson | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln cod_pcodes_4_level -lco GEOMETRY_NAME=geom'
+	touch $@
+
+db/table/cod_pcodes_general: db/table/cod_pcodes_0_level db/table/cod_pcodes_1_level db/table/cod_pcodes_2_level db/table/cod_pcodes_3_level db/table/cod_pcodes_4_level ## merge all levels cod pcodes to single dataset
+	psql -f tables/cod_pcodes_general.sql
+	touch $@
+
+data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg.gz: db/table/cod_pcodes_general | data/out/cod_pcodes ## extract cod pcodes general dataset to gpkg file
+	rm -f $@
+	ogr2ogr -f GPKG data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg PG:'dbname=gis' -sql "select * from cod_pcodes_general order by pcode" -lco "SPATIAL_INDEX=NO" -nln cod_pcodes_general
+	cd data/out/cod_pcodes; pigz -k cod_pcodes_general_dataset.gpkg
+	touch $@
+
+deploy/s3/cod_pcodes_general_dataset: data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg.gz | deploy ## deploy cod pcodes general dataset to s3
+	aws s3 cp data/out/cod_pcodes/cod_pcodes_general_dataset.gpkg.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/cod_pcodes_general_dataset.gpkg.gz --profile geocint_pipeline_sender --acl public-read
+	touch $@
+
+### End COD PCODES export block ###
+
+### Kontur Boundaries block ###
+
+db/table/default_languages_2_level: db/table/osm | db/table ## import data with default languages from csv file
+	psql -c "drop table if exists default_languages_2_level;"
+	psql -c "create table default_languages_2_level(a2 text, code text, hasc text, name text, wikicode text, osm_id integer, lang text, lang2 text, geom geometry);"
+	cat static_data/kontur_boundaries/default_language_2_level.csv | psql -c "copy default_languages_2_level(a2, code, hasc, name, wikicode, osm_id, lang, lang2) from stdin with csv header delimiter ',';"
+	psql -c "update default_languages_2_level p set geom = ST_Normalize(k.geog::geometry) from osm k where p.osm_id = k.osm_id;"
+	touch $@
+
+db/table/default_language_boundaries: db/table/default_languages_2_level db/index/osm_tags_idx | db/table ## select relations with existed default language
+	psql -f tables/default_language_boundaries.sql
+	touch $@
+
+data/in/default_languages_2_level_if_relations_exist_check: db/table/default_languages_2_level db/table/osm_admin_boundaries ## check if relations still be actual
+	echo 'List of osm relations from static_data/kontur_boundaries/default_language_2_level.csv, that were missed in osm_admin_boundaries table. Check relations and update osm or csv.' > $@__LOSTED_RELATIONS_MESSAGE
+	echo '```' >> $@__LOSTED_RELATIONS_MESSAGE
+	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "select osm_id, name, wikicode from default_languages_2_level where osm_id not in (select osm_id from osm_admin_boundaries) order by 1;" >> $@__LOSTED_RELATIONS_MESSAGE
+	echo '```' >> $@__LOSTED_RELATIONS_MESSAGE
+	psql -qXtc 'select count(*) from default_languages_2_level where osm_id not in (select osm_id from osm_admin_boundaries);' > $@__LOSTED_RELATIONS
+	if [ 0 -lt $$(cat $@__LOSTED_RELATIONS) ]; then cat $@__LOSTED_RELATIONS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@__LOSTED_RELATIONS_MESSAGE $@__LOSTED_RELATIONS
+	touch $@
+
+data/out/required_relations_check: db/table/osm_admin_boundaries | data/out ## Check if West Sahara, US Minor Islands, Swalbard and Jan Mayen, State of Palestine relations exists in osm_admin_boundaries and send bug reports to Kontur Slack (#geocint channel).
+	psql -c "drop table if exists required_relations;"
+	psql -c "create table required_relations as (select unnest(array[1703814, 2559126, 2185386, 3245620, 3791785, 7391020, 60189, 1059500]) osm_id);"	
+	echo 'Pipeine was interrupted because followed relations from list of osm relations that we access directly by osm_id in kontur_boundaries production were not found in osm_admin_boundaries table.' > $@__REQUIRED_RELATIONS_MESSAGE
+	echo '```' >> $@__REQUIRED_RELATIONS_MESSAGE
+	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "select osm_id from required_relations where osm_id not in (select osm_id from osm_admin_boundaries);" >> $@__REQUIRED_RELATIONS_MESSAGE
+	echo '```' >> $@__REQUIRED_RELATIONS_MESSAGE
+	psql -qXtc "select count(*) from required_relations where osm_id not in (select osm_id from osm_admin_boundaries);" > $@__NUMBER_MISSED_REQUIRED_RELATIONS
+	if [ 0 -lt $$(cat $@__NUMBER_MISSED_REQUIRED_RELATIONS) ]; then cat $@__REQUIRED_RELATIONS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	rm -f $@__REQUIRED_RELATIONS_MESSAGE $@__NUMBER_MISSED_REQUIRED_RELATIONS
+	touch $@
+
+db/table/kontur_boundaries: data/out/required_relations_check db/table/osm_admin_boundaries db/table/gadm_boundaries db/table/kontur_population_h3 db/table/wikidata_hasc_codes db/table/wikidata_population db/table/osm data/in/default_languages_2_level_if_relations_exist_check db/table/default_language_boundaries | db/table ## We produce boundaries dataset based on OpenStreetMap admin boundaries with aggregated population from kontur_population_h3 and HASC (Hierarchichal Administrative Subdivision Codes) codes (www.statoids.com/ihasc.html) from GADM (Database of Global Administrative Areas).
 	psql -f tables/kontur_boundaries.sql
 	touch $@
 
-data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: db/table/kontur_boundaries | data/out/kontur_boundaries  ## Kontur Boundaries (most recent) geopackage archive.
+data/out/reports/kontur_boundaries_compare_with_latest_on_hdx: db/table/kontur_boundaries_v4 db/table/kontur_boundaries | data/out/reports ## Compare most recent geocint kontur boundaries to latest released and send bug reports to Kontur Slack (#geocint channel).
+	psql -qXtc "select count(*) from kontur_boundaries_v4;" > $@__KONTUR_BOUNDARIES_DEPLOYED
+	psql -qXtc "select count(*) from kontur_boundaries;" > $@__KONTUR_BOUNDARIES_CURRENT
+	if [ $$(cat $@__KONTUR_BOUNDARIES_CURRENT) -lt $$(cat $@__KONTUR_BOUNDARIES_DEPLOYED) ]; then echo "Current Kontur boundaries has less rows than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@__KONTUR_BOUNDARIES_CURRENT $@__KONTUR_BOUNDARIES_DEPLOYED
+	touch $@
+
+data/out/kontur_boundaries/kontur_boundaries.gpkg.gz: data/out/reports/kontur_boundaries_compare_with_latest_on_hdx | data/out/kontur_boundaries ## Kontur Boundaries (most recent) geopackage archive
 	rm -f $@
-	rm -f data/out/kontur_boundaries/kontur_boundaries.gpkg
-	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
-	cd data/out/kontur_boundaries/; pigz kontur_boundaries.gpkg
+	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries.gpkg PG:'dbname=gis' -sql "select admin_level, name, name_en, population, hasc, geom from kontur_boundaries order by name" -lco "SPATIAL_INDEX=NO" -nln kontur_boundaries
+	cd data/out/kontur_boundaries; pigz -k kontur_boundaries.gpkg
+	touch $@
+
+db/table/kontur_default_languages: db/table/kontur_boundaries db/table/default_language_boundaries db/table/default_languages_2_level | db/table ## create kontur_default_languages dataset (administartive boundaries with default language (initial + extrapolated) + non-administrative like a language province)
+	psql -f tables/kontur_default_languages.sql
+	touch $@
+
+data/out/kontur_default_languages.gpkg.gz: db/table/kontur_default_languages db/table/kontur_boundaries | data/out ## Extract kontur_default_languages table to gpkg file and zip 	
+	rm -f $@	
+	ogr2ogr -f GPKG data/out/kontur_default_languages.gpkg PG:'dbname=gis' -sql "select * from kontur_default_languages order by osm_id" -lco "SPATIAL_INDEX=NO" -nln kontur_default_languages
+	cd data/out/; pigz kontur_default_languages.gpkg
+	touch $@
+
+deploy/s3/kontur_default_languages.gpkg.gz: data/out/kontur_default_languages.gpkg.gz ## deploy kontur default languages dataset to s3
+	aws s3 cp data/out/kontur_default_languages.gpkg.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_default_languages.gpkg.gz --profile geocint_pipeline_sender --acl public-read
+	touch $@
 
 db/table/topology_boundaries: db/table/kontur_boundaries db/table/water_polygons_vector ## Create topology build of kontur boundaries
 	psql -f tables/topology_boundaries.sql
@@ -675,7 +954,7 @@ data/out/topology_boundaries.geojson.gz: db/table/topology_boundaries | data/out
 	ogr2ogr -f GeoJSON data/out/topology_boundaries.geojson PG:'dbname=gis' -sql "select * from topology_boundary" -nln kontur_topology_boundary
 	pigz data/out/topology_boundaries.geojson
 
-deploy/s3/topology_boundaries: data/out/topology_boundaries.geojson.gz | deploy/s3 ## Uploads compressed geojson with topology build of Kontur Boundaries in public directory in geodata-us-east-1-kontur s3 bucket
+deploy/s3/topology_boundaries: data/out/topology_boundaries.geojson.gz | deploy/s3 ## Uploads compressed geojson with topology build of Kontur Boundaries in public directory in geodata-eu-central-1-kontur-public s3 bucket
 	aws s3 cp data/out/topology_boundaries.geojson.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/topology_boundaries.geojson.gz --profile geocint_pipeline_sender --acl public-read
 	touch $@
 
@@ -691,13 +970,28 @@ db/table/hdx_boundaries: db/table/hdx_locations_with_wikicodes db/table/kontur_b
 	psql -f tables/hdx_boundaries.sql
 	touch $@
 
+## Kontur Boundaries for boundaries selector block
+
+data/out/kontur_boundaries_for_boundary_selector.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in LayersDB for Event-api enrichment - geocoding, DN boundary selector.
+	cp -vf $@ data/out/kontur_boundaries_for_boundary_selector.geojson.gz_bak || true
+	rm -vf data/out/kontur_boundaries_for_boundary_selector.geojson data/out/kontur_boundaries_for_boundary_selector.geojson.gz
+	ogr2ogr -f GeoJSON data/out/kontur_boundaries_for_boundary_selector.geojson PG:'dbname=gis' -sql "select to_json((select d from (select k.osm_id, k.osm_type, h.code as iso3countrycode, k.boundary, k.admin_level, k.name, k.tags) d)) as properties, (json_extract_path_text(o.meta::json, 'data', 'timestamp', 'last'))::timestamp with time zone as last_updated, geom from kontur_boundaries k join osm_meta o on true left join hdx_locations_with_wikicodes h on k.hasc_wiki = h.hasc" -nln osm_admin_boundaries
+	pigz data/out/kontur_boundaries_for_boundary_selector.geojson
+	touch $@
+
+deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz: data/out/kontur_boundaries_for_boundary_selector.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries for boundary selector dataset to Amazon S3 - we use this extraction in LayersDB/boundary_selector.
+	aws s3 cp data/out/kontur_boundaries_for_boundary_selector.geojson.gz s3://geodata-eu-central-1-kontur-public/kontur_datasets/kontur_boundaries_for_boundary_selector.geojson.gz --profile geocint_pipeline_sender --acl public-read
+	touch $@
+
+## Kontur Boundaries new version release block 
+
 data/out/kontur_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_boundaries
 	mkdir -p $@
 
 data/out/kontur_boundaries_per_country/gpkg_export_commands.txt: | data/out/kontur_boundaries_per_country ## Create file with per country extraction commands
 	cat static_data/kontur_boundaries/hdx_locations.csv | \
 		parallel --colsep ';' \
-			'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}"_$(current_date).gpkg PG:*dbname=gis* -sql *select admin_level, name, name_en, population, hasc, geom from kontur_boundaries_export where location = %"{3}"% order by admin_level;* -nln boundaries -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
+			'echo "ogr2ogr -f GPKG data/out/kontur_boundaries_per_country/kontur_boundaries_"{3}"_$(current_date).gpkg PG:*dbname=gis* -sql *select admin_level, osm_admin_level, name, name_en, population, hasc, geom from kontur_boundaries_export where location = %"{3}"% order by admin_level;* -nln boundaries -lco *SPATIAL_INDEX=NO*"' | sed -r 's/[\*]+/\"/g' | sed -r "s/[\%]+/\'/g" > $@
 
 	sed -i '1d' $@
 
@@ -705,11 +999,66 @@ data/out/kontur_boundaries_per_country/export: db/table/hdx_boundaries data/out/
 	psql -f tables/kontur_boundaries_export.sql
 	rm -f data/out/kontur_boundaries_per_country/*.gpkg*
 	cat data/out/kontur_boundaries_per_country/gpkg_export_commands.txt | parallel '{}'
-	psql -c "drop table if exists kontur_boundaries_export;"
 	touch $@
+
+data/out/kontur_topology_boundaries_per_country: | data/out ## Directory for per country extraction from kontur_topolgy_boundaries
+	mkdir -p $@
+	
+data/out/kontur_topology_boundaries_per_country/export: db/table/water_polygons_vector db/table/hdx_boundaries db/table/kontur_boundaries | data/out/kontur_topology_boundaries_per_country ## Topology per country export
+	psql -X -q -t -F , -A -c "SELECT hasc FROM hdx_boundaries GROUP by 1" > $@__HASCS_LIST
+	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_tmp_{};'"
+	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
+	cat $@__HASCS_LIST | parallel "psql -v tab_temp=topology_tmp_{} -v tab_result=topology_boundaries_{} -v cnt_code={} -f scripts/topology_boundaries_per_country_export.sql"
+	cat $@__HASCS_LIST | parallel "echo $$(date '+%Y%m%d') {}" | parallel --colsep ' ' "ogr2ogr -overwrite -f GPKG data/out/kontur_topology_boundaries_per_country/kontur_topology_boundaries_{2}_{1}.gpkg PG:'dbname=gis' topology_boundaries_{2} -nln kontur_topology_boundaries_{2}_{1} -lco OVERWRITE=yes"
+	cat $@__HASCS_LIST | parallel "psql -c 'drop table if exists topology_boundaries_{};'"
+	rm -f $@__HASCS_LIST
+	touch $@
+
+data/out/kontur_boundaries/hdx_world_extraction_export: db/table/kontur_boundaries | data/out/kontur_boundaries ## Extract new kontur boundaries world release
+	ogr2ogr -f GPKG data/out/kontur_boundaries/kontur_boundaries_$(current_date).gpkg PG:"dbname=gis" -sql "select kontur_admin_level as admin_level, admin_level as osm_admin_level, name, name_en, population, hasc_wiki as hasc, geom from kontur_boundaries order by admin_level;" -nln boundaries -lco "SPATIAL_INDEX=NO"
+	touch $@
+	
+deploy/kontur_boundaries_per_country_on_hdx: data/out/kontur_boundaries_per_country/export ## Deploy new kontur boundaries per country release on hdx
+	cd scripts/; python3 -m hdxloader load -t country-boundaries -s prod -k $$HDX_API_TOKEN -d /data/out/kontur_boundaries_per_country/ --no-dry-run
+	touch $@
+
+deploy/kontur_topology_boundaries_per_country_on_hdx: data/out/kontur_topology_boundaries_per_country/export ## Deploy new kontur topology boundaries per country release on hdx
+	cd scripts/; python3 -m hdxloader load -t country-boundaries -s prod -k $$HDX_API_TOKEN -d /data/out/kontur_topology_boundaries_per_country/ --no-dry-run
+	touch $@
+
+deploy/kontur_boundaries_new_release_on_hdx: data/out/kontur_boundaries/hdx_world_extraction_export deploy/kontur_boundaries_per_country_on_hdx deploy/kontur_topology_boundaries_per_country_on_hdx ## Kontur Boundaries new hdx release final target
+	touch $@
+
+## End Kontur Boundaries new version release block 
+
+data/in/kontur_boundaries_previous_release: | data/in ## Kontur Boundaries previous release input.
+	mkdir -p $@
+
+data/mid/kontur_boundaries_previous_release: | data/mid ## Kontur Boundaries previous release mid data.
+	mkdir -p $@
+
+data/in/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg.gz: | data/in/kontur_boundaries_previous_release ## Download Kontur Boundaries previous release gzip to geocint.
+	rm -rf $@
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/kontur_boundaries_v4.gpkg.gz $@ --profile geocint_pipeline_sender
+
+data/mid/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg: data/in/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg.gz | data/mid/kontur_boundaries_previous_release ## Unzip Kontur Boundaries previous release geopackage archive.
+	gzip -dck data/in/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg.gz > $@
+
+db/table/kontur_boundaries_v4: data/mid/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg ## Import Kontur Boundaries previous release into database.
+	psql -c "drop table if exists kontur_boundaries_v4;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_boundaries_previous_release/kontur_boundaries_v4.gpkg -t_srs EPSG:4326 -nln kontur_boundaries_v4 -lco GEOMETRY_NAME=geom
+	touch $@
+
+### END Kontur Boundaries block ###
+
+### Disaster Ninja Reports block ###
 
 db/table/osm_reports_list: db/table/osm_meta db/table/population_check_osm db/table/osm_population_inconsistencies db/table/osm_gadm_comparison db/table/osm_unmapped_places_report db/table/osm_missing_roads db/table/osm_missing_boundaries_report | db/table ## Reports table for further generation of JSON file that will be used to generate a HTML page on Disaster Ninja
 	psql -f tables/osm_reports_list.sql
+	touch $@
+
+db/table/boundaries_statistics_report: db/table/stat_h3 data/out/kontur_boundaries_per_country/export db/table/hot_projects | db/table ## MVP boundaries statistics report
+	psql -f tables/boundaries_statistics_report.sql
 	touch $@
 
 db/table/population_check_osm: db/table/kontur_boundaries db/table/hdx_boundaries | db/table ## Check how OSM population and Kontur population corresponds with each other for kontur_boundaries dataset.
@@ -724,17 +1073,20 @@ db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundarie
 	psql -f tables/osm_gadm_comparison.sql
 	touch $@
 
-db/table/osm_unmapped_places_report: db/table/osm_object_count_grid db/table/kontur_population_h3 db/table/tile_logs_h3 db/table/hdx_boundaries | db/table ## Report with a list of viewed but unmapped populated places
+db/table/osm_unmapped_places_report: db/table/stat_h3 db/table/hdx_boundaries | db/table ## Report with a list of vieved but unmapped populated places
 	psql -f tables/osm_unmapped_places_report.sql
 	touch $@
 
-db/table/osm_missing_roads: db/table/osm_object_count_grid_h3 db/table/building_count_grid_h3 db/table/facebook_roads_h3 db/table/osm_admin_boundaries | db/table ## Report with a list places where Facebook has more roads than OpenStreetMap
+db/table/osm_missing_roads: db/table/stat_h3 db/table/osm_admin_boundaries | db/table ## Report with a list places where Facebook has more roads than OpenStreetMap
 	psql -f tables/osm_missing_roads.sql
 	touch $@
 
-db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v2 | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
+db/table/osm_missing_boundaries_report: db/table/osm_admin_boundaries db/table/kontur_boundaries_v4 | db/table ## Report with a list boundaries potentially broken in OpenStreetMap
 	psql -f tables/osm_missing_boundaries_report.sql
 	touch $@
+
+data/out/reports/boundaries_statistics_report.csv: db/table/boundaries_statistics_report | data/out/reports ## Export MVP boundaries statistics report
+	psql -qXc "copy (select \"Name\", \"Admin level\", \"Population\", \"People with no OSM buildings\", \"People with no OSM roads\", \"People with no OSM objects\",\"Populated area km2\",\"Populated area with no OSM objects %\",\"Populated area with no OSM buildings %\",\"Populated area with no OSM roads %\",\"Hazardous days count\",\"HOT Projects\" from boundaries_statistics_report order by location, admin_level) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
 
 data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison db/table/osm_meta | data/out/reports ## Export OSM-GADM comparison report to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Admin level\", \"OSM name\", \"GADM name\" from osm_gadm_comparison order by id limit 10000) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g'  > $@
@@ -742,9 +1094,10 @@ data/out/reports/osm_gadm_comparison.csv: db/table/osm_gadm_comparison db/table/
 data/out/reports/osm_population_inconsistencies.csv: db/table/osm_population_inconsistencies | data/out/reports ## Export population inconsistencies report (see also db/table/osm_population_inconsistencies target) to CSV with semicolon delimiter.
 	psql -qXc "copy (select \"OSM id\", \"Name\", \"Admin level\", \"Population\", \"Population date\", \"Population source\", \"SUM subregions population\", \"Population difference value\", \"Population difference %\" from osm_population_inconsistencies order by id) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
 
-data/out/reports/population_check_osm.csv: db/table/population_check_osm db/table/osm_meta | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results to Kontur Slack (#geocint channel).
+data/out/reports/population_check_osm.csv: db/table/population_check_osm db/table/osm_meta | data/out/reports ## Export population_check_osm report to CSV with semicolon delimiter and send Top 5 most inconsistent results (scaled and not scaled) to Kontur Slack (#geocint channel).
 	psql -qXc "copy (select \"OSM id\", \"Country\", \"Name\", \"OSM population date\", \"OSM population\", \"Kontur population\", \"Wikidata population\", \"OSM-Kontur Population difference\", \"Wikidata-Kontur Population difference\" from population_check_osm order by abs(\"OSM-Kontur Population difference\") desc limit 1000) to stdout with (format csv, header true, delimiter ';');" | sed 's/\"\"/\@\@\@/g' | sed 's/\"//' | sed 's/\"//' | sed 's/\@\@\@/\"/g' > $@
-	psql -qXtf scripts/population_check_osm_message.sql | python3 scripts/slack_message.py geocint "Nightly build" cat
+	psql -qXtf scripts/population_check_osm_message_scaled.sql | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+	psql -qXtf scripts/population_check_osm_message_not_scaled.sql | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 data/out/reports/osm_unmapped_places.csv: db/table/osm_unmapped_places_report | data/out/reports ## Export report to CSV
 	psql -qXc "copy (select h3 as \"H3 index\", \"Country\", population as \"Kontur population\", view_count as \"osm.org view count\", \"Place bounding box\" from osm_unmapped_places_report order by id) to stdout with (format csv, header true, delimiter ';');" > $@
@@ -765,6 +1118,10 @@ data/out/reports/osm_reports_list_dev.json: db/table/osm_reports_list | data/out
 
 data/out/reports/osm_reports_list_prod.json: db/table/osm_reports_list | data/out/reports ## Export OpenStreetMap quality reports table to JSON file that will be used to generate a HTML page on Disaster Ninja (production version)
 	psql -qXc 'copy (select jsonb_agg(row) from (select * from osm_reports_list) row where public_access is true) to stdout;' | sed 's/\@\@\@\@\@//g' | sed 's=\\=@@=g' | sed 's/\@\@\@\@/\\/g'> $@
+	touch $@
+
+deploy/geocint/reports/boundaries_statistics_report.csv: data/out/reports/boundaries_statistics_report.csv | deploy/geocint/reports ## Copy MVP boundaries statistics report to public_html folder to make it available online.
+	mkdir -p ~/public_html/reports && cp data/out/reports/boundaries_statistics_report.csv ~/public_html/reports/boundaries_statistics_report.csv
 	touch $@
 
 deploy/geocint/reports/osm_gadm_comparison.csv: data/out/reports/osm_gadm_comparison.csv | deploy/geocint/reports ## Copy OSM-GADM comparison report to public_html folder to make it available online.
@@ -803,19 +1160,19 @@ deploy/geocint/reports/osm_reports_list_prod.json: data/out/reports/osm_reports_
 	mkdir -p ~/public_html/reports && cp data/out/reports/osm_reports_list_prod.json ~/public_html/reports/osm_reports_list_prod.json
 	touch $@
 
-deploy/geocint/reports/test/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/osm_reports_list_test.json | deploy/geocint/reports/test  ## OSM quality reports (most recent) testing archive.
+deploy/geocint/reports/test/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/boundaries_statistics_report.csv deploy/geocint/reports/osm_reports_list_test.json | deploy/geocint/reports/test  ## OSM quality reports (most recent) testing archive.
 	rm -f ~/public_html/test/reports.tar.gz
-	cd ~/public_html/reports; tar --transform='flags=r;s|list_test|list|' -cf test_reports.tar.gz -I pigz osm_reports_list_test.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv
+	cd ~/public_html/reports; tar --transform='flags=r;s|list_test|list|' -cf test_reports.tar.gz -I pigz osm_reports_list_test.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv boundaries_statistics_report.csv
 	touch $@
 
-deploy/geocint/reports/dev/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/osm_reports_list_dev.json | deploy/geocint/reports/dev  ## OSM quality reports (most recent) dev archive.
+deploy/geocint/reports/dev/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/boundaries_statistics_report.csv deploy/geocint/reports/osm_reports_list_dev.json | deploy/geocint/reports/dev  ## OSM quality reports (most recent) dev archive.
 	rm -f ~/public_html/dev/reports.tar.gz
-	cd ~/public_html/reports; tar --transform='flags=r;s|list_dev|list|' -cf dev_reports.tar.gz -I pigz osm_reports_list_dev.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv
+	cd ~/public_html/reports; tar --transform='flags=r;s|list_dev|list|' -cf dev_reports.tar.gz -I pigz osm_reports_list_dev.json population_check_osm.csv osm_gadm_comparison.csv  osm_population_inconsistencies.csv osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv boundaries_statistics_report.csv
 	touch $@
 
-deploy/geocint/reports/prod/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/osm_reports_list_prod.json | deploy/geocint/reports/prod  ## OSM quality reports (most recent) production archive.
+deploy/geocint/reports/prod/reports.tar.gz: deploy/geocint/reports/osm_unmapped_places.csv deploy/geocint/reports/osm_missing_roads.csv deploy/geocint/reports/osm_gadm_comparison.csv deploy/geocint/reports/osm_population_inconsistencies.csv deploy/geocint/reports/population_check_osm.csv deploy/geocint/reports/osm_missing_boundaries_report.csv deploy/geocint/reports/boundaries_statistics_report.csv deploy/geocint/reports/osm_reports_list_prod.json | deploy/geocint/reports/prod  ## OSM quality reports (most recent) production archive.
 	rm -f ~/public_html/prod/reports.tar.gz
-	cd ~/public_html/reports; tar --transform='flags=r;s|list_prod|list|' -cf prod_reports.tar.gz -I pigz osm_reports_list_prod.json population_check_osm.csv osm_gadm_comparison.csv osm_population_inconsistencies.csv  osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv
+	cd ~/public_html/reports; tar --transform='flags=r;s|list_prod|list|' -cf prod_reports.tar.gz -I pigz osm_reports_list_prod.json population_check_osm.csv osm_gadm_comparison.csv osm_population_inconsistencies.csv  osm_unmapped_places.csv osm_missing_roads.csv osm_missing_boundaries_report.csv boundaries_statistics_report.csv
 	touch $@
 
 deploy/s3/test/reports/reports.tar.gz: deploy/geocint/reports/test/reports.tar.gz | deploy/s3/test/reports ## Putting reports archive to AWS test reports folder in private bucket. Before it we backup the previous reports archive.
@@ -858,25 +1215,19 @@ deploy/s3/prod/reports/prod_reports_public: deploy/geocint/reports/prod/reports.
 	aws s3 sync ~/public_html/reports/prod_reports_public/ s3://geodata-eu-central-1-kontur-public/kontur_reports/ --exclude='*' --include='osm_missing_boundaries_report.csv' --profile geocint_pipeline_sender
 	touch $@
 
-deploy/dev/reports: deploy/s3/dev/reports/reports.tar.gz | deploy/dev ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Dev server.
-	ansible zigzag_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'
-	ansible zigzag_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/dev/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
-	ansible zigzag_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
-	ansible zigzag_disaster_ninja -m file -a 'path=$$HOME/reports/reports.tar.gz state=absent'
+### End Disaster Ninja Reports block ###
+
+### Wikidata code block
+db/table/wikidata_naturalization_gap: | db/table ## Global collection of years of years_to_naturalisation and multiple_citizenship (0 - not allowed, 1 - with restrictions, 2 - allowed) per country
+	psql -c "drop table if exists wikidata_naturalization_gap;"
+	psql -c "create table wikidata_naturalization_gap (name text, code text, hasc text, years_to_naturalisation float,multiple_citizenship integer);"
+	cat static_data/wikidata_naturalization/naturalization_gap.csv | psql -c "copy wikidata_naturalization_gap from stdin with csv header;"
+	psql -c "create index on wikidata_naturalization_gap using btree(hasc);"
 	touch $@
 
-deploy/test/reports: deploy/s3/test/reports/reports.tar.gz | deploy/test ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Test server.
-	ansible sonic_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'
-	ansible sonic_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/test/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
-	ansible sonic_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
-	ansible sonic_disaster_ninja -m file -a 'path=$$HOME/reports/reports.tar.gz state=absent'
-	touch $@
-
-deploy/prod/reports: deploy/s3/prod/reports/reports.tar.gz | deploy/prod ## Getting OpenStreetMap quality reports from AWS private folder and restoring it on Prod server.
-	ansible lima_disaster_ninja -m file -a 'path=$$HOME/reports state=directory mode=0770'
-	ansible lima_disaster_ninja -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/reports/reports.tar.gz dest=$$HOME/reports/reports.tar.gz mode=get'
-	ansible lima_disaster_ninja -m unarchive -a 'src=$$HOME/reports/reports.tar.gz dest=$$HOME/reports remote_src=yes'
-	ansible lima_disaster_ninja -m file -a 'path=$$HOME/reports/reports.tar.gz state=absent'
+db/table/wikidata_naturalization_gap_h3: db/table/wikidata_naturalization_gap | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviws of wikidata years_to_naturalisation and multiple_citizenship
+	psql -c "call transform_hasc_to_h3('wikidata_naturalization_gap', 'wikidata_naturalization_gap_h3', 'hasc', '{years_to_naturalisation,multiple_citizenship}'::text[], 8);"
+	psql -c "call generate_overviews('wikidata_naturalization_gap_h3', '{years_to_naturalisation,multiple_citizenship}'::text[], '{max,min}'::text[], 8);"
 	touch $@
 
 data/in/iso_codes.csv: | data/in ## Download ISO codes for countries from wikidata.
@@ -944,7 +1295,7 @@ db/table/wikidata_population: data/in/wikidata_population_csv/download | db/tabl
 
 	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) ]; then \
 		echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one." \
-			| python3 scripts/slack_message.py geocint "Nightly build" cat; \
+			| python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; \
 	fi
 	rm -f $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
 	touch $@
@@ -969,7 +1320,7 @@ db/table/un_population: data/in/un_population.csv | db/table ## UN (United Natio
 
 #data/out/reports/population_check_un.csv: db/table/population_check_un | data/out/reports
 #	psql -c 'copy (select * from population_check_un order by diff_pop) to stdout with csv header;' > $@
-#	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py geocint "Nightly build" cat
+#	cat $@ | tail -n +2 | head -10 | awk -F "\"*,\"*" '{print "<https://www.openstreetmap.org/relation/" $1 "|" $2">", $7}' | { echo "Top 10 countries with population different from UN"; cat -; } | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 data/in/prescale_to_osm.csv: | data/in ## Download master table with right population values from osm
 	wget -c -nc "https://docs.google.com/spreadsheets/d/1-XuFA8c3sweMhCi52tdfhepGXavimUWA7vPc3BoQb1c/export?format=csv&gid=0" -O $@
@@ -980,16 +1331,19 @@ db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescal
 	cat data/in/prescale_to_osm.csv | psql -c "copy prescale_to_osm(osm_type, osm_id, country, name, url, right_population, change_date) from stdin with csv header delimiter ',';"
 	touch $@
 
-db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm db/table/water_polygons_vector | db/table ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
+db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm_admin_boundaries db/table/water_polygons_vector | db/table db/function/parse_integer ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
 	psql -f tables/prescale_to_osm_boundaries.sql
+	psql -q -X -t -c 'select count(*) from prescale_to_osm_boundaries where osm_id = 3311547;' > $@__IS_CHERNOBYL_AREA_EXIST
+	if [ $$(cat $@__IS_CHERNOBYL_AREA_EXIST) -lt 1 ]; then echo "Chornobyl Nuclear Power Plant Zone of Alienation (osm_id 3311547) was missed. Population in 30km zome may be inaccurate. Stop pipeline." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	rm -f $@__IS_CHERNOBYL_AREA_EXIST
 	touch $@
 
 db/table/prescale_to_osm_check_changes: db/table/prescale_to_osm_boundaries | db/table ## Check the number of object with nonactual osm population
 	psql -q -X -t -c 'select count(*) from changed_population where geom is null;' > $@__WRONG_GEOM
 	psql -q -X -t -c 'select count(*) from changed_population where right_population <> actual_osm_pop;' > $@__CHANG_POP
-	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
-	if [ 0 -lt $$(cat $@__CHANG_POP) ]; then echo "Some population values in OSM was changed. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
-	if [ 0 -lt $$(cat $@__WRONG_GEOM) ]; then echo "Some geometry values is null. Please check changed_population table." | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
+	if [ $$(cat $@__CHANG_POP) -lt 1 ] && [ $$(cat $@__WRONG_GEOM) -lt 1 ]; then psql -c 'drop table if exists changed_population;';echo "Prescale_to_OSM_master table contains actual values" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	if [ 0 -lt $$(cat $@__CHANG_POP) ]; then echo "Some population values in OSM was changed. Please check changed_population table." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	if [ 0 -lt $$(cat $@__WRONG_GEOM) ]; then echo "Some geometry values is null. Please check changed_population table." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
 	rm $@__CHANG_POP $@__WRONG_GEOM
 	touch $@
 
@@ -997,16 +1351,17 @@ db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/presca
 	seq 2 1 26 | xargs -I {} psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level={}
 	touch $@
 
-db/table/prescale_to_osm_coefficient_table: db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries db/table/population_grid_h3_r8 | db/table ## Create h3 r8 table with hexs with population
-	psql -f tables/prescale_to_osm_coefficient_table.sql
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table  ## Kontur Population (most recent).
+	psql -f tables/kontur_population_h3.sql
 	touch $@
 
-data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
-	psql -q -X -t -c 'select sum(population) from kontur_population_v3_h3 where resolution = 0' > $@__KONTUR_POP_V3
-	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V4
-	if [ $$(cat $@__KONTUR_POP_V4) -lt 7000000000 ]; then echo "*Kontur population is broken*\nless than 7 billion people" | python3 scripts/slack_message.py geocint "Nightly build" x && exit 1; fi
-	if [ $$(cat $@__KONTUR_POP_V4) -lt $$(cat $@__KONTUR_POP_V3) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py geocint "Nightly build" cat; fi
-	rm -f $@__KONTUR_POP_V3 $@__KONTUR_POP_V4
+data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_population_v5_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
+	psql -q -X -t -c 'select sum(population) from kontur_population_v5_h3 where resolution = 0' > $@__KONTUR_POP_V5
+	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V5_1
+	if [ $$(cat $@__KONTUR_POP_V5_1) -lt 8000000000 ]; then echo "*Kontur population is broken*\nless than 8 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	if [ $$(cat $@__KONTUR_POP_V5_1) -lt $$(cat $@__KONTUR_POP_V5) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	echo "Actual Kontur Population total is $$(cat $@__KONTUR_POP_V5_1)" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+	rm -f $@__KONTUR_POP_V5 $@__KONTUR_POP_V5_1
 	touch $@
 
 data/out/reports/population_check: data/out/reports/population_check_osm.csv data/out/reports/population_check_world | data/out/reports ## Common target of population checks.
@@ -1036,6 +1391,46 @@ db/table/wb_gadm_gdp_countries: db/table/wb_gdp db/table/gadm_countries_boundary
 db/table/gdp_h3: db/table/kontur_population_h3 db/table/wb_gadm_gdp_countries ## GDP (Gross domestic product) for the last known year from World Bank distributed on H3 hexagons grid.
 	psql -f tables/gdp_h3.sql
 	touch $@
+
+## Woldbank Tax Rate
+db/table/worldbank_tax_rate: | db/table ## Global Worldbank Tax Rate (source https://data.worldbank.org/indicator/IC.TAX.TOTL.CP.ZS 2005-2019)
+	psql -c "drop table if exists worldbank_tax_rate;"
+	psql -c "create table worldbank_tax_rate (name text, hasc text, code text, indicator_name text, indicator_code text, t2005 float, t2006 float, t2007 float, t2008 float, t2009 float, t2010 float, t2011 float, t2012 float, t2013 float, t2014 float, t2015 float, t2016 float, t2017 float, t2018 float, t2019 float);"
+	cat static_data/worldbank/world_bank_tax_rate_2005-2019.csv | psql -c "copy worldbank_tax_rate from stdin with csv header;"
+	psql -c "create index on worldbank_tax_rate using btree(hasc);"
+	touch $@
+
+db/table/worldbank_tax_rate_h3: db/table/worldbank_tax_rate | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviws of worldbank_tax_rate
+	psql -c "call transform_hasc_to_h3('worldbank_tax_rate', 'worldbank_tax_rate_h3', 'hasc', '{t2019}'::text[], 8);"
+	psql -c "call generate_overviews('worldbank_tax_rate_h3', '{t2019}'::text[], '{max}'::text[], 8);"
+	touch $@
+
+## IDMC internal displacemet 2023 block
+db/table/idmc_country_2023: | db/table ## IDMC internal displacemet 2023 (source https://www.internal-displacement.org/database/displacement-data/)
+	psql -c "drop table if exists idmc_country_2023;"
+	psql -c "create table idmc_country_2023 (iso3 text, name text, year integer, conflict_stock_displacement integer, conflict_internal_displacements integer, disaster_internal_displacements integer, disaster_stock_displacement integer);"
+	cat static_data/idmc/idmc_internal_displacement.csv | psql -c "copy idmc_country_2023 from stdin with csv delimiter ';' header;"
+	psql -c "create index on idmc_country_2023 using btree(iso3);"
+	touch $@
+
+db/table/idmc_country_2023_h3: db/table/idmc_country_2023 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3_percent_of_population db/table/kontur_boundaries ## Create idmc_country_2023_h3 and genarate overviews
+	psql -f tables/idmc_country_2023_h3.sql
+	touch $@
+
+## Woldbank Inflation
+db/table/worldbank_inflation: | db/table ## Global Worldbank Headline consumer price index (CPI) inflation (source https://www.worldbank.org/en/research/brief/inflation-database)
+	psql -c "drop table if exists worldbank_inflation;"
+	psql -c "create table worldbank_inflation (code text, hasc text, name text, imf_country_code text, year integer, inflation float);"
+	cat static_data/worldbank/worldbank_headline_consumer_price_index_cpi_inflation.csv | psql -c "copy worldbank_inflation from stdin with csv header;"
+	psql -c "create index on worldbank_inflation using btree(hasc);"
+	touch $@
+
+db/table/worldbank_inflation_h3: db/table/worldbank_inflation | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviws of worldbank_inflation
+	psql -c "call transform_hasc_to_h3('worldbank_inflation', 'worldbank_inflation_h3', 'hasc', '{inflation}'::text[], 8);"
+	psql -c "call generate_overviews('worldbank_inflation_h3', '{inflation}'::text[], '{max}'::text[], 8);"
+	touch $@
+
+## End Worldbank Tax Rate
 
 data/in/water-polygons-split-3857.zip: | data/in ## Download OpenStreetMap water polygons (oceans and seas) archive.
 	wget https://osmdata.openstreetmap.de/download/water-polygons-split-3857.zip -O $@
@@ -1122,6 +1517,8 @@ data/mid/global_fires/extract_firms_archive: data/in/global_fires/download_firms
 	mv data/in/global_fires/firms_archive_*.csv data/mid/global_fires/
 	touch $@
 
+### Global Fires block ###
+
 data/in/global_fires/new_updates: | data/in ## Last updates for active fire products from FIRMS (Fire Information for Resource Management System).
 	mkdir -p $@
 
@@ -1135,7 +1532,7 @@ data/in/global_fires/new_updates/download_new_updates: | data/in/global_fires/ne
 
 db/table/global_fires_in: data/in/global_fires/new_updates/download_new_updates data/mid/global_fires/extract_firms_archive | db/table ## Fire products from FIRMS (Fire Information for Resource Management System) aggregated, normalized and imported into database.
 	psql -c "drop table if exists global_fires_in;"
-	psql -c "create table global_fires_in(latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text) tablespace evo4tb;"
+	psql -c "create table global_fires_in(latitude float, longitude float, brightness float, bright_ti4 float, scan float, track float, satellite text, instrument text, confidence text, version text, bright_t31 float, bright_ti5 float, frp float, daynight text, acq_datetime timestamptz, hash text);"
 	ls -S data/mid/global_fires/*.csv | parallel "cat {} | psql -c 'set time zone utc; copy global_fires_in (latitude, longitude, brightness, bright_ti4, scan, track, satellite, instrument, confidence, version, bright_t31, bright_ti5, frp, daynight, acq_datetime, hash) from stdin with csv header;'"
 	psql -c "vacuum analyze global_fires_in;"
 	touch $@
@@ -1150,7 +1547,7 @@ db/table/global_fires: db/table/global_fires_in | db/table ## Active fire produc
 data/out/global_fires/update: db/table/global_fires | data/out/global_fires ## Last update for active fire products.
 	rm -f data/out/global_fires/firms_archive_*.csv.gz
 	aws s3 ls s3://geodata-eu-central-1-kontur/private/geocint/in/global_fires/ --profile geocint_pipeline_sender | tail -1 | cut -d ' ' -f 1,2 | date +"%s" -f - > $@__LAST_DEPLOY_TS
-	if [ $$(cat $@__LAST_DEPLOY_TS) -lt $$(date -d "1 week ago" +"%s") ]; then echo '*Global Fires* broken. Latest data for *'$$(cat $@__LAST_DEPLOY_TS | xargs -I {} date -d @{} -u +"%Y-%m-%d")'*. See section <https://gitlab.com/kontur-private/platform/geocint/#manual-update-of-global-fires|"Manual update of Global Fires"> in README.md' | python3 scripts/slack_message.py geocint "Nightly build" x; fi
+	if [ $$(cat $@__LAST_DEPLOY_TS) -lt $$(date -d "1 week ago" +"%s") ]; then echo '*Global Fires* broken. Latest data for *'$$(cat $@__LAST_DEPLOY_TS | xargs -I {} date -d @{} -u +"%Y-%m-%d")'*. See section <https://gitlab.com/kontur-private/platform/geocint/#manual-update-of-global-fires|"Manual update of Global Fires"> in README.md' | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
 	seq $$(cat $@__LAST_DEPLOY_TS | xargs -I {}  date -u -d @{} +"%Y") $$(date -u +"%Y") | parallel --eta "psql -qXc 'set time zone utc; copy (select * from global_fires where acq_datetime >= '\''{}-01-01'\'' and acq_datetime < '\''{}-01-01'\''::date + interval '\''1 year'\'' order by acq_datetime, hash) to stdout with csv header;' | pigz -9 > data/out/global_fires/firms_archive_{}.csv.gz"
 	rm -f $@__LAST_DEPLOY_TS
 	touch $@
@@ -1163,24 +1560,7 @@ db/table/global_fires_stat_h3: deploy/s3/global_fires ## Aggregate active fire d
 	psql -f tables/global_fires_stat_h3.sql
 	touch $@
 
-data/in/morocco_buildings: | data/in ## morocco_buildings input data.
-	mkdir -p $@
-
-data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg: | data/in/morocco_buildings ## morocco_urban_pixel_mask downloaded.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_urban_pixel_mask.gpkg $@ --profile geocint_pipeline_sender
-	touch $@
-
-db/table/morocco_urban_pixel_mask: data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg | db/table ## Morocco rough urban territories vector layer from Geoalert.
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg
-	touch $@
-
-db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Morocco urban pixel mask aggregated count on H3 hexagons grid.
-	psql -f tables/morocco_urban_pixel_mask_h3.sql
-	touch $@
-
-db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
-	psql -f tables/count_items_in_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
-	touch $@
+### END Global Fires block ###
 
 data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset (input).
 	mkdir -p $@
@@ -1189,9 +1569,13 @@ data/in/microsoft_buildings/download: | data/in/microsoft_buildings ## Download 
 	grep -h -v '^#' static_data/microsoft_buildings/*.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_buildings {}'
 	touch $@
 
-db/table/microsoft_buildings: data/in/microsoft_buildings/download | db/table  ## Microsoft Building Footprints dataset imported into database.
+data/in/microsoft_buildings/validity_controlled: data/in/microsoft_buildings/download | data/in/microsoft_buildings ## Check downloaded Microsoft Building Footprints archives.
+	ls -1 data/in/microsoft_buildings/*.zip | parallel --halt now,fail=1 unzip -t {}
+	touch $@
+
+db/table/microsoft_buildings: data/in/microsoft_buildings/validity_controlled | db/table  ## Microsoft Building Footprints dataset imported into database.
 	psql -c "drop table if exists microsoft_buildings;"
-	psql -c "create table microsoft_buildings(filename text, geom geometry(Geometry,4326)) tablespace evo4tb;"
+	psql -c "create table microsoft_buildings(filename text, geom geometry(Geometry,4326));"
 	find data/in/microsoft_buildings/* -type f -name "*.zip" -printf '%s\t%p\n' | sort -r -n | cut -f2- | sed -r 's/(.*\/(.*)\.(.*)$$)/ogr2ogr -append -f PostgreSQL --config PG_USE_COPY YES PG:"dbname=gis" "\/vsizip\/\1" -sql "select '\''\2'\'' as filename, * from \\"\2\\"" -nln microsoft_buildings -a_srs EPSG:4326/' | parallel --eta '{}'
 	psql -c "vacuum analyze microsoft_buildings;"
 	touch $@
@@ -1203,13 +1587,13 @@ db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Coun
 data/in/new_zealand_buildings: | data/in ## New Zealand's buildings dataset from LINZ (Land Information New Zealand).
 	mkdir -p $@
 
-data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg: | data/in/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines.gpkg $@ --profile geocint_pipeline_sender
-	touch $@
+data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg: | data/in/new_zealand_buildings ## Download New Zealand's buildings from AWS S3 bucket.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg.gz data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg.gz --profile geocint_pipeline_sender
+	pigz -d data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg.gz
 
-db/table/new_zealand_buildings: data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg | db/table ## Create table with New Zealand buildings.
+db/table/new_zealand_buildings: data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg | db/table ## Create table with New Zealand buildings.
 	psql -c "drop table if exists new_zealand_buildings;"
-	time ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
+	time ogr2ogr -f --config PG_USE_COPY YES PostgreSQL PG:"dbname=gis" data/in/new_zealand_buildings/data-land-information-new-zealand-govt-nz-building-outlines-120923.gpkg -nln new_zealand_buildings -lco GEOMETRY_NAME=geom
 	touch $@
 
 db/table/new_zealand_buildings_h3: db/table/new_zealand_buildings ## Count amount of New Zealand buildings at hexagons.
@@ -1220,9 +1604,7 @@ data/in/geoalert_urban_mapping: | data/in ## Geoalert Urban mapping datasets.
 	mkdir -p $@
 
 data/in/geoalert_urban_mapping/download: | data/in/geoalert_urban_mapping  ## Download Geoalert Urban mapping datasets.
-	cd data/in/geoalert_urban_mapping; wget https://filebrowser.aeronetlab.space/s/TUVKmq2pwNwy4WH/download -O Open_UM_Geoalert-Russia-Chechnya.zip
-	cd data/in/geoalert_urban_mapping; wget https://filebrowser.aeronetlab.space/s/znbuMiaZlsrh6NT/download -O Open_UM_Geoalert-Tyva.zip
-	cd data/in/geoalert_urban_mapping; wget https://filebrowser.aeronetlab.space/s/q8vri4GTILLivv8/download -O Open-UM_Geoalert-Mos_region.zip
+	cat geoalert_buildings/url_filename.txt | parallel --colsep ' ' "wget -q {1} -O data/in/geoalert_urban_mapping/{2}"
 	touch $@
 
 data/mid/geoalert_urban_mapping: | data/mid  ## Geoalert Urban mapping datasets processed.
@@ -1242,10 +1624,6 @@ db/table/geoalert_urban_mapping_h3: db/table/geoalert_urban_mapping | db/table #
 	psql -f tables/count_items_in_h3.sql -v table=geoalert_urban_mapping -v table_h3=geoalert_urban_mapping_h3 -v item_count=building_count
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/table/prescale_to_osm_coefficient_table | db/table  ## Kontur Population (most recent).
-	psql -f tables/kontur_population_h3.sql
-	touch $@
-
 data/out/kontur_population.gpkg.gz: db/table/kontur_population_h3 | data/out  ## Kontur Population (most recent) geopackage archive.
 	rm -f $@
 	rm -f data/out/kontur_population.gpkg
@@ -1258,6 +1636,32 @@ data/out/kontur_population.gpkg.gz: db/table/kontur_population_h3 | data/out  ##
 		data/out/kontur_population.gpkg \
 		PG:'dbname=gis'
 	pigz data/out/kontur_population.gpkg
+
+data/out/kontur_population_r6.gpkg.gz: db/table/kontur_population_h3 | data/out  ## Kontur Population (most recent) geopackage archive at 6th resolution.
+	rm -f $@
+	rm -f data/out/kontur_population_r6.gpkg
+	ogr2ogr \
+		-f GPKG \
+		-sql "select h3, population, geom from kontur_population_h3 where population > 0 and resolution = 6 order by h3" \
+		-lco "SPATIAL_INDEX=YES" \
+		-nln population \
+		-gt 65536 \
+		data/out/kontur_population_r6.gpkg \
+		PG:'dbname=gis'
+	pigz data/out/kontur_population_r6.gpkg
+
+data/out/kontur_population_r4.gpkg.gz: db/table/kontur_population_h3 | data/out  ## Kontur Population (most recent) geopackage archive at 4th resolution.
+	rm -f $@
+	rm -f data/out/kontur_population_r4.gpkg
+	ogr2ogr \
+		-f GPKG \
+		-sql "select h3, population, geom from kontur_population_h3 where population > 0 and resolution = 4 order by h3" \
+		-lco "SPATIAL_INDEX=YES" \
+		-nln population \
+		-gt 65536 \
+		data/out/kontur_population_r4.gpkg \
+		PG:'dbname=gis'
+	pigz data/out/kontur_population_r4.gpkg
 
 data/out/kontur_population_per_country: | data/out ## Directory for per country extraction from kontur_boundaries
 	mkdir -p $@
@@ -1285,50 +1689,258 @@ data/out/kontur_population_per_country/export: data/out/kontur_population_per_co
 	psql -c "drop table if exists kontur_population_export;"
 	touch $@
 
-data/in/kontur_population_v3: | data/in ## Kontur Population v3 (input).
+data/in/kontur_population_v5: | data/in ## Kontur Population v5 (input).
 	mkdir -p $@
 
-data/in/kontur_boundaries_v2: | data/in ## Kontur Boundaries v2 (input).
-	mkdir -p $@
-
-data/mid/kontur_boundaries_v2: | data/mid ## Kontur Boundaries v2 dataset.
-	mkdir -p $@
-
-data/in/kontur_boundaries_v2/kontur_boundaries_v2.gpkg.gz: | data/in/kontur_boundaries_v2 ## Download Kontur Boundaries v2 gzip to geocint.
+data/in/kontur_population_v5/kontur_population_20231101.gpkg.gz: | data/in/kontur_population_v5 ## Download Kontur Population v5 gzip to geocint.
 	rm -rf $@
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/kontur_boundaries_v2.gpkg.gz $@ --profile geocint_pipeline_sender
+	wget -c -nc https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/kontur_population_20231101.gpkg.gz -O $@
 
-data/mid/kontur_boundaries_v2/kontur_boundaries_v2.gpkg: data/in/kontur_boundaries_v2/kontur_boundaries_v2.gpkg.gz | data/mid/kontur_boundaries_v2 ## Unzip Kontur Boundaries v2 geopackage archive.
-	gzip -dck data/in/kontur_boundaries_v2/kontur_boundaries_v2.gpkg.gz > $@
-
-db/table/kontur_boundaries_v2: data/mid/kontur_boundaries_v2/kontur_boundaries_v2.gpkg ## Import Kontur Boundaries v2 into database.
-	psql -c "drop table if exists kontur_boundaries_v2;"
-	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_boundaries_v2/kontur_boundaries_v2.gpkg -t_srs EPSG:4326 -nln kontur_boundaries_v2 -lco GEOMETRY_NAME=geom
-	touch $@
-
-data/in/kontur_population_v3/kontur_population_20211109.gpkg.gz: | data/in/kontur_population_v3 ## Download Kontur Population v3 gzip to geocint.
-	rm -rf $@
-	wget -c -nc https://data.humdata.org/dataset/38f46aa9-00dd-4ac9-98c9-5ecaea384c9f/resource/5973b5fc-44dd-468a-b216-b39a9bbd162f/download/kontur_population_20211109.gpkg.gz -O $@
-
-data/mid/kontur_population_v3: | data/mid ## Kontur Population v3 dataset.
+data/mid/kontur_population_v5: | data/mid ## Kontur Population v5 dataset.
 	mkdir -p $@
 
-data/mid/kontur_population_v3/kontur_population_20211109.gpkg: data/in/kontur_population_v3/kontur_population_20211109.gpkg.gz | data/mid/kontur_population_v3 ## Unzip Kontur Population v3 geopackage archive.
-	gzip -dck data/in/kontur_population_v3/kontur_population_20211109.gpkg.gz > $@
+data/mid/kontur_population_v5/kontur_population_20231101.gpkg: data/in/kontur_population_v5/kontur_population_20231101.gpkg.gz | data/mid/kontur_population_v5 ## Unzip Kontur Population v5 geopackage archive.
+	gzip -dck data/in/kontur_population_v5/kontur_population_20231101.gpkg.gz > $@
 
-db/table/kontur_population_v3: data/mid/kontur_population_v3/kontur_population_20211109.gpkg | db/table ## Import population v3 into database.
-	psql -c "drop table if exists kontur_population_v3;"
-	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_population_v3/kontur_population_20211109.gpkg -t_srs EPSG:4326 -nln kontur_population_v3 -lco GEOMETRY_NAME=geom
+db/table/kontur_population_v5: data/mid/kontur_population_v5/kontur_population_20231101.gpkg | db/table ## Import population v5 into database.
+	psql -c "drop table if exists kontur_population_v5;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' data/mid/kontur_population_v5/kontur_population_20231101.gpkg -t_srs EPSG:4326 -nln kontur_population_v5 -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/kontur_population_v3_h3: db/table/kontur_population_v3 | db/table ## Generate h3 hexagon for population v3.
-	psql -f tables/kontur_population_v3_h3.sql
-	psql -c "call generate_overviews('kontur_population_v3_h3', '{population}'::text[], '{sum}'::text[], 8);"
+db/table/kontur_population_v5_h3: db/table/kontur_population_v5 | db/procedure/generate_overviews db/table ## Generate h3 hexagon for population v5.
+	psql -f tables/kontur_population_v5_h3.sql
+	psql -c "call generate_overviews('kontur_population_v5_h3', '{population}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
+data/out/kontur_population_v5_r6.gpkg.gz: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v5 geopackage archive at 6th resolution.
+	rm -f $@
+	rm -f data/out/kontur_population_v5_r6.gpkg
+	ogr2ogr \
+		-f GPKG \
+		-sql "select h3, population, st_transform(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v5_h3 where population > 0 and resolution = 6 order by h3" \
+		-lco "SPATIAL_INDEX=YES" \
+		-nln population \
+		-gt 65536 \
+		data/out/kontur_population_v5_r6.gpkg \
+		PG:'dbname=gis'
+	pigz data/out/kontur_population_v5_r6.gpkg
+
+data/out/kontur_population_v5_r4.gpkg.gz: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v5 geopackage archive at 4th resolution.
+	rm -f $@
+	rm -f data/out/kontur_population_v5_r4.gpkg
+	ogr2ogr \
+		-f GPKG \
+		-sql "select h3, population, st_transform(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v5_h3 where population > 0 and resolution = 4 order by h3" \
+		-lco "SPATIAL_INDEX=YES" \
+		-nln population \
+		-gt 65536 \
+		data/out/kontur_population_v5_r4.gpkg \
+		PG:'dbname=gis'
+	pigz data/out/kontur_population_v5_r4.gpkg
+
+data/out/kontur_population_v5.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v5 csv at 8th resolution.
+	rm -f $@
+	psql -qXc 'copy (select "h3", "population" from kontur_population_v5_h3 where resolution=8 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
+	touch $@
+
+data/out/kontur_population_v5_r6.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v5 csv at 6th resolution.
+	rm -f $@
+	psql -qXc 'copy (select "h3", "population" from kontur_population_v5_h3 where resolution=6 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
+	touch $@
+
+data/out/kontur_population_v5_r4.csv: db/table/kontur_population_v5_h3 | data/out  ## Kontur Population v5 csv at 4th resolution.
+	rm -f $@
+	psql -qXc 'copy (select "h3", "population" from kontur_population_v5_h3 where resolution=4 order by h3) to stdout with (format csv, header true, delimiter ",");' > $@
+	touch $@
+
+### Morocco data block ###
+
+data/in/morocco_buildings: | data/in ## morocco_buildings input data.
+	mkdir -p $@
+
+data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg: | data/in/morocco_buildings ## morocco_urban_pixel_mask downloaded.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_urban_pixel_mask.gpkg $@ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/morocco_urban_pixel_mask: data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg | db/table ## Morocco rough urban territories vector layer from Geoalert.
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/morocco_urban_pixel_mask.gpkg
+	touch $@
+
+db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Morocco urban pixel mask aggregated count on H3 hexagons grid.
+	psql -f tables/morocco_urban_pixel_mask_h3.sql
+	touch $@
+
+data/in/morocco_buildings/morocco_all_tables.sql.gz: | data/in/morocco_buildings ## morocco tables dump download.
+	rm -f $@
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_all_tables.sql.gz $@ --profile geocint_pipeline_sender	
+
+data/in/morocco_buildings/morocco_all_tables.sql: data/in/morocco_buildings/morocco_all_tables.sql.gz ## morocco all table dump download.
+	rm -f $@
+	gzip -dck data/in/morocco_buildings/morocco_all_tables.sql.gz > $@
+
+db/table/morocco_all_tables: data/in/morocco_buildings/morocco_all_tables.sql | db/table ## restore all morocco tables from dump
+	psql < data/in/morocco_buildings/morocco_all_tables.sql
+	touch $@
+
+db/table/morocco_buildings_manual_roofprints: static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
+	psql -c "drop table if exists morocco_buildings_manual_roofprints;"
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson -nln morocco_buildings_manual_roofprints
+	psql -c "alter table morocco_buildings_manual_roofprints rename column wkb_geometry to geom;"
+	psql -c "alter table morocco_buildings_manual_roofprints alter column geom type geometry;"
+	psql -c "update morocco_buildings_manual_roofprints set geom = ST_Transform(geom, 3857);"
+	touch $@
+
+db/table/morocco_buildings_manual: static_data/morocco_buildings/morocco_buildings_manual_20201030.geojson  ## Morocco manually split footprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
+	psql -c "drop table if exists morocco_buildings_manual;"
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/morocco_buildings_manual_20201030.geojson -nln morocco_buildings_manual
+	psql -c "alter table morocco_buildings_manual rename column wkb_geometry to geom;"
+	psql -c "alter table morocco_buildings_manual alter column geom type geometry;"
+	psql -c "update morocco_buildings_manual set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
+	touch $@
+
+data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg: | data/in/morocco_buildings ## Geoalert building dataset for Morocco (Phase 3) downloaded.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/geoalert_morocco_stage_3.gpkg $@ --profile geocint_pipeline_sender
+	touch $@
+
+db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg db/table/morocco_all_tables | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
 	psql -c "drop table if exists morocco_buildings;"
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
+	psql -f tables/morocco_buildings.sql
+	touch $@
+
+db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
+	touch $@
+
+data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz: db/table/morocco_buildings | data/out/morocco_buildings ## Export to GEOJSON and archive Geoalert building dataset for Morocco (Phase 3).
+	rm -f $@ data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson
+	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson PG:"dbname=gis" -sql "select ST_Transform(geom, 4326) as footprint, building_height, height_confidence, is_residential, imagery_vintage, height_is_valid from morocco_buildings_date" -nln morocco_buildings_footprints_phase3
+	cd data/out/morocco_buildings; pigz morocco_buildings_footprints_phase3.geojson
+
+db/table/morocco_buildings_benchmark: static_data/morocco_buildings/phase_3/footprints/agadir_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/casablanca_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/chefchaouen_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/fes_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/meknes_footprints_benchmark_ph3.geojson | db/table ## Detected benchmark from old satellite imagery (EPSG-3857).
+	psql -c "drop table if exists morocco_buildings_benchmark;"
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/agadir_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
+	psql -c "alter table morocco_buildings_benchmark add column city text;"
+	psql -c "alter table morocco_buildings_benchmark alter column wkb_geometry type geometry;"
+	psql -c "update morocco_buildings_benchmark set city = 'Agadir' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/casablanca_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Casablanca' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/chefchaouen_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Chefchaouen' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/fes_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Fes' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/meknes_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
+	psql -c "update morocco_buildings_benchmark set city = 'Meknes' where city is null;"
+	psql -f tables/morocco_buildings_benchmark.sql -v morocco_buildings=morocco_buildings_benchmark
+	touch $@
+
+db/table/morocco_buildings_benchmark_roofprints: static_data/morocco_buildings/phase_3/roofprints/agadir_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/casablanca_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/chefchaouen_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/fes_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/meknes_roofptints_benchmark_ph3.geojson | db/table ## Separate datasets of Morocco cities buildings roofrints combined together and imported into database (for further benchmarking automatically segmentized buildings) (EPSG-3857).
+	psql -c "drop table if exists morocco_buildings_benchmark_roofprints;"
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/agadir_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
+	psql -c "alter table morocco_buildings_benchmark_roofprints add column city text;"
+	psql -c "alter table morocco_buildings_benchmark_roofprints alter column wkb_geometry type geometry;"
+	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Agadir' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/casablanca_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
+	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Casablanca' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/chefchaouen_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
+	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Chefchaouen' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/fes_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
+	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Fes' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/meknes_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
+	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Meknes' where city is null;"
+	psql -f tables/morocco_buildings_benchmark.sql -v morocco_buildings=morocco_buildings_benchmark_roofprints
+	touch $@
+
+db/table/morocco_buildings_extents: static_data/morocco_buildings/extents/agadir_extents.geojson static_data/morocco_buildings/extents/casablanca_extents.geojson static_data/morocco_buildings/extents/chefchaouen_extents.geojson static_data/morocco_buildings/extents/fes_extents.geojson static_data/morocco_buildings/extents/meknes_extents.geojson | db/table ## Combined (for all cities) area of interest as extent mask area from Geoalert's repository (EPSG-3857).
+	psql -c "drop table if exists morocco_buildings_extents;"
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/agadir_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	psql -c "alter table morocco_buildings_extents add column city text;"
+	psql -c "alter table morocco_buildings_extents alter column wkb_geometry type geometry;"
+	psql -c "update morocco_buildings_extents set city = 'Agadir' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/casablanca_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	psql -c "update morocco_buildings_extents set city = 'Casablanca' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/chefchaouen_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	psql -c "update morocco_buildings_extents set city = 'Chefchaouen' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/fes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	psql -c "update morocco_buildings_extents set city = 'Fes' where city is null;"
+	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/meknes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
+	psql -c "update morocco_buildings_extents set city = 'Meknes' where city is null;"
+	psql -c "alter table morocco_buildings_extents rename column wkb_geometry to geom; update morocco_buildings_extents set geom = ST_Transform(geom, 3857);"
+	touch $@
+
+db/table/morocco_buildings_footprints_phase3_clipped: db/table/morocco_buildings db/table/morocco_buildings_extents ## Buildings footprints from Geoalert sampled from Morocco buildings dataset for further benchmarking (EPSG-3857).
+	psql -c "drop table if exists morocco_buildings_footprints_phase3_clipped;"
+	psql -c "create table morocco_buildings_footprints_phase3_clipped as (select a.* from morocco_buildings a join morocco_buildings_extents b on ST_Intersects(a.geom, ST_Transform(b.geom, 4326)));"
+	psql -c "update morocco_buildings_footprints_phase3_clipped set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
+	touch $@
+
+db/table/morocco_buildings_manual_roofprints_phase3: static_data/morocco_buildings/phase_3/fes_meknes_height_patch.geojson db/table/morocco_buildings_manual_roofprints | db/table ## Buildings roofprints from Geoalert sampled from Morocco buildings dataset for further benchmarking (EPSG-3857).
+	psql -c "drop table if exists morocco_buildings_manual_roofprints_phase3;"
+	psql -c "create table morocco_buildings_manual_roofprints_phase3 as (select * from morocco_buildings_manual_roofprints);"
+	psql -c "drop table if exists fes_meknes_height_patch;"
+	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/fes_meknes_height_patch.geojson -nln fes_meknes_height_patch
+	psql -c "alter table fes_meknes_height_patch alter column wkb_geometry type geometry;"
+	psql -c "update fes_meknes_height_patch set wkb_geometry = ST_Transform(wkb_geometry, 3857);"
+	psql -c "update morocco_buildings_manual_roofprints_phase3 a set building_height = machine_height, is_confident = true from fes_meknes_height_patch b where ST_Intersects(ST_PointOnSurface(a.geom), wkb_geometry) and better = 'robo';"
+	psql -c "update morocco_buildings_manual_roofprints_phase3 a set is_confident = false from fes_meknes_height_patch b where ST_Intersects(ST_PointOnSurface(a.geom), wkb_geometry) and better = 'wtf';"
+	psql -c "update morocco_buildings_manual_roofprints_phase3 a set is_confident = true from fes_meknes_height_patch b where ST_Intersects(ST_PointOnSurface(a.geom), wkb_geometry) and better = 'man';"
+	psql -c "update morocco_buildings_manual_roofprints_phase3 set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
+	touch $@
+
+db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_extents db/table/morocco_buildings_footprints_phase3_clipped db/table/morocco_buildings_manual_roofprints_phase3 | data/out/morocco_buildings ## Calculation IoU metrics for all buildings from Morocco dateset test benchmark
+	rm -f data/out/morocco_buildings/metric_storage.csv
+	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual_roofprints_phase3 -v examinee_buildings_table=morocco_buildings_benchmark_roofprints -v benchmark_clip_table=morocco_buildings_extents -v type=roof
+	echo "morocco_buildings_manual_roofprints_phase3 & morocco_buildings_benchmark_roofprints tables, type=roof" > data/out/morocco_buildings/metric_storage.csv
+	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/out/morocco_buildings/metric_storage.csv
+	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual -v examinee_buildings_table=morocco_buildings_benchmark -v benchmark_clip_table=morocco_buildings_extents -v type=foot
+	echo "morocco_buildings_manual & morocco_buildings_benchmark tables, type=foot" >> data/out/morocco_buildings/metric_storage.csv
+	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/out/morocco_buildings/metric_storage.csv
+	echo "morocco_buildings_manual & morocco_buildings_footprints_phase3_clipped tables, type=foot" >> data/out/morocco_buildings/metric_storage.csv
+	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual -v examinee_buildings_table=morocco_buildings_footprints_phase3_clipped -v benchmark_clip_table=morocco_buildings_extents -v type=foot
+	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/out/morocco_buildings/metric_storage.csv
+	touch $@
+
+data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual | data/out/morocco_buildings  ## Morocco Buildings footprints from Geoalert imported into database for further benchmarking(phase 2)(EPSG-3857).
+	rm -f $@
+	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(footprint, 4326), building_height, city, is_confident from morocco_buildings_manual_extent' -nln morocco_buildings_manual_phase2
+	cd data/out/morocco_buildings; pigz morocco_buildings_manual_phase2.geojson
+
+data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual_roofprints | data/out/morocco_buildings  ## Morocco Buildings roofprints from Geoalert imported into database for further benchmarking (phase 2)(EPSG-3857).
+	rm -f $@
+	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, is_confident from morocco_buildings_manual_roofprints_extent' -nln morocco_buildings_manual_roofprints_phase2
+	cd data/out/morocco_buildings; pigz morocco_buildings_manual_roofprints_phase2.geojson
+
+data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz: db/table/morocco_buildings_benchmark | data/out/morocco_buildings ## Benchmarks on Morocco Buildings footprints from Geoalert (phase 2)(EPSG-3857).
+	rm -f $@
+	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, height_confidence, is_residential from morocco_buildings_benchmark' -nln morocco_buildings_benchmark
+	cd data/out/morocco_buildings; pigz morocco_buildings_benchmark_phase2.geojson
+
+data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz: db/table/morocco_buildings_benchmark_roofprints | data/out/morocco_buildings ## Benchmarks on Morocco Buildings roofprints from Geoalert (phase 2)(EPSG-3857).
+	rm -f $@
+	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, height_confidence, is_residential from morocco_buildings_benchmark_roofprints' -nln morocco_buildings_benchmark_roofprints
+	cd data/out/morocco_buildings; pigz morocco_buildings_benchmark_roofprints_phase2.geojson
+
+data/out/morocco: data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data/out ## Flag all Morocco buildings output datasets are exported.
+	touch $@
+
+### END Morocco Data block ###
+
+## start Abu Dhabi block
+
+db/table/abu_dhabi_admin_boundaries: db/table/osm db/index/osm_tags_idx db/table/gadm_countries_boundary | db/table ## Abu Dhabi admin boundaries extracted from GADM (Database of Global Administrative Areas).
+	psql -f tables/abu_dhabi_admin_boundaries.sql
+	touch $@
+
+db/table/abu_dhabi_eatery: db/table/osm db/index/osm_tags_idx db/table/abu_dhabi_admin_boundaries | db/table ## Abu Dhabi eatery extracted from OpenStreetMap.
+	psql -f tables/abu_dhabi_eatery.sql
+	touch $@
+
+db/table/abu_dhabi_food_shops: db/table/osm db/index/osm_tags_idx db/table/abu_dhabi_admin_boundaries | db/table ## Abu Dhabi food shops extracted from OpenStreetMap.
+	psql -f tables/abu_dhabi_food_shops.sql
+	touch $@
+
+db/table/abu_dhabi_bivariate_pop_food_shops: db/table/abu_dhabi_eatery db/table/abu_dhabi_food_shops db/table/kontur_population_h3 | db/table ## H3 bivariate layer with population vs food shops for Abu Dhabi.
+	psql -f tables/abu_dhabi_bivariate_pop_food_shops.sql
 	touch $@
 
 data/in/abu_dhabi_geoalert_v4.geojson: | data/in ## Download buildings dataset from Geoalert for Abu Dhabi.
@@ -1342,8 +1954,42 @@ db/table/abu_dhabi_buildings_h3: db/table/abu_dhabi_buildings | db/table ## Amou
 	psql -f tables/count_items_in_h3.sql -v table=abu_dhabi_buildings -v table_h3=abu_dhabi_buildings_h3 -v item_count=building_count
 	touch $@
 
-data/out/aoi_boundary.geojson: db/table/kontur_boundaries | data/out ## Get boundaries of Belarus, UAE, Kosovo.
-	psql -q -X -c "\copy (select ST_AsGeoJSON(aoi) from (select ST_Union(geom) as polygon from kontur_boundaries where tags ->> 'name:en' in ('Belarus', 'Kosovo', 'United Arab Emirates') and gadm_level = 0) aoi) to stdout" | jq -c . > $@
+data/out/abu_dhabi: | data/out ## Directory for Abu Dhabi datasets output.
+	mkdir -p $@
+
+data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson: db/table/abu_dhabi_admin_boundaries | data/out/abu_dhabi  ## Abu Dhabi admin boundaries from GADM (Database of Global Administrative Areas) exported to geojson.
+	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select id as gid, name, gadm_level, geom from abu_dhabi_admin_boundaries' -nln abu_dhabi_admin_boundaries
+
+data/out/abu_dhabi/abu_dhabi_eatery.csv: db/table/abu_dhabi_eatery | data/out/abu_dhabi ## Abu Dhabi eatery from OpenStreetMap exported to csv.
+	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_eatery) to stdout with csv header;' > $@
+
+data/out/abu_dhabi/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops | data/out/abu_dhabi ## Abu Dhabi food shops from OpenStreetMap exported to csv.
+	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_food_shops) to stdout with csv header;' > $@
+
+data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops | data/out/abu_dhabi ## H3 bivariate layer with population vs food shops for Abu Dhabi exported to csv.
+	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
+
+db/table/abu_dhabi_buildings_population: db/table/abu_dhabi_buildings | db/table ## Distribute Kontur population by buildings in Abu Dhabi.
+	psql -f tables/abu_dhabi_buildings_population.sql
+	touch $@
+
+db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population deploy/geocint/docker_osrm_backend | db/table ## Buildings with Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
+	psql -c 'drop table if exists abu_dhabi_pds_bicycle_10min;'
+	psql -c 'create table abu_dhabi_pds_bicycle_10min(id integer, height float, pds integer, geom geometry);'
+	psql -X -c 'copy (select id from abu_dhabi_buildings_population) to stdout;' | parallel --eta 'psql -X -f tables/abu_dhabi_pds_bicycle_10min.sql -v id={};'
+	psql -c 'vacuum full abu_dhabi_pds_bicycle_10min;'
+	touch $@
+
+data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson: db/table/abu_dhabi_pds_bicycle_10min | data/out/abu_dhabi ## Export to GeoJson buildings with Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
+	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select * from abu_dhabi_pds_bicycle_10min' -nln abu_dhabi_pds_bicycle_10min
+
+data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson ## Make sure all Abu Dhabi datasets have been exported.
+	touch $@
+
+## end Abu Dhabi block
+
+data/out/aoi_boundary.geojson: db/table/kontur_boundaries | data/out ## Get boundaries of Belarus, UAE, Kosovo, USA.
+	psql -q -X -c "\copy (select ST_AsGeoJSON(aoi) from (select ST_Union(geom) as polygon from kontur_boundaries where tags ->> 'name:en' in ('Belarus', 'Kosovo', 'United Arab Emirates', 'United States') and gadm_level = 0) aoi) to stdout" | jq -c . > $@
 
 data/out/aoi-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/out/aoi_boundary.geojson | data/out ## Extract from planet-latest-updated.osm.pbf by aoi_boundary.geojson using Osmium tool.
 	osmium extract -v -s smart -p data/out/aoi_boundary.geojson data/planet-latest-updated.osm.pbf -o $@ --overwrite
@@ -1410,12 +2056,12 @@ db/table/osm_landuse_industrial: db/table/osm db/index/osm_tags_idx | db/table #
 	psql -f tables/osm_landuse_industrial.sql
 	touch $@
 
-db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/table ## Aggregate industrial landuse area on H3 hexagons grid.
+db/table/osm_landuse_industrial_h3: db/table/osm_landuse_industrial | db/procedure/generate_overviews db/table ## Aggregate industrial landuse area on H3 hexagons grid.
 	psql -f tables/osm_landuse_industrial_h3.sql
 	psql -c "call generate_overviews('osm_landuse_industrial_h3', '{industrial_area}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## H3 hexagons grid with aggregated count volcanoes from OpenStreetMap dataset.
+db/table/osm_volcanos_h3: db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## H3 hexagons grid with aggregated count volcanoes from OpenStreetMap dataset.
 	# Extract volcanoes points from OpenStreetMap dataset.
 	psql -f tables/osm_volcanos.sql
 	# Count volcanoes within H3 grid hexagons of resolution = 8.
@@ -1424,36 +2070,26 @@ db/table/osm_volcanos_h3: db/index/osm_tags_idx db/procedure/generate_overviews 
 	psql -c "call generate_overviews('osm_volcanos_h3', '{volcanos_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_places_eatery_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## Eatery extraction from OpenStreetMap.
+db/table/osm_places_eatery: db/index/osm_tags_idx | db/table ## Eatery extraction from OpenStreetMap.
 	psql -f tables/osm_places_eatery.sql
+	touch $@
+
+db/table/osm_places_eatery_h3: db/table/osm_places_eatery | db/procedure/generate_overviews db/table ## Eatery count h3 layer from OpenStreetMap.
 	# Count eatery places within H3 grid hexagons of resolution = 8.
 	psql -f tables/count_points_inside_h3.sql -v table=osm_places_eatery -v table_h3=osm_places_eatery_h3 -v item_count=eatery_count
 	# Generate overviews for resolution < 8 hexagons.
 	psql -c "call generate_overviews('osm_places_eatery_h3', '{eatery_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/osm_places_food_shops_h3: db/index/osm_tags_idx db/procedure/generate_overviews | db/table ## Food shops extraction from OpenStreetMap.
-	# Extract food_shops points from OpenStreetMap dataset.
+db/table/osm_places_food_shops: db/index/osm_tags_idx | db/table ## Extract food_shops points from OpenStreetMap dataset.	
 	psql -f tables/osm_places_food_shops.sql
+	touch $@
+
+db/table/osm_places_food_shops_h3: db/table/osm_places_food_shops | db/procedure/generate_overviews db/table ## Food shops count h3 layer from OpenStreetMap.
 	# Count eatery places within H3 grid hexagons of resolution = 8.
 	psql -f tables/count_points_inside_h3.sql -v table=osm_places_food_shops -v table_h3=osm_places_food_shops_h3 -v item_count=food_shops_count
 	# Generate overviews for resolution < 8 hexagons.
 	psql -c "call generate_overviews('osm_places_food_shops_h3', '{food_shops_count}'::text[], '{sum}'::text[], 8);"
-	touch $@
-
-db/table/osm_buildings_minsk: db/table/osm_buildings_use | db/table ## Minsk buildings extracted from OpenStreetMap dataset.
-	psql -c "drop table if exists osm_buildings_minsk;"
-	psql -c "create table osm_buildings_minsk as (select building, street, hno, levels, height, use, \"name\", geom from osm_buildings b where ST_DWithin (b.geom, (select geog::geometry from osm where tags @> '{\"name\":\"Минск\", \"boundary\":\"administrative\"}' and osm_id = 59195 and osm_type = 'relation'), 0));"
-	touch $@
-
-data/out/osm_buildings_minsk.geojson.gz: db/table/osm_buildings_minsk | data/out  ## Export to geojson and archive Minsk buildings extracted from OpenStreetMap dataset.
-	rm -f $@
-	rm -f data/out/osm_buildings_minsk.geojson*
-	ogr2ogr -f GeoJSON data/out/osm_buildings_minsk.geojson PG:'dbname=gis' -sql 'select building, street, hno, levels, height, use, "name", geom from osm_buildings_minsk' -nln osm_buildings_minsk
-	cd data/out/; pigz osm_buildings_minsk.geojson
-
-deploy/s3/osm_buildings_minsk: data/out/osm_buildings_minsk.geojson.gz | deploy/s3 ## Deploy Minsk buildings dataset to Amazon S3.
-	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_buildings_minsk.geojson.gz --body data/out/osm_buildings_minsk.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
 	touch $@
 
 data/in/census_gov: | data/in ## Directory for input census tract data.
@@ -1493,7 +2129,7 @@ db/table/us_census_tract_stats: db/table/us_census_tracts_population_h3_r8 db/ta
 	psql -f tables/us_census_tracts_stats.sql
 	touch $@
 
-db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/procedure/generate_overviews db/table/us_census_tracts_population_h3_r8 | db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
+db/table/us_census_tracts_stats_h3: db/table/us_census_tract_stats db/table/us_census_tracts_population_h3_r8 | db/procedure/generate_overviews db/table ## Generate h3 with stats data in California census tracts from 1 to 8 resolution
 	psql -f tables/us_census_tracts_stats_h3.sql
 	psql -c "call generate_overviews('us_census_tracts_stats_h3', '{pop_under_5_total, pop_over_65_total, poverty_families_total, pop_disability_total, pop_not_well_eng_speak, pop_without_car}'::text[], '{sum, sum, sum, sum, sum, sum}'::text[], 8);"
 	touch $@
@@ -1533,9 +2169,9 @@ db/table/osm_addresses: db/table/osm db/index/osm_tags_idx | db/table ## Geometr
 	touch $@
 
 db/index/osm_addresses_geom_idx: db/table/osm_addresses | db/index ## Index on geometry addresses table.
-	psql -c "create index on osm_addresses using brin (geom)"
+	psql -c "drop index if exists osm_addresses_geom_idx;"
+	psql -c "create index osm_addresses_geom_idx on osm_addresses using brin (geom);"
 	touch $@
-
 
 db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table ## Administrative boundaries polygons extracted from OpenStreetMap dataset.
 	psql -f tables/osm_admin_boundaries.sql
@@ -1545,23 +2181,92 @@ db/table/osm_admin_boundaries: db/table/osm db/index/osm_tags_idx | db/table ## 
 # 	psql -f tables/hexagonify_boundaries.sql
 # 	touch $@
 
-data/out/kontur_boundaries.geojson.gz: db/table/kontur_boundaries | data/out ## Export to geojson and archive administrative boundaries polygons from Kontur Boundaries dataset to be used in kcapi for Event-api enrichment - geocoding, DN boundary selector.
-	cp -vf $@ data/out/kontur_boundaries.geojson.gz_bak || true
-	rm -vf data/out/kontur_boundaries.geojson data/out/kontur_boundaries.geojson.gz
-	ogr2ogr -f GeoJSON data/out/kontur_boundaries.geojson PG:'dbname=gis' -sql "select osm_id, osm_type, boundary, admin_level, name, tags, geom from kontur_boundaries" -nln osm_admin_boundaries
-	pigz data/out/kontur_boundaries.geojson
-	touch $@
-
-deploy/s3/kontur_boundaries: data/out/kontur_boundaries.geojson.gz | deploy/s3 ## Deploy Kontur admin boundaries dataset to Amazon S3.
-	aws s3api put-object --bucket geodata-us-east-1-kontur --key public/geocint/osm_admin_boundaries.geojson.gz --body data/out/kontur_boundaries.geojson.gz --content-type "application/json" --content-encoding "gzip" --grant-read uri=http://acs.amazonaws.com/groups/global/AllUsers
-	touch $@
-
 db/table/osm_buildings: db/table/osm db/function/parse_float db/function/parse_integer | db/table ## All the buildings (but not all the properties yet) extracted from OpenStreetMap dataset.
 	psql -f tables/osm_buildings.sql
 	touch $@
 
-db/table/osm_buildings_use: db/index/osm_tags_idx db/table/osm_buildings db/table/osm_landuse ## Set use in buildings table from landuse table.
+db/table/osm_buildings_use: db/index/osm_tags_idx db/table/osm_buildings db/table/osm_landuse | db/table ## Set use in buildings table from landuse table.
 	psql -f tables/osm_buildings_use.sql
+	touch $@
+
+db/table/osm_hotels: db/index/osm_tags_idx | db/function/max_of_array db/table ## Extract hotels from osm.
+	psql -f tables/osm_hotels.sql
+	touch $@
+
+db/table/osm_hotels_h3: db/table/osm_hotels | db/procedure/generate_overviews db/table ## Calculate number of hotel and assesment per hexagon
+	psql -f tables/osm_hotels_h3.sql
+	touch $@
+
+db/table/osm_pharmacy: db/index/osm_tags_idx | db/table ## Extract pharmacy from osm.
+	psql -f tables/osm_pharmacy.sql
+	touch $@
+
+db/table/osm_pharmacy_h3: db/table/osm_pharmacy | db/procedure/generate_overviews db/table ## Calculate number of pharmacies per hexagon
+	psql -f tables/count_items_in_h3.sql -v table=osm_pharmacy -v table_h3=osm_pharmacy_h3_r8 -v item_count=osm_pharmacy_count
+	psql -c "drop table if exists osm_pharmacy_h3;"
+	psql -c "create table osm_pharmacy_h3 as select h3, osm_pharmacy_count, 8::integer as resolution from osm_pharmacy_h3_r8;"
+	psql -c "drop table if exists osm_pharmacy_h3_r8;"
+	psql -c "call generate_overviews('osm_pharmacy_h3', '{osm_pharmacy_count}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+db/table/osm_financial_venues: db/index/osm_tags_idx | db/table ## Extract financial venues from osm.
+	psql -f tables/osm_financial_venues.sql
+	touch $@
+
+db/table/osm_financial_venues_h3: db/table/osm_financial_venues | db/procedure/generate_overviews db/table ## Calculate number of financial venues per hexagon
+	psql -f tables/osm_financial_venues_h3.sql
+	touch $@
+
+db/table/osm_culture_venues: db/index/osm_tags_idx | db/table ## Extract different types of osm culture venues
+	psql -f tables/osm_culture_venues.sql
+	touch $@
+
+db/table/osm_culture_venues_h3: db/table/osm_culture_venues | db/procedure/generate_overviews db/table ## Calculate number of different types of osm culture venues per hexagon
+	psql -f tables/osm_culture_venues_h3.sql
+	touch $@
+
+db/table/osm_education_venues: db/index/osm_tags_idx | db/table ## Extract different types of osm education venues
+	psql -f tables/osm_education_venues.sql
+	touch $@
+
+db/table/osm_education_venues_h3: db/table/osm_education_venues | db/procedure/generate_overviews db/table ## Calculate number of different types of osm education venues per hexagon
+	psql -f tables/osm_education_venues_h3.sql
+	touch $@
+
+db/table/osm_emergency_facilities: db/index/osm_tags_idx | db/table ## Extract emergency facilities from osm.
+	psql -f tables/osm_emergency_facilities.sql
+	touch $@
+
+db/table/osm_emergency_facilities_h3: db/table/osm_emergency_facilities | db/procedure/generate_overviews db/table ## Calculate number of emergency facilities per hexagon
+	psql -f tables/count_items_in_h3.sql -v table=osm_emergency_facilities -v table_h3=osm_emergency_facilities_h3_r8 -v item_count=osm_defibrillators_count
+	psql -c "drop table if exists osm_emergency_facilities_h3;"
+	psql -c "create table osm_emergency_facilities_h3 as select h3, osm_defibrillators_count, 8::integer as resolution from osm_emergency_facilities_h3_r8;"
+	psql -c "drop table if exists osm_emergency_facilities_h3_r8;"
+	psql -c "call generate_overviews('osm_emergency_facilities_h3', '{osm_defibrillators_count}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+db/table/osm_transport_facilities: db/index/osm_tags_idx | db/table ## Extract transport facilities from osm.
+	psql -f tables/osm_transport_facilities.sql
+	touch $@
+
+db/table/osm_transport_facilities_h3: db/table/osm_transport_facilities | db/procedure/generate_overviews db/table ## Calculate number of transport facilities per hexagon
+	psql -f tables/osm_transport_facilities_h3.sql
+	touch $@
+
+db/table/osm_heritage_sites: db/index/osm_tags_idx | db/table ## Extract heritage sites from osm.
+	psql -f tables/osm_heritage_sites.sql
+	touch $@
+
+db/table/osm_heritage_sites_h3: db/table/osm_heritage_sites | db/procedure/generate_overviews db/table/land_polygons_h3_r8 db/table ## Calculate number of heritage sites per hexagon
+	psql -f tables/osm_heritage_sites_h3.sql
+	touch $@
+
+db/table/osm_car_parkings_capacity: db/index/osm_tags_idx | db/table ## Extract parkings capacity from osm
+	psql -f tables/osm_car_parkings_capacity.sql
+	touch $@
+
+db/table/osm_car_parkings_capacity_h3: db/table/osm_car_parkings_capacity | db/procedure/generate_overviews db/table ## Calculate parkings capacity per hexagon
+	psql -f tables/osm_car_parkings_capacity_h3.sql
 	touch $@
 
 db/table/residential_pop_h3: db/table/kontur_population_h3 db/table/ghs_globe_residential_vector | db/table ## GHS (Global Human Settlement) residential areas aggregated on H3 hexagons grid.
@@ -1591,7 +2296,7 @@ db/function/calculate_isodist_h3: db/table/osm_road_segments | db/function ## H3
 db/table/update_isochrone_destinations_h3_r8: db/table/isochrone_destinations_new db/table/isochrone_destinations_h3_r8 db/function/calculate_isodist_h3 | db/table ## Aggregate 30 km isodists to H3 hexagons with resolution 8 for new isochrone destinations.
 	psql -c 'delete from isochrone_destinations_h3_r8 where osm_id in (select osm_id from isochrone_destinations except all select osm_id from isochrone_destinations_new);'
 	psql -c 'vacuum isochrone_destinations_h3_r8;'
-	psql -X -c 'copy (select osm_id from isochrone_destinations_new except all select osm_id from isochrone_destinations) to stdout;' | parallel --eta 'psql -c "insert into isochrone_destinations_h3_r8(osm_id, h3, type, distance, geom) select d.osm_id, i.h3, d.type, i.distance, i.geom from isochrone_destinations_new d, calculate_isodist_h3(geom, 30000, 8) i where d.osm_id = {};"'
+	psql -X -c 'copy (select osm_id from isochrone_destinations_new except all select osm_id from isochrone_destinations) to stdout;' | parallel --eta 'psql -c "insert into isochrone_destinations_h3_r8(osm_id, h3, type, distance, geom) select d.osm_id, i.h3, d.type, i.distance, st_setsrid(i.geom, 4326) from isochrone_destinations_new d, calculate_isodist_h3(geom, 30000, 8) i where d.osm_id = {};"'
 	touch $@
 
 db/table/update_isochrone_destinations: db/table/update_isochrone_destinations_h3_r8 | db/table ## Update update_isochrone_destinations table.
@@ -1618,10 +2323,9 @@ db/table/isodist_charging_stations_h3: db/table/update_isochrone_destinations db
 
 db/table/isodist_bomb_shelters_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 | db/table ## H3 hexagons from bomb shelters.
 	psql -f tables/isodist_bomb_shelters_h3.sql
-	seq 8 -1 1 | xargs -I {} psql -f tables/isodist_h3_overview.sql -v table_name=isodist_bomb_shelters_h3 -v seq_res={} 
+	seq 8 -1 1 | xargs -I {} psql -f tables/isodist_h3_overview.sql -v table_name=isodist_bomb_shelters_h3 -v seq_res={}
 	psql -c "drop table isodist_bomb_shelters_h3_distinct;"
 	touch $@
-
 ## Isochrones calculation block end
 
 db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manager
@@ -1631,9 +2335,9 @@ db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manag
 	psql -c "create index on global_rva_indexes using btree(hasc);"
 	touch $@
 
-db/table/global_rva_h3: db/table/kontur_boundaries db/table/global_rva_indexes db/procedure/generate_overviews | db/table ## Generation overviws of global rva indexes
-	psql -f tables/global_rva_h3.sql
-	psql -c "call generate_overviews('global_rva_h3', '{mhe_index, vulnerability_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg}'::text[], 8);"
+db/table/global_rva_h3: db/table/global_rva_indexes | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table ## Generation overviws of global rva indexes
+	psql -c "call transform_hasc_to_h3('global_rva_indexes', 'global_rva_h3', 'hasc', '{raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, mhe_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index, population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, vulnerability_index, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale, physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale, marine_protected_area_scale, environmental_capacity_index, coping_capacity_index, resilience_index, mhr_index}'::text[], 8);"
+	psql -c "call generate_overviews('global_rva_h3', '{raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, mhe_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index, population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, vulnerability_index, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale, physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale, marine_protected_area_scale, environmental_capacity_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
 
 db/table/ndpba_rva_indexes: | db/table ## NDPBA RVA indexes
@@ -1642,8 +2346,8 @@ db/table/ndpba_rva_indexes: | db/table ## NDPBA RVA indexes
 	cat static_data/pdc_bivariate_manager/ndpba_rva.csv | psql -c "copy ndpba_rva_indexes from stdin with csv header;"
 	touch $@
 
-db/table/ndpba_rva_h3: db/table/kontur_boundaries db/table/ndpba_rva_indexes db/procedure/generate_overviews | db/table ## Generation overviews of ndpba rva indexes
-	psql -f tables/ndpba_rva_h3.sql
+db/table/ndpba_rva_h3: db/table/ndpba_rva_indexes | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table ## Generation overviews of ndpba rva indexes
+	psql -c "call transform_hasc_to_h3('ndpba_rva_indexes', 'ndpba_rva_h3', 'hasc', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], 8);"
 	psql -c "call generate_overviews('ndpba_rva_h3', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
 
@@ -1667,24 +2371,105 @@ data/mid/foursquare/kontour_visits_csv: data/in/foursquare/downloaded | data/mid
 
 db/table/foursquare_places: data/mid/foursquare/kontour_places.csv | db/table ## Import 4sq places into database.
 	psql -c 'drop table if exists foursquare_places;'
-	psql -c 'create table foursquare_places(fsq_id text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);'
+	psql -c 'create table foursquare_places(fsq_id text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_lat_lng_to_cell(ST_SetSrid(ST_Point(longitude, latitude), 4326)::point, 8)) STORED);'
 	cat data/mid/foursquare/kontour_places.csv | psql -c "copy foursquare_places (fsq_id, latitude, longitude) from stdin with csv header delimiter ','"
 	touch $@
 
 db/table/foursquare_visits: data/mid/foursquare/kontour_visits_csv | db/table ## Import 4sq visits into database.
 	psql -c 'drop table if exists foursquare_visits;'
-	psql -c 'create table foursquare_visits (protectedts text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_geo_to_h3(ST_SetSrid(ST_Point(longitude, latitude), 4326), 8)) STORED);'
+	psql -c 'create table foursquare_visits (protectedts text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_lat_lng_to_cell(ST_SetSrid(ST_Point(longitude, latitude), 4326)::point, 8)) STORED);'
 	ls data/mid/foursquare/kontour_visits*.csv | parallel 'cat {} | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header; "'
 	touch $@
 
-db/table/foursquare_places_h3: db/table/foursquare_places | db/table ## Aggregate 4sq places count  on H3 hexagon grid.
+db/table/foursquare_places_h3: db/table/foursquare_places | db/procedure/generate_overviews db/table ## Aggregate 4sq places count  on H3 hexagon grid.
 	psql -f tables/foursquare_places_h3.sql
 	psql -c "call generate_overviews('foursquare_places_h3', '{foursquare_places_count}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
-db/table/foursquare_visits_h3: db/table/foursquare_visits ## Aggregate 4sq visits count on H3 hexagon grid.
+db/table/foursquare_visits_h3: db/table/foursquare_visits | db/procedure/generate_overviews db/table ## Aggregate 4sq visits count on H3 hexagon grid.
 	psql -f tables/foursquare_visits_h3.sql
 	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+data/in/foursquare/foursquare_os_places/download: | data/in/foursquare/foursquare_os_places ## download input data
+	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/places/parquet data/in/foursquare/foursquare_os_places/ --recursive --profile geocint_pipeline_sender
+	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/categories/parquet data/in/foursquare/foursquare_os_places/ --recursive --profile geocint_pipeline_sender
+	touch $@
+
+db/table/foursquare_os_places: data/in/foursquare/foursquare_os_places/download | db/table ## load data to database
+	psql -c "create server if not exists parquet_srv foreign data wrapper parquet_fdw options (public 'true');"
+	psql -c "drop table if exists foursquare_os_places;"
+	psql -c "create table foursquare_os_places (fsq_place_id text,name text,latitude double precision,longitude double precision,address text,locality text,region text,postcode text,admin_region text,post_town text,po_box text,country text,date_created text,date_refreshed text,date_closed text,tel text,website text,email text,facebook_id bigint,instagram text,twitter text,fsq_category_ids text[],fsq_category_labels text[],geom bytea);"
+	ls ${GEOCINT_WORK_DIRECTORY}/geocint/data/in/foursquare_os_places/places-*.zstd.parquet | parallel -j 1 "psql -f tables/foursquare_os_places_import.sql -v parquet_file='{}'"
+	psql -c "create index on foursquare_os_places using gin(fsq_category_ids);"
+	touch $@
+
+db/table/foursquare_os_places_categories: data/in/foursquare/foursquare_os_places/download | db/table ## load categories to database
+	psql -c "drop foreign table if exists temp_parquet_table;"
+	psql -c "create foreign table temp_parquet_table (category_id text, category_level int, category_name text, category_label text, level1_category_id text, level1_category_name text, level2_category_id text, level2_category_name text, level3_category_id text, level3_category_name text, level4_category_id text, level4_category_name text, level5_category_id text, level5_category_name text, level6_category_id text, level6_category_name text) server parquet_srv options (filename '${GEOCINT_WORK_DIRECTORY}/geocint/data/in/foursquare/foursquare_os_places/categories.zstd.parquet');"
+	psql -c "drop table if exists foursquare_os_places_categories;"
+	psql -c "create table foursquare_os_places_categories as (select * from temp_parquet_table);"
+	psql -c "drop foreign table if exists temp_parquet_table;"
+	touch $@
+
+db/table/foursquare_os_places_h3: db/table/foursquare_os_places db/table/foursquare_os_places_categories | db/table ## transform foursquare data to h3
+	psql -f tables/foursquare_os_places_h3.sql
+	touch $@
+
+db/table/stat_h3: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/covid19_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/live_sensor_data_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/oam_global_coverage_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/oam_number_of_pixels_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 db/table/osm_financial_venues_h3 db/table/osm_education_venues_h3 db/table/osm_emergency_facilities_h3 db/table/osm_transport_facilities_h3 db/table/osm_car_parkings_capacity_h3 db/table/osm_heritage_sites_h3 db/table/foursquare_os_places_h3 | db/table ## Main table with summarized statistics aggregated on H3 hexagons grid used within Bivariate manager.
+	psql -f tables/stat_h3.sql
+	touch $@
+
+db/table/stat_h3_data_quality_check: db/table/stat_h3 | db/table ## check if all h3 values in stat_h3 are unique and not null and control that there is no indicators in stat_h3 where all values on 8th resolution are zeros.
+	psql -qXc "copy (select column_name::text FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'stat_h3' and column_name not in ('h3', 'geom', 'zoom', 'resolution')) to stdout with csv;" | parallel "bash scripts/psql_query_number_of_records_at_stat_h3.sh {}" | xargs -I {} bash scripts/check_value_is_not_zero_with_description.sh {}
+	rm -f $@__STAT_H3_NULLS
+	psql -q -X -t -c 'select count(*) from stat_h3 where h3 is null;' > $@__STAT_H3_NULLS	
+	if [ 0 -lt $$(cat $@__STAT_H3_NULLS) ]; then echo "Table stat_h3 contains null h3 indexes. Execution was interrupted." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	rm -f $@__STAT_H3_NULLS $@__STAT_H3_DUPLICATES
+	psql -q -X -t -c 'select count(h3) - count(distinct h3) as diff from stat_h3;' > $@__STAT_H3_DUPLICATES
+	if [ 0 -lt $$(cat $@__STAT_H3_DUPLICATES) ]; then echo "Table stat_h3 contains duplicated h3 indexes. Execution was interrupted." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	rm -f $@__STAT_H3_DUPLICATES
+	touch $@
+
+db/table/stat_h3_quality: db/table/stat_h3 db/table/stat_h3_data_quality_check | db/table ## summarized statistics aggregated on H3 hexagons between resolutions.
+	psql -f tables/stat_h3_quality.sql
+	touch $@
+
+db/table/bivariate_axis_overrides: | db/table ## Overrides for bivariate axis.
+	psql -f tables/bivariate_axis_overrides.sql
+	touch $@
+
+db/table/bivariate_axis: db/table/bivariate_indicators db/table/bivariate_axis_overrides db/table/bivariate_overlays db/table/stat_h3 db/table/stat_h3_quality | db/table ## Precalculated axis parameters (min, max, percentiles, quality, etc.) for bivariate layers.
+	psql -f tables/bivariate_axis.sql
+	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' 'psql -f tables/bivariate_axis_stops.sql -v numerator={1} -v denominator={2}'
+	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | tee /dev/tty | parallel --colsep ',' 'psql -f tables/bivariate_axis_quality_estimate.sql -v numerator={1} -v denominator={2}'
+	psql -f tables/bivariate_axis_updates.sql
+	psql -qXc "copy (select numerator, denominator from bivariate_axis) to stdout with csv;" | parallel --colsep ',' "psql -f tables/bivariate_axis_analytics.sql -v numerator={1} -v denominator={2}"
+	psql -c "vacuum analyze bivariate_axis;"
+	touch $@
+
+db/table/bivariate_axis_correlation: db/table/bivariate_axis db/table/stat_h3_quality db/table/bivariate_indicators | db/table ## Precalculated correlations for bivariate layers
+	psql -f tables/bivariate_axis_correlation.sql
+	touch $@
+
+db/table/bivariate_overlays: db/table/osm_meta db/table/tile_logs | db/table ## Several default indicator presets for Bivariate manager.
+	psql -f tables/bivariate_overlays.sql
+	touch $@
+
+db/table/bivariate_unit: db/table/stat_h3 | db/table ## Bivariate units description
+	psql -f tables/bivariate_unit.sql
+	touch $@
+
+db/table/bivariate_unit_localization: db/table/bivariate_unit | db/table ## Bivariate unit localization
+	psql -f tables/bivariate_unit_localization.sql
+	touch $@
+
+db/table/bivariate_indicators: db/table/bivariate_unit_localization | db/table ## Bivariate indicators properties, and attribution used in Bivariate manager.
+	psql -f tables/bivariate_indicators.sql
+	touch $@
+
+db/table/bivariate_colors: db/table/stat_h3 | db/table ## Color pallets used for styling layers in Bivariate manager.
+	psql -f tables/bivariate_colors.sql
 	touch $@
 
 data/tile_logs: | data ## Directory for OpenStreetMap tiles usage statistics dataset.
@@ -1694,7 +2479,7 @@ data/tile_logs/_download: | data/tile_logs data ## Download OpenStreetMap tiles 
 	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np -nc https://planet.openstreetmap.org/tile_logs/
 	touch $@
 
-db/table/tile_logs: data/tile_logs/_download | db/table ## OpenStreetMap tiles usage logs imported into database.
+db/table/tile_logs: data/tile_logs/_download | db/procedure/generate_overviews db/table ## OpenStreetMap tiles usage logs imported into database.
 	psql -c "drop table if exists tile_logs;"
 	psql -c "create table tile_logs (tile_date timestamptz, z int, x int, y int, view_count int, geom geometry generated always as (ST_Transform(ST_TileEnvelope(z, x, y), 4326)) stored);"
 	find data/tile_logs/ -type f -size +10M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs from stdin with csv'"
@@ -1706,9 +2491,9 @@ db/table/tile_logs: data/tile_logs/_download | db/table ## OpenStreetMap tiles u
 data/tile_logs/tiles-2022-02-23.txt.xz: | data/tile_logs/_download ## use txt.xz file as footprint not to run next target every run.
 	touch $@
 
-db/table/tile_logs_bf2402: | data/tile_logs/tiles-2022-02-23.txt.xz db/table ## OpenStreetMap tiles logs 30 days before 24.02.2022.
+db/table/tile_logs_bf2402: | db/procedure/generate_overviews data/tile_logs/tiles-2022-02-23.txt.xz db/table ## OpenStreetMap tiles logs 30 days before 24.02.2022.
 	psql -c "drop table if exists tile_logs_bf2402;"
-	psql -c "create table tile_logs_bf2402 (tile_date timestamptz, z int, x int, y int, view_count int) tablespace evo4tb;"
+	psql -c "create table tile_logs_bf2402 (tile_date timestamptz, z int, x int, y int, view_count int);"
 	cat static_data/tile_list/tile_logs_list.txt | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs_bf2402 from stdin with csv'"
 	psql -f tables/tile_stats_bf2402.sql
 	psql -f tables/tile_logs_bf2402_h3.sql
@@ -1726,7 +2511,7 @@ data/out/osm_users_hex_dump_min_file_size: data/out/osm_users_hex.sql.gz| data/o
 	bash scripts/check_min_file_size.sh data/out/osm_users_hex.sql.gz 750
 	touch $@
 
-deploy/s3/test/osm_users_hex_dump: data/out/osm_users_hex.sql.gz | deploy/s3/dev ## Putting active user dump from local folder to AWS dev folder in private bucket.
+deploy/s3/test/osm_users_hex_dump: data/out/osm_users_hex.sql.gz | deploy/s3/test ## Putting active user dump from local folder to AWS dev folder in private bucket.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/test/osm_users_hex.sql.gz s3://geodata-eu-central-1-kontur/private/geocint/test/osm_users_hex.sql.gz.bak --profile geocint_pipeline_sender || true
 	aws s3 cp data/out/osm_users_hex.sql.gz      s3://geodata-eu-central-1-kontur/private/geocint/test/osm_users_hex.sql.gz      --profile geocint_pipeline_sender
 	aws s3 cp data/out/osm_users_hex_update_time s3://geodata-eu-central-1-kontur/private/geocint/test/osm_users_hex_update_time --profile geocint_pipeline_sender
@@ -1741,7 +2526,7 @@ deploy/s3/prod/osm_users_hex_dump: deploy/s3/test/osm_users_hex_dump data/out/os
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
 	cd tile_generator; go get; go build -o tile_generator
 
-data/tiles/users_tiles.tar.bz2: tile_generator/tile_generator db/table/osm_users_hex db/table/osm_meta db/function/calculate_h3_res | data/tiles ## Generate vector tiles from osm_users_hex table (most active user per H3 hexagon cell) and archive it for further deploy to QA and production servers.
+data/tiles/users_tiles.tar.bz2: tile_generator/tile_generator db/table/osm_users_hex db/table/osm_meta db/function/tile_zoom_level_to_h3_resolution data/out/tile_zoom_level_to_h3_resolution_test | data/tiles ## Generate vector tiles from osm_users_hex table (most active user per H3 hexagon cell) and archive it for further deploy to QA and production servers.
 	tile_generator/tile_generator -j 32 --min-zoom 0 --max-zoom 8 --sql-query-filepath 'scripts/users.sql' --db-config 'dbname=gis user=gis' --output-path data/tiles/users
 	cd data/tiles/users/; tar cvf ../users_tiles.tar.bz2 --use-compress-prog=pbzip2 ./
 
@@ -1810,6 +2595,52 @@ deploy/prod/users_tiles: data/tiles/users_tiles.tar.bz2 | deploy/prod ## Deploy 
 	'
 	touch $@
 
+data/out/population/stat_h3.sqld.gz: db/table/stat_h3 | data/out/population ## Crafting production friendly SQL dump for stat_h3 table
+	bash -c "cat scripts/population_api_dump_header.sql <(pg_dump --no-owner --no-tablespaces -t stat_h3 | sed 's/ public.stat_h3 / public.stat_h3__new /; s/^CREATE INDEX stat_h3.*//;') scripts/population_api_dump_footer.sql | pigz" > $@__TMP
+	mv $@__TMP $@
+	touch $@
+
+data/out/population/bivariate_tables_checks: db/table/bivariate_axis db/table/bivariate_axis_correlation db/table/bivariate_overlays db/table/bivariate_indicators db/table/bivariate_colors | data/out/population ## series of bivariate tables quality checks
+	psql -AXt -c "select count(*) from bivariate_axis where quality = 'NaN' or quality is NULL;" |  xargs -I {} bash scripts/check_items_count.sh {} 0
+	psql -AXt -c "select count(*) from bivariate_axis_correlation where quality = 'NaN' or correlation = 'NaN' or quality is NULL or correlation is NULL;" |  xargs -I {} bash scripts/check_items_count.sh {} 0
+	touch $@
+
+data/out/population/bivariate_tables.sqld.gz: data/out/population/bivariate_tables_checks | data/out/population ## Crafting bivariate tables SQL dump
+	bash -c "pg_dump --clean --if-exists --no-owner --no-tablespaces -t bivariate_axis -t bivariate_axis_correlation -t bivariate_axis_stats -t bivariate_colors -t bivariate_indicators -t bivariate_overlays -t bivariate_unit -t bivariate_unit_localization | pigz" > $@__TMP
+	mv $@__TMP $@
+	touch $@
+
+deploy/s3/prod/stat_h3_dump: data/out/population/stat_h3.sqld.gz | deploy/s3/prod ## Copying stat_h3 table dump from server to AWS-prod one.
+	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz.bak --profile geocint_pipeline_sender || true
+	aws s3 cp data/out/population/stat_h3.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/stat_h3.sqld.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/s3/prod/bivariate_tables_dump: data/out/population/bivariate_tables.sqld.gz | deploy/s3/prod ## Сopying bivariate tables dump from server to AWS-prod one.
+	# (|| true) is needed to avoid failing when there is nothing to be backed up. that is the case on a first run or when bucket got changed.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz.bak --profile geocint_pipeline_sender || true
+	aws s3 cp data/out/population/bivariate_tables.sqld.gz s3://geodata-eu-central-1-kontur/private/geocint/prod/bivariate_tables.sqld.gz --profile geocint_pipeline_sender
+	touch $@
+
+deploy/s3/prod/population_api_tables_check_mdate: deploy/s3/prod/stat_h3_dump deploy/s3/prod/bivariate_tables_dump data/out/population/stat_h3.sqld.gz data/out/population/bivariate_tables.sqld.gz | deploy/s3/prod ## Checking if dumps on AWS is not older than local file.
+	bash scripts/check_population_api_tables_dump_dates.sh
+	touch $@
+
+deploy/prod/population_api_tables: deploy/s3/prod/population_api_tables_check_mdate | deploy/prod ## Getting population_api_tables dump from AWS private prod folder and restoring it.
+	ansible lima_insights_api -m file -a 'path=$$HOME/tmp state=directory mode=0770'
+	ansible lima_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/stat_h3.sqld.gz dest=$$HOME/tmp/stat_h3.sqld.gz mode=get'
+	ansible lima_insights_api -m amazon.aws.aws_s3 -a 'bucket=geodata-eu-central-1-kontur object=/private/geocint/prod/bivariate_tables.sqld.gz dest=$$HOME/tmp/bivariate_tables.sqld.gz mode=get'
+	ansible lima_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=paris.kontur.io state=restore target=$$HOME/tmp/stat_h3.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
+	ansible lima_insights_api -m community.postgresql.postgresql_db -a 'name=insights-api maintenance_db=insights-api login_user=insights-api login_host=paris.kontur.io state=restore target=$$HOME/tmp/bivariate_tables.sqld.gz target_opts="-v ON_ERROR_STOP=1"'
+	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/bivariate_tables.sqld.gz state=absent'
+	ansible lima_insights_api -m file -a 'path=$$HOME/tmp/stat_h3.sqld.gz state=absent'
+	touch $@
+
+deploy/prod/cleanup_cache_old: deploy/prod/population_api_tables | deploy/prod ## Clear insights-api cache on Prod.
+	bash scripts/check_http_response_code.sh GET https://apps.kontur.io/insights-api/cache/cleanUp 200
+	touch $@
+
+
 data/in/kontur_events: | data/in ## Download dir for kontur_events files.
 	mkdir -p $@
 
@@ -1859,16 +2690,16 @@ data/in/event_api_data/kontur_public_feed: | data/in/event_api_data ## download 
 
 db/table/disaster_event_episodes: data/in/event_api_data/kontur_public_feed | db/table  ## import kontur-public feed event episodes in database
 	psql -c 'drop table if exists disaster_event_episodes;'
-	psql -c 'create table if not exists disaster_event_episodes (fid serial primary key, eventid uuid, episode_type text, episode_severity text, episode_name text, episode_startedat timestamptz, episode_endedat timestamptz, geom geometry(geometry, 4326)) tablespace evo4tb;'
+	psql -c 'create table if not exists disaster_event_episodes (fid serial primary key, eventid uuid, episode_type text, episode_severity text, episode_name text, episode_startedat timestamptz, episode_endedat timestamptz, geom geometry(geometry, 4326));'
 	find data/in/event_api_data/kontur-public/ -name "*.geojson*" -type f | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln disaster_event_episodes -a_srs EPSG:4326'
 	psql -c 'create index disaster_event_episodes_episode_type_episode_endedat_idx on disaster_event_episodes (episode_type, episode_endedat)'
 	touch $@
 
-db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3_r8 | db/table  ## hexagonify kontur-public event geometries
+db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/land_polygons_h3_r8 db/table/osm | db/table  ## hexagonify kontur-public event geometries
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
 
-db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/hexagons_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/procedure/generate_overviews | db/table ## adjust total road length with linear regression from population
+db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/hexagons_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 | db/procedure/generate_overviews db/table ## adjust total road length with linear regression from population
 	psql -f tables/total_road_length_h3.sql
 	psql -c "call generate_overviews('total_road_length_h3', '{total_road_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
@@ -1907,7 +2738,7 @@ db/table/global_solar_atlas_ghi: data/mid/global_solar_atlas/GHI/unzip | db/tabl
 
 ## Global solar atlas - convert raster tables to h3 and create common table
 
-db/table/global_solar_atlas_h3: db/table/global_solar_atlas_ghi db/procedure/generate_overviews | db/table ## Global solar atlas - H3 hexagons table with average GTI, GHI, PVOUT values from 1 to 8 resolution
+db/table/global_solar_atlas_h3: db/table/global_solar_atlas_ghi | db/procedure/generate_overviews db/table ## Global solar atlas - H3 hexagons table with average GTI, GHI, PVOUT values from 1 to 8 resolution
 	psql -f tables/global_solar_atlas_h3.sql
 	psql -c "call generate_overviews('global_solar_atlas_h3', '{gsa_ghi}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on global_solar_atlas_h3 (h3);"
@@ -1967,19 +2798,39 @@ data/mid/worldclim/max_temp/unzip: data/in/raster/worldclim/wc2.1_30s_tmax.zip |
 
 ## Worldclim temperatures - prepare datasets
 ## Worldclim temperatures - Calculate mean from averages
-data/mid/worldclim/avg_temp/average_temperatures.tif: data/mid/worldclim/avg_temp/unzip | data/mid/worldclim/avg_temp ## Calculate average yearly temperature from Worldclim montly means
-	rm -f data/mid/worldclim/avg_temp/average_temperatures.tif
-	gdal_calc.py -A data/mid/worldclim/avg_temp/wc2.1_30s_tavg_01.tif -B data/mid/worldclim/avg_temp/wc2.1_30s_tavg_02.tif -C data/mid/worldclim/avg_temp/wc2.1_30s_tavg_03.tif -D data/mid/worldclim/avg_temp/wc2.1_30s_tavg_04.tif -E data/mid/worldclim/avg_temp/wc2.1_30s_tavg_05.tif -F data/mid/worldclim/avg_temp/wc2.1_30s_tavg_06.tif -G data/mid/worldclim/avg_temp/wc2.1_30s_tavg_07.tif -H data/mid/worldclim/avg_temp/wc2.1_30s_tavg_08.tif -I data/mid/worldclim/avg_temp/wc2.1_30s_tavg_09.tif -J data/mid/worldclim/avg_temp/wc2.1_30s_tavg_10.tif -K data/mid/worldclim/avg_temp/wc2.1_30s_tavg_11.tif -L data/mid/worldclim/avg_temp/wc2.1_30s_tavg_12.tif --outfile=data/mid/worldclim/avg_temp/average_temperatures.tif --calc="numpy.mean((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+data/mid/worldclim/avg_temp/average_temperatures_in.tif: data/mid/worldclim/avg_temp/unzip | data/mid/worldclim/avg_temp ## Calculate average yearly temperature from Worldclim montly means
+	rm -f $@
+	gdal_calc.py -A data/mid/worldclim/avg_temp/wc2.1_30s_tavg_01.tif -B data/mid/worldclim/avg_temp/wc2.1_30s_tavg_02.tif -C data/mid/worldclim/avg_temp/wc2.1_30s_tavg_03.tif -D data/mid/worldclim/avg_temp/wc2.1_30s_tavg_04.tif -E data/mid/worldclim/avg_temp/wc2.1_30s_tavg_05.tif -F data/mid/worldclim/avg_temp/wc2.1_30s_tavg_06.tif -G data/mid/worldclim/avg_temp/wc2.1_30s_tavg_07.tif -H data/mid/worldclim/avg_temp/wc2.1_30s_tavg_08.tif -I data/mid/worldclim/avg_temp/wc2.1_30s_tavg_09.tif -J data/mid/worldclim/avg_temp/wc2.1_30s_tavg_10.tif -K data/mid/worldclim/avg_temp/wc2.1_30s_tavg_11.tif -L data/mid/worldclim/avg_temp/wc2.1_30s_tavg_12.tif --outfile=$@ --calc="numpy.mean((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	touch $@
+
+data/mid/worldclim/avg_temp/average_temperatures.tif: data/mid/worldclim/avg_temp/average_temperatures_in.tif | data/mid/worldclim/avg_temp ## Change resolution of average yearly temperature from Worldclim montly means
+	rm -f $@
+	gdalwarp data/mid/worldclim/avg_temp/average_temperatures_in.tif -co compress=deflate -tr 0.005 0.005 $@
+	touch $@
 
 ## Worldclim temperatures - Calculate min of mins
-data/mid/worldclim/min_temp/minimal_temperatures.tif: data/mid/worldclim/min_temp/unzip | data/mid/worldclim/min_temp ## Calculate minimal yearly temperature from Worldclim montly minimals
-	rm -f data/mid/worldclim/min_temp/minimal_temperatures.tif
-	gdal_calc.py -A data/mid/worldclim/min_temp/wc2.1_30s_tmin_01.tif -B data/mid/worldclim/min_temp/wc2.1_30s_tmin_02.tif -C data/mid/worldclim/min_temp/wc2.1_30s_tmin_03.tif -D data/mid/worldclim/min_temp/wc2.1_30s_tmin_04.tif -E data/mid/worldclim/min_temp/wc2.1_30s_tmin_05.tif -F data/mid/worldclim/min_temp/wc2.1_30s_tmin_06.tif -G data/mid/worldclim/min_temp/wc2.1_30s_tmin_07.tif -H data/mid/worldclim/min_temp/wc2.1_30s_tmin_08.tif -I data/mid/worldclim/min_temp/wc2.1_30s_tmin_09.tif -J data/mid/worldclim/min_temp/wc2.1_30s_tmin_10.tif -K data/mid/worldclim/min_temp/wc2.1_30s_tmin_11.tif -L data/mid/worldclim/min_temp/wc2.1_30s_tmin_12.tif --outfile=data/mid/worldclim/min_temp/minimal_temperatures.tif --calc="numpy.min((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+
+data/mid/worldclim/min_temp/minimal_temperatures_in.tif: data/mid/worldclim/min_temp/unzip | data/mid/worldclim/min_temp ## Calculate minimal yearly temperature from Worldclim montly minimals
+	rm -f $@
+	gdal_calc.py -A data/mid/worldclim/min_temp/wc2.1_30s_tmin_01.tif -B data/mid/worldclim/min_temp/wc2.1_30s_tmin_02.tif -C data/mid/worldclim/min_temp/wc2.1_30s_tmin_03.tif -D data/mid/worldclim/min_temp/wc2.1_30s_tmin_04.tif -E data/mid/worldclim/min_temp/wc2.1_30s_tmin_05.tif -F data/mid/worldclim/min_temp/wc2.1_30s_tmin_06.tif -G data/mid/worldclim/min_temp/wc2.1_30s_tmin_07.tif -H data/mid/worldclim/min_temp/wc2.1_30s_tmin_08.tif -I data/mid/worldclim/min_temp/wc2.1_30s_tmin_09.tif -J data/mid/worldclim/min_temp/wc2.1_30s_tmin_10.tif -K data/mid/worldclim/min_temp/wc2.1_30s_tmin_11.tif -L data/mid/worldclim/min_temp/wc2.1_30s_tmin_12.tif --outfile=$@ --calc="numpy.min((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	touch $@
+
+data/mid/worldclim/min_temp/minimal_temperatures.tif: data/mid/worldclim/min_temp/minimal_temperatures_in.tif | data/mid/worldclim/min_temp ## Change resolution for minimal yearly temperature from Worldclim montly minimals
+	rm -f $@
+	gdalwarp data/mid/worldclim/min_temp/minimal_temperatures_in.tif -co compress=deflate -tr 0.005 0.005 $@
+	touch $@
 
 ## Worldclim temperatures - Calculate max of maxs
-data/mid/worldclim/max_temp/maximal_temperatures.tif: data/mid/worldclim/max_temp/unzip | data/mid/worldclim/max_temp ## Calculate maximal yearly temperature from Worldclim montly maximals
-	rm -f data/mid/worldclim/max_temp/maximal_temperatures.tif
-	gdal_calc.py -A data/mid/worldclim/max_temp/wc2.1_30s_tmax_01.tif -B data/mid/worldclim/max_temp/wc2.1_30s_tmax_02.tif -C data/mid/worldclim/max_temp/wc2.1_30s_tmax_03.tif -D data/mid/worldclim/max_temp/wc2.1_30s_tmax_04.tif -E data/mid/worldclim/max_temp/wc2.1_30s_tmax_05.tif -F data/mid/worldclim/max_temp/wc2.1_30s_tmax_06.tif -G data/mid/worldclim/max_temp/wc2.1_30s_tmax_07.tif -H data/mid/worldclim/max_temp/wc2.1_30s_tmax_08.tif -I data/mid/worldclim/max_temp/wc2.1_30s_tmax_09.tif -J data/mid/worldclim/max_temp/wc2.1_30s_tmax_10.tif -K data/mid/worldclim/max_temp/wc2.1_30s_tmax_11.tif -L data/mid/worldclim/max_temp/wc2.1_30s_tmax_12.tif --outfile=data/mid/worldclim/max_temp/maximal_temperatures.tif --calc="numpy.max((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+
+data/mid/worldclim/max_temp/maximal_temperatures_in.tif: data/mid/worldclim/max_temp/unzip | data/mid/worldclim/max_temp ## Calculate maximal yearly temperature from Worldclim montly maximals
+	rm -f $@
+	gdal_calc.py -A data/mid/worldclim/max_temp/wc2.1_30s_tmax_01.tif -B data/mid/worldclim/max_temp/wc2.1_30s_tmax_02.tif -C data/mid/worldclim/max_temp/wc2.1_30s_tmax_03.tif -D data/mid/worldclim/max_temp/wc2.1_30s_tmax_04.tif -E data/mid/worldclim/max_temp/wc2.1_30s_tmax_05.tif -F data/mid/worldclim/max_temp/wc2.1_30s_tmax_06.tif -G data/mid/worldclim/max_temp/wc2.1_30s_tmax_07.tif -H data/mid/worldclim/max_temp/wc2.1_30s_tmax_08.tif -I data/mid/worldclim/max_temp/wc2.1_30s_tmax_09.tif -J data/mid/worldclim/max_temp/wc2.1_30s_tmax_10.tif -K data/mid/worldclim/max_temp/wc2.1_30s_tmax_11.tif -L data/mid/worldclim/max_temp/wc2.1_30s_tmax_12.tif --outfile=$@ --calc="numpy.max((A,B,C,D,E,F,G,H,I,J,K,L),axis=0)"
+	touch $@
+
+data/mid/worldclim/max_temp/maximal_temperatures.tif: data/mid/worldclim/max_temp/maximal_temperatures_in.tif | data/mid/worldclim/max_temp ## Change resolution of maximal yearly temperature from Worldclim montly maximals
+	rm -f $@
+	gdalwarp data/mid/worldclim/max_temp/maximal_temperatures_in.tif -co compress=deflate -tr 0.005 0.005 $@
+	touch $@
 
 ## Worldclim temperatures - download rasters to database
 
@@ -1999,10 +2850,3890 @@ db/table/worldclim_max_temp: data/mid/worldclim/max_temp/maximal_temperatures.ti
 	touch $@
 
 ## Worldclim temperatures - create all tables and unite them to one
-db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldclim_min_temp db/table/worldclim_max_temp | db/table ## Worldclim temperatures - create summary H3 table
+db/table/worldclim_temperatures_h3: db/table/worldclim_avg_temp db/table/worldclim_min_temp db/table/worldclim_max_temp | db/procedure/generate_overviews db/table ## Worldclim temperatures - create summary H3 table
 	psql -f tables/worldclim_temperatures_h3.sql
-	psql -c "call generate_overviews('worldclim_temperatures_h3', '{worldclim_avg_temperature, worldclim_min_temperature, worldclim_max_temperature}'::text[], '{avg, min, max}'::text[], 8);"
+	psql -c "call generate_overviews('worldclim_temperatures_h3', '{worldclim_avg_temperature, worldclim_min_temperature, worldclim_max_temperature, worldclim_amp_temperature}'::text[], '{avg, min, max, max}'::text[], 8);"
 	psql -c "create index on worldclim_temperatures_h3 (h3);"
 	touch $@
 
 ### END WorldClim temperatures ###
+
+### Powerlines proximity ###
+
+data/in/worldbank_powerlines: | data/in ## Directory for downloading worldbank powerlines gpkg
+	mkdir $@
+
+data/in/worldbank_powerlines/grid.gpkg: | data/in/worldbank_powerlines ## Download worldbank powerlines gpkg
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/world_bank_powerlines/grid.gpkg $@ --profile geocint_pipeline_sender
+	touch $@
+
+data/mid/worldbank_powerlines: | data/mid ## Directory for calculations of worldbank powerlines proximity
+	mkdir $@
+
+data/mid/worldbank_powerlines/worldbank_powerlines_proximity.tif: data/in/worldbank_powerlines/grid.gpkg | data/mid/worldbank_powerlines ## Worldbank powerlines proximity - calculate geotif
+	bash scripts/global_proximity_map_from_vector.sh data/in/worldbank_powerlines/grid.gpkg grid data/mid/worldbank_powerlines $@
+	rm -f data/mid/worldbank_powerlines/north*
+	rm -f data/mid/worldbank_powerlines/south*
+	rm -f data/mid/worldbank_powerlines/part*
+	touch $@
+
+db/table/powerlines_proximity: data/mid/worldbank_powerlines/worldbank_powerlines_proximity.tif | db/table ## Load worldbank powerlines proximity raster
+	psql -c "drop table if exists powerlines_proximity;"
+	raster2pgsql -M -Y -s 4326 data/mid/worldbank_powerlines/worldbank_powerlines_proximity.tif -t auto powerlines_proximity | psql -q
+	touch $@
+
+db/table/powerlines_proximity_h3_r8: db/table/powerlines_proximity | db/table ## Powerlines proximity - create summary H3 table
+	psql -f scripts/proximity_raster_to_h3.sql -v table_name=powerlines_proximity -v table_name_h3=powerlines_proximity_h3_r8 -v aggr_func=avg -v item_name=powerlines_proximity_m -v threshold=1200000
+	psql -c "create index on powerlines_proximity_h3_r8 (h3);"
+	touch $@
+
+### END Powerlines proximity ###
+
+### City Waste management block ###
+
+db/table/waste_containers_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## create a table with the average number of waste containers within a hexagon or less than 75m apart per hexagon
+	psql -f tables/waste_containers_h3.sql
+	psql -c "call generate_overviews('waste_containers_h3', '{waste_basket_coverage}'::text[], '{sum}'::text[], 8);"
+	touch $@
+
+### End City waste management block ###
+
+### Proximity to populated areas ###
+
+data/in/populated_areas.gpkg: db/table/kontur_population_h3 | data/in ## Get populated areas GPKG
+	ogr2ogr -f GPKG -t_srs EPSG:4326 $@ PG:"dbname=gis" -nln "populated" -sql "SELECT h3_cell_to_boundary_geometry(h3), population FROM kontur_population_h3 WHERE population>80 and resolution=8"
+	touch $@
+
+data/mid/populated_areas: | data/mid ## Directory for calculations of populated areas proximity
+	mkdir $@
+
+data/mid/populated_areas/populated_areas_proximity.tif: data/in/populated_areas.gpkg | data/mid/populated_areas ## Populated areas proximity - calculate geotif
+	bash scripts/global_proximity_map_from_vector.sh data/in/populated_areas.gpkg populated data/mid/populated_areas $@
+	rm -f data/mid/populated_areas/north*
+	rm -f data/mid/populated_areas/south*
+	rm -f data/mid/populated_areas/part*
+	touch $@
+
+db/table/populated_areas_proximity: data/mid/populated_areas/populated_areas_proximity.tif | db/table ## Load populated areas proximity raster
+	psql -c "drop table if exists populated_areas_proximity;"
+	raster2pgsql -M -Y -s 4326 data/mid/populated_areas/populated_areas_proximity.tif -t auto populated_areas_proximity | psql -q
+	touch $@
+
+db/table/populated_areas_proximity_h3_r8: db/table/populated_areas_proximity | db/table ## Populated areas proximity - create summary H3 table
+	psql -f scripts/proximity_raster_to_h3.sql -v table_name=populated_areas_proximity -v table_name_h3=populated_areas_proximity_h3_r8 -v aggr_func=avg -v item_name=populated_areas_proximity_m -v threshold=1200000
+	psql -c "create index on populated_areas_proximity_h3_r8 (h3);"
+	touch $@
+
+### END Proximity to populated areas ###
+
+### Proximity to electric power substations ###
+
+data/in/power_substations.gpkg: db/index/osm_tags_idx | data/in ## Get power substations GPKG
+	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "power_substations" -sql "SELECT osm_id, st_centroid(geog)::geometry as geometry FROM osm WHERE tags@>'{\"power\":\"substation\"}'"
+	touch $@
+
+data/mid/power_substations: | data/mid ## Directory for calculations of power substations proximity
+	mkdir $@
+
+data/mid/power_substations/power_substations_proximity.tif: data/in/power_substations.gpkg | data/mid/power_substations ## power substations proximity - calculate geotif
+	bash scripts/global_proximity_map_from_vector.sh data/in/power_substations.gpkg power_substations data/mid/power_substations $@
+	rm -f data/mid/power_substations/north*
+	rm -f data/mid/power_substations/south*
+	rm -f data/mid/power_substations/part*
+	touch $@
+
+db/table/power_substations_proximity: data/mid/power_substations/power_substations_proximity.tif | db/table ## Load power substations proximity raster
+	psql -c "drop table if exists power_substations_proximity;"
+	raster2pgsql -M -Y -s 4326 data/mid/power_substations/power_substations_proximity.tif -t auto power_substations_proximity | psql -q
+	touch $@
+
+db/table/power_substations_proximity_h3_r8: db/table/power_substations_proximity | db/table ## Power substations proximity - create summary H3 table
+	psql -f scripts/proximity_raster_to_h3.sql -v table_name=power_substations_proximity -v table_name_h3=power_substations_proximity_h3_r8 -v aggr_func=avg -v item_name=power_substations_proximity_m -v threshold=1200000
+	psql -c "create index on power_substations_proximity_h3_r8 (h3);"
+	touch $@
+
+### END Proximity to electric power substationss ###
+
+### Unite all proximity maps to one and generate overviews
+db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/populated_areas_proximity_h3_r8 db/table/powerlines_proximity_h3_r8 db/table/land_polygons_h3_r8 | db/procedure/generate_overviews db/table ## Unite proximity maps to one table
+	psql -f tables/proximities_h3.sql
+	psql -c "create index on proximities_h3 (h3);"
+	psql -c "call generate_overviews('proximities_h3', '{powerlines_proximity_m, populated_areas_proximity_m, power_substations_proximity_m}'::text[], '{avg, avg, avg}'::text[], 8);"
+	touch $@
+
+### Synthetic solar farms placement layer ###
+
+db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/table/kontur_population_h3 | db/procedure/generate_overviews db/table ## create a table with synthetic solar farms placement suitability (MCDA)
+	psql -f tables/solar_farms_placement_suitability_synthetic_h3.sql
+	psql -c "call generate_overviews('solar_farms_placement_suitability_synthetic_h3', '{solar_farms_placement_suitability}'::text[], '{avg}'::text[], 8);"
+	psql -c "create index on solar_farms_placement_suitability_synthetic_h3 (h3);"
+	touch $@
+
+### END Synthetic solar farms placement layer ###
+
+### Existing Solar power panels layer ###
+
+db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## Get existing solar power panels layer
+	psql -f tables/existing_solar_power_panels_h3.sql
+	psql -c "call generate_overviews('existing_solar_power_panels_h3', '{solar_power_plants}'::text[], '{sum}'::text[], 8);"
+	psql -c "create index on existing_solar_power_panels_h3 (h3);"
+	touch $@
+
+### End existing Solar power panels layer ###
+
+### Safety index layer - Global Peace Index 2022 ###
+
+db/table/kontur_boundaries_hasc_codes_check: | db/table ## create if not exist table to store hascs that were missed in Kontur Boundaries
+	psql -c "drop table if exists kontur_boundaries_hasc_codes_check;"
+	psql -c "create table if not exists kontur_boundaries_hasc_codes_check (missed_hasc text, source_of_missed_hasc text, found_at TIMESTAMPTZ DEFAULT NOW());"
+	touch $@
+
+db/procedure/transform_hasc_to_h3: | db/table/kontur_boundaries db/table/kontur_boundaries_hasc_codes_check db/procedure ## Transform information with hasc codes to h3 indexes with using kontur_boundaries.
+	psql -f procedures/transform_hasc_to_h3.sql
+	touch $@
+
+db/procedure/transform_hasc_to_h3_percent_of_population: | db/table/kontur_boundaries db/table/kontur_boundaries_hasc_codes_check db/procedure ## Transform information with hasc codes to h3 indexes with using kontur_boundaries.
+	psql -f procedures/transform_hasc_to_h3_percent_of_population.sql
+	touch $@
+
+db/table/safety_index_per_country: | db/table ## Get existing solar power panels layer
+	psql -c 'drop table if exists safety_index_per_country_in;'
+	psql -c 'create table safety_index_per_country_in (iso3 char(3), iso2 char(2), name text, safety_index float);'
+	cat static_data/mcda/global_safety_index_2008-2022.csv | psql -c "copy safety_index_per_country_in(iso3, iso2, name, safety_index) from stdin with csv header delimiter ',';"
+	psql -c 'drop table if exists safety_index_per_country;'
+	psql -c 'create table safety_index_per_country as (select iso3, iso2, name, p.maximum - safety_index as safety_index from safety_index_per_country_in, (select max(safety_index) maximum from safety_index_per_country_in) p);'
+	touch $@
+
+db/table/safety_index_h3: db/table/safety_index_per_country | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## transform hasc codes to h3 indexes and generate overviews
+	psql -c "call transform_hasc_to_h3('safety_index_per_country', 'safety_index_h3', 'iso2', '{safety_index}'::text[], 8);"
+	psql -c "call generate_overviews('safety_index_h3', '{safety_index}'::text[], '{max}'::text[], 8);"
+	psql -c "create index on safety_index_h3 (h3);"
+	touch $@
+
+data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries db/table/safety_index_h3 db/table/global_rva_h3 db/table/ndpba_rva_h3 | data/out ## Check if hasc codes were missed im kontur boundaries and send a message
+	echo 'List of 15 most frequent missed hasc-codes. Check kontur_boundaries_hasc_codes_check table for additional information.' > $@__MISSED_HASCS_MESSAGE
+	echo '```' >> $@__MISSED_HASCS_MESSAGE
+	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "select missed_hasc, count(*) from kontur_boundaries_hasc_codes_check group by 1 order by 2 desc limit 15;" >> $@__MISSED_HASCS_MESSAGE
+	echo '```' >> $@__MISSED_HASCS_MESSAGE
+	psql -qXtc "select count(*) from kontur_boundaries_hasc_codes_check;" > $@__NUMBER_MISSED_HASCS
+	if [ 0 -lt $$(cat $@__NUMBER_MISSED_HASCS) ]; then cat $@__MISSED_HASCS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
+	rm -f $@__MISSED_HASCS_MESSAGE $@__NUMBER_MISSED_HASCS
+	touch $@
+
+### End Safety index layer ###
+
+### HOT projects block ###
+
+data/in/hot_projects: | data/in ## input directory for hot projects data
+	mkdir -p $@
+
+data/in/hot_projects/hot_projects: data/in/hot_projects | data/in ## Download hot projects data
+	seq 0 2000 12000 | parallel 'wget -q -O data/in/hot_projects/hot_projects_{}.geojson "https://api.kontur.io/layers/v2/collections/hotProjects_outlines/items?limit=2000&offset={}"'
+	touch $@
+
+db/table/hot_projects: data/in/hot_projects/hot_projects | db/table ##load hot projects data to table
+	psql -c "drop table if exists hot_projects;"
+	ogr2ogr -append -f PostgreSQL -a_srs EPSG:4326 PG:"dbname=gis" data/in/hot_projects/hot_projects_0.geojson -sql 'select * from hot_projects_0 limit 0' -nln hot_projects --config PG_USE_COPY YES -lco GEOMETRY_NAME=geom
+	psql -c "alter table hot_projects drop column mappingtypes;"
+	psql -c "alter table hot_projects add column mappingtypes character varying[];"
+	ls -S data/in/hot_projects/hot_projects_*.geojson | parallel -j 1 'ogr2ogr -append -f PostgreSQL -a_srs EPSG:4326 PG:"dbname=gis" {} -nln hot_projects --config PG_USE_COPY YES'
+	psql -c "update hot_projects set geom = st_makevalid(geom);"
+	psql -c "create index on hot_projects using gist(geom);"
+	touch $@
+
+### End HOT projects block
+
+### GHS population rasters import block
+
+data/in/ghsl: | data/in ## Directory for ghs population raster files
+	mkdir -p $@
+
+data/mid/ghsl: | data/mid ## Directory for ghs population unzipped raster files
+	mkdir -p $@
+
+data/in/ghsl/download: | data/in/ghsl ## Download population raster files in parallel
+	parallel -a static_data/ghsl/list-of-urls wget -nc -P $(@D) {} --rejected-log=$(@D)/_download-errors.log
+	if [ ! -f $(@D)/_download-errors.log ]; then touch $@; fi
+	rm -f $(@D)/_download-errors.log
+
+data/mid/ghsl/unzip: data/in/ghsl/download | data/mid/ghsl ## Unzip population raster files in parallel
+	rm data/mid/ghsl/*
+	ls data/in/ghsl/*.zip | parallel "unzip -o {} -d data/mid/ghsl/"
+	rm data/mid/ghsl/*.tif.ovr
+	touch $@
+
+db/table/ghsl: data/mid/ghsl/unzip db/procedure/insert_projection_54009 ## Import into db population raster files in parallel
+	ls data/mid/ghsl/*.tif | parallel "raster2pgsql -d -M -Y -s 54009 -t auto -e {} {/.} | psql -q"
+	touch $@
+
+db/table/ghsl_h3: db/table/ghsl ## Create table with h3 index and population from raster tables in parallel
+	ls data/mid/ghsl/*.tif | parallel 'psql -f tables/population_raster_grid_h3_r8.sql -v population_raster={/.} -v population_raster_grid_h3_r8={/.}_h3'
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "create index on {/.}_h3 using gist(h3_cell_to_geometry(h3))"'
+	touch $@
+
+db/function/ghs_pop_dither: ## Function to dithers ghs population per country
+	psql -f functions/ghs_pop_dither.sql
+	touch $@
+
+### End GHS population rasters import block
+
+### ghsl india snapshots
+
+db/table/ghsl_h3_dither: db/table/ghsl_h3 ## Create tables for every ghs_pop_year
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "drop table if exists {/.}_h3_dither;"'
+	ls data/mid/ghsl/*.tif | parallel 'psql -c "create table {/.}_h3_dither(h3 h3index, population integer, geom geometry(geometry,4326));"'
+	touch $@
+
+db/table/export_ghsl_h3_dither: db/table/hdx_boundaries db/table/ghsl_h3_dither db/function/ghs_pop_dither ## Dither and insert results in tables
+	ls data/mid/ghsl/*.tif | parallel -q psql -c "select ghs_pop_dither('{/.}_h3', '{/.}_h3_dither')"
+	touch $@
+
+data/out/ghsl_output: | data/out ## Directory for ghs population gpkg for India, hasc equal IN
+	mkdir -p $@
+
+data/out/ghsl_output/export_gpkg: db/table/export_ghsl_h3_dither | data/out/ghsl_output ## Exports gpkg for India, hasc equal IN from tables
+	seq 1975 5 2020 | parallel "echo $$(date '+%Y%m%d') {}" | parallel --colsep ' ' "ogr2ogr -overwrite -f GPKG data/out/ghsl_output/kontur_historical_population_density_for_{1}_IN_{2}.gpkg PG:'dbname=gis' -sql 'select distinct a.h3, a.population, a.geom from ghs_pop_e{1}_globe_r2022a_54009_100_v1_0_h3_dither as a, hdx_boundaries as b where b.hasc ='\''IN'\'' and ST_Intersects(a.geom,b.geom)' -nln kontur_historical_population_density_for_{1}_IN_{2} -lco OVERWRITE=yes"
+	touch $@
+
+### End ghsl india snapshots
+
+### Update customviz using hdxloader ###
+
+data/out/hdxloader: | data/in ## Directory for yml files for updates
+	mkdir -p $@
+
+db/table/hdx_boundaries_iso3_bbox: db/table/hdx_boundaries db/table/hdx_locations_with_wikicodes | db/table ## Prepare table with iso3 code and bbox
+	psql -f tables/hdx_boundaries_iso3_bbox.sql
+	touch $@
+
+data/out/hdxloader/hdxloader_update_customviz_boundaries.yml: db/table/hdx_boundaries_iso3_bbox | data/out/hdxloader ## Generate yml files to update custoviz for country_boundaries datasets
+	psql -t -A -X -F ";" -c "select * from hdx_boundaries_iso3_bbox;" | awk -F ";" 'BEGIN { print "{" } { printf "\x27%s\x27: {\x27customviz\x27: [{\x27url\x27: \x27https://apps.disaster.ninja/active/?map=2.000/30.000/0.100&app=f70488c2-055c-4599-a080-ded10c47730f&feed=kontur-public&layers=kontur_lines&%s\x27}]},\n", $$1, $$2 } ' | sed '$$ s/\(.*\),)*/\1\n}/' > $@
+
+data/out/hdxloader/hdxloader_update_customviz_population.yml: db/table/hdx_boundaries_iso3_bbox | data/out/hdxloader ## Generate yml files to update custoviz for country_population datasets
+	psql -t -A -X -F ";" -c "select * from hdx_boundaries_iso3_bbox;" | awk -F ";" 'BEGIN { print "{" } { printf "\x27%s\x27: {\x27customviz\x27: [{\x27url\x27: \x27https://apps.disaster.ninja/active/?map=2.000/30.000/0.100&app=f70488c2-055c-4599-a080-ded10c47730f&feed=kontur-public&layers=kontur_zmrok%2Cpopulation_density&%s\x27}]},\n", $$1, $$2 } ' | sed '$$ s/\(.*\),)*/\1\n}/' > $@
+
+data/out/hdxloader/hdxloader_update_customviz: data/out/hdxloader/hdxloader_update_customviz_boundaries.yml data/out/hdxloader/hdxloader_update_customviz_population.yml | data/out/hdxloader ## Do actual update
+	[ -z $$HDX_API_TOKEN ] && { echo "HDX_API_TOKEN is empty, please set it before running"; exit 1; } || echo "HDX_API_TOKEN is set - OK"
+	python3 -m hdxloader update -t country-boundaries --update_by_iso3 --iso3_file data/out/hdxloader/hdxloader_update_customviz_boundaries.yml --hdx-site prod -k $$HDX_API_TOKEN --no-dry-run
+	python3 -m hdxloader update -t country-population --update_by_iso3 --iso3_file data/out/hdxloader/hdxloader_update_customviz_population.yml --hdx-site prod -k $$HDX_API_TOKEN --no-dry-run
+	psql -c "drop table if exists hdx_boundaries_iso3_bbox;"
+	touch $@
+
+### End update customviz using hdxloader ###
+
+### Live Sensor Data integration block
+data/in/live_sensor_data_h3.csv: | data/in ## download fresh dump with live sensor hexagonal data
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/live-sensor/prod/live_sensor_data_h3.csv $@ --profile geocint_pipeline_sender
+
+db/table/live_sensor_data_h3: data/in/live_sensor_data_h3.csv | db/table ## load live sensor hexagonal data to database
+	psql -c "drop table if exists live_sensor_data_h3;"
+	psql -c "create table live_sensor_data_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, stddev_accel double precision);"
+	cat data/in/live_sensor_data_h3.csv | psql -c "copy live_sensor_data_h3(h3, stddev_accel) from stdin delimiter ',';"
+	touch $@
+
+### End Live Sensor Data integration block
+
+### OAM global coverage Data integration block
+data/in/oam_global_coverage.csv: | data/in ## download fresh dump with OAM global coverage hexagonal data
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/oam_global_coverage/prod/oam_global_coverage.csv $@ --profile geocint_pipeline_sender
+
+db/table/oam_global_coverage_h3: data/in/oam_global_coverage.csv | db/table ## load OAM global coverage hexagonal data to database
+	psql -c "drop table if exists oam_global_coverage_h3;"
+	psql -c "create table oam_global_coverage_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, oam_coverage_area float);"
+	cat data/in/oam_global_coverage.csv | psql -c "copy oam_global_coverage_h3(h3, oam_coverage_area) from stdin delimiter ',';"
+	touch $@
+
+data/in/oam_number_of_pixels.csv: | data/in ## download fresh dump with OAM number of pixels data
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/data/in/oam_global_coverage/prod/oam_number_of_pixels.csv $@ --profile geocint_pipeline_sender
+
+db/table/oam_number_of_pixels_h3: data/in/oam_number_of_pixels.csv | db/table ## load OAM number of pixels data to database
+	psql -c "drop table if exists oam_number_of_pixels_h3;"
+	psql -c "create table oam_number_of_pixels_h3 (h3 h3index, resolution integer generated always as (h3_get_resolution(h3)) stored, oam_number_of_pixels float);"
+	cat data/in/oam_number_of_pixels.csv | psql -c "copy oam_number_of_pixels_h3(h3, oam_number_of_pixels) from stdin delimiter ',';"
+	touch $@
+### End OAM global coverage Data integration block
+
+### High Resolution Forest Canopy Height Maps
+data/in/raster/meta_forest_canopy_height/download: | data/in/raster/meta_forest_canopy_height ## Download and rescale from 1 meter to 100 meters High Resolution Forest Canopy Height tifs from Data for Good at AWS S3.
+	aws s3 ls --profile geocint_pipeline_sender s3://dataforgood-fb-data/forests/v1/alsgedi_global_v6_float/chm/ | tr -s ' ' | cut -d' ' -f4 | grep 'tif$$' | parallel 'aws s3 cp --profile geocint_pipeline_sender s3://dataforgood-fb-data/forests/v1/alsgedi_global_v6_float/chm/{} data/in/raster/meta_forest_canopy_height/chm/{} ; gdalwarp -tr 100 100 data/in/raster/meta_forest_canopy_height/chm/{} data/in/raster/meta_forest_canopy_height/chm/100m_{} ; rm data/in/raster/meta_forest_canopy_height/chm/{}'
+	touch $@
+
+db/table/meta_forest_canopy_height: data/in/raster/meta_forest_canopy_height/download | db/table ## Put forest canopy tiles in table.
+	psql -c "drop table if exists meta_forest_canopy_height;"
+	find -L data/in/raster/meta_forest_canopy_height/chm -name "*.tif" -type f | head -1 | parallel 'raster2pgsql -p -Y -s 3857 {} -t auto meta_forest_canopy_height | psql -q'
+	find -L data/in/raster/meta_forest_canopy_height/chm -name "*.tif" -type f | parallel --eta 'GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=6 raster2pgsql -a -Y -s 3857 {} -t auto meta_forest_canopy_height | psql -q'
+	touch $@
+
+db/table/meta_forest_canopy_height_h3: db/table/meta_forest_canopy_height | db/procedure/generate_overviews db/table ## Count height of forest canopy into h3 hexagons and generate overviews.
+	psql -f tables/meta_forest_canopy_height_h3.sql
+	psql -c "call generate_overviews('meta_forest_canopy_height_h3', '{avg_forest_canopy_height,max_forest_canopy_height}'::text[], '{avg,max}'::text[], 8);"
+	touch $@
+
+### Humanitarian Development Index
+db/table/humanitarian_dev_index_2022: | db/table ## Human Development Index (HDI)
+	psql -c "drop table if exists humanitarian_dev_index_2022_in;"
+	psql -c 'create table humanitarian_dev_index_2022_in(country text, code text, hasc text, hdi_2022 numeric, hdi_rank_2022 integer, hdi_rank_2021 integer, inequality_adjusted_hdi_2022 numeric, inequality_adjusted_hdi_overal_loss_pct_2022 numeric, inequality_adjusted_hdi_difference_2022 integer, coefficient_human_inequality_2022 numeric, inequality_in_life_expectancy_pct_2022 numeric, inequality_adjusted_life_expectancy_index_2022 numeric, inequality_in_education_pct_2022 numeric, inequality_adjusted_education_index_2022 numeric, inequality_in_income_pct_2022 numeric, inequality_adjusted_income_index_2022 numeric, income_shares_held_by_poorest_40_percent_2010_2022 numeric, income_shares_held_by_richest_10_percent_2010_2022 numeric, income_shares_held_by_richest_1_percent_2021 numeric, gini_coefficient_2010_2022 numeric, life_expectancy_at_birth_years_2022 numeric, expected_years_of_schooling_2022 numeric, man_years_of_schooling_2022 numeric, gni_per_capita_2017_ppp_usd_2022 numeric, gni_per_capita_rank_minus_hdi_rank_2022 numeric);'
+	cat static_data/humanitarian_development_index/hdi_total_2022.csv | psql -c "copy humanitarian_dev_index_2022_in from stdin with csv header;"
+	psql -c 'drop table if exists humanitarian_dev_index_2022;'
+	psql -c 'create table humanitarian_dev_index_2022 as (select country, code, hasc, hdi_2022 from humanitarian_dev_index_2022_in);'
+	touch $@
+
+db/table/humanitarian_dev_index_2022_h3: db/table/humanitarian_dev_index_2022 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviews of Human Development Index (HDI)
+	psql -c "call transform_hasc_to_h3('humanitarian_dev_index_2022', 'humanitarian_dev_index_2022_h3', 'hasc', '{hdi_2022}'::text[], 8);"
+	psql -c "call generate_overviews('humanitarian_dev_index_2022_h3', '{hdi_2022}'::text[], '{min}'::text[], 8);"
+	touch $@
+
+### END Humanitarian Development Index
+
+### Inform Risk Index
+db/table/inform_risk_profile_2025: | db/table ## Inform Risc Index
+	psql -c "drop table if exists inform_risk_profile_2025_in;"
+	psql -c 'create table inform_risk_profile_2025_in (country text, iso3 text, hasc text, inform_risk float, risk_class integer, rank integer, hazard_and_exposure float, natural_0_to_10 float, earthquake float, river_flood float, tsunami float, tropical_cyclone float, coastal_flood float, drought float, epidemic float, human float, projected_conflict_probability float, current_conflict_intensity float, vulnerability float, socio_economic_vulnerability float, development_and_deprivation float, inequality float, economic_dependency float, vulnerable_groups float, uprooted_people float, health_conditions float, children_u5 float, recent_shocks float, food_security float, other_vulnerable_groups float, lack_of_coping_capacity float, institutional float, drr float, governance float, infrastructure float, communication float, physical_infrastructure float, access_to_health_care float, number_of_missing_indicators integer, missing_indicators_pct integer, countries_in_hvc integer, recentness_data_average_years float);'
+	cat static_data/inform_risk_index/inform_risk_2025_v069.csv | psql -c "copy inform_risk_profile_2025_in from stdin with csv header;"
+	psql -c 'drop table if exists inform_risk_profile_2025;'
+	psql -c 'create table inform_risk_profile_2025 as (select country, hasc, inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care from inform_risk_profile_2025_in);'	
+	touch $@
+
+db/table/inform_risk_profile_2025_h3: db/table/inform_risk_profile_2025 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviews of Human Development Index (HDI)
+	psql -c "call transform_hasc_to_h3('inform_risk_profile_2025', 'inform_risk_profile_2025_h3', 'hasc', '{inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care}'::text[], 8);"
+	psql -c "call generate_overviews('inform_risk_profile_2025_h3', '{inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care}'::text[], '{max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,min,min,min,min,min,min,min}'::text[], 8);"
+	touch $@
+
+### END Inform Risk Index
+
+### N5 Wildfire sensors placement block
+db/function/st_weightedcentroids: | db/function ## Converts text into a float or a NULL.
+	psql -f functions/st_weightedcentroids.sql
+	touch $@
+
+db/table/sevier_county_poles_without_osm: | db/table ## Load data about Sevier County poles
+	psql -c "drop table if exists sevier_county_poles_without_osm;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/sevier_county_poles_without_osm.gpkg -t_srs EPSG:4326 -nln sevier_county_poles_without_osm -lco GEOMETRY_NAME=geom
+	touch $@
+
+db/table/areas_of_concern: | db/table ## Load areas_of_concern data
+	psql -c "drop table if exists areas_of_concern;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/areas_of_concern.gpkg -t_srs EPSG:4326 -nln areas_of_concern -lco GEOMETRY_NAME=geom
+	touch $@
+
+db/table/gatlinburg: | db/table ## Load gatlinburg data
+	psql -c "drop table if exists gatlinburg;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/gatlinburg.gpkg -t_srs EPSG:4326 -nln gatlinburg -lco GEOMETRY_NAME=geom
+	touch $@
+
+db/table/gatlinburg_historical_fires_h3_r10: | db/table ## Load historical_fires data
+	psql -c "drop table if exists historical_fires;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/historical_fires.gpkg -t_srs EPSG:4326 -nln gatlinburg_historical_fires -lco GEOMETRY_NAME=geom
+	psql -f tables/count_items_in_h3_10r.sql -v table=gatlinburg_historical_fires -v table_h3=gatlinburg_historical_fires_h3_r10 -v item_count=fires_count
+	touch $@	
+
+db/table/gatlinburg_poles: db/index/osm_tags_idx db/table/sevier_county_poles_without_osm | db/table ## Extract osm power poles and towers
+	psql -f tables/gatlinburg_poles.sql
+	touch $@
+
+db/procedures/poles_for_sensors_placement_v3: db/table/gatlinburg_poles db/table/gatlinburg_historical_fires_h3_r10 db/table/gatlinburg db/table/areas_of_concern db/table/kontur_population_h3 db/function/st_weightedcentroids | db/procedures ## select poles suitable for wildfire sensors placement (ruquires kontur_population on resolution 10) version 3 without new requirements about placement sensors between 1 and 2 miles
+	psql -f procedures/poles_for_sensors_placement_v3.sql
+	touch $@
+
+data/out/data/out/v3_output: db/table/poles_for_sensors_placement_v3 | data/out/wildfire_sensors_placement ## proposed locations for sensors placement
+	rm -f data/out/data/out/wildfire_sensors_placement.gpkg
+	ogr2ogr -f GPKG data/out/data/out/wildfire_sensors_placement.gpkg PG:'dbname=gis' -sql "select * from poles_for_sensors_placement where updated_cost > 0 order by rank" -lco "SPATIAL_INDEX=NO" -nln poles_for_sensors_placement
+	rm -f data/out/data/out/wildfire_sensors_placement_1_mile_buffer.gpkg
+	ogr2ogr -f GPKG data/out/data/out/wildfire_sensors_placement_1_mile_buffer.gpkg PG:'dbname=gis' -sql "select * from wildfire_sensors_placement_1_mile_buffer order by rank" -lco "SPATIAL_INDEX=NO" -nln wildfire_sensors_placement_1_mile_buffer
+	rm -f data/out/data/out/uncovered_areas.gpkg
+	ogr2ogr -f GPKG data/out/data/out/uncovered_areas.gpkg PG:'dbname=gis' -sql "select h3, cost, updated_cost, geom from gatlinburg_stat_h3_r10 where updated_cost > 0 order by h3" -lco "SPATIAL_INDEX=NO" -nln uncovered_areas
+	touch $@
+
+db/procedures/poles_for_sensors_placement_v4: db/procedures/poles_for_sensors_placement_v3 db/function/st_weightedcentroids | db/procedures ## V4 create 2 scenarios for wildfire sensors placement (ruquires kontur_population on resolution 10) version 4 with new requirements about placement sensors between 1 and 2 miles
+	psql -f procedures/poles_for_sensors_placement_v4.sql
+	touch $@
+
+data/out/data/out/v4_output: db/table/poles_for_sensors_placement_v3 | data/out/wildfire_sensors_placement ## proposed locations for sensors placement 1 mile buffers
+	rm -f proposed_points_v4_2_scenario_output.gpkg
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_2_scenario_output order by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_2_scenario_output
+	rm -f proposed_points_v4_buffer_1_mile_2_clusters.gpkg
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_v4_buffer_1_mile_2_clusters by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_buffer_1_mile_2_clusters
+	rm -f proposed_points_v4_1_scenario_output.gpkg
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_1_scenario_output order by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_1_scenario_output
+	rm -f proposed_points_v4_buffer_1_mile_1_clusters.gpkg
+	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_v4_buffer_1_mile_1_clusters order by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_buffer_1_mile_1_clusters
+	touch @$
+
+data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement: data/out/data/out/v3_output data/out/data/out/v4_output db/procedures/poles_for_sensors_placement_v4 ## final target
+	touch $@
+
+### Deploy through API
+
+data/out/csv/view_count.csv: db/table/tile_logs | data/out/csv ## extract view_count to csv file 
+	psql -q -X -c "copy (select h3, view_count from tile_logs_h3 where h3 is not null and view_count is not null and view_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/view_count.csv
+
+data/out/csv/count.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count to csv file 
+	psql -q -X -c "copy (select h3, count from osm_object_count_grid_h3 where h3 is not null and count is not null and count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/count.csv
+
+data/out/csv/populated_area_km2.csv: db/table/kontur_population_h3 | data/out/csv ## extract populated_area_km2 to csv file 
+	psql -q -X -c "copy (select h3, populated_area / 1000000.0 as populated_area_km2 from kontur_population_h3 where h3 is not null and populated_area is not null and populated_area > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/populated_area_km2.csv
+
+data/out/csv/building_count.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract building_count to csv file 
+	psql -q -X -c "copy (select h3, building_count from osm_object_count_grid_h3 where h3 is not null and building_count is not null and building_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/building_count.csv
+
+data/out/csv/highway_length.csv: db/table/osm_road_segments_h3 | data/out/csv ## extract highway_length to csv file 
+	psql -q -X -c "copy (select h3, highway_length from osm_road_segments_h3 where h3 is not null and highway_length is not null and highway_length > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/highway_length.csv
+
+data/out/csv/total_road_length.csv: db/table/total_road_length_h3 | data/out/csv ## extract total_road_length to csv file 
+	psql -q -X -c "copy (select h3, total_road_length from total_road_length_h3 where h3 is not null and total_road_length is not null and total_road_length > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/total_road_length.csv
+
+data/out/csv/local_hours.csv: db/table/user_hours_h3 | data/out/csv ## extract local_hours to csv file 
+	psql -q -X -c "copy (select h3, local_hours from user_hours_h3 where h3 is not null and local_hours is not null and local_hours > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/local_hours.csv
+
+data/out/csv/total_hours.csv: db/table/user_hours_h3 | data/out/csv ## extract total_hours to csv file 
+	psql -q -X -c "copy (select h3, total_hours from user_hours_h3 where h3 is not null and total_hours is not null and total_hours > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/total_hours.csv
+
+data/out/csv/avgmax_ts.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract avgmax_ts to csv file 
+	psql -q -X -c "copy (select h3, avgmax_ts from osm_object_count_grid_h3 where h3 is not null and avgmax_ts is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/avgmax_ts.csv
+
+data/out/csv/man_distance_to_fire_brigade.csv: db/table/isodist_fire_stations_h3 | data/out/csv ## extract man_distance_to_fire_brigade to csv file 
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_fire_brigade from isodist_fire_stations_h3 where h3 is not null and man_distance is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_fire_brigade.csv
+
+data/out/csv/view_count_bf2402.csv: db/table/tile_logs_bf2402 | data/out/csv ## extract view_count_bf2402 to csv file 
+	psql -q -X -c "copy (select h3, view_count_bf2402 from tile_logs_bf2402_h3 where h3 is not null and view_count_bf2402 is not null and view_count_bf2402 > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/view_count_bf2402.csv
+
+data/out/csv/days_mintemp_above_25c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_mintemp_above_25c_1c to csv file 
+	psql -q -X -c "copy (select h3, days_mintemp_above_25c_1c from pf_maxtemp_h3 where h3 is not null and days_mintemp_above_25c_1c is not null and days_mintemp_above_25c_1c > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/days_mintemp_above_25c_1c.csv
+
+data/out/csv/total_building_count.csv: db/table/building_count_grid_h3 | data/out/csv ## extract total_building_count to csv file 
+	psql -q -X -c "copy (select h3, building_count as total_building_count from building_count_grid_h3 where h3 is not null and building_count is not null and building_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/total_building_count.csv
+
+data/out/csv/count_6_months.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count_6_months to csv file 
+	psql -q -X -c "copy (select h3, count_6_months from osm_object_count_grid_h3 where h3 is not null and count_6_months is not null and count_6_months > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/count_6_months.csv
+
+data/out/csv/building_count_6_months.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract building_count_6_months to csv file 
+	psql -q -X -c "copy (select h3, building_count_6_months from osm_object_count_grid_h3 where h3 is not null and building_count_6_months is not null and building_count_6_months > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/building_count_6_months.csv
+
+data/out/csv/highway_length_6_months.csv: db/table/osm_road_segments_6_months_h3 | data/out/csv ## extract highway_length_6_months to csv file 
+	psql -q -X -c "copy (select h3, highway_length_6_months from osm_road_segments_6_months_h3 where h3 is not null and highway_length_6_months is not null and highway_length_6_months > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/highway_length_6_months.csv
+
+data/out/csv/osm_users.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract osm_users to csv file 
+	psql -q -X -c "copy (select h3, osm_users from osm_object_count_grid_h3 where h3 is not null and osm_users is not null and osm_users > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/osm_users.csv
+
+data/out/csv/residential.csv: db/table/residential_pop_h3 | data/out/csv ## extract residential to csv file 
+	psql -q -X -c "copy (select h3, residential from residential_pop_h3 where h3 is not null and residential is not null and residential > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/residential.csv
+
+data/out/csv/gdp.csv: db/table/gdp_h3 | data/out/csv ## extract gdp to csv file 
+	psql -q -X -c "copy (select h3, gdp from gdp_h3 where h3 is not null and gdp is not null and gdp > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/gdp.csv
+
+data/out/csv/min_ts.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract min_ts to csv file 
+	psql -q -X -c "copy (select h3, min_ts from osm_object_count_grid_h3 where h3 is not null and min_ts is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/min_ts.csv
+
+data/out/csv/max_ts.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract max_ts to csv file 
+	psql -q -X -c "copy (select h3, max_ts from osm_object_count_grid_h3 where h3 is not null and max_ts is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/max_ts.csv
+
+data/out/csv/wildfires.csv: db/table/global_fires_stat_h3 | data/out/csv ## extract wildfires to csv file 
+	psql -q -X -c "copy (select h3, wildfires from global_fires_stat_h3 where h3 is not null and wildfires is not null and wildfires > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/wildfires.csv
+
+data/out/csv/covid19_confirmed.csv: db/table/covid19_h3 | data/out/csv ## extract covid19_confirmed to csv file 
+	psql -q -X -c "copy (select h3, confirmed as covid19_confirmed from covid19_h3 where h3 is not null and confirmed is not null and confirmed > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/covid19_confirmed.csv
+
+data/out/csv/population_prev.csv: db/table/kontur_population_v5_h3 | data/out/csv ## extract population_prev to csv file 
+	psql -q -X -c "copy (select h3, population as population_prev from kontur_population_v5_h3 where h3 is not null and population is not null and population > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/population_prev.csv
+
+data/out/csv/industrial_area.csv: db/table/osm_landuse_industrial_h3 | data/out/csv ## extract industrial_area to csv file 
+	psql -q -X -c "copy (select h3, industrial_area from osm_landuse_industrial_h3 where h3 is not null and industrial_area is not null and industrial_area > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/industrial_area.csv
+
+data/out/csv/volcanos_count.csv: db/table/osm_volcanos_h3 | data/out/csv ## extract volcanos_count to csv file 
+	psql -q -X -c "copy (select h3, volcanos_count from osm_volcanos_h3 where h3 is not null and volcanos_count is not null and volcanos_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/volcanos_count.csv
+
+data/out/csv/pop_under_5_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_under_5_total to csv file 
+	psql -q -X -c "copy (select h3, pop_under_5_total from us_census_tracts_stats_h3 where h3 is not null and pop_under_5_total is not null and pop_under_5_total > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/pop_under_5_total.csv
+
+data/out/csv/pop_over_65_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_over_65_total to csv file 
+	psql -q -X -c "copy (select h3, pop_over_65_total from us_census_tracts_stats_h3 where h3 is not null and pop_over_65_total is not null and pop_over_65_total > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/pop_over_65_total.csv
+
+data/out/csv/poverty_families_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract poverty_families_total to csv file 
+	psql -q -X -c "copy (select h3, poverty_families_total from us_census_tracts_stats_h3 where h3 is not null and poverty_families_total is not null and poverty_families_total > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/poverty_families_total.csv
+
+data/out/csv/pop_disability_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_disability_total to csv file 
+	psql -q -X -c "copy (select h3, pop_disability_total from us_census_tracts_stats_h3 where h3 is not null and pop_disability_total is not null and pop_disability_total > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/pop_disability_total.csv
+
+data/out/csv/pop_not_well_eng_speak.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_not_well_eng_speak to csv file 
+	psql -q -X -c "copy (select h3, pop_not_well_eng_speak from us_census_tracts_stats_h3 where h3 is not null and pop_not_well_eng_speak is not null and pop_not_well_eng_speak > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/pop_not_well_eng_speak.csv
+
+data/out/csv/pop_without_car.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_without_car to csv file 
+	psql -q -X -c "copy (select h3, pop_without_car from us_census_tracts_stats_h3 where h3 is not null and pop_without_car is not null and pop_without_car > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/pop_without_car.csv
+
+data/out/csv/man_distance_to_hospital.csv: db/table/isodist_hospitals_h3 | data/out/csv ## extract man_distance_to_hospital to csv file 
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_hospital from isodist_hospitals_h3 where h3 is not null and man_distance is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_hospital.csv
+
+data/out/csv/man_distance_to_bomb_shelters.csv: db/table/isodist_bomb_shelters_h3 | data/out/csv ## extract man_distance_to_bomb_shelters to csv file 
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_bomb_shelters from isodist_bomb_shelters_h3 where h3 is not null and man_distance is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_bomb_shelters.csv
+
+data/out/csv/man_distance_to_charging_stations.csv: db/table/isodist_charging_stations_h3 | data/out/csv ## extract man_distance_to_charging_stations to csv file 
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_charging_stations from isodist_charging_stations_h3 where h3 is not null and man_distance is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_charging_stations.csv
+
+data/out/csv/foursquare_places_count.csv: db/table/foursquare_places_h3 | data/out/csv ## extract foursquare_places_count to csv file 
+	psql -q -X -c "copy (select h3, foursquare_places_count from foursquare_places_h3 where h3 is not null and foursquare_places_count is not null and foursquare_places_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/foursquare_places_count.csv
+
+data/out/csv/foursquare_visits_count.csv: db/table/foursquare_visits_h3 | data/out/csv ## extract foursquare_visits_count to csv file 
+	psql -q -X -c "copy (select h3, foursquare_visits_count from foursquare_visits_h3 where h3 is not null and foursquare_visits_count is not null and foursquare_visits_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/foursquare_visits_count.csv
+
+data/out/csv/eatery_count.csv: db/table/osm_places_eatery_h3 | data/out/csv ## extract eatery_count to csv file 
+	psql -q -X -c "copy (select h3, eatery_count from osm_places_eatery_h3 where h3 is not null and eatery_count is not null and eatery_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/eatery_count.csv
+
+data/out/csv/food_shops_count.csv: db/table/osm_places_food_shops_h3 | data/out/csv ## extract food_shops_count to csv file 
+	psql -q -X -c "copy (select h3, food_shops_count from osm_places_food_shops_h3 where h3 is not null and food_shops_count is not null and food_shops_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/food_shops_count.csv
+
+data/out/csv/waste_basket_coverage_area_km2.csv: db/table/waste_containers_h3 | data/out/csv ## extract waste_basket_coverage_area_km2 to csv file 
+	psql -q -X -c "copy (select h3, (ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0) * waste_basket_coverage / (49.0 * POWER(7, 8 - resolution)) as waste_basket_coverage_area_km2 from waste_containers_h3 where h3 is not null and waste_basket_coverage is not null and waste_basket_coverage > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/waste_basket_coverage_area_km2.csv
+
+data/out/csv/solar_farms_placement_suitability.csv: db/table/solar_farms_placement_suitability_synthetic_h3 | data/out/csv ## extract solar_farms_placement_suitability to csv file 
+	psql -q -X -c "copy (select h3, solar_farms_placement_suitability from solar_farms_placement_suitability_synthetic_h3 where h3 is not null and solar_farms_placement_suitability is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/solar_farms_placement_suitability.csv
+
+data/out/csv/mapswipe_area_km2.csv: db/table/mapswipe_hot_tasking_data_h3 | data/out/csv ## extract mapswipe_area_km2 to csv file 
+	psql -q -X -c "copy (select h3, mapswipe_area as mapswipe_area_km2 from mapswipe_hot_tasking_data_h3 where h3 is not null and mapswipe_area is not null and mapswipe_area > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/mapswipe_area_km2.csv
+
+data/out/csv/avg_slope_gebco_2022.csv: db/table/gebco_2022_h3 | data/out/csv ## extract avg_slope_gebco_2022 to csv file 
+	psql -q -X -c "copy (select h3, avg_slope_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_slope_gebco_2022 is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_slope_gebco_2022.csv
+
+data/out/csv/avg_elevation_gebco_2022.csv: db/table/gebco_2022_h3 | data/out/csv ## extract avg_elevation_gebco_2022 to csv file 
+	psql -q -X -c "copy (select h3, avg_elevation_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_elevation_gebco_2022 is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_elevation_gebco_2022.csv
+
+data/out/csv/forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract forest to csv file 
+	psql -q -X -c "copy (select h3, forest_area as forest from copernicus_landcover_h3 where h3 is not null and forest_area is not null and forest_area > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/forest.csv
+
+data/out/csv/evergreen_needle_leaved_forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract evergreen_needle_leaved_forest to csv file 
+	psql -q -X -c "copy (select h3, evergreen_needle_leaved_forest from copernicus_landcover_h3 where h3 is not null and evergreen_needle_leaved_forest is not null and evergreen_needle_leaved_forest > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/evergreen_needle_leaved_forest.csv
+
+data/out/csv/shrubs.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract shrubs to csv file 
+	psql -q -X -c "copy (select h3, shrubs from copernicus_landcover_h3 where h3 is not null and shrubs is not null and shrubs > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/shrubs.csv
+
+data/out/csv/herbage.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract herbage to csv file 
+	psql -q -X -c "copy (select h3, herbage from copernicus_landcover_h3 where h3 is not null and herbage is not null and herbage > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/herbage.csv
+
+data/out/csv/unknown_forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract unknown_forest to csv file 
+	psql -q -X -c "copy (select h3, unknown_forest from copernicus_landcover_h3 where h3 is not null and unknown_forest is not null and unknown_forest > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/unknown_forest.csv
+
+data/out/csv/cropland.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract cropland to csv file 
+	psql -q -X -c "copy (select h3, cropland from copernicus_landcover_h3 where h3 is not null and cropland is not null and cropland > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/wetland.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract wetland to csv file 
+	psql -q -X -c "copy (select h3, wetland from copernicus_landcover_h3 where h3 is not null and wetland is not null and wetland > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/moss_lichen.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract moss_lichen to csv file 
+	psql -q -X -c "copy (select h3, moss_lichen from copernicus_landcover_h3 where h3 is not null and moss_lichen is not null and moss_lichen > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/bare_vegetation.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract bare_vegetation to csv file 
+	psql -q -X -c "copy (select h3, bare_vegetation from copernicus_landcover_h3 where h3 is not null and bare_vegetation is not null and bare_vegetation > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/builtup.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract builtup to csv file 
+	psql -q -X -c "copy (select h3, builtup from copernicus_landcover_h3 where h3 is not null and builtup is not null and builtup > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/snow_ice.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract snow_ice to csv file 
+	psql -q -X -c "copy (select h3, snow_ice from copernicus_landcover_h3 where h3 is not null and snow_ice is not null and snow_ice > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/permanent_water.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract permanent_water to csv file 
+	psql -q -X -c "copy (select h3, permanent_water from copernicus_landcover_h3 where h3 is not null and permanent_water is not null and permanent_water > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/avg_ndvi.csv: db/table/ndvi_2019_06_10_h3 | data/out/csv ## extract avg_ndvi to csv file 
+	psql -q -X -c "copy (select h3, avg_ndvi from ndvi_2019_06_10_h3 where h3 is not null and avg_ndvi is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_ndvi.csv
+
+data/out/csv/days_maxtemp_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxtemp_over_32c_1c to csv file 
+	psql -q -X -c "copy (select h3, days_maxtemp_over_32c_1c from pf_maxtemp_h3 where h3 is not null and days_maxtemp_over_32c_1c is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/days_maxtemp_over_32c_1c.csv
+
+data/out/csv/days_maxtemp_over_32c_2c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxtemp_over_32c_2c to csv file 
+	psql -q -X -c "copy (select h3, days_maxtemp_over_32c_2c from pf_maxtemp_h3 where h3 is not null and days_maxtemp_over_32c_2c is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/days_maxtemp_over_32c_2c.csv
+
+data/out/csv/days_mintemp_above_25c_2c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_mintemp_above_25c_2c to csv file 
+	psql -q -X -c "copy (select h3, days_mintemp_above_25c_2c from pf_maxtemp_h3 where h3 is not null and days_mintemp_above_25c_2c is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/days_mintemp_above_25c_2c.csv
+
+data/out/csv/days_maxwetbulb_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxwetbulb_over_32c_1c to csv file 
+	psql -q -X -c "copy (select h3, days_maxwetbulb_over_32c_1c from pf_maxtemp_h3 where h3 is not null and days_maxwetbulb_over_32c_1c is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/days_maxwetbulb_over_32c_1c.csv
+
+data/out/csv/days_maxwetbulb_over_32c_2c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxwetbulb_over_32c_2c to csv file 
+	psql -q -X -c "copy (select h3, days_maxwetbulb_over_32c_2c from pf_maxtemp_h3 where h3 is not null and days_maxwetbulb_over_32c_2c is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/days_maxwetbulb_over_32c_2c.csv
+
+data/out/csv/mandays_maxtemp_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract mandays_maxtemp_over_32c_1c to csv file 
+	psql -q -X -c "copy (select h3, mandays_maxtemp_over_32c_1c from pf_maxtemp_h3 where h3 is not null and mandays_maxtemp_over_32c_1c is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/mandays_maxtemp_over_32c_1c.csv
+
+data/out/csv/hazardous_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract hazardous_days_count to csv file 
+	psql -q -X -c "copy (select h3, hazardous_days_count from disaster_event_episodes_h3 where h3 is not null and hazardous_days_count is not null and hazardous_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/hazardous_days_count.csv
+
+data/out/csv/earthquake_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract earthquake_days_count to csv file 
+	psql -q -X -c "copy (select h3, earthquake_days_count from disaster_event_episodes_h3 where h3 is not null and earthquake_days_count is not null and earthquake_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/earthquake_days_count.csv
+
+data/out/csv/wildfire_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract wildfire_days_count to csv file 
+	psql -q -X -c "copy (select h3, wildfire_days_count from disaster_event_episodes_h3 where h3 is not null and wildfire_days_count is not null and wildfire_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/wildfire_days_count.csv
+
+data/out/csv/drought_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract drought_days_count to csv file 
+	psql -q -X -c "copy (select h3, drought_days_count from disaster_event_episodes_h3 where h3 is not null and drought_days_count is not null and drought_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/drought_days_count.csv
+
+data/out/csv/cyclone_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract cyclone_days_count to csv file 
+	psql -q -X -c "copy (select h3, cyclone_days_count from disaster_event_episodes_h3 where h3 is not null and cyclone_days_count is not null and cyclone_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/cyclone_days_count.csv
+
+data/out/csv/volcano_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract volcano_days_count to csv file 
+	psql -q -X -c "copy (select h3, volcano_days_count from disaster_event_episodes_h3 where h3 is not null and volcano_days_count is not null and volcano_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/volcano_days_count.csv
+
+data/out/csv/flood_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract flood_days_count to csv file 
+	psql -q -X -c "copy (select h3, flood_days_count from disaster_event_episodes_h3 where h3 is not null and flood_days_count is not null and flood_days_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/flood_days_count.csv
+
+data/out/csv/powerlines.csv: db/table/facebook_medium_voltage_distribution_h3 | data/out/csv ## extract powerlines to csv file 
+	psql -q -X -c "copy (select h3, powerlines from facebook_medium_voltage_distribution_h3 where h3 is not null and powerlines is not null and powerlines > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/powerlines.csv
+
+data/out/csv/night_lights_intensity.csv: db/table/night_lights_h3 | data/out/csv ## extract night_lights_intensity to csv file 
+	psql -q -X -c "copy (select h3, intensity as night_lights_intensity from night_lights_h3 where h3 is not null and intensity is not null and intensity > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/night_lights_intensity.csv
+
+data/out/csv/gsa_ghi.csv: db/table/global_solar_atlas_h3 | data/out/csv ## extract gsa_ghi to csv file 
+	psql -q -X -c "copy (select h3, gsa_ghi from global_solar_atlas_h3 where h3 is not null and gsa_ghi is not null and gsa_ghi > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/gsa_ghi.csv
+
+data/out/csv/worldclim_avg_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_avg_temperature to csv file 
+	psql -q -X -c "copy (select h3, worldclim_avg_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_avg_temperature is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_avg_temperature.csv
+
+data/out/csv/worldclim_min_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_min_temperature to csv file 
+	psql -q -X -c "copy (select h3, worldclim_min_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_min_temperature is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_min_temperature.csv
+
+data/out/csv/worldclim_max_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_max_temperature to csv file 
+	psql -q -X -c "copy (select h3, worldclim_max_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_max_temperature is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_max_temperature.csv
+
+data/out/csv/worldclim_amp_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_amp_temperature to csv file 
+	psql -q -X -c "copy (select h3, worldclim_amp_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_amp_temperature is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_amp_temperature.csv
+
+data/out/csv/powerlines_proximity_m.csv: db/table/proximities_h3 | data/out/csv ## extract powerlines_proximity_m to csv file 
+	psql -q -X -c "copy (select h3, powerlines_proximity_m from proximities_h3 where h3 is not null and powerlines_proximity_m is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/powerlines_proximity_m.csv
+
+data/out/csv/populated_areas_proximity_m.csv: db/table/proximities_h3 | data/out/csv ## extract populated_areas_proximity_m to csv file 
+	psql -q -X -c "copy (select h3, populated_areas_proximity_m from proximities_h3 where h3 is not null and populated_areas_proximity_m is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/populated_areas_proximity_m.csv
+
+data/out/csv/power_substations_proximity_m.csv: db/table/proximities_h3 | data/out/csv ## extract power_substations_proximity_m to csv file 
+	psql -q -X -c "copy (select h3, power_substations_proximity_m from proximities_h3 where h3 is not null and power_substations_proximity_m is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/power_substations_proximity_m.csv
+
+data/out/csv/solar_power_plants.csv: db/table/existing_solar_power_panels_h3 | data/out/csv ## extract solar_power_plants to csv file 
+	psql -q -X -c "copy (select h3, solar_power_plants from existing_solar_power_panels_h3 where h3 is not null and solar_power_plants is not null and solar_power_plants > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/solar_power_plants.csv
+
+data/out/csv/safety_index.csv: db/table/safety_index_h3 | data/out/csv ## extract safety_index to csv file 
+	psql -q -X -c "copy (select h3, safety_index from safety_index_h3 where h3 is not null and safety_index is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/safety_index.csv
+
+data/out/csv/population.csv: db/table/kontur_population_h3 | data/out/csv ## extract population to csv file 
+	psql -q -X -c "copy (select h3, population from kontur_population_h3 where h3 is not null and population is not null and population > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/population.csv
+
+data/out/csv/avg_forest_canopy_height.csv: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract avg_forest_canopy_height to csv file 
+	psql -q -X -c "copy (select h3, avg_forest_canopy_height as avg_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and avg_forest_canopy_height is not null and avg_forest_canopy_height > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/max_forest_canopy_height.csv: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract max_forest_canopy_height to csv file 
+	psql -q -X -c "copy (select h3, max_forest_canopy_height as max_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and max_forest_canopy_height is not null and max_forest_canopy_height > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/worldbank_tax_rate.csv: db/table/worldbank_tax_rate_h3 | data/out/csv ## extract worldbank_tax_rate to csv file 
+	psql -q -X -c "copy (select h3, t2019 as worldbank_total_tax_2019 from worldbank_tax_rate_h3 where h3 is not null and t2019 is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/years_to_naturalisation.csv: db/table/wikidata_naturalization_gap_h3 | data/out/csv ## extract years_to_naturalisation to csv file 
+	psql -q -X -c "copy (select h3, years_to_naturalisation from wikidata_naturalization_gap_h3 where h3 is not null and years_to_naturalisation is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/multiple_citizenship.csv: db/table/wikidata_naturalization_gap_h3 | data/out/csv ## extract multiple_citizenship to csv file 
+	psql -q -X -c "copy (select h3, multiple_citizenship from wikidata_naturalization_gap_h3 where h3 is not null and multiple_citizenship is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/ghs_max_building_height.csv: db/table/ghs_building_height_grid_h3 | data/out/csv ## extract ghs_max_building_height to csv file 
+	psql -q -X -c "copy (select h3, max_height as ghs_max_building_height from ghs_building_height_grid_h3 where h3 is not null and max_height is not null and max_height > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/ghs_avg_building_height.csv: db/table/ghs_building_height_grid_h3 | data/out/csv ## extract ghs_avg_building_height to csv file 
+	psql -q -X -c "copy (select h3, avg_height as ghs_avg_building_height from ghs_building_height_grid_h3 where h3 is not null and avg_height is not null and avg_height > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/max_osm_building_levels.csv: db/table/osm_building_levels_h3 | data/out/csv ## extract max_osm_building_levels to csv file 
+	psql -q -X -c "copy (select h3, max_levels as max_osm_building_levels from osm_building_levels_h3 where h3 is not null and max_levels is not null and max_levels > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/avg_osm_building_levels.csv: db/table/osm_building_levels_h3 | data/out/csv ## extract avg_osm_building_levels to csv file 
+	psql -q -X -c "copy (select h3, avg_levels as avg_osm_building_levels from osm_building_levels_h3 where h3 is not null and avg_levels is not null and avg_levels > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_hotels_count.csv: db/table/osm_hotels_h3 | data/out/csv ## extract osm_hotels_count to csv file 
+	psql -q -X -c "copy (select h3, osm_hotels_count from osm_hotels_h3 where h3 is not null and osm_hotels_count is not null and osm_hotels_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/max_osm_hotels_assesment.csv: db/table/osm_hotels_h3 | data/out/csv ## extract max_osm_hotels_assesment to csv file 
+	psql -q -X -c "copy (select h3, max_osm_hotels_assesment from osm_hotels_h3 where h3 is not null and max_osm_hotels_assesment is not null and max_osm_hotels_assesment > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/avg_osm_hotels_assesment.csv: db/table/osm_hotels_h3 | data/out/csv ## extract avg_osm_hotels_assesment to csv file 
+	psql -q -X -c "copy (select h3, avg_osm_hotels_assesment from osm_hotels_h3 where h3 is not null and avg_osm_hotels_assesment is not null and avg_osm_hotels_assesment > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_historical_sites_and_museums_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_historical_sites_and_museums_count to csv file 
+	psql -q -X -c "copy (select h3, osm_historical_sites_and_museums_count from osm_culture_venues_h3 where h3 is not null and osm_historical_sites_and_museums_count is not null and osm_historical_sites_and_museums_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_art_venues_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_art_venues_count to csv file 
+	psql -q -X -c "copy (select h3, osm_art_venues_count from osm_culture_venues_h3 where h3 is not null and osm_art_venues_count is not null and osm_art_venues_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_entertainment_venues_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_entertainment_venues_count to csv file 
+	psql -q -X -c "copy (select h3, osm_entertainment_venues_count from osm_culture_venues_h3 where h3 is not null and osm_entertainment_venues_count is not null and osm_entertainment_venues_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_cultural_and_comunity_centers_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_cultural_and_comunity_centers_count to csv file 
+	psql -q -X -c "copy (select h3, osm_cultural_and_comunity_centers_count from osm_culture_venues_h3 where h3 is not null and osm_cultural_and_comunity_centers_count is not null and osm_cultural_and_comunity_centers_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/worldbank_inflation.csv: db/table/worldbank_inflation_h3 | data/out/csv ## extract worldbank_inflation to csv file 
+	psql -q -X -c "copy (select h3, inflation as worldbank_inflation from worldbank_inflation_h3 where h3 is not null and inflation is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_pharmacy_count.csv: db/table/osm_pharmacy_h3 | data/out/csv ## extract osm_pharmacy_count to csv file 
+	psql -q -X -c "copy (select h3, osm_pharmacy_count from osm_pharmacy_h3 where h3 is not null and osm_pharmacy_count is not null and osm_pharmacy_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/conflict_stock_displacement.csv: db/table/idmc_country_2023_h3 | data/out/csv ## extract conflict_stock_displacement to csv file
+	psql -q -X -c "copy (select h3, conflict_stock_displacement from idmc_country_2023_h3 where h3 is not null and conflict_stock_displacement is not null and conflict_stock_displacement > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/disaster_stock_displacement.csv: db/table/idmc_country_2023_h3 | data/out/csv ## extract disaster_stock_displacement to csv file
+	psql -q -X -c "copy (select h3, disaster_stock_displacement from idmc_country_2023_h3 where h3 is not null and disaster_stock_displacement is not null and disaster_stock_displacement > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/conflict_internal_displacements.csv: db/table/idmc_country_2023_h3 | data/out/csv ## extract conflict_internal_displacements to csv file
+	psql -q -X -c "copy (select h3, conflict_internal_displacements from idmc_country_2023_h3 where h3 is not null and conflict_internal_displacements is not null and conflict_internal_displacements > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/disaster_internal_displacements.csv: db/table/idmc_country_2023_h3 | data/out/csv ## extract disaster_internal_displacements to csv file
+	psql -q -X -c "copy (select h3, disaster_internal_displacements from idmc_country_2023_h3 where h3 is not null and disaster_internal_displacements is not null and disaster_internal_displacements > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/hdi_2022.csv: db/table/humanitarian_dev_index_2022_h3 | data/out/csv ## extract hdi_2022 to csv file 
+	psql -q -X -c "copy (select h3, hdi_2022 from humanitarian_dev_index_2022_h3 where h3 is not null and hdi_2022 is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/inform_risk.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract inform_risk to csv file
+	psql -q -X -c "copy (select h3, inform_risk from inform_risk_profile_2025_h3 where h3 is not null and inform_risk is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/hazard_and_exposure.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract hazard_and_exposure to csv file
+	psql -q -X -c "copy (select h3, hazard_and_exposure from inform_risk_profile_2025_h3 where h3 is not null and hazard_and_exposure is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/natural_0_to_10.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract natural_0_to_10 to csv file
+	psql -q -X -c "copy (select h3, natural_0_to_10 from inform_risk_profile_2025_h3 where h3 is not null and natural_0_to_10 is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/earthquake.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract earthquake to csv file
+	psql -q -X -c "copy (select h3, earthquake from inform_risk_profile_2025_h3 where h3 is not null and earthquake is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/river_flood.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract river_flood to csv file
+	psql -q -X -c "copy (select h3, river_flood from inform_risk_profile_2025_h3 where h3 is not null and river_flood is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/tsunami.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract tsunami to csv file
+	psql -q -X -c "copy (select h3, tsunami from inform_risk_profile_2025_h3 where h3 is not null and tsunami is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/tropical_cyclone.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract tropical_cyclone to csv file
+	psql -q -X -c "copy (select h3, tropical_cyclone from inform_risk_profile_2025_h3 where h3 is not null and tropical_cyclone is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/coastal_flood.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract coastal_flood to csv file
+	psql -q -X -c "copy (select h3, coastal_flood from inform_risk_profile_2025_h3 where h3 is not null and coastal_flood is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/drought.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract drought to csv file
+	psql -q -X -c "copy (select h3, drought from inform_risk_profile_2025_h3 where h3 is not null and drought is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/epidemic.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract epidemic to csv file
+	psql -q -X -c "copy (select h3, epidemic from inform_risk_profile_2025_h3 where h3 is not null and epidemic is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/human.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract human to csv file
+	psql -q -X -c "copy (select h3, human from inform_risk_profile_2025_h3 where h3 is not null and human is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/projected_conflict_probability.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract projected_conflict_probability to csv file
+	psql -q -X -c "copy (select h3, projected_conflict_probability from inform_risk_profile_2025_h3 where h3 is not null and projected_conflict_probability is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/current_conflict_intensity.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract current_conflict_intensity to csv file
+	psql -q -X -c "copy (select h3, current_conflict_intensity from inform_risk_profile_2025_h3 where h3 is not null and current_conflict_intensity is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/vulnerability.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract vulnerability to csv file
+	psql -q -X -c "copy (select h3, vulnerability from inform_risk_profile_2025_h3 where h3 is not null and vulnerability is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/socio_economic_vulnerability.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract socio_economic_vulnerability to csv file
+	psql -q -X -c "copy (select h3, socio_economic_vulnerability from inform_risk_profile_2025_h3 where h3 is not null and socio_economic_vulnerability is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/development_and_deprivation.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract development_and_deprivation to csv file
+	psql -q -X -c "copy (select h3, development_and_deprivation from inform_risk_profile_2025_h3 where h3 is not null and development_and_deprivation is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/inequality.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract inequality to csv file
+	psql -q -X -c "copy (select h3, inequality from inform_risk_profile_2025_h3 where h3 is not null and inequality is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/economic_dependency.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract economic_dependency to csv file
+	psql -q -X -c "copy (select h3, economic_dependency from inform_risk_profile_2025_h3 where h3 is not null and economic_dependency is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/vulnerable_groups.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract vulnerable_groups to csv file
+	psql -q -X -c "copy (select h3, vulnerable_groups from inform_risk_profile_2025_h3 where h3 is not null and vulnerable_groups is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/uprooted_people.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract uprooted_people to csv file
+	psql -q -X -c "copy (select h3, uprooted_people from inform_risk_profile_2025_h3 where h3 is not null and uprooted_people is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/health_conditions.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract health_conditions to csv file
+	psql -q -X -c "copy (select h3, health_conditions from inform_risk_profile_2025_h3 where h3 is not null and health_conditions is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/children_u5.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract children_u5 to csv file
+	psql -q -X -c "copy (select h3, children_u5 from inform_risk_profile_2025_h3 where h3 is not null and children_u5 is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/recent_shocks.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract recent_shocks to csv file
+	psql -q -X -c "copy (select h3, recent_shocks from inform_risk_profile_2025_h3 where h3 is not null and recent_shocks is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/food_security.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract food_security to csv file
+	psql -q -X -c "copy (select h3, food_security from inform_risk_profile_2025_h3 where h3 is not null and food_security is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/other_vulnerable_groups.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract other_vulnerable_groups to csv file
+	psql -q -X -c "copy (select h3, other_vulnerable_groups from inform_risk_profile_2025_h3 where h3 is not null and other_vulnerable_groups is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/lack_of_coping_capacity.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract lack_of_coping_capacity to csv file
+	psql -q -X -c "copy (select h3, lack_of_coping_capacity from inform_risk_profile_2025_h3 where h3 is not null and lack_of_coping_capacity is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/institutional.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract institutional to csv file
+	psql -q -X -c "copy (select h3, institutional from inform_risk_profile_2025_h3 where h3 is not null and institutional is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/drr.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract drr to csv file
+	psql -q -X -c "copy (select h3, drr from inform_risk_profile_2025_h3 where h3 is not null and drr is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/governance.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract governance to csv file
+	psql -q -X -c "copy (select h3, governance from inform_risk_profile_2025_h3 where h3 is not null and governance is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/infrastructure.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract infrastructure to csv file
+	psql -q -X -c "copy (select h3, infrastructure from inform_risk_profile_2025_h3 where h3 is not null and infrastructure is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/communication.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract communication to csv file
+	psql -q -X -c "copy (select h3, communication from inform_risk_profile_2025_h3 where h3 is not null and communication is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/physical_infrastructure.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract physical_infrastructure to csv file
+	psql -q -X -c "copy (select h3, physical_infrastructure from inform_risk_profile_2025_h3 where h3 is not null and physical_infrastructure is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/access_to_health_care.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract access_to_health_care to csv file
+	psql -q -X -c "copy (select h3, access_to_health_care from inform_risk_profile_2025_h3 where h3 is not null and access_to_health_care is not null order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_banks_count.csv: db/table/osm_financial_venues_h3 | data/out/csv ## extract osm_banks_count to csv file
+	psql -q -X -c "copy (select h3, osm_banks_count from osm_financial_venues_h3 where h3 is not null and osm_banks_count is not null and osm_banks_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_atms_count.csv: db/table/osm_financial_venues_h3 | data/out/csv ## extract osm_atms_count to csv file
+	psql -q -X -c "copy (select h3, osm_atms_count from osm_financial_venues_h3 where h3 is not null and osm_atms_count is not null and osm_atms_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_kindergartens_count.csv: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_kindergartens_count to csv file
+	psql -q -X -c "copy (select h3, osm_kindergartens_count from osm_education_venues_h3 where h3 is not null and osm_kindergartens_count is not null and osm_kindergartens_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_schools_count.csv: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_kindergartens_count to csv file
+	psql -q -X -c "copy (select h3, osm_schools_count from osm_education_venues_h3 where h3 is not null and osm_schools_count is not null and osm_schools_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_colleges_count.csv: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_colleges_count to csv file
+	psql -q -X -c "copy (select h3, osm_colleges_count from osm_education_venues_h3 where h3 is not null and osm_colleges_count is not null and osm_colleges_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_universities_count.csv: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_universities_count to csv file
+	psql -q -X -c "copy (select h3, osm_universities_count from osm_education_venues_h3 where h3 is not null and osm_universities_count is not null and osm_universities_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_defibrillators_count.csv: db/table/osm_emergency_facilities_h3 | data/out/csv ## extract osm_universities_count to csv file
+	psql -q -X -c "copy (select h3, osm_defibrillators_count from osm_emergency_facilities_h3 where h3 is not null and osm_defibrillators_count is not null and osm_defibrillators_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_airports_count.csv: db/table/osm_transport_facilities_h3 | data/out/csv ## extract osm_airports_count to csv file
+	psql -q -X -c "copy (select h3, osm_airports_count from osm_transport_facilities_h3 where h3 is not null and osm_airports_count is not null and osm_airports_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_railway_stations_count.csv: db/table/osm_transport_facilities_h3 | data/out/csv ## extract osm_railway_stations_count to csv file
+	psql -q -X -c "copy (select h3, osm_railway_stations_count from osm_transport_facilities_h3 where h3 is not null and osm_railway_stations_count is not null and osm_railway_stations_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_public_transport_stops_count.csv: db/table/osm_transport_facilities_h3 | data/out/csv ## extract osm_public_transport_stops_count to csv file
+	psql -q -X -c "copy (select h3, osm_public_transport_stops_count from osm_transport_facilities_h3 where h3 is not null and osm_public_transport_stops_count is not null and osm_public_transport_stops_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_car_parkings_capacity.csv: db/table/osm_car_parkings_capacity_h3 | data/out/csv ## extract osm_car_parkings_capacity to csv file
+	psql -q -X -c "copy (select h3, osm_car_parkings_capacity from osm_car_parkings_capacity_h3 where h3 is not null and osm_car_parkings_capacity is not null and osm_car_parkings_capacity > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_heritage_sites_count.csv: db/table/osm_heritage_sites_h3 | data/out/csv ## extract osm_heritage_sites_count to csv file
+	psql -q -X -c "copy (select h3, osm_heritage_sites_count from osm_heritage_sites_h3 where h3 is not null and osm_heritage_sites_count is not null and osm_heritage_sites_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/min_osm_heritage_admin_level.csv: db/table/osm_heritage_sites_h3 | data/out/csv ## extract min_osm_heritage_admin_level to csv file
+	psql -q -X -c "copy (select h3, min_osm_heritage_admin_level from osm_heritage_sites_h3 where h3 is not null and min_osm_heritage_admin_level is not null and min_osm_heritage_admin_level > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/foursquare_os_places_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract foursquare_os_places_count to csv file
+	psql -q -X -c "copy (select h3, foursquare_os_places_count from foursquare_os_places_h3 where h3 is not null and foursquare_os_places_count is not null and foursquare_os_places_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/coffee_shops_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract coffee_shops_fsq_count to csv file
+	psql -q -X -c "copy (select h3, coffee_shops_fsq_count from foursquare_os_places_h3 where h3 is not null and coffee_shops_fsq_count is not null and coffee_shops_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/kebab_restaurants_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract kebab_restaurants_fsq_count to csv file
+	psql -q -X -c "copy (select h3, kebab_restaurants_fsq_count from foursquare_os_places_h3 where h3 is not null and kebab_restaurants_fsq_count is not null and kebab_restaurants_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/business_and_professional_services_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract business_and_professional_services_fsq_count to csv file
+	psql -q -X -c "copy (select h3, business_and_professional_services_fsq_count from foursquare_os_places_h3 where h3 is not null and business_and_professional_services_fsq_count is not null and business_and_professional_services_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/dining_and_drinking_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract dining_and_drinking_fsq_count to csv file
+	psql -q -X -c "copy (select h3, dining_and_drinking_fsq_count from foursquare_os_places_h3 where h3 is not null and dining_and_drinking_fsq_count is not null and dining_and_drinking_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/retail_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract retail_fsq_count to csv file
+	psql -q -X -c "copy (select h3, retail_fsq_count from foursquare_os_places_h3 where h3 is not null and retail_fsq_count is not null and retail_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/community_and_government_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract community_and_government_fsq_count to csv file
+	psql -q -X -c "copy (select h3, community_and_government_fsq_count from foursquare_os_places_h3 where h3 is not null and community_and_government_fsq_count is not null and community_and_government_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/travel_and_transportation_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract travel_and_transportation_fsq_count to csv file
+	psql -q -X -c "copy (select h3, travel_and_transportation_fsq_count from foursquare_os_places_h3 where h3 is not null and travel_and_transportation_fsq_count is not null and travel_and_transportation_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/landmarks_and_outdoors_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract landmarks_and_outdoors_fsq_count to csv file
+	psql -q -X -c "copy (select h3, landmarks_and_outdoors_fsq_count from foursquare_os_places_h3 where h3 is not null and landmarks_and_outdoors_fsq_count is not null and landmarks_and_outdoors_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/health_and_medicine_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract health_and_medicine_fsq_count to csv file
+	psql -q -X -c "copy (select h3, health_and_medicine_fsq_count from foursquare_os_places_h3 where h3 is not null and health_and_medicine_fsq_count is not null and health_and_medicine_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/arts_and_entertainment_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract arts_and_entertainment_fsq_count to csv file
+	psql -q -X -c "copy (select h3, arts_and_entertainment_fsq_count from foursquare_os_places_h3 where h3 is not null and arts_and_entertainment_fsq_count is not null and arts_and_entertainment_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/sports_and_recreation_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract sports_and_recreation_fsq_count to csv file
+	psql -q -X -c "copy (select h3, sports_and_recreation_fsq_count from foursquare_os_places_h3 where h3 is not null and sports_and_recreation_fsq_count is not null and sports_and_recreation_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/events_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract events_fsq_count to csv file
+	psql -q -X -c "copy (select h3, events_fsq_count from foursquare_os_places_h3 where h3 is not null and events_fsq_count is not null and events_fsq_count > 0 order by h3) to stdout with delimiter ',' csv;" > $@
+
+### Deploy block ###
+## Deploy dev ##
+db/table/insights_api_indicators_list_dev: | db/table ## Refresh insights_api_indicators_list_dev table before new deploy cycle
+	psql -c "drop table if exists insights_api_indicators_list_dev;"
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	touch $@
+
+deploy_indicators/dev/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/dev/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count.csv "count" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/dev/uploads ## upload hazardous_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hazardous_days_count.csv "hazardous_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/dev/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/dev/uploads ## upload man_distance_to_fire_brigade to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
+	touch $@
+
+deploy_indicators/dev/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/dev/uploads ## upload food_shops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/food_shops_count.csv "food_shops_count" db/table/osm_places_food_shops_h3
+	touch $@
+
+deploy_indicators/dev/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv | deploy_indicators/dev/uploads ## upload populated_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_area_km2.csv "populated_area_km2" db/table/kontur_population_h3
+	touch $@
+
+deploy_indicators/dev/uploads/count_6_months_upload: data/out/csv/count_6_months.csv | deploy_indicators/dev/uploads ## upload count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count_6_months.csv "count_6_months" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/dev/uploads ## upload view_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count.csv "view_count" db/table/tile_logs
+	touch $@
+
+deploy_indicators/dev/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/dev/uploads ## upload avgmax_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avgmax_ts.csv "avgmax_ts" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/max_ts_upload: data/out/csv/max_ts.csv | deploy_indicators/dev/uploads ## upload max_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_ts.csv "max_ts" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_indicators/dev/uploads ## upload min_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_ts.csv "min_ts" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/dev/uploads ## upload osm_users to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_users.csv "osm_users" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/dev/uploads ## upload building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_count.csv "building_count" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv | deploy_indicators/dev/uploads ## upload building_count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_count_6_months.csv "building_count_6_months" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/highway_length_upload: data/out/csv/highway_length.csv | deploy_indicators/dev/uploads ## upload highway_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length.csv "highway_length" db/table/osm_road_segments_h3
+	touch $@
+
+deploy_indicators/dev/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv | deploy_indicators/dev/uploads ## upload highway_length_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_6_months.csv "highway_length_6_months" db/table/osm_road_segments_6_months_h3
+	touch $@
+
+deploy_indicators/dev/uploads/total_hours_upload: data/out/csv/total_hours.csv | deploy_indicators/dev/uploads ## upload total_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_hours.csv "total_hours" db/table/user_hours_h3
+	touch $@
+
+deploy_indicators/dev/uploads/local_hours_upload: data/out/csv/local_hours.csv | deploy_indicators/dev/uploads ## upload local_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/local_hours.csv "local_hours" db/table/user_hours_h3
+	touch $@
+
+deploy_indicators/dev/uploads/forest_upload: data/out/csv/forest.csv | deploy_indicators/dev/uploads ## upload forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/forest.csv "forest" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv | deploy_indicators/dev/uploads ## upload evergreen_needle_leaved_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/shrubs_upload: data/out/csv/shrubs.csv | deploy_indicators/dev/uploads ## upload shrubs to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/shrubs.csv "shrubs" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/herbage_upload: data/out/csv/herbage.csv | deploy_indicators/dev/uploads ## upload herbage to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/herbage.csv "herbage" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv | deploy_indicators/dev/uploads ## upload unknown_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/unknown_forest.csv "unknown_forest" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/cropland_upload: data/out/csv/cropland.csv | deploy_indicators/dev/uploads ## upload cropland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/cropland.csv "cropland" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/wetland_upload: data/out/csv/wetland.csv | deploy_indicators/dev/uploads ## upload wetland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wetland.csv "wetland" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv | deploy_indicators/dev/uploads ## upload moss_lichen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/moss_lichen.csv "moss_lichen" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv | deploy_indicators/dev/uploads ## upload bare_vegetation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/bare_vegetation.csv "bare_vegetation" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/builtup_upload: data/out/csv/builtup.csv | deploy_indicators/dev/uploads ## upload builtup to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/builtup.csv "builtup" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/snow_ice_upload: data/out/csv/snow_ice.csv | deploy_indicators/dev/uploads ## upload snow_ice to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/snow_ice.csv "snow_ice" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/permanent_water_upload: data/out/csv/permanent_water.csv | deploy_indicators/dev/uploads ## upload permanent_water to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/permanent_water.csv "permanent_water" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/dev/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicators/dev/uploads ## upload gdp to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gdp.csv "gdp" db/table/gdp_h3
+	touch $@
+
+deploy_indicators/dev/uploads/population_prev_upload: data/out/csv/population_prev.csv | deploy_indicators/dev/uploads ## upload population_prev to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population_prev.csv "population_prev" db/table/kontur_population_v5_h3
+	touch $@
+
+deploy_indicators/dev/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/dev/uploads ## upload total_building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_building_count.csv "total_building_count" db/table/building_count_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/dev/uploads ## upload wildfires to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfires.csv "wildfires" db/table/global_fires_stat_h3
+	touch $@
+
+deploy_indicators/dev/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/dev/uploads ## upload earthquake_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/earthquake_days_count.csv "earthquake_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/dev/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv | deploy_indicators/dev/uploads ## upload drought_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drought_days_count.csv "drought_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/dev/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv | deploy_indicators/dev/uploads ## upload cyclone_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/cyclone_days_count.csv "cyclone_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/dev/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv | deploy_indicators/dev/uploads ## upload wildfire_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfire_days_count.csv "wildfire_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/dev/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv | deploy_indicators/dev/uploads ## upload volcano_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/volcano_days_count.csv "volcano_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/dev/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv | deploy_indicators/dev/uploads ## upload flood_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/dev/uploads/covid19_confirmed_upload: data/out/csv/covid19_confirmed.csv | deploy_indicators/dev/uploads ## upload covid19_confirmed to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/covid19_confirmed.csv "covid19_confirmed" db/table/covid19_h3
+	touch $@
+
+deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/dev/uploads ## upload avg_slope_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
+	touch $@
+
+deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/dev/uploads ## upload avg_elevation_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
+	touch $@
+
+deploy_indicators/dev/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/dev/uploads ## upload industrial_area to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/industrial_area.csv "industrial_area" db/table/osm_landuse_industrial_h3
+	touch $@
+
+deploy_indicators/dev/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv | deploy_indicators/dev/uploads ## upload avg_ndvi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_ndvi.csv "avg_ndvi" db/table/ndvi_2019_06_10_h3
+	touch $@
+
+deploy_indicators/dev/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv | deploy_indicators/dev/uploads ## upload volcanos_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/volcanos_count.csv "volcanos_count" db/table/osm_volcanos_h3
+	touch $@
+
+deploy_indicators/dev/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv | deploy_indicators/dev/uploads ## upload pop_under_5_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_under_5_total.csv "pop_under_5_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/dev/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv | deploy_indicators/dev/uploads ## upload pop_over_65_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_over_65_total.csv "pop_over_65_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/dev/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv | deploy_indicators/dev/uploads ## upload poverty_families_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/poverty_families_total.csv "poverty_families_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/dev/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv | deploy_indicators/dev/uploads ## upload pop_disability_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_disability_total.csv "pop_disability_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/dev/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv | deploy_indicators/dev/uploads ## upload pop_not_well_eng_speak to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/dev/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv | deploy_indicators/dev/uploads ## upload pop_without_car to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_without_car.csv "pop_without_car" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv | deploy_indicators/dev/uploads ## upload days_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/dev/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv | deploy_indicators/dev/uploads ## upload days_maxtemp_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv | deploy_indicators/dev/uploads ## upload days_mintemp_above_25c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/dev/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv | deploy_indicators/dev/uploads ## upload days_mintemp_above_25c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv | deploy_indicators/dev/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv | deploy_indicators/dev/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/dev/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/dev/uploads ## upload man_distance_to_hospital to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" db/table/isodist_hospitals_h3
+	touch $@
+
+deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/dev/uploads ## upload man_distance_to_bomb_shelters to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
+	touch $@
+
+deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/dev/uploads ## upload man_distance_to_charging_stations to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
+	touch $@
+
+deploy_indicators/dev/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/dev/uploads ## upload total_road_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_road_length.csv "total_road_length" db/table/total_road_length_h3
+	touch $@
+
+deploy_indicators/dev/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/dev/uploads ## upload view_count_bf2402 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402
+	touch $@
+
+deploy_indicators/dev/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/dev/uploads ## upload powerlines to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines.csv "powerlines" db/table/facebook_medium_voltage_distribution_h3
+	touch $@
+
+deploy_indicators/dev/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/dev/uploads ## upload eatery_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/eatery_count.csv "eatery_count" db/table/osm_places_eatery_h3
+	touch $@
+
+deploy_indicators/dev/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv | deploy_indicators/dev/uploads ## upload night_lights_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/night_lights_intensity.csv "night_lights_intensity" db/table/night_lights_h3
+	touch $@
+
+deploy_indicators/dev/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv | deploy_indicators/dev/uploads ## upload mapswipe_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
+	touch $@
+
+deploy_indicators/dev/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv | deploy_indicators/dev/uploads ## upload gsa_ghi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gsa_ghi.csv "gsa_ghi" db/table/global_solar_atlas_h3
+	touch $@
+
+deploy_indicators/dev/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_avg_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/dev/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_min_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/dev/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_max_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/dev/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_amp_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/dev/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv | deploy_indicators/dev/uploads ## upload powerlines_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" db/table/proximities_h3
+	touch $@
+
+deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/dev/uploads ## upload waste_basket_coverage_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_containers_h3
+	touch $@
+
+deploy_indicators/dev/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/dev/uploads ## upload populated_areas_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" db/table/proximities_h3
+	touch $@
+
+deploy_indicators/dev/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv | deploy_indicators/dev/uploads ## upload power_substations_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" db/table/proximities_h3
+	touch $@
+
+deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | deploy_indicators/dev/uploads ## upload solar_farms_placement_suitability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
+	touch $@
+
+deploy_indicators/dev/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/dev/uploads ## upload residential to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/residential.csv "residential" db/table/residential_pop_h3
+	touch $@
+
+deploy_indicators/dev/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/dev/uploads ## upload solar_power_plants to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
+	touch $@
+
+deploy_indicators/dev/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/dev/uploads ## upload safety_index to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
+	touch $@
+
+deploy_indicators/dev/uploads/population_upload: data/out/csv/population.csv | deploy_indicators/dev/uploads ## upload population to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population.csv "population" db/table/kontur_population_h3
+	touch $@
+
+deploy_indicators/dev/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv | deploy_indicators/dev/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+	touch $@
+
+deploy_indicators/dev/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv | deploy_indicators/dev/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+	touch $@
+
+deploy_indicators/dev/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv | deploy_indicators/dev/uploads ## upload worldbank_tax_rate to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
+	touch $@
+
+deploy_indicators/dev/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv | deploy_indicators/dev/uploads ## upload years_to_naturalisation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
+	touch $@
+
+deploy_indicators/dev/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv | deploy_indicators/dev/uploads ## upload multiple_citizenship to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/multiple_citizenship.csv "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
+	touch $@
+
+deploy_indicators/dev/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv | deploy_indicators/dev/uploads ## upload ghs_max_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" db/table/ghs_building_height_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv | deploy_indicators/dev/uploads ## upload ghs_avg_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
+	touch $@
+
+deploy_indicators/dev/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv | deploy_indicators/dev/uploads ## upload max_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" db/table/osm_building_levels_h3
+	touch $@
+
+deploy_indicators/dev/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv | deploy_indicators/dev/uploads ## upload avg_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" db/table/osm_building_levels_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv | deploy_indicators/dev/uploads ## upload osm_hotels_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_hotels_count.csv "osm_hotels_count" db/table/osm_hotels_h3
+	touch $@
+
+deploy_indicators/dev/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv | deploy_indicators/dev/uploads ## upload max_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" db/table/osm_hotels_h3
+	touch $@
+
+deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv | deploy_indicators/dev/uploads ## upload avg_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" db/table/osm_hotels_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/dev/uploads ## upload osm_historical_sites_and_museums_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/dev/uploads ## upload osm_art_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv | deploy_indicators/dev/uploads ## upload osm_entertainment_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv | deploy_indicators/dev/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/dev/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv | deploy_indicators/dev/uploads ## upload worldbank_inflation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldbank_inflation.csv "worldbank_inflation" db/table/worldbank_inflation_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv | deploy_indicators/dev/uploads ## upload osm_pharmacy_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" db/table/osm_pharmacy_h3
+	touch $@
+
+deploy_indicators/dev/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv | deploy_indicators/dev/uploads ## upload conflict_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/dev/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv | deploy_indicators/dev/uploads ## upload disaster_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/dev/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv | deploy_indicators/dev/uploads ## upload conflict_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/dev/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv | deploy_indicators/dev/uploads ## upload disaster_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/dev/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv | deploy_indicators/dev/uploads ## upload hdi_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hdi_2022.csv "hdi_2022" db/table/humanitarian_dev_index_2022_h3
+	touch $@
+
+deploy_indicators/dev/uploads/inform_risk_upload: data/out/csv/inform_risk.csv | deploy_indicators/dev/uploads ## upload inform_risk to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/inform_risk.csv "inform_risk" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv | deploy_indicators/dev/uploads ## upload hazard_and_exposure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hazard_and_exposure.csv "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv | deploy_indicators/dev/uploads ## upload natural_0_to_10 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/natural_0_to_10.csv "natural_0_to_10" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/earthquake_upload: data/out/csv/earthquake.csv | deploy_indicators/dev/uploads ## upload earthquake to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/earthquake.csv "earthquake" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/river_flood_upload: data/out/csv/river_flood.csv | deploy_indicators/dev/uploads ## upload river_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/river_flood.csv "river_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/tsunami_upload: data/out/csv/tsunami.csv | deploy_indicators/dev/uploads ## upload tsunami to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/tsunami.csv "tsunami" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv | deploy_indicators/dev/uploads ## upload tropical_cyclone to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/tropical_cyclone.csv "tropical_cyclone" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv | deploy_indicators/dev/uploads ## upload coastal_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/coastal_flood.csv "coastal_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/drought_upload: data/out/csv/drought.csv | deploy_indicators/dev/uploads ## upload drought to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drought.csv "drought" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/epidemic_upload: data/out/csv/epidemic.csv | deploy_indicators/dev/uploads ## upload epidemic to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/epidemic.csv "epidemic" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/human_upload: data/out/csv/human.csv | deploy_indicators/dev/uploads ## upload human to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/human.csv "human" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv | deploy_indicators/dev/uploads ## upload projected_conflict_probability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/projected_conflict_probability.csv "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv | deploy_indicators/dev/uploads ## upload current_conflict_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/current_conflict_intensity.csv "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/vulnerability_upload: data/out/csv/vulnerability.csv | deploy_indicators/dev/uploads ## upload vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerability.csv "vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv | deploy_indicators/dev/uploads ## upload socio_economic_vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/socio_economic_vulnerability.csv "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv | deploy_indicators/dev/uploads ## upload development_and_deprivation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/development_and_deprivation.csv "development_and_deprivation" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/inequality_upload: data/out/csv/inequality.csv | deploy_indicators/dev/uploads ## upload inequality to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/inequality.csv "inequality" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv | deploy_indicators/dev/uploads ## upload economic_dependency to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/economic_dependency.csv "economic_dependency" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv | deploy_indicators/dev/uploads ## upload vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerable_groups.csv "vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv | deploy_indicators/dev/uploads ## upload uprooted_people to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/uprooted_people.csv "uprooted_people" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/health_conditions_upload: data/out/csv/health_conditions.csv | deploy_indicators/dev/uploads ## upload health_conditions to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/health_conditions.csv "health_conditions" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/children_u5_upload: data/out/csv/children_u5.csv | deploy_indicators/dev/uploads ## upload children_u5 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/children_u5.csv "children_u5" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv | deploy_indicators/dev/uploads ## upload recent_shocks to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/recent_shocks.csv "recent_shocks" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/food_security_upload: data/out/csv/food_security.csv | deploy_indicators/dev/uploads ## upload food_security to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/food_security.csv "food_security" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv | deploy_indicators/dev/uploads ## upload other_vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/other_vulnerable_groups.csv "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv | deploy_indicators/dev/uploads ## upload lack_of_coping_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/lack_of_coping_capacity.csv "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/institutional_upload: data/out/csv/institutional.csv | deploy_indicators/dev/uploads ## upload institutional to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/institutional.csv "institutional" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/drr_upload: data/out/csv/drr.csv | deploy_indicators/dev/uploads ## upload drr to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drr.csv "drr" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/governance_upload: data/out/csv/governance.csv | deploy_indicators/dev/uploads ## upload governance to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/governance.csv "governance" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/infrastructure_upload: data/out/csv/infrastructure.csv | deploy_indicators/dev/uploads ## upload infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/infrastructure.csv "infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/communication_upload: data/out/csv/communication.csv | deploy_indicators/dev/uploads ## upload communication to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/communication.csv "communication" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv | deploy_indicators/dev/uploads ## upload physical_infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/physical_infrastructure.csv "physical_infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv | deploy_indicators/dev/uploads ## upload access_to_health_care to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/access_to_health_care.csv "access_to_health_care" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_banks_count_upload: data/out/csv/osm_banks_count.csv | deploy_indicators/dev/uploads ## upload osm_banks_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_banks_count.csv "osm_banks_count" db/table/osm_financial_venues_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_atms_count_upload: data/out/csv/osm_atms_count.csv | deploy_indicators/dev/uploads ## upload osm_atms_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_atms_count.csv "osm_atms_count" db/table/osm_financial_venues_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_kindergartens_count_upload: data/out/csv/osm_kindergartens_count.csv | deploy_indicators/dev/uploads ## upload osm_kindergartens_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_kindergartens_count.csv "osm_kindergartens_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_schools_count_upload: data/out/csv/osm_schools_count.csv | deploy_indicators/dev/uploads ## upload osm_schools_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_schools_count.csv "osm_schools_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_colleges_count_upload: data/out/csv/osm_colleges_count.csv | deploy_indicators/dev/uploads ## upload osm_colleges_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_colleges_count.csv "osm_colleges_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_universities_count_upload: data/out/csv/osm_universities_count.csv | deploy_indicators/dev/uploads ## upload osm_universities_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_universities_count.csv "osm_universities_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_defibrillators_count_upload: data/out/csv/osm_defibrillators_count.csv | deploy_indicators/dev/uploads ## upload osm_defibrillators_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_defibrillators_count.csv "osm_defibrillators_count" db/table/osm_emergency_facilities_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_airports_count_upload: data/out/csv/osm_airports_count.csv | deploy_indicators/dev/uploads ## upload osm_airports_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_airports_count.csv "osm_airports_count" db/table/osm_transport_facilities_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_railway_stations_count_upload: data/out/csv/osm_railway_stations_count.csv | deploy_indicators/dev/uploads ## upload osm_railway_stations_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_railway_stations_count.csv "osm_railway_stations_count" db/table/osm_transport_facilities_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_public_transport_stops_count_upload: data/out/csv/osm_public_transport_stops_count.csv | deploy_indicators/dev/uploads ## upload osm_public_transport_stops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_public_transport_stops_count.csv "osm_public_transport_stops_count" db/table/osm_transport_facilities_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_car_parkings_capacity_upload: data/out/csv/osm_car_parkings_capacity.csv | deploy_indicators/dev/uploads ## upload osm_car_parkings_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_car_parkings_capacity.csv "osm_car_parkings_capacity" db/table/osm_car_parkings_capacity_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_heritage_sites_count_upload: data/out/csv/osm_heritage_sites_count.csv | deploy_indicators/dev/uploads ## upload osm_heritage_sites_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_heritage_sites_count.csv "osm_heritage_sites_count" db/table/osm_heritage_sites_h3
+	touch $@
+
+deploy_indicators/dev/uploads/min_osm_heritage_admin_level_upload: data/out/csv/min_osm_heritage_admin_level.csv | deploy_indicators/dev/uploads ## upload min_osm_heritage_admin_level to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_osm_heritage_admin_level.csv "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
+	touch $@
+deploy_indicators/dev/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv | deploy_indicators/dev/uploads ## upload foursquare_os_places_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/foursquare_os_places_count.csv "foursquare_os_places_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/coffee_shops_fsq_count_upload: data/out/csv/coffee_shops_fsq_count.csv | deploy_indicators/dev/uploads ## upload coffee_shops_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/coffee_shops_fsq_count.csv "coffee_shops_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/kebab_restaurants_fsq_count_upload: data/out/csv/kebab_restaurants_fsq_count.csv | deploy_indicators/dev/uploads ## upload kebab_restaurants_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/kebab_restaurants_fsq_count.csv "kebab_restaurants_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/business_and_professional_services_fsq_count_upload: data/out/csv/business_and_professional_services_fsq_count.csv | deploy_indicators/dev/uploads ## upload business_and_professional_services_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/business_and_professional_services_fsq_count.csv "business_and_professional_services_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/dining_and_drinking_fsq_count_upload: data/out/csv/dining_and_drinking_fsq_count.csv | deploy_indicators/dev/uploads ## upload dining_and_drinking_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/dining_and_drinking_fsq_count.csv "dining_and_drinking_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/retail_fsq_count_upload: data/out/csv/retail_fsq_count.csv | deploy_indicators/dev/uploads ## upload retail_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/retail_fsq_count.csv "retail_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/community_and_government_fsq_count_upload: data/out/csv/community_and_government_fsq_count.csv | deploy_indicators/dev/uploads ## upload community_and_government_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/community_and_government_fsq_count.csv "community_and_government_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/travel_and_transportation_fsq_count_upload: data/out/csv/travel_and_transportation_fsq_count.csv | deploy_indicators/dev/uploads ## upload travel_and_transportation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/travel_and_transportation_fsq_count.csv "travel_and_transportation_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/landmarks_and_outdoors_fsq_count_upload: data/out/csv/landmarks_and_outdoors_fsq_count.csv | deploy_indicators/dev/uploads ## upload landmarks_and_outdoors_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/landmarks_and_outdoors_fsq_count.csv "landmarks_and_outdoors_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/health_and_medicine_fsq_count_upload: data/out/csv/health_and_medicine_fsq_count.csv | deploy_indicators/dev/uploads ## upload health_and_medicine_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/health_and_medicine_fsq_count.csv "health_and_medicine_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/arts_and_entertainment_fsq_count_upload: data/out/csv/arts_and_entertainment_fsq_count.csv | deploy_indicators/dev/uploads ## upload arts_and_entertainment_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/arts_and_entertainment_fsq_count.csv "arts_and_entertainment_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/sports_and_recreation_fsq_count_upload: data/out/csv/sports_and_recreation_fsq_count.csv | deploy_indicators/dev/uploads ## upload sports_and_recreation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/sports_and_recreation_fsq_count.csv "sports_and_recreation_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/events_fsq_count_upload: data/out/csv/events_fsq_count.csv | deploy_indicators/dev/uploads ## upload events_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/dev/uploads/upload_dev: deploy_indicators/dev/uploads/population_upload deploy_indicators/dev/uploads/view_count_upload deploy_indicators/dev/uploads/count_upload deploy_indicators/dev/uploads/populated_area_km2_upload deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload deploy_indicators/dev/uploads/local_hours_upload deploy_indicators/dev/uploads/total_hours_upload deploy_indicators/dev/uploads/avgmax_ts_upload deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/view_count_bf2402_upload deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/dev/uploads/total_building_count_upload deploy_indicators/dev/uploads/count_6_months_upload deploy_indicators/dev/uploads/building_count_6_months_upload deploy_indicators/dev/uploads/highway_length_6_months_upload deploy_indicators/dev/uploads/osm_users_upload deploy_indicators/dev/uploads/residential_upload deploy_indicators/dev/uploads/gdp_upload deploy_indicators/dev/uploads/min_ts_upload deploy_indicators/dev/uploads/max_ts_upload deploy_indicators/dev/uploads/wildfires_upload deploy_indicators/dev/uploads/covid19_confirmed_upload deploy_indicators/dev/uploads/population_prev_upload deploy_indicators/dev/uploads/industrial_area_upload deploy_indicators/dev/uploads/volcanos_count_upload deploy_indicators/dev/uploads/pop_under_5_total_upload deploy_indicators/dev/uploads/pop_over_65_total_upload deploy_indicators/dev/uploads/poverty_families_total_upload deploy_indicators/dev/uploads/pop_disability_total_upload deploy_indicators/dev/uploads/pop_not_well_eng_speak_upload deploy_indicators/dev/uploads/pop_without_car_upload deploy_indicators/dev/uploads/man_distance_to_hospital_upload deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload  deploy_indicators/dev/uploads/eatery_count_upload deploy_indicators/dev/uploads/food_shops_count_upload deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload deploy_indicators/dev/uploads/mapswipe_area_km2_upload deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload deploy_indicators/dev/uploads/forest_upload deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/dev/uploads/shrubs_upload deploy_indicators/dev/uploads/herbage_upload deploy_indicators/dev/uploads/unknown_forest_upload deploy_indicators/dev/uploads/avg_ndvi_upload deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/dev/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/dev/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/dev/uploads/hazardous_days_count_upload deploy_indicators/dev/uploads/earthquake_days_count_upload deploy_indicators/dev/uploads/wildfire_days_count_upload deploy_indicators/dev/uploads/drought_days_count_upload deploy_indicators/dev/uploads/cyclone_days_count_upload deploy_indicators/dev/uploads/volcano_days_count_upload deploy_indicators/dev/uploads/flood_days_count_upload deploy_indicators/dev/uploads/powerlines_upload deploy_indicators/dev/uploads/night_lights_intensity_upload deploy_indicators/dev/uploads/gsa_ghi_upload deploy_indicators/dev/uploads/worldclim_avg_temperature_upload deploy_indicators/dev/uploads/worldclim_min_temperature_upload deploy_indicators/dev/uploads/worldclim_max_temperature_upload deploy_indicators/dev/uploads/worldclim_amp_temperature_upload deploy_indicators/dev/uploads/powerlines_proximity_m_upload deploy_indicators/dev/uploads/populated_areas_proximity_m_upload deploy_indicators/dev/uploads/power_substations_proximity_m_upload deploy_indicators/dev/uploads/solar_power_plants_upload deploy_indicators/dev/uploads/safety_index_upload deploy_indicators/dev/uploads/avg_forest_canopy_height_upload deploy_indicators/dev/uploads/max_forest_canopy_height_upload deploy_indicators/dev/uploads/worldbank_tax_rate_upload deploy_indicators/dev/uploads/years_to_naturalisation_upload deploy_indicators/dev/uploads/multiple_citizenship_upload deploy_indicators/dev/uploads/ghs_max_building_height_upload deploy_indicators/dev/uploads/ghs_avg_building_height_upload deploy_indicators/dev/uploads/max_osm_building_levels_upload deploy_indicators/dev/uploads/avg_osm_building_levels_upload deploy_indicators/dev/uploads/osm_hotels_count_upload deploy_indicators/dev/uploads/max_osm_hotels_assesment_upload deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/dev/uploads/osm_art_venues_count_upload deploy_indicators/dev/uploads/osm_entertainment_venues_count_upload deploy_indicators/dev/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/dev/uploads/worldbank_inflation_upload deploy_indicators/dev/uploads/cropland_upload deploy_indicators/dev/uploads/wetland_upload deploy_indicators/dev/uploads/moss_lichen_upload deploy_indicators/dev/uploads/bare_vegetation_upload deploy_indicators/dev/uploads/builtup_upload deploy_indicators/dev/uploads/snow_ice_upload deploy_indicators/dev/uploads/permanent_water_upload deploy_indicators/dev/uploads/osm_pharmacy_count_upload deploy_indicators/dev/uploads/conflict_stock_displacement_upload deploy_indicators/dev/uploads/disaster_stock_displacement_upload deploy_indicators/dev/uploads/conflict_internal_displacements_upload deploy_indicators/dev/uploads/disaster_internal_displacements_upload deploy_indicators/dev/uploads/hdi_2022_upload deploy_indicators/dev/uploads/inform_risk_upload deploy_indicators/dev/uploads/hazard_and_exposure_upload deploy_indicators/dev/uploads/natural_0_to_10_upload deploy_indicators/dev/uploads/earthquake_upload deploy_indicators/dev/uploads/river_flood_upload deploy_indicators/dev/uploads/tsunami_upload deploy_indicators/dev/uploads/tropical_cyclone_upload deploy_indicators/dev/uploads/coastal_flood_upload deploy_indicators/dev/uploads/drought_upload deploy_indicators/dev/uploads/epidemic_upload deploy_indicators/dev/uploads/human_upload deploy_indicators/dev/uploads/projected_conflict_probability_upload deploy_indicators/dev/uploads/current_conflict_intensity_upload deploy_indicators/dev/uploads/vulnerability_upload deploy_indicators/dev/uploads/socio_economic_vulnerability_upload deploy_indicators/dev/uploads/development_and_deprivation_upload deploy_indicators/dev/uploads/inequality_upload deploy_indicators/dev/uploads/economic_dependency_upload deploy_indicators/dev/uploads/vulnerable_groups_upload deploy_indicators/dev/uploads/uprooted_people_upload deploy_indicators/dev/uploads/health_conditions_upload deploy_indicators/dev/uploads/children_u5_upload deploy_indicators/dev/uploads/recent_shocks_upload deploy_indicators/dev/uploads/food_security_upload deploy_indicators/dev/uploads/other_vulnerable_groups_upload deploy_indicators/dev/uploads/lack_of_coping_capacity_upload deploy_indicators/dev/uploads/institutional_upload deploy_indicators/dev/uploads/drr_upload deploy_indicators/dev/uploads/governance_upload deploy_indicators/dev/uploads/infrastructure_upload deploy_indicators/dev/uploads/communication_upload deploy_indicators/dev/uploads/physical_infrastructure_upload deploy_indicators/dev/uploads/access_to_health_care_upload deploy_indicators/dev/uploads/osm_banks_count_upload deploy_indicators/dev/uploads/osm_atms_count_upload deploy_indicators/dev/uploads/osm_kindergartens_count_upload deploy_indicators/dev/uploads/osm_schools_count_upload deploy_indicators/dev/uploads/osm_colleges_count_upload deploy_indicators/dev/uploads/osm_universities_count_upload deploy_indicators/dev/uploads/osm_defibrillators_count_upload deploy_indicators/dev/uploads/osm_airports_count_upload deploy_indicators/dev/uploads/osm_railway_stations_count_upload deploy_indicators/dev/uploads/osm_public_transport_stops_count_upload deploy_indicators/dev/uploads/osm_car_parkings_capacity_upload deploy_indicators/dev/uploads/osm_heritage_sites_count_upload deploy_indicators/dev/uploads/min_osm_heritage_admin_level_upload deploy_indicators/dev/uploads/foursquare_os_places_count_upload deploy_indicators/dev/uploads/coffee_shops_fsq_count_upload deploy_indicators/dev/uploads/kebab_restaurants_fsq_count_upload deploy_indicators/dev/uploads/business_and_professional_services_fsq_count_upload deploy_indicators/dev/uploads/dining_and_drinking_fsq_count_upload deploy_indicators/dev/uploads/retail_fsq_count_upload deploy_indicators/dev/uploads/community_and_government_fsq_count_upload deploy_indicators/dev/uploads/travel_and_transportation_fsq_count_upload deploy_indicators/dev/uploads/landmarks_and_outdoors_fsq_count_upload deploy_indicators/dev/uploads/health_and_medicine_fsq_count_upload deploy_indicators/dev/uploads/arts_and_entertainment_fsq_count_upload deploy_indicators/dev/uploads/sports_and_recreation_fsq_count_upload deploy_indicators/dev/uploads/events_fsq_count_upload | deploy_indicators/dev/uploads ## Control of layer uplodings to Insigths API for DEV without one and area_km2
+	touch $@
+
+deploy_indicators/dev/custom_axis/population_area_km2: deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for population area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/count_area_km2: deploy_indicators/dev/uploads/count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/building_count_area_km2: deploy_indicators/dev/uploads/building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "building_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/local_hours_area_km2: deploy_indicators/dev/uploads/local_hours_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for local_hours area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "local_hours" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/total_hours_area_km2: deploy_indicators/dev/uploads/total_hours_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_hours area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "total_hours" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/view_count_area_km2: deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/osm_users_one: deploy_indicators/dev/uploads/osm_users_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for osm_users one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "osm_users" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/total_building_count_area_km2: deploy_indicators/dev/uploads/total_building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_building_count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "total_building_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/wildfires_area_km2: deploy_indicators/dev/uploads/wildfires_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfires area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfires" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/forest_area_km2: deploy_indicators/dev/uploads/forest_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for forest area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "forest" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_maxtemp_over_32c_1c one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "days_maxtemp_over_32c_1c" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_mintemp_above_25c_1c one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "days_mintemp_above_25c_1c" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_fire_brigade" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/man_distance_to_hospital_one: deploy_indicators/dev/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_hospital" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/man_distance_to_hospital_population: deploy_indicators/dev/uploads/man_distance_to_hospital_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital population axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_hospital" "population"
+	touch $@
+
+deploy_indicators/dev/custom_axis/highway_length_area_km2: deploy_indicators/dev/uploads/highway_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "highway_length" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/total_road_length_area_km2: deploy_indicators/dev/uploads/total_road_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_road_length area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "total_road_length" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/view_count_bf2402_one: deploy_indicators/dev/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "view_count_bf2402" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/view_count_bf2402_area_km2: deploy_indicators/dev/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "view_count_bf2402" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/powerlines_one: deploy_indicators/dev/uploads/powerlines_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for powerlines one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "powerlines" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/night_lights_intensity_one: deploy_indicators/dev/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for night_lights_intensity one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "night_lights_intensity" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_bomb_shelters" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_charging_stations" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/solar_power_plants_area_km2: deploy_indicators/dev/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for solar_power_plants area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "solar_power_plants" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/volcano_days_count_area_km2: deploy_indicators/dev/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "volcano_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/volcano_days_count_one: deploy_indicators/dev/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "volcano_days_count" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/flood_days_count_area_km2: deploy_indicators/dev/uploads/flood_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "flood_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/flood_days_count_one: deploy_indicators/dev/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "flood_days_count" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters population axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_bomb_shelters" "population"
+	touch $@
+
+deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations population axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_charging_stations" "population"
+	touch $@
+
+deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade population axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_fire_brigade" "population"
+	touch $@
+
+deploy_indicators/dev/custom_axis/building_count_total_building_count: deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/total_building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count total_building_count axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "building_count" "total_building_count"
+	touch $@
+
+deploy_indicators/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "waste_basket_coverage_area_km2" "populated_area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/highway_length_total_road_length: deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length total_road_length axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "highway_length" "total_road_length"
+	touch $@
+
+deploy_indicators/dev/custom_axis/eatery_count_one: deploy_indicators/dev/uploads/eatery_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for eatery_count one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "eatery_count" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/food_shops_count_one: deploy_indicators/dev/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for food_shops_count one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "food_shops_count" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/hazardous_days_count_area_km2: deploy_indicators/dev/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "hazardous_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/hazardous_days_count_one: deploy_indicators/dev/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "hazardous_days_count" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/earthquake_days_count_area_km2: deploy_indicators/dev/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "earthquake_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/earthquake_days_count_one: deploy_indicators/dev/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "earthquake_days_count" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/drought_days_count_area_km2: deploy_indicators/dev/uploads/drought_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "drought_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/drought_days_count_one: deploy_indicators/dev/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "drought_days_count" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/cyclone_days_count_area_km2: deploy_indicators/dev/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "cyclone_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/cyclone_days_count_one: deploy_indicators/dev/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "cyclone_days_count" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/wildfire_days_count_area_km2: deploy_indicators/dev/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count area_km2 axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfire_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/custom_axis/wildfire_days_count_one: deploy_indicators/dev/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count one axis on dev.
+	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
+	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfire_days_count" "one"
+	touch $@
+
+deploy_indicators/dev/custom_axis/all_custom_axis: deploy_indicators/dev/custom_axis/population_area_km2 deploy_indicators/dev/custom_axis/count_area_km2 deploy_indicators/dev/custom_axis/building_count_area_km2 deploy_indicators/dev/custom_axis/local_hours_area_km2 deploy_indicators/dev/custom_axis/total_hours_area_km2 deploy_indicators/dev/custom_axis/view_count_area_km2 deploy_indicators/dev/custom_axis/osm_users_one deploy_indicators/dev/custom_axis/total_building_count_area_km2 deploy_indicators/dev/custom_axis/wildfires_area_km2 deploy_indicators/dev/custom_axis/forest_area_km2 deploy_indicators/dev/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/dev/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/dev/custom_axis/man_distance_to_hospital_one deploy_indicators/dev/custom_axis/highway_length_area_km2 deploy_indicators/dev/custom_axis/total_road_length_area_km2  deploy_indicators/dev/custom_axis/view_count_bf2402_one deploy_indicators/dev/custom_axis/view_count_bf2402_area_km2 deploy_indicators/dev/custom_axis/powerlines_one deploy_indicators/dev/custom_axis/night_lights_intensity_one deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_one deploy_indicators/dev/custom_axis/solar_power_plants_area_km2 deploy_indicators/dev/custom_axis/volcano_days_count_area_km2 deploy_indicators/dev/custom_axis/volcano_days_count_one deploy_indicators/dev/custom_axis/flood_days_count_area_km2 deploy_indicators/dev/custom_axis/flood_days_count_one deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_population deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/dev/custom_axis/building_count_total_building_count deploy_indicators/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/dev/custom_axis/highway_length_total_road_length deploy_indicators/dev/custom_axis/eatery_count_one deploy_indicators/dev/custom_axis/food_shops_count_one deploy_indicators/dev/custom_axis/hazardous_days_count_area_km2 deploy_indicators/dev/custom_axis/hazardous_days_count_one deploy_indicators/dev/custom_axis/earthquake_days_count_area_km2 deploy_indicators/dev/custom_axis/earthquake_days_count_one deploy_indicators/dev/custom_axis/drought_days_count_area_km2 deploy_indicators/dev/custom_axis/drought_days_count_one deploy_indicators/dev/custom_axis/cyclone_days_count_area_km2 deploy_indicators/dev/custom_axis/cyclone_days_count_one deploy_indicators/dev/custom_axis/wildfire_days_count_area_km2 deploy_indicators/dev/custom_axis/wildfire_days_count_one deploy_indicators/dev/custom_axis/man_distance_to_hospital_population | deploy_indicators/dev/custom_axis ## final target for custom axis deployment to dev
+	touch $@
+
+## dev presets upload block
+deploy_indicators/dev/presets/osm_quantity: deploy_indicators/dev/uploads/count_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Quantity overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "count" "area_km2" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/osm_building_completeness: deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/total_building_count_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "building_count" "total_building_count" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/osm_road_completeness: deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "highway_length" "total_road_length" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/osm_mapping_activity: deploy_indicators/dev/uploads/local_hours_upload deploy_indicators/dev/uploads/total_hours_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "local_hours" "area_km2" "total_hours" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/osm_antiquity: deploy_indicators/dev/uploads/avgmax_ts_upload  deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "avgmax_ts" "one" "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/nighttime_heatwave_risk: deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "days_mintemp_above_25c_1c" "one" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/fire_service_scarcity_risk: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_fire_brigade" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/views_before_after: deploy_indicators/dev/uploads/view_count_bf2402_upload deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Views before after overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "view_count_bf2402" "area_km2" "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/ev_charging_availability: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy EV Charging Availability overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_charging_stations" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/waste_containers_availability: deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/populated_area_km2_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Waste containers availability overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/shelters_scarcity_risk: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Shelters Scarcity Risk overlay to dev.
+	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_bomb_shelters" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/dev/presets/all_presets: deploy_indicators/dev/presets/osm_quantity deploy_indicators/dev/presets/osm_building_completeness deploy_indicators/dev/presets/osm_road_completeness deploy_indicators/dev/presets/osm_mapping_activity deploy_indicators/dev/presets/osm_antiquity deploy_indicators/dev/presets/nighttime_heatwave_risk deploy_indicators/dev/presets/fire_service_scarcity_risk deploy_indicators/dev/presets/views_before_after deploy_indicators/dev/presets/ev_charging_availability deploy_indicators/dev/presets/waste_containers_availability deploy_indicators/dev/presets/shelters_scarcity_risk ## final target for presets deployment to dev
+	touch $@
+
+## END dev presets upload
+
+## Deploy test ##
+db/table/insights_api_indicators_list_test: | db/table ## Refresh insights_api_indicators_list_test table before new deploy cycle
+	psql -c "drop table if exists insights_api_indicators_list_test;"
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	touch $@
+
+deploy_indicators/test/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/test/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count.csv "count" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/test/uploads ## upload hazardous_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hazardous_days_count.csv "hazardous_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/test/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/test/uploads ## upload man_distance_to_fire_brigade to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
+	touch $@
+
+deploy_indicators/test/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/test/uploads ## upload food_shops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/food_shops_count.csv "food_shops_count" db/table/osm_places_food_shops_h3
+	touch $@
+
+deploy_indicators/test/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv | deploy_indicators/test/uploads ## upload populated_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_area_km2.csv "populated_area_km2" db/table/kontur_population_h3
+	touch $@
+
+deploy_indicators/test/uploads/count_6_months_upload: data/out/csv/count_6_months.csv | deploy_indicators/test/uploads ## upload count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count_6_months.csv "count_6_months" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/test/uploads ## upload view_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count.csv "view_count" db/table/tile_logs
+	touch $@
+
+deploy_indicators/test/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/test/uploads ## upload avgmax_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avgmax_ts.csv "avgmax_ts" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/max_ts_upload: data/out/csv/max_ts.csv | deploy_indicators/test/uploads ## upload max_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_ts.csv "max_ts" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_indicators/test/uploads ## upload min_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_ts.csv "min_ts" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/test/uploads ## upload osm_users to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_users.csv "osm_users" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/test/uploads ## upload building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_count.csv "building_count" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv | deploy_indicators/test/uploads ## upload building_count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_count_6_months.csv "building_count_6_months" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/highway_length_upload: data/out/csv/highway_length.csv | deploy_indicators/test/uploads ## upload highway_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/highway_length.csv "highway_length" db/table/osm_road_segments_h3
+	touch $@
+
+deploy_indicators/test/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv | deploy_indicators/test/uploads ## upload highway_length_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/highway_length_6_months.csv "highway_length_6_months" db/table/osm_road_segments_6_months_h3
+	touch $@
+
+deploy_indicators/test/uploads/total_hours_upload: data/out/csv/total_hours.csv | deploy_indicators/test/uploads ## upload total_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_hours.csv "total_hours" db/table/user_hours_h3
+	touch $@
+
+deploy_indicators/test/uploads/local_hours_upload: data/out/csv/local_hours.csv | deploy_indicators/test/uploads ## upload local_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/local_hours.csv "local_hours" db/table/user_hours_h3
+	touch $@
+
+deploy_indicators/test/uploads/forest_upload: data/out/csv/forest.csv | deploy_indicators/test/uploads ## upload forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/forest.csv "forest" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv | deploy_indicators/test/uploads ## upload evergreen_needle_leaved_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/shrubs_upload: data/out/csv/shrubs.csv | deploy_indicators/test/uploads ## upload shrubs to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/shrubs.csv "shrubs" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/herbage_upload: data/out/csv/herbage.csv | deploy_indicators/test/uploads ## upload herbage to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/herbage.csv "herbage" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv | deploy_indicators/test/uploads ## upload unknown_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/unknown_forest.csv "unknown_forest" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/cropland_upload: data/out/csv/cropland.csv | deploy_indicators/test/uploads ## upload cropland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/cropland.csv "cropland" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/wetland_upload: data/out/csv/wetland.csv | deploy_indicators/test/uploads ## upload wetland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wetland.csv "wetland" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv | deploy_indicators/test/uploads ## upload moss_lichen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/moss_lichen.csv "moss_lichen" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv | deploy_indicators/test/uploads ## upload bare_vegetation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/bare_vegetation.csv "bare_vegetation" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/builtup_upload: data/out/csv/builtup.csv | deploy_indicators/test/uploads ## upload builtup to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/builtup.csv "builtup" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/snow_ice_upload: data/out/csv/snow_ice.csv | deploy_indicators/test/uploads ## upload snow_ice to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/snow_ice.csv "snow_ice" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/permanent_water_upload: data/out/csv/permanent_water.csv | deploy_indicators/test/uploads ## upload permanent_water to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/permanent_water.csv "permanent_water" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/test/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicators/test/uploads ## upload gdp to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gdp.csv "gdp" db/table/gdp_h3
+	touch $@
+
+deploy_indicators/test/uploads/population_prev_upload: data/out/csv/population_prev.csv | deploy_indicators/test/uploads ## upload population_prev to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population_prev.csv "population_prev" db/table/kontur_population_v5_h3
+	touch $@
+
+deploy_indicators/test/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/test/uploads ## upload total_building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_building_count.csv "total_building_count" db/table/building_count_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/test/uploads ## upload wildfires to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfires.csv "wildfires" db/table/global_fires_stat_h3
+	touch $@
+
+deploy_indicators/test/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/test/uploads ## upload earthquake_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/earthquake_days_count.csv "earthquake_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/test/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv | deploy_indicators/test/uploads ## upload drought_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drought_days_count.csv "drought_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/test/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv | deploy_indicators/test/uploads ## upload cyclone_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/cyclone_days_count.csv "cyclone_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/test/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv | deploy_indicators/test/uploads ## upload wildfire_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfire_days_count.csv "wildfire_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/test/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv | deploy_indicators/test/uploads ## upload volcano_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/volcano_days_count.csv "volcano_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/test/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv | deploy_indicators/test/uploads ## upload flood_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/test/uploads/covid19_confirmed_upload: data/out/csv/covid19_confirmed.csv | deploy_indicators/test/uploads ## upload covid19_confirmed to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/covid19_confirmed.csv "covid19_confirmed" db/table/covid19_h3
+	touch $@
+
+deploy_indicators/test/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/test/uploads ## upload avg_slope_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
+	touch $@
+
+deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/test/uploads ## upload avg_elevation_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
+	touch $@
+
+deploy_indicators/test/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/test/uploads ## upload industrial_area to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/industrial_area.csv "industrial_area" db/table/osm_landuse_industrial_h3
+	touch $@
+
+deploy_indicators/test/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv | deploy_indicators/test/uploads ## upload avg_ndvi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_ndvi.csv "avg_ndvi" db/table/ndvi_2019_06_10_h3
+	touch $@
+
+deploy_indicators/test/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv | deploy_indicators/test/uploads ## upload volcanos_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/volcanos_count.csv "volcanos_count" db/table/osm_volcanos_h3
+	touch $@
+
+deploy_indicators/test/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv | deploy_indicators/test/uploads ## upload pop_under_5_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_under_5_total.csv "pop_under_5_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/test/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv | deploy_indicators/test/uploads ## upload pop_over_65_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_over_65_total.csv "pop_over_65_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/test/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv | deploy_indicators/test/uploads ## upload poverty_families_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/poverty_families_total.csv "poverty_families_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/test/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv | deploy_indicators/test/uploads ## upload pop_disability_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_disability_total.csv "pop_disability_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/test/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv | deploy_indicators/test/uploads ## upload pop_not_well_eng_speak to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/test/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv | deploy_indicators/test/uploads ## upload pop_without_car to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_without_car.csv "pop_without_car" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv | deploy_indicators/test/uploads ## upload days_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv | deploy_indicators/test/uploads ## upload days_maxtemp_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv | deploy_indicators/test/uploads ## upload days_mintemp_above_25c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv | deploy_indicators/test/uploads ## upload days_mintemp_above_25c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv | deploy_indicators/test/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv | deploy_indicators/test/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/test/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/test/uploads ## upload man_distance_to_hospital to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" db/table/isodist_hospitals_h3
+	touch $@
+
+deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/test/uploads ## upload man_distance_to_bomb_shelters to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
+	touch $@
+
+deploy_indicators/test/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/test/uploads ## upload man_distance_to_charging_stations to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
+	touch $@
+
+deploy_indicators/test/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/test/uploads ## upload total_road_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_road_length.csv "total_road_length" db/table/total_road_length_h3
+	touch $@
+
+deploy_indicators/test/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/test/uploads ## upload view_count_bf2402 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402
+	touch $@
+
+deploy_indicators/test/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/test/uploads ## upload powerlines to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines.csv "powerlines" db/table/facebook_medium_voltage_distribution_h3
+	touch $@
+
+deploy_indicators/test/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/test/uploads ## upload eatery_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/eatery_count.csv "eatery_count" db/table/osm_places_eatery_h3
+	touch $@
+
+deploy_indicators/test/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv | deploy_indicators/test/uploads ## upload night_lights_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/night_lights_intensity.csv "night_lights_intensity" db/table/night_lights_h3
+	touch $@
+
+deploy_indicators/test/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv | deploy_indicators/test/uploads ## upload mapswipe_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
+	touch $@
+
+deploy_indicators/test/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv | deploy_indicators/test/uploads ## upload gsa_ghi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gsa_ghi.csv "gsa_ghi" db/table/global_solar_atlas_h3
+	touch $@
+
+deploy_indicators/test/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_avg_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/test/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_min_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/test/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_max_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/test/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_amp_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/test/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv | deploy_indicators/test/uploads ## upload powerlines_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" db/table/proximities_h3
+	touch $@
+
+deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/test/uploads ## upload waste_basket_coverage_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_containers_h3
+	touch $@
+
+deploy_indicators/test/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/test/uploads ## upload populated_areas_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" db/table/proximities_h3
+	touch $@
+
+deploy_indicators/test/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv | deploy_indicators/test/uploads ## upload power_substations_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" db/table/proximities_h3
+	touch $@
+
+deploy_indicators/test/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | deploy_indicators/test/uploads ## upload solar_farms_placement_suitability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
+	touch $@
+
+deploy_indicators/test/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/test/uploads ## upload residential to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/residential.csv "residential" db/table/residential_pop_h3
+	touch $@
+
+deploy_indicators/test/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/test/uploads ## upload solar_power_plants to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
+	touch $@
+
+deploy_indicators/test/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/test/uploads ## upload safety_index to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
+	touch $@
+
+deploy_indicators/test/uploads/population_upload: data/out/csv/population.csv | deploy_indicators/test/uploads ## upload population to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population.csv "population" db/table/kontur_population_h3
+	touch $@
+
+deploy_indicators/test/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv | deploy_indicators/test/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+	touch $@
+
+deploy_indicators/test/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv | deploy_indicators/test/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+	touch $@
+
+deploy_indicators/test/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv | deploy_indicators/test/uploads ## upload worldbank_tax_rate to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
+	touch $@
+
+deploy_indicators/test/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv | deploy_indicators/test/uploads ## upload years_to_naturalisation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
+	touch $@
+
+deploy_indicators/test/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv | deploy_indicators/test/uploads ## upload multiple_citizenship to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/multiple_citizenship.csv "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
+	touch $@
+
+deploy_indicators/test/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv | deploy_indicators/test/uploads ## upload ghs_max_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" db/table/ghs_building_height_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv | deploy_indicators/test/uploads ## upload ghs_avg_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
+	touch $@
+
+deploy_indicators/test/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv | deploy_indicators/test/uploads ## upload max_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" db/table/osm_building_levels_h3
+	touch $@
+
+deploy_indicators/test/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv | deploy_indicators/test/uploads ## upload avg_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" db/table/osm_building_levels_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv | deploy_indicators/test/uploads ## upload osm_hotels_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_hotels_count.csv "osm_hotels_count" db/table/osm_hotels_h3
+	touch $@
+
+deploy_indicators/test/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv | deploy_indicators/test/uploads ## upload max_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" db/table/osm_hotels_h3
+	touch $@
+
+deploy_indicators/test/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv | deploy_indicators/test/uploads ## upload avg_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" db/table/osm_hotels_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/test/uploads ## upload osm_historical_sites_and_museums_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/test/uploads ## upload osm_art_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv | deploy_indicators/test/uploads ## upload osm_entertainment_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv | deploy_indicators/test/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/test/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv | deploy_indicators/test/uploads ## upload worldbank_inflation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldbank_inflation.csv "worldbank_inflation" db/table/worldbank_inflation_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv | deploy_indicators/test/uploads ## upload osm_pharmacy_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" db/table/osm_pharmacy_h3
+	touch $@
+
+deploy_indicators/test/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv | deploy_indicators/test/uploads ## upload conflict_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/test/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv | deploy_indicators/test/uploads ## upload disaster_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/test/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv | deploy_indicators/test/uploads ## upload conflict_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/test/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv | deploy_indicators/test/uploads ## upload disaster_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/test/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv | deploy_indicators/test/uploads ## upload hdi_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hdi_2022.csv "hdi_2022" db/table/humanitarian_dev_index_2022_h3
+	touch $@
+
+deploy_indicators/test/uploads/inform_risk_upload: data/out/csv/inform_risk.csv | deploy_indicators/test/uploads ## upload inform_risk to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/inform_risk.csv "inform_risk" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv | deploy_indicators/test/uploads ## upload hazard_and_exposure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hazard_and_exposure.csv "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv | deploy_indicators/test/uploads ## upload natural_0_to_10 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/natural_0_to_10.csv "natural_0_to_10" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/earthquake_upload: data/out/csv/earthquake.csv | deploy_indicators/test/uploads ## upload earthquake to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/earthquake.csv "earthquake" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/river_flood_upload: data/out/csv/river_flood.csv | deploy_indicators/test/uploads ## upload river_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/river_flood.csv "river_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/tsunami_upload: data/out/csv/tsunami.csv | deploy_indicators/test/uploads ## upload tsunami to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/tsunami.csv "tsunami" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv | deploy_indicators/test/uploads ## upload tropical_cyclone to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/tropical_cyclone.csv "tropical_cyclone" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv | deploy_indicators/test/uploads ## upload coastal_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/coastal_flood.csv "coastal_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/drought_upload: data/out/csv/drought.csv | deploy_indicators/test/uploads ## upload drought to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drought.csv "drought" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/epidemic_upload: data/out/csv/epidemic.csv | deploy_indicators/test/uploads ## upload epidemic to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/epidemic.csv "epidemic" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/human_upload: data/out/csv/human.csv | deploy_indicators/test/uploads ## upload human to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/human.csv "human" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv | deploy_indicators/test/uploads ## upload projected_conflict_probability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/projected_conflict_probability.csv "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv | deploy_indicators/test/uploads ## upload current_conflict_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/current_conflict_intensity.csv "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/vulnerability_upload: data/out/csv/vulnerability.csv | deploy_indicators/test/uploads ## upload vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/vulnerability.csv "vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv | deploy_indicators/test/uploads ## upload socio_economic_vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/socio_economic_vulnerability.csv "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv | deploy_indicators/test/uploads ## upload development_and_deprivation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/development_and_deprivation.csv "development_and_deprivation" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/inequality_upload: data/out/csv/inequality.csv | deploy_indicators/test/uploads ## upload inequality to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/inequality.csv "inequality" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv | deploy_indicators/test/uploads ## upload economic_dependency to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/economic_dependency.csv "economic_dependency" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv | deploy_indicators/test/uploads ## upload vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/vulnerable_groups.csv "vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv | deploy_indicators/test/uploads ## upload uprooted_people to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/uprooted_people.csv "uprooted_people" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/health_conditions_upload: data/out/csv/health_conditions.csv | deploy_indicators/test/uploads ## upload health_conditions to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/health_conditions.csv "health_conditions" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/children_u5_upload: data/out/csv/children_u5.csv | deploy_indicators/test/uploads ## upload children_u5 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/children_u5.csv "children_u5" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv | deploy_indicators/test/uploads ## upload recent_shocks to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/recent_shocks.csv "recent_shocks" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/food_security_upload: data/out/csv/food_security.csv | deploy_indicators/test/uploads ## upload food_security to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/food_security.csv "food_security" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv | deploy_indicators/test/uploads ## upload other_vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/other_vulnerable_groups.csv "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv | deploy_indicators/test/uploads ## upload lack_of_coping_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/lack_of_coping_capacity.csv "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/institutional_upload: data/out/csv/institutional.csv | deploy_indicators/test/uploads ## upload institutional to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/institutional.csv "institutional" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/drr_upload: data/out/csv/drr.csv | deploy_indicators/test/uploads ## upload drr to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drr.csv "drr" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/governance_upload: data/out/csv/governance.csv | deploy_indicators/test/uploads ## upload governance to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/governance.csv "governance" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/infrastructure_upload: data/out/csv/infrastructure.csv | deploy_indicators/test/uploads ## upload infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/infrastructure.csv "infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/communication_upload: data/out/csv/communication.csv | deploy_indicators/test/uploads ## upload communication to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/communication.csv "communication" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv | deploy_indicators/test/uploads ## upload physical_infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/physical_infrastructure.csv "physical_infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv | deploy_indicators/test/uploads ## upload access_to_health_care to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/access_to_health_care.csv "access_to_health_care" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_banks_count_upload: data/out/csv/osm_banks_count.csv | deploy_indicators/test/uploads ## upload osm_banks_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_banks_count.csv "osm_banks_count" db/table/osm_financial_venues_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_atms_count_upload: data/out/csv/osm_atms_count.csv | deploy_indicators/test/uploads ## upload osm_atms_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_atms_count.csv "osm_atms_count" db/table/osm_financial_venues_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_kindergartens_count_upload: data/out/csv/osm_kindergartens_count.csv | deploy_indicators/test/uploads ## upload osm_kindergartens_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_kindergartens_count.csv "osm_kindergartens_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_schools_count_upload: data/out/csv/osm_schools_count.csv | deploy_indicators/test/uploads ## upload osm_schools_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_schools_count.csv "osm_schools_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_colleges_count_upload: data/out/csv/osm_colleges_count.csv | deploy_indicators/test/uploads ## upload osm_colleges_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_colleges_count.csv "osm_colleges_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_universities_count_upload: data/out/csv/osm_universities_count.csv | deploy_indicators/test/uploads ## upload osm_universities_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_universities_count.csv "osm_universities_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_defibrillators_count_upload: data/out/csv/osm_defibrillators_count.csv | deploy_indicators/test/uploads ## upload osm_defibrillators_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_defibrillators_count.csv "osm_defibrillators_count" db/table/osm_emergency_facilities_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_airports_count_upload: data/out/csv/osm_airports_count.csv | deploy_indicators/test/uploads ## upload osm_airports_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_airports_count.csv "osm_airports_count" db/table/osm_transport_facilities_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_railway_stations_count_upload: data/out/csv/osm_railway_stations_count.csv | deploy_indicators/test/uploads ## upload osm_railway_stations_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_railway_stations_count.csv "osm_railway_stations_count" db/table/osm_transport_facilities_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_public_transport_stops_count_upload: data/out/csv/osm_public_transport_stops_count.csv | deploy_indicators/test/uploads ## upload osm_public_transport_stops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_public_transport_stops_count.csv "osm_public_transport_stops_count" db/table/osm_transport_facilities_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_car_parkings_capacity_upload: data/out/csv/osm_car_parkings_capacity.csv | deploy_indicators/test/uploads ## upload osm_car_parkings_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_car_parkings_capacity.csv "osm_car_parkings_capacity" db/table/osm_car_parkings_capacity_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_heritage_sites_count_upload: data/out/csv/osm_heritage_sites_count.csv | deploy_indicators/test/uploads ## upload osm_heritage_sites_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_heritage_sites_count.csv "osm_heritage_sites_count" db/table/osm_heritage_sites_h3
+	touch $@
+
+deploy_indicators/test/uploads/min_osm_heritage_admin_level_upload: data/out/csv/min_osm_heritage_admin_level.csv | deploy_indicators/test/uploads ## upload min_osm_heritage_admin_level to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_osm_heritage_admin_level.csv "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
+	touch $@
+
+deploy_indicators/test/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv | deploy_indicators/test/uploads ## upload foursquare_os_places_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/foursquare_os_places_count.csv "foursquare_os_places_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/coffee_shops_fsq_count_upload: data/out/csv/coffee_shops_fsq_count.csv | deploy_indicators/test/uploads ## upload coffee_shops_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/coffee_shops_fsq_count.csv "coffee_shops_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/kebab_restaurants_fsq_count_upload: data/out/csv/kebab_restaurants_fsq_count.csv | deploy_indicators/test/uploads ## upload kebab_restaurants_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/kebab_restaurants_fsq_count.csv "kebab_restaurants_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/business_and_professional_services_fsq_count_upload: data/out/csv/business_and_professional_services_fsq_count.csv | deploy_indicators/test/uploads ## upload business_and_professional_services_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/business_and_professional_services_fsq_count.csv "business_and_professional_services_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/dining_and_drinking_fsq_count_upload: data/out/csv/dining_and_drinking_fsq_count.csv | deploy_indicators/test/uploads ## upload dining_and_drinking_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/dining_and_drinking_fsq_count.csv "dining_and_drinking_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/retail_fsq_count_upload: data/out/csv/retail_fsq_count.csv | deploy_indicators/test/uploads ## upload retail_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/retail_fsq_count.csv "retail_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/community_and_government_fsq_count_upload: data/out/csv/community_and_government_fsq_count.csv | deploy_indicators/test/uploads ## upload community_and_government_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/community_and_government_fsq_count.csv "community_and_government_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/travel_and_transportation_fsq_count_upload: data/out/csv/travel_and_transportation_fsq_count.csv | deploy_indicators/test/uploads ## upload travel_and_transportation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/travel_and_transportation_fsq_count.csv "travel_and_transportation_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/landmarks_and_outdoors_fsq_count_upload: data/out/csv/landmarks_and_outdoors_fsq_count.csv | deploy_indicators/test/uploads ## upload landmarks_and_outdoors_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/landmarks_and_outdoors_fsq_count.csv "landmarks_and_outdoors_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/health_and_medicine_fsq_count_upload: data/out/csv/health_and_medicine_fsq_count.csv | deploy_indicators/test/uploads ## upload health_and_medicine_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/health_and_medicine_fsq_count.csv "health_and_medicine_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/arts_and_entertainment_fsq_count_upload: data/out/csv/arts_and_entertainment_fsq_count.csv | deploy_indicators/test/uploads ## upload arts_and_entertainment_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/arts_and_entertainment_fsq_count.csv "arts_and_entertainment_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/sports_and_recreation_fsq_count_upload: data/out/csv/sports_and_recreation_fsq_count.csv | deploy_indicators/test/uploads ## upload sports_and_recreation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/sports_and_recreation_fsq_count.csv "sports_and_recreation_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/events_fsq_count_upload: data/out/csv/events_fsq_count.csv | deploy_indicators/test/uploads ## upload events_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/test/uploads/upload_test: deploy_indicators/test/uploads/population_upload deploy_indicators/test/uploads/view_count_upload deploy_indicators/test/uploads/count_upload deploy_indicators/test/uploads/populated_area_km2_upload deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload deploy_indicators/test/uploads/local_hours_upload deploy_indicators/test/uploads/total_hours_upload deploy_indicators/test/uploads/avgmax_ts_upload deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/view_count_bf2402_upload deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/test/uploads/total_building_count_upload deploy_indicators/test/uploads/count_6_months_upload deploy_indicators/test/uploads/building_count_6_months_upload deploy_indicators/test/uploads/highway_length_6_months_upload deploy_indicators/test/uploads/osm_users_upload deploy_indicators/test/uploads/residential_upload deploy_indicators/test/uploads/gdp_upload deploy_indicators/test/uploads/min_ts_upload deploy_indicators/test/uploads/max_ts_upload deploy_indicators/test/uploads/wildfires_upload deploy_indicators/test/uploads/covid19_confirmed_upload deploy_indicators/test/uploads/population_prev_upload deploy_indicators/test/uploads/industrial_area_upload deploy_indicators/test/uploads/volcanos_count_upload deploy_indicators/test/uploads/pop_under_5_total_upload deploy_indicators/test/uploads/pop_over_65_total_upload deploy_indicators/test/uploads/poverty_families_total_upload deploy_indicators/test/uploads/pop_disability_total_upload deploy_indicators/test/uploads/pop_not_well_eng_speak_upload deploy_indicators/test/uploads/pop_without_car_upload deploy_indicators/test/uploads/man_distance_to_hospital_upload deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/man_distance_to_charging_stations_upload  deploy_indicators/test/uploads/eatery_count_upload deploy_indicators/test/uploads/food_shops_count_upload deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/solar_farms_placement_suitability_upload deploy_indicators/test/uploads/mapswipe_area_km2_upload deploy_indicators/test/uploads/avg_slope_gebco_2022_upload deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload deploy_indicators/test/uploads/forest_upload deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/test/uploads/shrubs_upload deploy_indicators/test/uploads/herbage_upload deploy_indicators/test/uploads/unknown_forest_upload deploy_indicators/test/uploads/avg_ndvi_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/hazardous_days_count_upload deploy_indicators/test/uploads/earthquake_days_count_upload deploy_indicators/test/uploads/wildfire_days_count_upload deploy_indicators/test/uploads/drought_days_count_upload deploy_indicators/test/uploads/cyclone_days_count_upload deploy_indicators/test/uploads/volcano_days_count_upload deploy_indicators/test/uploads/flood_days_count_upload deploy_indicators/test/uploads/powerlines_upload deploy_indicators/test/uploads/night_lights_intensity_upload deploy_indicators/test/uploads/gsa_ghi_upload deploy_indicators/test/uploads/worldclim_avg_temperature_upload deploy_indicators/test/uploads/worldclim_min_temperature_upload deploy_indicators/test/uploads/worldclim_max_temperature_upload deploy_indicators/test/uploads/worldclim_amp_temperature_upload deploy_indicators/test/uploads/powerlines_proximity_m_upload deploy_indicators/test/uploads/populated_areas_proximity_m_upload deploy_indicators/test/uploads/power_substations_proximity_m_upload deploy_indicators/test/uploads/solar_power_plants_upload deploy_indicators/test/uploads/safety_index_upload deploy_indicators/test/uploads/avg_forest_canopy_height_upload deploy_indicators/test/uploads/max_forest_canopy_height_upload deploy_indicators/test/uploads/worldbank_tax_rate_upload deploy_indicators/test/uploads/years_to_naturalisation_upload deploy_indicators/test/uploads/multiple_citizenship_upload deploy_indicators/test/uploads/ghs_max_building_height_upload deploy_indicators/test/uploads/ghs_avg_building_height_upload deploy_indicators/test/uploads/max_osm_building_levels_upload deploy_indicators/test/uploads/avg_osm_building_levels_upload deploy_indicators/test/uploads/osm_hotels_count_upload deploy_indicators/test/uploads/max_osm_hotels_assesment_upload deploy_indicators/test/uploads/avg_osm_hotels_assesment_upload deploy_indicators/test/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/test/uploads/osm_art_venues_count_upload deploy_indicators/test/uploads/osm_entertainment_venues_count_upload deploy_indicators/test/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/test/uploads/worldbank_inflation_upload deploy_indicators/test/uploads/cropland_upload deploy_indicators/test/uploads/wetland_upload deploy_indicators/test/uploads/moss_lichen_upload deploy_indicators/test/uploads/bare_vegetation_upload deploy_indicators/test/uploads/builtup_upload deploy_indicators/test/uploads/snow_ice_upload deploy_indicators/test/uploads/permanent_water_upload deploy_indicators/test/uploads/osm_pharmacy_count_upload deploy_indicators/test/uploads/conflict_stock_displacement_upload deploy_indicators/test/uploads/disaster_stock_displacement_upload deploy_indicators/test/uploads/conflict_internal_displacements_upload deploy_indicators/test/uploads/disaster_internal_displacements_upload deploy_indicators/test/uploads/hdi_2022_upload deploy_indicators/test/uploads/inform_risk_upload deploy_indicators/test/uploads/hazard_and_exposure_upload deploy_indicators/test/uploads/natural_0_to_10_upload deploy_indicators/test/uploads/earthquake_upload deploy_indicators/test/uploads/river_flood_upload deploy_indicators/test/uploads/tsunami_upload deploy_indicators/test/uploads/tropical_cyclone_upload deploy_indicators/test/uploads/coastal_flood_upload deploy_indicators/test/uploads/drought_upload deploy_indicators/test/uploads/epidemic_upload deploy_indicators/test/uploads/human_upload deploy_indicators/test/uploads/projected_conflict_probability_upload deploy_indicators/test/uploads/current_conflict_intensity_upload deploy_indicators/test/uploads/vulnerability_upload deploy_indicators/test/uploads/socio_economic_vulnerability_upload deploy_indicators/test/uploads/development_and_deprivation_upload deploy_indicators/test/uploads/inequality_upload deploy_indicators/test/uploads/economic_dependency_upload deploy_indicators/test/uploads/vulnerable_groups_upload deploy_indicators/test/uploads/uprooted_people_upload deploy_indicators/test/uploads/health_conditions_upload deploy_indicators/test/uploads/children_u5_upload deploy_indicators/test/uploads/recent_shocks_upload deploy_indicators/test/uploads/food_security_upload deploy_indicators/test/uploads/other_vulnerable_groups_upload deploy_indicators/test/uploads/lack_of_coping_capacity_upload deploy_indicators/test/uploads/institutional_upload deploy_indicators/test/uploads/drr_upload deploy_indicators/test/uploads/governance_upload deploy_indicators/test/uploads/infrastructure_upload deploy_indicators/test/uploads/communication_upload deploy_indicators/test/uploads/physical_infrastructure_upload deploy_indicators/test/uploads/access_to_health_care_upload deploy_indicators/test/uploads/osm_banks_count_upload deploy_indicators/test/uploads/osm_atms_count_upload deploy_indicators/test/uploads/osm_kindergartens_count_upload deploy_indicators/test/uploads/osm_schools_count_upload deploy_indicators/test/uploads/osm_colleges_count_upload deploy_indicators/test/uploads/osm_universities_count_upload deploy_indicators/test/uploads/osm_defibrillators_count_upload deploy_indicators/test/uploads/osm_airports_count_upload deploy_indicators/test/uploads/osm_railway_stations_count_upload deploy_indicators/test/uploads/osm_public_transport_stops_count_upload deploy_indicators/test/uploads/osm_car_parkings_capacity_upload deploy_indicators/test/uploads/osm_heritage_sites_count_upload deploy_indicators/test/uploads/min_osm_heritage_admin_level_upload deploy_indicators/test/uploads/foursquare_os_places_count_upload deploy_indicators/test/uploads/coffee_shops_fsq_count_upload deploy_indicators/test/uploads/kebab_restaurants_fsq_count_upload deploy_indicators/test/uploads/business_and_professional_services_fsq_count_upload deploy_indicators/test/uploads/dining_and_drinking_fsq_count_upload deploy_indicators/test/uploads/retail_fsq_count_upload deploy_indicators/test/uploads/community_and_government_fsq_count_upload deploy_indicators/test/uploads/travel_and_transportation_fsq_count_upload deploy_indicators/test/uploads/landmarks_and_outdoors_fsq_count_upload deploy_indicators/test/uploads/health_and_medicine_fsq_count_upload deploy_indicators/test/uploads/arts_and_entertainment_fsq_count_upload deploy_indicators/test/uploads/sports_and_recreation_fsq_count_upload deploy_indicators/test/uploads/events_fsq_count_upload | deploy_indicators/test/uploads ## Control of layer uplodings to Insigths API for TEST - without area_km2 and one
+	touch $@
+
+## Custom axis updates block
+deploy_indicators/test/custom_axis/population_area_km2: deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for population area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "population" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/count_area_km2: deploy_indicators/test/uploads/count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/building_count_area_km2: deploy_indicators/test/uploads/building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "building_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/local_hours_area_km2: deploy_indicators/test/uploads/local_hours_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for local_hours area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "local_hours" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/total_hours_area_km2: deploy_indicators/test/uploads/total_hours_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_hours area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "total_hours" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/view_count_area_km2: deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/osm_users_one: deploy_indicators/test/uploads/osm_users_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for osm_users one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "osm_users" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/total_building_count_area_km2: deploy_indicators/test/uploads/total_building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_building_count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "total_building_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/wildfires_area_km2: deploy_indicators/test/uploads/wildfires_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfires area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfires" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/forest_area_km2: deploy_indicators/test/uploads/forest_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for forest area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "forest" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_maxtemp_over_32c_1c one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "days_maxtemp_over_32c_1c" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_mintemp_above_25c_1c one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "days_mintemp_above_25c_1c" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_fire_brigade" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/man_distance_to_hospital_one: deploy_indicators/test/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_hospital" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/man_distance_to_hospital_population: deploy_indicators/test/uploads/man_distance_to_hospital_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital population axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_hospital" "population"
+	touch $@
+
+deploy_indicators/test/custom_axis/highway_length_area_km2: deploy_indicators/test/uploads/highway_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "highway_length" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/total_road_length_area_km2: deploy_indicators/test/uploads/total_road_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_road_length area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "total_road_length" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/view_count_bf2402_one: deploy_indicators/test/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "view_count_bf2402" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/view_count_bf2402_area_km2: deploy_indicators/test/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "view_count_bf2402" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/powerlines_one: deploy_indicators/test/uploads/powerlines_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for powerlines one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "powerlines" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/night_lights_intensity_one: deploy_indicators/test/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for night_lights_intensity one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "night_lights_intensity" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_bomb_shelters" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_charging_stations" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/solar_power_plants_area_km2: deploy_indicators/test/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for solar_power_plants area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "solar_power_plants" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/volcano_days_count_area_km2: deploy_indicators/test/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "volcano_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/volcano_days_count_one: deploy_indicators/test/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "volcano_days_count" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/flood_days_count_area_km2: deploy_indicators/test/uploads/flood_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "flood_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/flood_days_count_one: deploy_indicators/test/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "flood_days_count" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters population axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_bomb_shelters" "population"
+	touch $@
+
+deploy_indicators/test/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations population axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_charging_stations" "population"
+	touch $@
+
+deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade population axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_fire_brigade" "population"
+	touch $@
+
+deploy_indicators/test/custom_axis/building_count_total_building_count: deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/total_building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count total_building_count axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "building_count" "total_building_count"
+	touch $@
+
+deploy_indicators/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "waste_basket_coverage_area_km2" "populated_area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/highway_length_total_road_length: deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length total_road_length axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "highway_length" "total_road_length"
+	touch $@
+
+deploy_indicators/test/custom_axis/eatery_count_one: deploy_indicators/test/uploads/eatery_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for eatery_count one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "eatery_count" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/food_shops_count_one: deploy_indicators/test/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for food_shops_count one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "food_shops_count" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/hazardous_days_count_area_km2: deploy_indicators/test/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "hazardous_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/hazardous_days_count_one: deploy_indicators/test/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "hazardous_days_count" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/earthquake_days_count_area_km2: deploy_indicators/test/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "earthquake_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/earthquake_days_count_one: deploy_indicators/test/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "earthquake_days_count" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/drought_days_count_area_km2: deploy_indicators/test/uploads/drought_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "drought_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/drought_days_count_one: deploy_indicators/test/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "drought_days_count" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/cyclone_days_count_area_km2: deploy_indicators/test/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "cyclone_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/cyclone_days_count_one: deploy_indicators/test/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "cyclone_days_count" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/wildfire_days_count_area_km2: deploy_indicators/test/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count area_km2 axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfire_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/custom_axis/wildfire_days_count_one: deploy_indicators/test/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count one axis on test.
+	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
+	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfire_days_count" "one"
+	touch $@
+
+deploy_indicators/test/custom_axis/all_custom_axis: deploy_indicators/test/custom_axis/population_area_km2 deploy_indicators/test/custom_axis/count_area_km2 deploy_indicators/test/custom_axis/building_count_area_km2 deploy_indicators/test/custom_axis/local_hours_area_km2 deploy_indicators/test/custom_axis/total_hours_area_km2 deploy_indicators/test/custom_axis/view_count_area_km2 deploy_indicators/test/custom_axis/osm_users_one deploy_indicators/test/custom_axis/total_building_count_area_km2 deploy_indicators/test/custom_axis/wildfires_area_km2 deploy_indicators/test/custom_axis/forest_area_km2 deploy_indicators/test/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/test/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/test/custom_axis/man_distance_to_hospital_one deploy_indicators/test/custom_axis/highway_length_area_km2 deploy_indicators/test/custom_axis/total_road_length_area_km2 deploy_indicators/test/custom_axis/view_count_bf2402_one deploy_indicators/test/custom_axis/view_count_bf2402_area_km2 deploy_indicators/test/custom_axis/powerlines_one deploy_indicators/test/custom_axis/night_lights_intensity_one deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/test/custom_axis/man_distance_to_charging_stations_one deploy_indicators/test/custom_axis/solar_power_plants_area_km2 deploy_indicators/test/custom_axis/volcano_days_count_area_km2 deploy_indicators/test/custom_axis/volcano_days_count_one deploy_indicators/test/custom_axis/flood_days_count_area_km2 deploy_indicators/test/custom_axis/flood_days_count_one deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/test/custom_axis/man_distance_to_charging_stations_population deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/test/custom_axis/building_count_total_building_count deploy_indicators/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/test/custom_axis/highway_length_total_road_length deploy_indicators/test/custom_axis/eatery_count_one deploy_indicators/test/custom_axis/food_shops_count_one deploy_indicators/test/custom_axis/hazardous_days_count_area_km2 deploy_indicators/test/custom_axis/hazardous_days_count_one deploy_indicators/test/custom_axis/earthquake_days_count_area_km2 deploy_indicators/test/custom_axis/earthquake_days_count_one deploy_indicators/test/custom_axis/drought_days_count_area_km2 deploy_indicators/test/custom_axis/drought_days_count_one deploy_indicators/test/custom_axis/cyclone_days_count_area_km2 deploy_indicators/test/custom_axis/cyclone_days_count_one deploy_indicators/test/custom_axis/wildfire_days_count_area_km2 deploy_indicators/test/custom_axis/wildfire_days_count_one deploy_indicators/test/custom_axis/man_distance_to_hospital_population | deploy_indicators/test/custom_axis ## final target for custom axis deployment to test
+	touch $@
+
+## END Custom axis updates block
+
+## TEST Presets upload block
+
+deploy_indicators/test/presets/osm_quantity: deploy_indicators/test/uploads/count_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Quantity overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "count" "area_km2" "population" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/osm_building_completeness: deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/total_building_count_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "building_count" "total_building_count" "population" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/osm_road_completeness: deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "highway_length" "total_road_length" "population" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/osm_mapping_activity: deploy_indicators/test/uploads/local_hours_upload deploy_indicators/test/uploads/total_hours_upload  db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "local_hours" "area_km2" "total_hours" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/osm_antiquity: deploy_indicators/test/uploads/avgmax_ts_upload  deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "avgmax_ts" "one" "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/nighttime_heatwave_risk: deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "days_mintemp_above_25c_1c" "one" "population" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/fire_service_scarcity_risk: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_fire_brigade" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/views_before_after: deploy_indicators/test/uploads/view_count_bf2402_upload deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Views before after overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "view_count_bf2402" "area_km2" "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/ev_charging_availability: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy EV Charging Availability overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_charging_stations" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/waste_containers_availability: deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/populated_area_km2_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Waste containers availability overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/shelters_scarcity_risk: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Shelters Scarcity Risk overlay to test.
+	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_bomb_shelters" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/test/presets/all_presets: deploy_indicators/test/presets/osm_quantity deploy_indicators/test/presets/osm_building_completeness deploy_indicators/test/presets/osm_road_completeness deploy_indicators/test/presets/osm_mapping_activity deploy_indicators/test/presets/osm_antiquity deploy_indicators/test/presets/nighttime_heatwave_risk deploy_indicators/test/presets/fire_service_scarcity_risk deploy_indicators/test/presets/views_before_after deploy_indicators/test/presets/ev_charging_availability deploy_indicators/test/presets/waste_containers_availability deploy_indicators/test/presets/shelters_scarcity_risk ## final target for presets deployment to test
+	touch $@
+
+## END test upload block
+
+## Deploy prod ##
+db/table/insights_api_indicators_list_prod: | db/table ## Refresh insights_api_indicators_list_prod table before new deploy cycle
+	psql -c "drop table if exists insights_api_indicators_list_prod;"
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	touch $@
+
+deploy_indicators/prod/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/prod/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count.csv "count" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/prod/uploads ## upload hazardous_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hazardous_days_count.csv "hazardous_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/prod/uploads ## upload man_distance_to_fire_brigade to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
+	touch $@
+
+deploy_indicators/prod/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/prod/uploads ## upload food_shops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/food_shops_count.csv "food_shops_count" db/table/osm_places_food_shops_h3
+	touch $@
+
+deploy_indicators/prod/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv | deploy_indicators/prod/uploads ## upload populated_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_area_km2.csv "populated_area_km2" db/table/kontur_population_h3
+	touch $@
+
+deploy_indicators/prod/uploads/count_6_months_upload: data/out/csv/count_6_months.csv | deploy_indicators/prod/uploads ## upload count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count_6_months.csv "count_6_months" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/prod/uploads ## upload view_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count.csv "view_count" db/table/tile_logs
+	touch $@
+
+deploy_indicators/prod/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/prod/uploads ## upload avgmax_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avgmax_ts.csv "avgmax_ts" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/max_ts_upload: data/out/csv/max_ts.csv | deploy_indicators/prod/uploads ## upload max_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_ts.csv "max_ts" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_indicators/prod/uploads ## upload min_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_ts.csv "min_ts" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/prod/uploads ## upload osm_users to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_users.csv "osm_users" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/prod/uploads ## upload building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count.csv "building_count" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv | deploy_indicators/prod/uploads ## upload building_count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count_6_months.csv "building_count_6_months" db/table/osm_object_count_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/highway_length_upload: data/out/csv/highway_length.csv | deploy_indicators/prod/uploads ## upload highway_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length.csv "highway_length" db/table/osm_road_segments_h3
+	touch $@
+
+deploy_indicators/prod/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv | deploy_indicators/prod/uploads ## upload highway_length_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length_6_months.csv "highway_length_6_months" db/table/osm_road_segments_6_months_h3
+	touch $@
+
+deploy_indicators/prod/uploads/total_hours_upload: data/out/csv/total_hours.csv | deploy_indicators/prod/uploads ## upload total_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_hours.csv "total_hours" db/table/user_hours_h3
+	touch $@
+
+deploy_indicators/prod/uploads/local_hours_upload: data/out/csv/local_hours.csv | deploy_indicators/prod/uploads ## upload local_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/local_hours.csv "local_hours" db/table/user_hours_h3
+	touch $@
+
+deploy_indicators/prod/uploads/forest_upload: data/out/csv/forest.csv | deploy_indicators/prod/uploads ## upload forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/forest.csv "forest" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv | deploy_indicators/prod/uploads ## upload evergreen_needle_leaved_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/shrubs_upload: data/out/csv/shrubs.csv | deploy_indicators/prod/uploads ## upload shrubs to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/shrubs.csv "shrubs" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/herbage_upload: data/out/csv/herbage.csv | deploy_indicators/prod/uploads ## upload herbage to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/herbage.csv "herbage" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv | deploy_indicators/prod/uploads ## upload unknown_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/unknown_forest.csv "unknown_forest" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/cropland_upload: data/out/csv/cropland.csv | deploy_indicators/prod/uploads ## upload cropland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cropland.csv "cropland" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/wetland_upload: data/out/csv/wetland.csv | deploy_indicators/prod/uploads ## upload wetland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wetland.csv "wetland" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv | deploy_indicators/prod/uploads ## upload moss_lichen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/moss_lichen.csv "moss_lichen" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv | deploy_indicators/prod/uploads ## upload bare_vegetation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/bare_vegetation.csv "bare_vegetation" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/builtup_upload: data/out/csv/builtup.csv | deploy_indicators/prod/uploads ## upload builtup to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/builtup.csv "builtup" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/snow_ice_upload: data/out/csv/snow_ice.csv | deploy_indicators/prod/uploads ## upload snow_ice to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/snow_ice.csv "snow_ice" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/permanent_water_upload: data/out/csv/permanent_water.csv | deploy_indicators/prod/uploads ## upload permanent_water to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/permanent_water.csv "permanent_water" db/table/copernicus_landcover_h3
+	touch $@
+
+deploy_indicators/prod/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicators/prod/uploads ## upload gdp to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gdp.csv "gdp" db/table/gdp_h3
+	touch $@
+
+deploy_indicators/prod/uploads/population_prev_upload: data/out/csv/population_prev.csv | deploy_indicators/prod/uploads ## upload population_prev to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population_prev.csv "population_prev" db/table/kontur_population_v5_h3
+	touch $@
+
+deploy_indicators/prod/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/prod/uploads ## upload total_building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_building_count.csv "total_building_count" db/table/building_count_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/prod/uploads ## upload wildfires to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfires.csv "wildfires" db/table/global_fires_stat_h3
+	touch $@
+
+deploy_indicators/prod/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/prod/uploads ## upload earthquake_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/earthquake_days_count.csv "earthquake_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/prod/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv | deploy_indicators/prod/uploads ## upload drought_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drought_days_count.csv "drought_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/prod/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv | deploy_indicators/prod/uploads ## upload cyclone_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cyclone_days_count.csv "cyclone_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/prod/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv | deploy_indicators/prod/uploads ## upload wildfire_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfire_days_count.csv "wildfire_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/prod/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv | deploy_indicators/prod/uploads ## upload volcano_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcano_days_count.csv "volcano_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/prod/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv | deploy_indicators/prod/uploads ## upload flood_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
+	touch $@
+
+deploy_indicators/prod/uploads/covid19_confirmed_upload: data/out/csv/covid19_confirmed.csv | deploy_indicators/prod/uploads ## upload covid19_confirmed to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/covid19_confirmed.csv "covid19_confirmed" db/table/covid19_h3
+	touch $@
+
+deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/prod/uploads ## upload avg_slope_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
+	touch $@
+
+deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/prod/uploads ## upload avg_elevation_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
+	touch $@
+
+deploy_indicators/prod/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/prod/uploads ## upload industrial_area to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/industrial_area.csv "industrial_area" db/table/osm_landuse_industrial_h3
+	touch $@
+
+deploy_indicators/prod/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv | deploy_indicators/prod/uploads ## upload avg_ndvi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_ndvi.csv "avg_ndvi" db/table/ndvi_2019_06_10_h3
+	touch $@
+
+deploy_indicators/prod/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv | deploy_indicators/prod/uploads ## upload volcanos_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcanos_count.csv "volcanos_count" db/table/osm_volcanos_h3
+	touch $@
+
+deploy_indicators/prod/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv | deploy_indicators/prod/uploads ## upload pop_under_5_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_under_5_total.csv "pop_under_5_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/prod/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv | deploy_indicators/prod/uploads ## upload pop_over_65_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_over_65_total.csv "pop_over_65_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/prod/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv | deploy_indicators/prod/uploads ## upload poverty_families_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/poverty_families_total.csv "poverty_families_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/prod/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv | deploy_indicators/prod/uploads ## upload pop_disability_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_disability_total.csv "pop_disability_total" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv | deploy_indicators/prod/uploads ## upload pop_not_well_eng_speak to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/prod/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv | deploy_indicators/prod/uploads ## upload pop_without_car to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_without_car.csv "pop_without_car" db/table/us_census_tracts_stats_h3
+	touch $@
+
+deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload days_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv | deploy_indicators/prod/uploads ## upload days_maxtemp_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv | deploy_indicators/prod/uploads ## upload days_mintemp_above_25c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv | deploy_indicators/prod/uploads ## upload days_mintemp_above_25c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv | deploy_indicators/prod/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
+	touch $@
+
+deploy_indicators/prod/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/prod/uploads ## upload man_distance_to_hospital to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" db/table/isodist_hospitals_h3
+	touch $@
+
+deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/prod/uploads ## upload man_distance_to_bomb_shelters to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
+	touch $@
+
+deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/prod/uploads ## upload man_distance_to_charging_stations to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
+	touch $@
+
+deploy_indicators/prod/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/prod/uploads ## upload total_road_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_road_length.csv "total_road_length" db/table/total_road_length_h3
+	touch $@
+
+deploy_indicators/prod/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/prod/uploads ## upload view_count_bf2402 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402
+	touch $@
+
+deploy_indicators/prod/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/prod/uploads ## upload powerlines to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines.csv "powerlines" db/table/facebook_medium_voltage_distribution_h3
+	touch $@
+
+deploy_indicators/prod/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/prod/uploads ## upload eatery_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/eatery_count.csv "eatery_count" db/table/osm_places_eatery_h3
+	touch $@
+
+deploy_indicators/prod/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv | deploy_indicators/prod/uploads ## upload night_lights_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/night_lights_intensity.csv "night_lights_intensity" db/table/night_lights_h3
+	touch $@
+
+deploy_indicators/prod/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv | deploy_indicators/prod/uploads ## upload mapswipe_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
+	touch $@
+
+deploy_indicators/prod/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv | deploy_indicators/prod/uploads ## upload gsa_ghi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gsa_ghi.csv "gsa_ghi" db/table/global_solar_atlas_h3
+	touch $@
+
+deploy_indicators/prod/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_avg_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/prod/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_min_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/prod/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_max_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/prod/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_amp_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
+	touch $@
+
+deploy_indicators/prod/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv | deploy_indicators/prod/uploads ## upload powerlines_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" db/table/proximities_h3
+	touch $@
+
+deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/prod/uploads ## upload waste_basket_coverage_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_containers_h3
+	touch $@
+
+deploy_indicators/prod/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/prod/uploads ## upload populated_areas_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" db/table/proximities_h3
+	touch $@
+
+deploy_indicators/prod/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv | deploy_indicators/prod/uploads ## upload power_substations_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" db/table/proximities_h3
+	touch $@
+
+deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | deploy_indicators/prod/uploads ## upload solar_farms_placement_suitability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
+	touch $@
+
+deploy_indicators/prod/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/prod/uploads ## upload residential to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/residential.csv "residential" db/table/residential_pop_h3
+	touch $@
+
+deploy_indicators/prod/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/prod/uploads ## upload solar_power_plants to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
+	touch $@
+
+deploy_indicators/prod/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/prod/uploads ## upload safety_index to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
+	touch $@
+
+deploy_indicators/prod/uploads/population_upload: data/out/csv/population.csv | deploy_indicators/prod/uploads ## upload population to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population.csv "population" db/table/kontur_population_h3
+	touch $@
+
+deploy_indicators/prod/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv | deploy_indicators/prod/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+	touch $@
+
+deploy_indicators/prod/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv | deploy_indicators/prod/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+	touch $@
+
+deploy_indicators/prod/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv | deploy_indicators/prod/uploads ## upload worldbank_tax_rate to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
+	touch $@
+
+deploy_indicators/prod/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv | deploy_indicators/prod/uploads ## upload years_to_naturalisation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
+	touch $@
+
+deploy_indicators/prod/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv | deploy_indicators/prod/uploads ## upload multiple_citizenship to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/multiple_citizenship.csv "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
+	touch $@
+
+deploy_indicators/prod/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv | deploy_indicators/prod/uploads ## upload ghs_max_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" db/table/ghs_building_height_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv | deploy_indicators/prod/uploads ## upload ghs_avg_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
+	touch $@
+
+deploy_indicators/prod/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv | deploy_indicators/prod/uploads ## upload max_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" db/table/osm_building_levels_h3
+	touch $@
+
+deploy_indicators/prod/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv | deploy_indicators/prod/uploads ## upload avg_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" db/table/osm_building_levels_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv | deploy_indicators/prod/uploads ## upload osm_hotels_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_hotels_count.csv "osm_hotels_count" db/table/osm_hotels_h3
+	touch $@
+
+deploy_indicators/prod/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv | deploy_indicators/prod/uploads ## upload max_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" db/table/osm_hotels_h3
+	touch $@
+
+deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv | deploy_indicators/prod/uploads ## upload avg_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" db/table/osm_hotels_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/prod/uploads ## upload osm_historical_sites_and_museums_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/prod/uploads ## upload osm_art_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv | deploy_indicators/prod/uploads ## upload osm_entertainment_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv | deploy_indicators/prod/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
+	touch $@
+
+deploy_indicators/prod/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv | deploy_indicators/prod/uploads ## upload worldbank_inflation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldbank_inflation.csv "worldbank_inflation" db/table/worldbank_inflation_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv | deploy_indicators/prod/uploads ## upload osm_pharmacy_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" db/table/osm_pharmacy_h3
+	touch $@
+
+deploy_indicators/prod/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv | deploy_indicators/prod/uploads ## upload conflict_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/prod/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv | deploy_indicators/prod/uploads ## upload disaster_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/prod/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv | deploy_indicators/prod/uploads ## upload conflict_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/prod/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv | deploy_indicators/prod/uploads ## upload disaster_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" db/table/idmc_country_2023_h3
+	touch $@
+
+deploy_indicators/prod/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv | deploy_indicators/prod/uploads ## upload hdi_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hdi_2022.csv "hdi_2022" db/table/humanitarian_dev_index_2022_h3
+	touch $@
+
+deploy_indicators/prod/uploads/inform_risk_upload: data/out/csv/inform_risk.csv | deploy_indicators/prod/uploads ## upload inform_risk to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/inform_risk.csv "inform_risk" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv | deploy_indicators/prod/uploads ## upload hazard_and_exposure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hazard_and_exposure.csv "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv | deploy_indicators/prod/uploads ## upload natural_0_to_10 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/natural_0_to_10.csv "natural_0_to_10" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/earthquake_upload: data/out/csv/earthquake.csv | deploy_indicators/prod/uploads ## upload earthquake to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/earthquake.csv "earthquake" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/river_flood_upload: data/out/csv/river_flood.csv | deploy_indicators/prod/uploads ## upload river_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/river_flood.csv "river_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/tsunami_upload: data/out/csv/tsunami.csv | deploy_indicators/prod/uploads ## upload tsunami to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/tsunami.csv "tsunami" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv | deploy_indicators/prod/uploads ## upload tropical_cyclone to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/tropical_cyclone.csv "tropical_cyclone" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv | deploy_indicators/prod/uploads ## upload coastal_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/coastal_flood.csv "coastal_flood" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/drought_upload: data/out/csv/drought.csv | deploy_indicators/prod/uploads ## upload drought to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drought.csv "drought" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/epidemic_upload: data/out/csv/epidemic.csv | deploy_indicators/prod/uploads ## upload epidemic to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/epidemic.csv "epidemic" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/human_upload: data/out/csv/human.csv | deploy_indicators/prod/uploads ## upload human to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/human.csv "human" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv | deploy_indicators/prod/uploads ## upload projected_conflict_probability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/projected_conflict_probability.csv "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv | deploy_indicators/prod/uploads ## upload current_conflict_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/current_conflict_intensity.csv "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/vulnerability_upload: data/out/csv/vulnerability.csv | deploy_indicators/prod/uploads ## upload vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/vulnerability.csv "vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv | deploy_indicators/prod/uploads ## upload socio_economic_vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/socio_economic_vulnerability.csv "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv | deploy_indicators/prod/uploads ## upload development_and_deprivation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/development_and_deprivation.csv "development_and_deprivation" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/inequality_upload: data/out/csv/inequality.csv | deploy_indicators/prod/uploads ## upload inequality to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/inequality.csv "inequality" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv | deploy_indicators/prod/uploads ## upload economic_dependency to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/economic_dependency.csv "economic_dependency" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv | deploy_indicators/prod/uploads ## upload vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/vulnerable_groups.csv "vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv | deploy_indicators/prod/uploads ## upload uprooted_people to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/uprooted_people.csv "uprooted_people" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/health_conditions_upload: data/out/csv/health_conditions.csv | deploy_indicators/prod/uploads ## upload health_conditions to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/health_conditions.csv "health_conditions" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/children_u5_upload: data/out/csv/children_u5.csv | deploy_indicators/prod/uploads ## upload children_u5 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/children_u5.csv "children_u5" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv | deploy_indicators/prod/uploads ## upload recent_shocks to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/recent_shocks.csv "recent_shocks" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/food_security_upload: data/out/csv/food_security.csv | deploy_indicators/prod/uploads ## upload food_security to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/food_security.csv "food_security" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv | deploy_indicators/prod/uploads ## upload other_vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/other_vulnerable_groups.csv "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv | deploy_indicators/prod/uploads ## upload lack_of_coping_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/lack_of_coping_capacity.csv "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/institutional_upload: data/out/csv/institutional.csv | deploy_indicators/prod/uploads ## upload institutional to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/institutional.csv "institutional" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/drr_upload: data/out/csv/drr.csv | deploy_indicators/prod/uploads ## upload drr to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drr.csv "drr" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/governance_upload: data/out/csv/governance.csv | deploy_indicators/prod/uploads ## upload governance to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/governance.csv "governance" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/infrastructure_upload: data/out/csv/infrastructure.csv | deploy_indicators/prod/uploads ## upload infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/infrastructure.csv "infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/communication_upload: data/out/csv/communication.csv | deploy_indicators/prod/uploads ## upload communication to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/communication.csv "communication" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv | deploy_indicators/prod/uploads ## upload physical_infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/physical_infrastructure.csv "physical_infrastructure" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv | deploy_indicators/prod/uploads ## upload access_to_health_care to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/access_to_health_care.csv "access_to_health_care" db/table/inform_risk_profile_2025_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_banks_count_upload: data/out/csv/osm_banks_count.csv | deploy_indicators/prod/uploads ## upload osm_banks_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_banks_count.csv "osm_banks_count" db/table/osm_financial_venues_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_atms_count_upload: data/out/csv/osm_atms_count.csv | deploy_indicators/prod/uploads ## upload osm_atms_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_atms_count.csv "osm_atms_count" db/table/osm_financial_venues_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_kindergartens_count_upload: data/out/csv/osm_kindergartens_count.csv | deploy_indicators/prod/uploads ## upload osm_kindergartens_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_kindergartens_count.csv "osm_kindergartens_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_schools_count_upload: data/out/csv/osm_schools_count.csv | deploy_indicators/prod/uploads ## upload osm_schools_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_schools_count.csv "osm_schools_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_colleges_count_upload: data/out/csv/osm_colleges_count.csv | deploy_indicators/prod/uploads ## upload osm_colleges_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_colleges_count.csv "osm_colleges_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_universities_count_upload: data/out/csv/osm_universities_count.csv | deploy_indicators/prod/uploads ## upload osm_universities_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_universities_count.csv "osm_universities_count" db/table/osm_education_venues_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_defibrillators_count_upload: data/out/csv/osm_defibrillators_count.csv | deploy_indicators/prod/uploads ## upload osm_defibrillators_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_defibrillators_count.csv "osm_defibrillators_count" db/table/osm_emergency_facilities_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_airports_count_upload: data/out/csv/osm_airports_count.csv | deploy_indicators/prod/uploads ## upload osm_airports_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_airports_count.csv "osm_airports_count" db/table/osm_transport_facilities_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_railway_stations_count_upload: data/out/csv/osm_railway_stations_count.csv | deploy_indicators/prod/uploads ## upload osm_railway_stations_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_railway_stations_count.csv "osm_railway_stations_count" db/table/osm_transport_facilities_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_public_transport_stops_count_upload: data/out/csv/osm_public_transport_stops_count.csv | deploy_indicators/prod/uploads ## upload osm_public_transport_stops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_public_transport_stops_count.csv "osm_public_transport_stops_count" db/table/osm_transport_facilities_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_car_parkings_capacity_upload: data/out/csv/osm_car_parkings_capacity.csv | deploy_indicators/prod/uploads ## upload osm_car_parkings_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_car_parkings_capacity.csv "osm_car_parkings_capacity" db/table/osm_car_parkings_capacity_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_heritage_sites_count_upload: data/out/csv/osm_heritage_sites_count.csv | deploy_indicators/prod/uploads ## upload osm_heritage_sites_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_heritage_sites_count.csv "osm_heritage_sites_count" db/table/osm_heritage_sites_h3
+	touch $@
+
+deploy_indicators/prod/uploads/min_osm_heritage_admin_level_upload: data/out/csv/min_osm_heritage_admin_level.csv | deploy_indicators/prod/uploads ## upload min_osm_heritage_admin_level to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_osm_heritage_admin_level.csv "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
+	touch $@
+
+deploy_indicators/prod/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv | deploy_indicators/prod/uploads ## upload foursquare_os_places_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/foursquare_os_places_count.csv "foursquare_os_places_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/coffee_shops_fsq_count_upload: data/out/csv/coffee_shops_fsq_count.csv | deploy_indicators/prod/uploads ## upload coffee_shops_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/coffee_shops_fsq_count.csv "coffee_shops_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/kebab_restaurants_fsq_count_upload: data/out/csv/kebab_restaurants_fsq_count.csv | deploy_indicators/prod/uploads ## upload kebab_restaurants_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/kebab_restaurants_fsq_count.csv "kebab_restaurants_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/business_and_professional_services_fsq_count_upload: data/out/csv/business_and_professional_services_fsq_count.csv | deploy_indicators/prod/uploads ## upload business_and_professional_services_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/business_and_professional_services_fsq_count.csv "business_and_professional_services_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/dining_and_drinking_fsq_count_upload: data/out/csv/dining_and_drinking_fsq_count.csv | deploy_indicators/prod/uploads ## upload dining_and_drinking_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/dining_and_drinking_fsq_count.csv "dining_and_drinking_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/retail_fsq_count_upload: data/out/csv/retail_fsq_count.csv | deploy_indicators/prod/uploads ## upload retail_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/retail_fsq_count.csv "retail_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/community_and_government_fsq_count_upload: data/out/csv/community_and_government_fsq_count.csv | deploy_indicators/prod/uploads ## upload community_and_government_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/community_and_government_fsq_count.csv "community_and_government_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/travel_and_transportation_fsq_count_upload: data/out/csv/travel_and_transportation_fsq_count.csv | deploy_indicators/prod/uploads ## upload travel_and_transportation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/travel_and_transportation_fsq_count.csv "travel_and_transportation_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/landmarks_and_outdoors_fsq_count_upload: data/out/csv/landmarks_and_outdoors_fsq_count.csv | deploy_indicators/prod/uploads ## upload landmarks_and_outdoors_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/landmarks_and_outdoors_fsq_count.csv "landmarks_and_outdoors_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/health_and_medicine_fsq_count_upload: data/out/csv/health_and_medicine_fsq_count.csv | deploy_indicators/prod/uploads ## upload health_and_medicine_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/health_and_medicine_fsq_count.csv "health_and_medicine_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/arts_and_entertainment_fsq_count_upload: data/out/csv/arts_and_entertainment_fsq_count.csv | deploy_indicators/prod/uploads ## upload arts_and_entertainment_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/arts_and_entertainment_fsq_count.csv "arts_and_entertainment_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/sports_and_recreation_fsq_count_upload: data/out/csv/sports_and_recreation_fsq_count.csv | deploy_indicators/prod/uploads ## upload sports_and_recreation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/sports_and_recreation_fsq_count.csv "sports_and_recreation_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/events_fsq_count_upload: data/out/csv/events_fsq_count.csv | deploy_indicators/prod/uploads ## upload events_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
+	touch $@
+
+deploy_indicators/prod/uploads/upload_prod: deploy_indicators/prod/uploads/population_upload deploy_indicators/prod/uploads/view_count_upload deploy_indicators/prod/uploads/count_upload deploy_indicators/prod/uploads/populated_area_km2_upload deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload deploy_indicators/prod/uploads/local_hours_upload deploy_indicators/prod/uploads/total_hours_upload deploy_indicators/prod/uploads/avgmax_ts_upload deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/view_count_bf2402_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/prod/uploads/total_building_count_upload deploy_indicators/prod/uploads/count_6_months_upload deploy_indicators/prod/uploads/building_count_6_months_upload deploy_indicators/prod/uploads/highway_length_6_months_upload deploy_indicators/prod/uploads/osm_users_upload deploy_indicators/prod/uploads/residential_upload deploy_indicators/prod/uploads/gdp_upload deploy_indicators/prod/uploads/min_ts_upload deploy_indicators/prod/uploads/max_ts_upload deploy_indicators/prod/uploads/wildfires_upload deploy_indicators/prod/uploads/covid19_confirmed_upload deploy_indicators/prod/uploads/population_prev_upload deploy_indicators/prod/uploads/industrial_area_upload deploy_indicators/prod/uploads/volcanos_count_upload deploy_indicators/prod/uploads/pop_under_5_total_upload deploy_indicators/prod/uploads/pop_over_65_total_upload deploy_indicators/prod/uploads/poverty_families_total_upload deploy_indicators/prod/uploads/pop_disability_total_upload deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload deploy_indicators/prod/uploads/pop_without_car_upload deploy_indicators/prod/uploads/man_distance_to_hospital_upload deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  deploy_indicators/prod/uploads/eatery_count_upload deploy_indicators/prod/uploads/food_shops_count_upload deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload deploy_indicators/prod/uploads/mapswipe_area_km2_upload deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload deploy_indicators/prod/uploads/forest_upload deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/prod/uploads/shrubs_upload deploy_indicators/prod/uploads/herbage_upload deploy_indicators/prod/uploads/unknown_forest_upload deploy_indicators/prod/uploads/avg_ndvi_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/hazardous_days_count_upload deploy_indicators/prod/uploads/earthquake_days_count_upload deploy_indicators/prod/uploads/wildfire_days_count_upload deploy_indicators/prod/uploads/drought_days_count_upload deploy_indicators/prod/uploads/cyclone_days_count_upload deploy_indicators/prod/uploads/volcano_days_count_upload deploy_indicators/prod/uploads/flood_days_count_upload deploy_indicators/prod/uploads/powerlines_upload deploy_indicators/prod/uploads/night_lights_intensity_upload deploy_indicators/prod/uploads/gsa_ghi_upload deploy_indicators/prod/uploads/worldclim_avg_temperature_upload deploy_indicators/prod/uploads/worldclim_min_temperature_upload deploy_indicators/prod/uploads/worldclim_max_temperature_upload deploy_indicators/prod/uploads/worldclim_amp_temperature_upload deploy_indicators/prod/uploads/powerlines_proximity_m_upload deploy_indicators/prod/uploads/populated_areas_proximity_m_upload deploy_indicators/prod/uploads/power_substations_proximity_m_upload deploy_indicators/prod/uploads/solar_power_plants_upload deploy_indicators/prod/uploads/safety_index_upload deploy_indicators/prod/uploads/avg_forest_canopy_height_upload deploy_indicators/prod/uploads/max_forest_canopy_height_upload deploy_indicators/prod/uploads/worldbank_tax_rate_upload deploy_indicators/prod/uploads/years_to_naturalisation_upload deploy_indicators/prod/uploads/multiple_citizenship_upload deploy_indicators/prod/uploads/ghs_max_building_height_upload deploy_indicators/prod/uploads/ghs_avg_building_height_upload deploy_indicators/prod/uploads/max_osm_building_levels_upload deploy_indicators/prod/uploads/avg_osm_building_levels_upload deploy_indicators/prod/uploads/osm_hotels_count_upload deploy_indicators/prod/uploads/max_osm_hotels_assesment_upload deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/prod/uploads/osm_art_venues_count_upload deploy_indicators/prod/uploads/osm_entertainment_venues_count_upload deploy_indicators/prod/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/prod/uploads/worldbank_inflation_upload deploy_indicators/prod/uploads/cropland_upload deploy_indicators/prod/uploads/wetland_upload deploy_indicators/prod/uploads/moss_lichen_upload deploy_indicators/prod/uploads/bare_vegetation_upload deploy_indicators/prod/uploads/builtup_upload deploy_indicators/prod/uploads/snow_ice_upload deploy_indicators/prod/uploads/permanent_water_upload deploy_indicators/prod/uploads/osm_pharmacy_count_upload deploy_indicators/prod/uploads/conflict_stock_displacement_upload deploy_indicators/prod/uploads/disaster_stock_displacement_upload deploy_indicators/prod/uploads/conflict_internal_displacements_upload deploy_indicators/prod/uploads/disaster_internal_displacements_upload deploy_indicators/prod/uploads/hdi_2022_upload deploy_indicators/prod/uploads/inform_risk_upload deploy_indicators/prod/uploads/hazard_and_exposure_upload deploy_indicators/prod/uploads/natural_0_to_10_upload deploy_indicators/prod/uploads/earthquake_upload deploy_indicators/prod/uploads/river_flood_upload deploy_indicators/prod/uploads/tsunami_upload deploy_indicators/prod/uploads/tropical_cyclone_upload deploy_indicators/prod/uploads/coastal_flood_upload deploy_indicators/prod/uploads/drought_upload deploy_indicators/prod/uploads/epidemic_upload deploy_indicators/prod/uploads/human_upload deploy_indicators/prod/uploads/projected_conflict_probability_upload deploy_indicators/prod/uploads/current_conflict_intensity_upload deploy_indicators/prod/uploads/vulnerability_upload deploy_indicators/prod/uploads/socio_economic_vulnerability_upload deploy_indicators/prod/uploads/development_and_deprivation_upload deploy_indicators/prod/uploads/inequality_upload deploy_indicators/prod/uploads/economic_dependency_upload deploy_indicators/prod/uploads/vulnerable_groups_upload deploy_indicators/prod/uploads/uprooted_people_upload deploy_indicators/prod/uploads/health_conditions_upload deploy_indicators/prod/uploads/children_u5_upload deploy_indicators/prod/uploads/recent_shocks_upload deploy_indicators/prod/uploads/food_security_upload deploy_indicators/prod/uploads/other_vulnerable_groups_upload deploy_indicators/prod/uploads/lack_of_coping_capacity_upload deploy_indicators/prod/uploads/institutional_upload deploy_indicators/prod/uploads/drr_upload deploy_indicators/prod/uploads/governance_upload deploy_indicators/prod/uploads/infrastructure_upload deploy_indicators/prod/uploads/communication_upload deploy_indicators/prod/uploads/physical_infrastructure_upload deploy_indicators/prod/uploads/access_to_health_care_upload deploy_indicators/prod/uploads/osm_banks_count_upload deploy_indicators/prod/uploads/osm_atms_count_upload deploy_indicators/prod/uploads/osm_kindergartens_count_upload deploy_indicators/prod/uploads/osm_schools_count_upload deploy_indicators/prod/uploads/osm_colleges_count_upload deploy_indicators/prod/uploads/osm_universities_count_upload deploy_indicators/prod/uploads/osm_defibrillators_count_upload deploy_indicators/prod/uploads/osm_airports_count_upload deploy_indicators/prod/uploads/osm_railway_stations_count_upload deploy_indicators/prod/uploads/osm_public_transport_stops_count_upload deploy_indicators/prod/uploads/osm_car_parkings_capacity_upload deploy_indicators/prod/uploads/osm_heritage_sites_count_upload deploy_indicators/prod/uploads/min_osm_heritage_admin_level_upload deploy_indicators/prod/uploads/foursquare_os_places_count_upload deploy_indicators/prod/uploads/coffee_shops_fsq_count_upload deploy_indicators/prod/uploads/kebab_restaurants_fsq_count_upload deploy_indicators/prod/uploads/business_and_professional_services_fsq_count_upload deploy_indicators/prod/uploads/dining_and_drinking_fsq_count_upload deploy_indicators/prod/uploads/retail_fsq_count_upload deploy_indicators/prod/uploads/community_and_government_fsq_count_upload deploy_indicators/prod/uploads/travel_and_transportation_fsq_count_upload deploy_indicators/prod/uploads/landmarks_and_outdoors_fsq_count_upload deploy_indicators/prod/uploads/health_and_medicine_fsq_count_upload deploy_indicators/prod/uploads/arts_and_entertainment_fsq_count_upload deploy_indicators/prod/uploads/sports_and_recreation_fsq_count_upload deploy_indicators/prod/uploads/events_fsq_count_upload | deploy_indicators/prod/uploads ## Control of layer uplodings to Insigths API for prod without one and area_km2
+	touch $@
+
+deploy_indicators/prod/custom_axis/population_area_km2: deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for population area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/count_area_km2: deploy_indicators/prod/uploads/count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/building_count_area_km2: deploy_indicators/prod/uploads/building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "building_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/local_hours_area_km2: deploy_indicators/prod/uploads/local_hours_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for local_hours area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "local_hours" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/total_hours_area_km2: deploy_indicators/prod/uploads/total_hours_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_hours area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_hours" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/view_count_area_km2: deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/osm_users_one: deploy_indicators/prod/uploads/osm_users_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for osm_users one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "osm_users" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/total_building_count_area_km2: deploy_indicators/prod/uploads/total_building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_building_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_building_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/wildfires_area_km2: deploy_indicators/prod/uploads/wildfires_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfires area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfires" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/forest_area_km2: deploy_indicators/prod/uploads/forest_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for forest area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "forest" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_maxtemp_over_32c_1c one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "days_maxtemp_over_32c_1c" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_mintemp_above_25c_1c one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "days_mintemp_above_25c_1c" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_fire_brigade" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_hospital_one: deploy_indicators/prod/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_hospital" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_hospital_population: deploy_indicators/prod/uploads/man_distance_to_hospital_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital population axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_hospital" "population"
+	touch $@
+
+deploy_indicators/prod/custom_axis/highway_length_area_km2: deploy_indicators/prod/uploads/highway_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "highway_length" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/total_road_length_area_km2: deploy_indicators/prod/uploads/total_road_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_road_length area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_road_length" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/view_count_bf2402_one: deploy_indicators/prod/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count_bf2402" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2: deploy_indicators/prod/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count_bf2402" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/powerlines_one: deploy_indicators/prod/uploads/powerlines_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for powerlines one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "powerlines" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/night_lights_intensity_one: deploy_indicators/prod/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for night_lights_intensity one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "night_lights_intensity" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_bomb_shelters" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_charging_stations" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/solar_power_plants_area_km2: deploy_indicators/prod/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for solar_power_plants area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "solar_power_plants" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/volcano_days_count_area_km2: deploy_indicators/prod/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "volcano_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/volcano_days_count_one: deploy_indicators/prod/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "volcano_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/flood_days_count_area_km2: deploy_indicators/prod/uploads/flood_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "flood_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/flood_days_count_one: deploy_indicators/prod/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "flood_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters population axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_bomb_shelters" "population"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations population axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_charging_stations" "population"
+	touch $@
+
+deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade population axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_fire_brigade" "population"
+	touch $@
+
+deploy_indicators/prod/custom_axis/building_count_total_building_count: deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/total_building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count total_building_count axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "building_count" "total_building_count"
+	touch $@
+
+deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "waste_basket_coverage_area_km2" "populated_area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/highway_length_total_road_length: deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length total_road_length axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "highway_length" "total_road_length"
+	touch $@
+
+deploy_indicators/prod/custom_axis/eatery_count_one: deploy_indicators/prod/uploads/eatery_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for eatery_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "eatery_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/food_shops_count_one: deploy_indicators/prod/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for food_shops_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "food_shops_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2: deploy_indicators/prod/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "hazardous_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/hazardous_days_count_one: deploy_indicators/prod/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "hazardous_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2: deploy_indicators/prod/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "earthquake_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/earthquake_days_count_one: deploy_indicators/prod/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "earthquake_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/drought_days_count_area_km2: deploy_indicators/prod/uploads/drought_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "drought_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/drought_days_count_one: deploy_indicators/prod/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "drought_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2: deploy_indicators/prod/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "cyclone_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/cyclone_days_count_one: deploy_indicators/prod/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "cyclone_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2: deploy_indicators/prod/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count area_km2 axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfire_days_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/custom_axis/wildfire_days_count_one: deploy_indicators/prod/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count one axis on prod.
+	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
+	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfire_days_count" "one"
+	touch $@
+
+deploy_indicators/prod/custom_axis/all_custom_axis: deploy_indicators/prod/custom_axis/population_area_km2 deploy_indicators/prod/custom_axis/count_area_km2 deploy_indicators/prod/custom_axis/building_count_area_km2 deploy_indicators/prod/custom_axis/local_hours_area_km2 deploy_indicators/prod/custom_axis/total_hours_area_km2 deploy_indicators/prod/custom_axis/view_count_area_km2 deploy_indicators/prod/custom_axis/osm_users_one deploy_indicators/prod/custom_axis/total_building_count_area_km2 deploy_indicators/prod/custom_axis/wildfires_area_km2 deploy_indicators/prod/custom_axis/forest_area_km2 deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/prod/custom_axis/man_distance_to_hospital_one deploy_indicators/prod/custom_axis/highway_length_area_km2 deploy_indicators/prod/custom_axis/total_road_length_area_km2  deploy_indicators/prod/custom_axis/view_count_bf2402_one deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2 deploy_indicators/prod/custom_axis/powerlines_one deploy_indicators/prod/custom_axis/night_lights_intensity_one deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one deploy_indicators/prod/custom_axis/solar_power_plants_area_km2 deploy_indicators/prod/custom_axis/volcano_days_count_area_km2 deploy_indicators/prod/custom_axis/volcano_days_count_one deploy_indicators/prod/custom_axis/flood_days_count_area_km2 deploy_indicators/prod/custom_axis/flood_days_count_one deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/prod/custom_axis/building_count_total_building_count deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/prod/custom_axis/highway_length_total_road_length deploy_indicators/prod/custom_axis/eatery_count_one deploy_indicators/prod/custom_axis/food_shops_count_one deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2 deploy_indicators/prod/custom_axis/hazardous_days_count_one deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2 deploy_indicators/prod/custom_axis/earthquake_days_count_one deploy_indicators/prod/custom_axis/drought_days_count_area_km2 deploy_indicators/prod/custom_axis/drought_days_count_one deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2 deploy_indicators/prod/custom_axis/cyclone_days_count_one deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2 deploy_indicators/prod/custom_axis/wildfire_days_count_one deploy_indicators/prod/custom_axis/man_distance_to_hospital_population | deploy_indicators/prod/custom_axis ## final target for custom axis deployment to prod
+	touch $@
+
+## PROD presets upload block
+deploy_indicators/prod/presets/osm_quantity: deploy_indicators/prod/uploads/count_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Quantity overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "count" "area_km2" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/osm_building_completeness: deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/total_building_count_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "building_count" "total_building_count" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/osm_road_completeness: deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "highway_length" "total_road_length" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/osm_mapping_activity: deploy_indicators/prod/uploads/local_hours_upload deploy_indicators/prod/uploads/total_hours_upload  db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "local_hours" "area_km2" "total_hours" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/osm_antiquity: deploy_indicators/prod/uploads/avgmax_ts_upload  deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "avgmax_ts" "one" "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/nighttime_heatwave_risk: deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "days_mintemp_above_25c_1c" "one" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/fire_service_scarcity_risk: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "man_distance_to_fire_brigade" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/views_before_after: deploy_indicators/prod/uploads/view_count_bf2402_upload deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Views before after overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "view_count_bf2402" "area_km2" "view_count" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/ev_charging_availability: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy EV Charging Availability overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "man_distance_to_charging_stations" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/waste_containers_availability: deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/populated_area_km2_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Waste containers availability overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/shelters_scarcity_risk: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Shelters Scarcity Risk overlay to prod.
+	bash scripts/upload_presets_to_insights_api.sh prod "man_distance_to_bomb_shelters" "population" "population" "area_km2"
+	touch $@
+
+deploy_indicators/prod/presets/all_presets: deploy_indicators/prod/presets/osm_quantity deploy_indicators/prod/presets/osm_building_completeness deploy_indicators/prod/presets/osm_road_completeness deploy_indicators/prod/presets/osm_mapping_activity deploy_indicators/prod/presets/osm_antiquity deploy_indicators/prod/presets/nighttime_heatwave_risk deploy_indicators/prod/presets/fire_service_scarcity_risk deploy_indicators/prod/presets/views_before_after deploy_indicators/prod/presets/ev_charging_availability deploy_indicators/prod/presets/waste_containers_availability deploy_indicators/prod/presets/shelters_scarcity_risk ## final target for presets deployment to prod.
+	touch $@
+
+## END PROD presets upload block
+
+### END Deploy through API

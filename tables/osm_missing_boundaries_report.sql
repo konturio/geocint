@@ -11,7 +11,7 @@ drop table if exists osm_missing_boundaries_report;
 create table osm_missing_boundaries_report as (
     with missing_boundaries as (
         select k2.*
-        from kontur_boundaries_v2 k2
+        from kontur_boundaries_v4 k2
         left join osm_admin_boundaries k using (osm_id)
         where k.osm_id is null
      ) ,
@@ -19,12 +19,7 @@ create table osm_missing_boundaries_report as (
     -- In most cases that means valid change to e.g. boundary = historic or boundary = unofficial. So we filter out those cases:
     missing_boundaries_filtered as (
         select b.*
-        from (
-            select k2.*
-            from kontur_boundaries_v2 k2
-            left join osm_admin_boundaries k using (osm_id)
-            where k.osm_id is null
-         ) b
+        from missing_boundaries b
         left join osm o
             on b.osm_id = o.osm_id
                 and o.tags ? 'boundary'
@@ -38,7 +33,7 @@ create table osm_missing_boundaries_report as (
 
            -- Generate link for JOSM remote desktop:
            'hrefIcon_[' || b.name ||
-           '](http://localhost:8111/load_object?new_layer=false&objects=' ||
+           '](http://127.0.0.1:8111/load_object?new_layer=false&objects=' ||
            left(b.osm_type, 1) || osm_id || '&relation_members=true)'                                       as "Name",
 
            b.admin_level                                                                                    as "Admin level",

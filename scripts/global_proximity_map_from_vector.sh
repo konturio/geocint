@@ -1,3 +1,4 @@
+#!/bin/bash
 # Inputs:
 # $1 - source vector dataset
 # $2 - name of layer inside vector dataset
@@ -13,8 +14,8 @@ zones_overlap=6 # how many degrees to overlap with zones to the left and right. 
 
 # these values must be syncronized with utm values
 north_top=85
-north_bottom=-2
-south_top=2
+north_bottom=-6
+south_top=6
 south_bottom=-85
 
 normal_width_deg=3600 # 18 degrees / 0.005
@@ -24,8 +25,8 @@ edge_width_deg=2400 # 12 degrees / 0.005
 utm_left=-500000 # left edge of left neighbour zone
 utm_right=1500000 # right edge of right neighbour zone
 utm_north_top=9000000 # ~85 deg
-utm_north_bottom=-200000 # ~2 deg overlap with southern zone
-utm_south_top=10200000 # ~2 deg overlap with northern zone
+utm_north_bottom=-600000 # ~6 deg overlap with southern zone
+utm_south_top=10600000 # ~6 deg overlap with northern zone
 utm_south_bottom=2500000 # ~-85 deg
 
 full_width_deg=72000 # full map 360 deg / 0.005

@@ -42,6 +42,8 @@ spec:
             env:
               - name: S3_BASEMAP_PATH
                 value: %S3_BASEMAP_PATH%
+              - name: ENV_NAME
+                value: %ENV_NAME%
               - name: PGHOST
                 value: localhost
               - name: PGUSER

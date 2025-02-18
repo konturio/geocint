@@ -9,7 +9,7 @@ create table osm_unmapped_places_report_in as (
            v.h3                                          as h3,
 
             -- Generate link for JOSM remote desktop:
-           'hrefIcon_[Edit in JOSM](http://localhost:8111/load_and_zoom?' ||
+           'hrefIcon_[Edit in JOSM](http://127.0.0.1:8111/load_and_zoom?' ||
            'left=' || ST_XMin(envelope) || '&right=' || ST_XMax(envelope) ||
            '&top=' || ST_YMax(envelope) || '&bottom=' || ST_YMin(envelope) || ')' as place
     from

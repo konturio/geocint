@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM debian:bullseye-slim
 
 # postgresql-client is required to use psql from Makefile
 RUN apt-get update && apt-get -y install wget gnupg2
@@ -6,13 +6,15 @@ RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main"
 RUN wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
 # install osm2pgsql dependencies
-RUN apt-get update && apt-get install -y pigz postgresql-client-14 aria2 gdal-bin golang python2 awscli git make cmake g++ \
+RUN apt-get update && apt-get install -y pigz postgresql-client-15 pspg aria2 gdal-bin golang python2 awscli git make cmake g++ \
   libboost-dev libboost-system-dev \
   libboost-filesystem-dev libexpat1-dev zlib1g-dev \
-  libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc
+  libbz2-dev libpq-dev libproj-dev lua5.3 liblua5.3-dev pandoc python npm
 
 # build and install osm2pgsql
-RUN git clone https://github.com/openstreetmap/osm2pgsql.git \
+RUN git config --global pack.windowSize 1024
+RUN git config --global core.compression 0
+RUN git clone --depth 1 --branch 1.6.0 https://github.com/openstreetmap/osm2pgsql.git \
     && mkdir osm2pgsql/build \
     && cd osm2pgsql/build \
     && cmake .. \
@@ -26,6 +28,7 @@ COPY styles /styles
 COPY tile_generator /tile_generator
 COPY Makefile /Makefile
 COPY start.sh /start.sh
+COPY .psqlrc /.psqlrc
 
 RUN chmod +x /start.sh
 

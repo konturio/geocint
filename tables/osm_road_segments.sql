@@ -1,5 +1,5 @@
 drop table if exists osm_road_segments_new_unsorted;
-create table osm_road_segments_new_unsorted as (
+create table osm_road_segments_new_unsorted  as (
     select
         seg_id,
         node_from,
@@ -28,7 +28,7 @@ create table osm_road_segments_new_unsorted as (
 );
 
 drop table if exists osm_road_segments_new;
-create table osm_road_segments_new as (
+create table osm_road_segments_new  as (
     select *
     from osm_road_segments_new_unsorted
     -- ordering by segment geometry is required for BRIN index to work.

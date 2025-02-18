@@ -3,33 +3,34 @@ drop table if exists osm_admin_boundaries_in;
 create table osm_admin_boundaries_in as
         select * from osm_admin_boundaries
         union all
-        -- Add 'Swalbard and Jan Mayen' and 'United States Minor Islands' boundary
-        select max(o.osm_id)+1          as osm_id,
-               null                     as osm_type,
-               'iso'                    as boundary,
-               null                     as admin_level,
-               'Svalbard and Jan Mayen' as name,
-               '{"name:en": "Svalbard and Jan Mayen", "wikidata": "Q842829", "ISO3166-2": "NO-SJ"}' as tags,
-               a.geom                   as geom,
-               null                     as kontur_admin_level
-        from osm_admin_boundaries o,
-             (select ST_Union(ST_Normalize(geog::geometry)) as geom from osm where osm_id in ('1337397','1337126') and osm_type = 'relation') a
-             group by a.geom
-        union all
-        select max(o.osm_id)+2                        as osm_id,
+        -- Add general border of 'State of Palestine'
+        select max(o.osm_id)+1                        as osm_id,
                null                                   as osm_type,
-               'iso'                                  as boundary,
+               'hdx'                                  as boundary,
                null                                   as admin_level,
-               'United States Minor Outlying Islands' as name,
-               '{"name:en": "United States Minor Outlying Islands", "wikidata": "Q16645", "ISO3166-2": "US-UM"}' as tags,
+               'State of Palestine'                   as name,
+               '{"name:en": "State of Palestine", "wikidata": "Q219060", "ISO3166-1": "PS"}' as tags,
                b.geom                                 as geom,
-               null                                   as kontur_admin_level
+               2                                      as kontur_admin_level
         from osm_admin_boundaries o,
-             (select ST_Union(ST_Normalize(geog::geometry)) as geom
-                  from osm where osm_id in ('8161698','6430384','7248458','12814070','7248454','7248460',
-                                            '7248461','7248459','7248455','5748709','11212373') 
-                                 and osm_type = 'relation') b
-             group by b.geom;
+             (select ST_Union(geom) as geom
+                  from osm_admin_boundaries 
+                  where osm_id in ('3791785','7391020','1703814') and osm_type = 'relation') b
+              group by b.geom;
+
+-- Delete alternative Western Sahara border (Sahrawi Arab Democratic Republic), clippeped by Marocco border
+delete from osm_admin_boundaries_in where osm_id = 5441968;
+
+-- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
+with ukraine_border as (
+    select geom
+    from osm_admin_boundaries_in
+    where osm_id = 60199
+)
+update osm_admin_boundaries_in k
+        set geom = ST_Multi(ST_Difference(k.geom, u.geom))
+        from ukraine_border u
+        where k.osm_id in ('60189', '1059500');
 
 -- Prepare subdivided osm admin boundaries table with index for further queries
 drop table if exists osm_admin_subdivided_in;
@@ -39,18 +40,6 @@ select
         ST_Subdivide(ST_Transform(geom, 3857)) as geom
 from osm_admin_boundaries_in;
 create index on osm_admin_subdivided_in using gist(geom);
-
--- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
--- To exclude Crimea population from Russia population calculation
-with ukraine_border as (
-    select ST_Transform(geom, 3857) geom
-    from osm_admin_boundaries_in
-    where osm_id = 60199
-)
-update osm_admin_subdivided_in k
-        set geom = ST_Multi(ST_Difference(k.geom, u.geom))
-        from ukraine_border u
-        where k.osm_id in ('60189', '1059500');
 
 -- Sum population from h3 to osm admin boundaries (rounding to integers)
 drop table if exists osm_admin_boundaries_mid;
@@ -75,11 +64,7 @@ select
         b.osm_id,
         b.osm_type,
         b.boundary,
-        case
-            -- Special rule for Palestinian Territories - because of it's disputed status it often lacks admin_level key:
-            when b.admin_level is null and b.tags @> '{"ISO3166-1":"PS"}' then '2'
-            else b.admin_level
-        end                                                             as admin_level,
+        b.admin_level                                                   as admin_level,
         b.kontur_admin_level,
         coalesce(b.name, b.tags ->> 'int_name', b.tags ->> 'name:en')   as "name",         -- boundary name with graceful fallback
         b.tags,
@@ -137,8 +122,8 @@ order by b.osm_id, g.hasc is not null desc, g.iou desc;
 
 
 -- Join Wikidata HASC codes and population based on wikidata OSM tag
-drop table if exists kontur_boundaries;
-create table kontur_boundaries as
+drop table if exists kontur_boundaries_mid;
+create table kontur_boundaries_mid as
 select k.*, 
        w.hasc                    as hasc_wiki,
        round(p.population)       as wiki_population
@@ -154,35 +139,72 @@ drop table if exists osm_admin_boundaries_mid;
 drop table if exists kontur_boundaries_in;
 
 -- Special case for Soutern Federal District and Russia
-update kontur_boundaries
+update kontur_boundaries_mid
 set wiki_population = 14044580
 where osm_id = '1059500';
 
-update kontur_boundaries
+update kontur_boundaries_mid
 set wiki_population = 143666931
 where osm_id = '60189';
 
--- Clipping Crimea from Russia boundary and South Federal County boundary by Ukraine border
-with ukraine_border as (
-    select geom 
-    from kontur_boundaries
-    where osm_id = 60199
-)
-update kontur_boundaries k
-        set geom = ST_Multi(ST_Difference(k.geom, u.geom))
-        from ukraine_border u
-        where k.osm_id in ('60189', '1059500');
+-- Remove osm_id, that was created for State of Palestine and doesn't exists in osm
+-- We used it to be able to group data by osm_id and now should revert changes
+-- to be able to include osm_id into kontur_boundaries extraction
+update kontur_boundaries_mid
+set osm_id = null
+where boundary = 'hdx' and tags = '{"name:en": "State of Palestine", "wikidata": "Q219060", "ISO3166-1": "PS"}';
 
--- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode' 
--- first digit is 2 bcs all ukraineian postcode have 9 as first digit
-delete from kontur_boundaries 
-        where ((tags ->> 'addr:country' = 'RU' 
-                and admin_level::numeric > 3 )
+-- Delete all boundaries, which contain in tags addr:country' = 'RU' or 'addr:postcode'
+-- first digit is 2 bcs all UA postcodes have 9 as first digit
+delete from kontur_boundaries_mid 
+        where ((tags ->> 'addr:country' = 'RU' and not admin_level::text in ('2','3'))
                 or (tags ->> 'addr:postcode' like '2%')) 
                 and ST_Intersects(geom, ST_GeomFromText('POLYGON((32.00 46.50, 36.50 46.50, 
                                                                   36.65 45.37, 36.51 45.27, 
                                                                   36.50 44.00, 32.00 44.00, 
                                                                   32.0 46.5 ))', 4326));
+
+
+------------ default language block ----------------
+
+drop table if exists default_language_extrapolated_from_sub_country_relations;
+create table default_language_extrapolated_from_sub_country_relations as (
+    select distinct on (b.osm_id) b.osm_id,
+                                  d.default_language
+    from kontur_boundaries_mid b,
+         default_language_relations d 
+    where not b.tags ? 'default_language'
+          and ST_Intersects(ST_PointOnSurface(b.geom), d.geom)
+          and ST_Area(b.geom)/d.area < 2
+    order by b.osm_id, 
+             1 - abs(ST_Area(b.geom)/d.area) asc
+);
+
+drop table if exists default_language_extrapolated_from_country_relations;
+create table default_language_extrapolated_from_country_relations as (
+    select distinct b.osm_id,
+                    d.default_language
+    from kontur_boundaries_mid b,
+         default_language_relations_adm_2 d 
+    where not b.tags ? 'default_language'
+          and ST_Intersects(ST_PointOnSurface(b.geom), d.geom)
+          and b.osm_id not in (select osm_id from default_language_extrapolated_from_sub_country_relations)
+);
+
+drop table if exists kontur_boundaries;
+create table kontur_boundaries as (
+    select distinct on (b.osm_id) b.*,
+                             coalesce(l.default_language, n.default_language, m.default_language, 'en'::text) as default_language
+    from kontur_boundaries_mid b
+         left join default_language_extrapolated_from_sub_country_relations n on b.osm_id = n.osm_id
+         left join default_language_extrapolated_from_country_relations m on b.osm_id = m.osm_id
+         left join boundaries_with_default_language l on b.osm_id = l.osm_id
+    order by osm_id
+);
+
+-- drop temporary tables
+drop table if exists default_language_extrapolated_from_sub_country_relations;
+drop table if exists default_language_extrapolated_from_country_relations;
 
 -- Add index for join with using hasc
 create index on kontur_boundaries using btree(hasc_wiki);

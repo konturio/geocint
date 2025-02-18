@@ -1,7 +1,7 @@
 clean:
 	rm -rf db/* data/* deploy/*
 
-basemap_all: deploy/s3/basemap.mbtiles ## [FINAL] All basemap related targets, temporarily removed from main build.
+basemap_tiles: deploy/s3/basemap.mbtiles ## [FINAL] All basemap related targets, temporarily removed from main build.
 	touch $@
 
 data: ## Temporary file based datasets. Located on bcache. Some files could be returned to SSD.
@@ -63,7 +63,7 @@ data/planet-latest.osm.pbf: | data ## Download latest planet OSM pbf extraction 
 	touch $@
 
 data/in/daylight_coastlines.tgz: | data/in ## daylightmap.org/coastlines.html
-	wget https://daylight-map-distribution.s3.us-west-1.amazonaws.com/release/v1.6/coastlines-v1.6.tgz -O $@
+	wget -q https://daylight-map-distribution.s3.us-west-1.amazonaws.com/release/v1.6/coastlines-v1.6.tgz -O $@
 
 data/mid/daylight_coastlines: | data/mid ## Directory for unpacked Daylight Coastlines shapefiles
 	mkdir -p $@
@@ -78,54 +78,66 @@ db/table/land_polygons_vector: data/mid/daylight_coastlines/land_polygons.shp | 
 	psql -c "alter table land_polygons_vector alter column geom type geometry(multipolygon, 3857) using ST_Multi(ST_Transform(ST_ClipByBox2D(geom, ST_Transform(ST_TileEnvelope(0,0,0),4326)), 3857));"
 	touch $@
 
-data/in/topology_boundaries.geojson: | data/in
-	wget https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/topology_boundaries.geojson.gz -O data/in/topology_boundaries.geojson.gz
+data/in/topology_boundaries.geojson: | data/in ## download kontur topology boundaries
+	wget -q https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/topology_boundaries.geojson.gz -O data/in/topology_boundaries.geojson.gz
 	pigz -d data/in/topology_boundaries.geojson.gz
 
-db/table/kontur_topology_boundary: data/in/topology_boundaries.geojson | db/table
+db/table/kontur_topology_boundary: data/in/topology_boundaries.geojson | db/table ## load kontur topology boundaries to database
+	psql -c "drop table if exists kontur_topology_boundary;"
 	ogr2ogr -f PostgreSQL PG:"dbname=gis" -a_srs EPSG:3857 data/in/topology_boundaries.geojson -nln kontur_topology_boundary -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/osm2pgsql: db/table/kontur_topology_boundaries data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
+data/in/kontur_default_languages.gpkg: | data/in ## Download kontur default languages
+	wget -q https://geodata-eu-central-1-kontur-public.s3.eu-central-1.amazonaws.com/kontur_datasets/kontur_default_languages.gpkg.gz -O data/in/kontur_default_languages.gpkg.gz
+	pigz -d data/in/kontur_default_languages.gpkg.gz
+
+db/table/kontur_default_languages: data/in/kontur_default_languages.gpkg | db/table ## load kontur default languages to database
+	psql -c "drop table if exists kontur_default_languages_in;"
+	psql -c "drop table if exists kontur_default_languages;"
+	ogr2ogr -append -overwrite -f PostgreSQL PG:"dbname=gis" -s_srs EPSG:4326 -t_srs EPSG:3857 data/in/kontur_default_languages.gpkg  -nln kontur_default_languages_in -nlt MULTIPOLYGON --config PG_USE_COPY YES -lco FID=id -lco GEOMETRY_NAME=geom
+	psql -c "create table kontur_default_languages as (select osm_id, admin_level, name, default_language, is_extrapolated, ST_Subdivide(geom) as geom from kontur_default_languages_in where is_extrapolated = 0);"
+	psql -c "create index on kontur_default_languages using gist(geom);"
+	psql -c "drop table if exists kontur_default_languages_in;"
+	touch $@
+
+db/table/osm2pgsql: db/table/kontur_topology_boundary db/table/kontur_default_languages data/planet-latest.osm.pbf | db/table ## Yet another OpenStreetMap import into database (because we need OSM data in osm2pgsql schema for Kothic).
 	psql -c "create extension if not exists hstore;"
 	osm2pgsql --style osm2pgsql_styles/basemap.lua --flat-nodes data/osm2pgsql_flat_nodes --slim --number-processes 32 --output=flex --create data/planet-latest.osm.pbf
 	touch $@
 
-db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql | db/table
-	psql -c "insert into planet_osm_line (osm_id, boundary, admin_level, maritime, way) select -osm_id as osm_id, 'administrative' as boundary, admin_level, maritime, geom as way from kontur_topology_boundary;"
+db/table/osm2pgsql_fill_lang: db/table/osm2pgsql | db/table ## fill missing name:[lang]
+	psql -f scripts/osm2pgsql_fill_lang.sql
 	touch $@
 
-db/table/osm2pgsql_fill_lang: db/table/osm2pgsql_with_boundaries | db/table ## fill missing name:[lang]
-	psql -c "update planet_osm_point set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
-	psql -c "update planet_osm_line set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
-	psql -c "update planet_osm_polygon set tags = tags || hstore(countries.lang, name) from countries where ST_Intersects(way, countries.geom) and not tags ? countries.lang and name is not null;"
+db/table/osm2pgsql_with_boundaries: db/table/osm2pgsql_fill_lang db/table/kontur_topology_boundary | db/table ## insert kontur topology boundaries into planet_osm_line
+	psql -f scripts/insert_topology_boundary.sql
 	touch $@
 
-db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
+db/index/planet_osm_polygon_way_area_idx: db/table/osm2pgsql_with_boundaries | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_polygon_way_area_idx on planet_osm_polygon using btree(way_area);"
 	touch $@
 
-db/index/planet_osm_polygon_natural_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
+db/index/planet_osm_polygon_natural_idx: db/table/osm2pgsql_with_boundaries | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_polygon_natural_idx on planet_osm_polygon using btree(\"natural\");"
 	touch $@
 
-db/index/planet_osm_polygon_admin_level_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
+db/index/planet_osm_polygon_admin_level_idx: db/table/osm2pgsql_with_boundaries | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_polygon_admin_level_idx on planet_osm_polygon using btree(\"admin_level\");"
 	touch $@
 
-db/index/planet_osm_line_admin_level_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
+db/index/planet_osm_line_admin_level_idx: db/table/osm2pgsql_with_boundaries | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_line_admin_level_idx on planet_osm_line using btree(\"admin_level\");"
 	touch $@
 
-db/index/planet_osm_line_highway_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
+db/index/planet_osm_line_highway_idx: db/table/osm2pgsql_with_boundaries | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_line_highway_idx on planet_osm_line using btree(\"highway\");"
 	touch $@
 
-db/index/planet_osm_point_place_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
+db/index/planet_osm_point_place_idx: db/table/osm2pgsql_with_boundaries | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_point_place_idx on planet_osm_point using btree(\"place\");"
 	touch $@
 
-db/index/planet_osm_point_capital_idx: db/table/osm2pgsql_fill_lang | db/index ## index for basemap low zoom queries
+db/index/planet_osm_point_capital_idx: db/table/osm2pgsql_with_boundaries | db/index ## index for basemap low zoom queries
 	psql -c "create index planet_osm_point_capital_idx on planet_osm_point using btree(\"capital\");"
 	touch $@
 
@@ -136,7 +148,8 @@ kothic/src/komap.py: ## Clone Kothic from GIT
 	git clone -b master --single-branch https://github.com/kothic/kothic.git
 
 tile_generator/tile_generator: tile_generator/main.go tile_generator/go.mod  ## Compile tile_generator with GO
-	cd tile_generator; go get; go build -o tile_generator
+	cd tile_generator; go get && go build -o tile_generator && chmod +x tile_generator
+
 
 data/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL functions for further scripts generating (basemap_z[0-16] routines in database).
 	python2 kothic/src/komap.py \
@@ -144,7 +157,7 @@ data/basemap.sql: kothic/src/komap.py | db/function scripts ## Generate SQL func
 		--stylesheet styles/ninja.mapcss \
 		--stylesheet styles/mapsme_mod/style-clear/style.mapcss \
 		--osm2pgsql-style osm2pgsql_styles/default.style \
-		--locale en,ru,be,pl,uk \
+		--locale en,es,de,ru,be,pl,uk,id,ar,th,ko,ja  \
 		> data/basemap.sql
 	touch $@
 
@@ -193,38 +206,12 @@ data/basemap/metadata/dev/style_night_no_globe_view_support.json: kothic/src/kom
 		--renderer=mapbox-style-language \
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/dev/style_night.json: data/basemap/metadata/dev/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/dev/style_night_no_globe_view_support.json > $@
-
-data/basemap/metadata/dev/style_night_ru.json: kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Night style JSON for TEST DVLP server. (language=ru)
-	python2 kothic/src/komap.py \
-		--attribution-text "© OpenStreetMap" \
-		--minzoom 0 \
-		--maxzoom 24 \
-		--renderer=mapbox-style-language \
-		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
-		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--locale ru \
-		> $@
-
-data/basemap/metadata/dev/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Night style JSON for TEST DVLP server. (language=en)
-	python2 kothic/src/komap.py \
-		--attribution-text "© OpenStreetMap" \
-		--minzoom 0 \
-		--maxzoom 24 \
-		--renderer=mapbox-style-language \
-		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
-		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--locale en \
-		> $@
+	python3 scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/dev/style_night_no_globe_view_support.json > $@
 
 data/basemap/metadata/dev/style_day_no_globe_view_support.json: styles/ninja.mapcss scripts/patch_style_add_unfolded_globe_view_dummy_layers.py kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for Geocint server.
 	python2 kothic/src/komap.py \
@@ -234,13 +221,13 @@ data/basemap/metadata/dev/style_day_no_globe_view_support.json: styles/ninja.map
 		--renderer=mapbox-style-language \
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://test-api02.konturlabs.com/layers/tiles/basemap/sprite \
+		--tiles-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
 		> $@
 
 data/basemap/metadata/dev/style_day.json: data/basemap/metadata/dev/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/dev/style_day_no_globe_view_support.json > $@
+	python3 scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/dev/style_day_no_globe_view_support.json > $@
 
 data/basemap/metadata/dev/style_day_en.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for Geocint server. (language=en)
 	python2 kothic/src/komap.py \
@@ -250,14 +237,207 @@ data/basemap/metadata/dev/style_day_en.json: styles/ninja.mapcss kothic/src/koma
 		--renderer=mapbox-style-language \
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps02.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api02.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://test-api02.konturlabs.com/layers/tiles/basemap/sprite \
+		--tiles-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
 		--locale en \
+		--label-fallback "int_name,name" \
 		> $@
 
 data/basemap/metadata/dev/style_ninja.json: kothic/src/komap.py data/basemap/metadata/dev/style_day_en.json | data/basemap/metadata/dev ## Patch style to fall into osm.org tile starting from z10
 	cat data/basemap/metadata/dev/style_day_en.json > $@
+
+data/basemap/metadata/dev/style_ninja_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for Latin like languages.
+	for lang in en es de uk id ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			--label-fallback "int_name,name" \
+			> data/basemap/metadata/dev/style_ninja_$$lang.json; \
+	done
+
+data/basemap/metadata/dev/style_ninja_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for NON Latin like languages.
+	for lang in ar th ko ja ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			> data/basemap/metadata/dev/style_ninja_$$lang.json; \
+	done
+
+data/basemap/metadata/test/style_ninja_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for Latin like languages.
+	for lang in en es de uk id ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://test-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			--label-fallback "int_name,name" \
+			> data/basemap/metadata/test/style_ninja_$$lang.json; \
+	done
+
+data/basemap/metadata/test/style_ninja_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for NON Latin like languages.
+	for lang in ar th ko ja ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://test-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			> data/basemap/metadata/test/style_ninja_$$lang.json; \
+	done
+
+data/basemap/metadata/prod/style_ninja_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for Latin like languages.
+	for lang in en es de uk id ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			--label-fallback "int_name,name" \
+			> data/basemap/metadata/prod/style_ninja_$$lang.json; \
+	done
+
+data/basemap/metadata/prod/style_ninja_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for NON Latin like languages.
+	for lang in ar th ko ja ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/ninja.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--sprite-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
+			--locale $$lang \
+			> data/basemap/metadata/prod/style_ninja_$$lang.json; \
+	done
+
+data/basemap/metadata/dev/style_night_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for Latin like languages.
+	for lang in en es de uk id ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/mapsme_mod/style-night/style.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--locale $$lang \
+			--label-fallback "int_name,name" \
+			> data/basemap/metadata/dev/style_night_$$lang.json; \
+	done
+
+data/basemap/metadata/dev/style_night_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/dev ## Generating of Ninja style JSON for NON Latin like languages.
+	for lang in ar th ko ja ru ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/mapsme_mod/style-night/style.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://dev-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--locale $$lang \
+			> data/basemap/metadata/dev/style_night_$$lang.json; \
+	done
+
+data/basemap/metadata/test/style_night_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for Latin like languages.
+	for lang in en es de uk id ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/mapsme_mod/style-night/style.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://test-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--locale $$lang \
+			--label-fallback "int_name,name" \
+			> data/basemap/metadata/test/style_night_$$lang.json; \
+	done
+
+data/basemap/metadata/test/style_night_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for NON Latin like languages.
+	for lang in ar th ko ja ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/mapsme_mod/style-night/style.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://test-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--locale $$lang \
+			> data/basemap/metadata/test/style_night_$$lang.json; \
+	done
+
+data/basemap/metadata/prod/style_night_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for Latin like languages.
+	for lang in en es de uk id ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/mapsme_mod/style-night/style.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--locale $$lang \
+			--label-fallback "int_name,name" \
+			> data/basemap/metadata/prod/style_night_$$lang.json; \
+	done
+
+data/basemap/metadata/prod/style_night_non_latin_languages.json: styles/ninja.mapcss kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for NON Latin like languages.
+	for lang in ar th ko ja ; do \
+		python2 kothic/src/komap.py \
+			--attribution-text "© OpenStreetMap" \
+			--minzoom 0 \
+			--maxzoom 24 \
+			--renderer=mapbox-style-language \
+			--stylesheet styles/mapsme_mod/style-night/style.mapcss \
+			--tiles-max-zoom 14 \
+			--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+			--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+			--locale $$lang \
+			> data/basemap/metadata/prod/style_night_$$lang.json; \
+	done
 
 data/basemap/metadata/test/style_day_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/test ## Generating of Ninja style JSON for TEST QA server.
 	python2 kothic/src/komap.py \
@@ -267,13 +447,13 @@ data/basemap/metadata/test/style_day_no_globe_view_support.json: kothic/src/koma
 		--renderer=mapbox-style-language \
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://test-api.konturlabs.com/layers/tiles/basemap/sprite \
+		--tiles-url https://test-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
 		> $@
 
 data/basemap/metadata/test/style_day.json: data/basemap/metadata/test/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/test/style_day_no_globe_view_support.json > $@
+	python3 scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/test/style_day_no_globe_view_support.json > $@
 
 data/basemap/metadata/test/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/test ## Generating of Ninja style JSON for TEST QA server. (language=en)
 	python2 kothic/src/komap.py \
@@ -283,10 +463,11 @@ data/basemap/metadata/test/style_day_en.json: kothic/src/komap.py | data/basemap
 		--renderer=mapbox-style-language \
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://test-api.konturlabs.com/layers/tiles/basemap/sprite \
+		--tiles-url https://test-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
 		--locale en \
+		--label-fallback "int_name,name" \
 		> $@
 
 data/basemap/metadata/test/style_ninja.json: kothic/src/komap.py data/basemap/metadata/test/style_day_en.json | data/basemap/metadata/test ## Patch style to fall into osm.org tile starting from z10
@@ -300,12 +481,12 @@ data/basemap/metadata/test/style_night_no_globe_view_support.json: kothic/src/ko
 		--renderer=mapbox-style-language \
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://test-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/test/style_night.json: data/basemap/metadata/test/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/test/style_night_no_globe_view_support.json > $@
+	python3 scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/test/style_night_no_globe_view_support.json > $@
 
 data/basemap/metadata/test/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/test ## Generating of Night style JSON for TEST QA server. (language=en)
 	python2 kothic/src/komap.py \
@@ -315,9 +496,10 @@ data/basemap/metadata/test/style_night_en.json: kothic/src/komap.py | data/basem
 		--renderer=mapbox-style-language \
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://test-apps.konturlabs.com/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://test-api.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://test-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://test-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
+		--label-fallback "int_name,name" \
 		> $@
 
 data/basemap/metadata/prod/style_day_no_globe_view_support.json: kothic/src/komap.py scripts/patch_style_add_unfolded_globe_view_dummy_layers.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for PROD server.
@@ -328,13 +510,13 @@ data/basemap/metadata/prod/style_day_no_globe_view_support.json: kothic/src/koma
 		--renderer=mapbox-style-language \
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
+		--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
 		> $@
 
 data/basemap/metadata/prod/style_day.json: data/basemap/metadata/prod/style_day_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/prod/style_day_no_globe_view_support.json > $@
+	python3 scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/prod/style_day_no_globe_view_support.json > $@
 
 data/basemap/metadata/prod/style_day_en.json: kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Ninja style JSON for PROD server. (language=en)
 	python2 kothic/src/komap.py \
@@ -344,10 +526,11 @@ data/basemap/metadata/prod/style_day_en.json: kothic/src/komap.py | data/basemap
 		--renderer=mapbox-style-language \
 		--stylesheet styles/ninja.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
-		--sprite-url https://api.kontur.io/layers/tiles/basemap/sprite \
+		--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--sprite-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/sprite \
 		--locale en \
+		--label-fallback "int_name,name" \
 		> $@
 
 data/basemap/metadata/prod/style_ninja.json: data/basemap/metadata/prod/style_day_en.json kothic/src/komap.py | data/basemap/metadata/prod ## Patch style to fall into osm.org tile starting from z10
@@ -361,12 +544,12 @@ data/basemap/metadata/prod/style_night_no_globe_view_support.json: kothic/src/ko
 		--renderer=mapbox-style-language \
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		> $@
 
 data/basemap/metadata/prod/style_night.json: data/basemap/metadata/prod/style_night_no_globe_view_support.json ## Patch style to support unfolded globe-view
-	python scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/prod/style_night_no_globe_view_support.json > $@
+	python3 scripts/patch_style_add_unfolded_globe_view_dummy_layers.py data/basemap/metadata/prod/style_night_no_globe_view_support.json > $@
 
 data/basemap/metadata/prod/style_night_en.json: kothic/src/komap.py | data/basemap/metadata/prod ## Generating of Night style JSON for PROD server. (language=en)
 	python2 kothic/src/komap.py \
@@ -376,9 +559,10 @@ data/basemap/metadata/prod/style_night_en.json: kothic/src/komap.py | data/basem
 		--renderer=mapbox-style-language \
 		--stylesheet styles/mapsme_mod/style-night/style.mapcss \
 		--tiles-max-zoom 14 \
-		--tiles-url https://apps.kontur.io/tileserver/data/basemap/{z}/{x}/{y}.pbf \
-		--glyphs-url https://api.kontur.io/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
+		--tiles-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/data/basemap/{z}/{x}/{y}.pbf \
+		--glyphs-url https://prod-basemap-tileserver.k8s-01.konturlabs.com/layers/tiles/basemap/glyphs/{fontstack}/{range}.pbf \
 		--locale en \
+		--label-fallback "int_name,name" \
 		> $@
 
 deploy/geocint/basemap_mapcss: data/basemap/metadata/dev/style_ninja.json data/basemap/metadata/dev/style_day.json data/basemap/metadata/dev/style_night.json | deploy/geocint ## Deploy JSON styles for vector tiles on geocint.
@@ -387,33 +571,24 @@ deploy/geocint/basemap_mapcss: data/basemap/metadata/dev/style_ninja.json data/b
 	cp data/basemap/metadata/dev/style_night.json /var/www/html/basemap/style_mwm_night.json
 	touch $@
 
-data/basemap/dev.tar.bz2: data/basemap/metadata/dev/style_night_ru.json data/basemap/metadata/dev/style_night_en.json data/basemap/metadata/dev/style_ninja.json data/basemap/metadata/dev/style_day.json data/basemap/metadata/dev/style_day_en.json data/basemap/metadata/dev/style_night.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST DVLP server.
-	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/dev .
-
-data/basemap/test.tar.bz2: data/basemap/metadata/test/style_ninja.json data/basemap/metadata/test/style_day.json data/basemap/metadata/test/style_day_en.json data/basemap/metadata/test/style_night.json data/basemap/metadata/test/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to TEST QA server.
-	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/test .
-
-data/basemap/prod.tar.bz2: data/basemap/metadata/prod/style_ninja.json data/basemap/metadata/prod/style_day.json data/basemap/metadata/prod/style_day_en.json data/basemap/metadata/prod/style_night.json data/basemap/metadata/prod/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all ## Combine tiles, glyphs and styles into one tar for further transfer to PROD server.
-	tar cvf $@ --use-compress-prog=pbzip2 -C data/basemap glyphs -C sprite . -C ../metadata/prod .
-
 deploy/s3/basemap.mbtiles: data/basemap.mbtiles | deploy/s3 ## deploy basemap.mbtiles to S3
-	aws s3 cp data/basemap.mbtiles $(S3_BASEMAP_PATH)
+	aws s3 cp data/basemap.mbtiles $(S3_BASEMAP_PATH) --endpoint-url $(S3_ENDPOINT)
 	touch $@
 
-deploy/dev/basemap: deploy/dev/basemap.mbtiles data/basemap/dev.tar.bz2 | deploy/dev ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST DVLP server.
-	aws s3 cp --recursive data/basemap/metadata/dev s3://basemap-locker01/DEV/styles
-	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/DEV/glyphs
-	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/DEV/sprite
+deploy/dev/basemap: data/basemap/metadata/dev/style_night_non_latin_languages.json data/basemap/metadata/dev/style_night_latin_languages.json data/basemap/metadata/dev/style_ninja.json data/basemap/metadata/dev/style_ninja_latin_languages.json data/basemap/metadata/dev/style_ninja_non_latin_languages.json data/basemap/metadata/dev/style_day.json data/basemap/metadata/dev/style_day_en.json data/basemap/metadata/dev/style_night.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/dev ## Transfer and deploy tar archive with tiles, glyphs and styles on DEV server.
+	aws s3 cp --recursive data/basemap/metadata/dev s3://basemap-locker01/DEV/styles --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/DEV/glyphs --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/DEV/sprite --endpoint-url $(S3_ENDPOINT)
 	touch $@
 
-deploy/test/basemap: deploy/test/basemap.mbtiles data/basemap/test.tar.bz2 | deploy/test ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST QA server.
-	aws s3 cp --recursive data/basemap/metadata/test s3://basemap-locker01/TEST/styles
-	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/TEST/glyphs
-	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/TEST/sprite
+deploy/test/basemap: data/basemap/metadata/test/style_night_non_latin_languages.json data/basemap/metadata/test/style_night_latin_languages.json data/basemap/metadata/test/style_ninja.json data/basemap/metadata/test/style_day.json data/basemap/metadata/test/style_day_en.json data/basemap/metadata/test/style_ninja_latin_languages.json data/basemap/metadata/test/style_ninja_non_latin_languages.json data/basemap/metadata/test/style_night.json data/basemap/metadata/test/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/test ## Transfer and deploy tar archive with tiles, glyphs and styles on TEST server.
+	aws s3 cp --recursive data/basemap/metadata/test s3://basemap-locker01/TEST/styles --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/TEST/glyphs --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/TEST/sprite --endpoint-url $(S3_ENDPOINT)
 	touch $@
 
-deploy/prod/basemap: deploy/prod/basemap.mbtiles data/basemap/prod.tar.bz2 | deploy/prod ## Transfer and deploy tar archive with tiles, glyphs and styles on PROD server.
-	aws s3 cp --recursive data/basemap/metadata/prod s3://basemap-locker01/PROD/styles
-	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/PROD/glyphs
-	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/PROD/sprite
+deploy/prod/basemap: data/basemap/metadata/prod/style_night_non_latin_languages.json data/basemap/metadata/prod/style_night_latin_languages.json data/basemap/metadata/prod/style_ninja.json data/basemap/metadata/prod/style_day.json data/basemap/metadata/prod/style_day_en.json data/basemap/metadata/prod/style_ninja_latin_languages.json data/basemap/metadata/prod/style_ninja_non_latin_languages.json data/basemap/metadata/prod/style_night.json data/basemap/metadata/prod/style_night_en.json data/basemap/glyphs_all data/basemap/sprite_all | deploy/prod ## Transfer and deploy tar archive with tiles, glyphs and styles on PROD server.
+	aws s3 cp --recursive data/basemap/metadata/prod s3://basemap-locker01/PROD/styles --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/glyphs s3://basemap-locker01/PROD/glyphs --endpoint-url $(S3_ENDPOINT)
+	aws s3 cp --recursive data/basemap/sprite s3://basemap-locker01/PROD/sprite --endpoint-url $(S3_ENDPOINT)
 	touch $@

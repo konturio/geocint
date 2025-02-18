@@ -31,7 +31,7 @@ create table mapswipe_hot_tasking_data_h3_in as (
 drop table if exists mapswipe_hot_tasking_data_subdivide;
 drop table if exists land_polygons_h3_r8_4326;
 
--- generate overviews and dithering from copernicus_forest_h3.sql
+-- generate overviews and dithering from copernicus_landover_h3.sql
 
 -- generate overviews
 -- TODO: rewrite generated_overviews() procedure to receive expression to "method" parameter for column
@@ -44,9 +44,9 @@ $$
         while res > 0
             loop
                 insert into mapswipe_hot_tasking_data_h3_in (h3, mapswipe_area, area_km2, resolution)
-                select h3_to_parent(h3),
+                select h3_cell_to_parent(h3),
                        sum(mapswipe_area),
-                       ST_Area(h3_to_geo_boundary_geometry(h3_to_parent(h3))::geography) / 1000000.0,
+                       ST_Area(h3_cell_to_boundary_geography(h3_cell_to_parent(h3))) / 1000000.0,
                        (res - 1)
                 from mapswipe_hot_tasking_data_h3_in
                 where resolution = res
@@ -61,45 +61,3 @@ create table mapswipe_hot_tasking_data_h3
 (
     like mapswipe_hot_tasking_data_h3_in
 );
-
--- dither areas to not be bigger than 100% of hexagon's area for every resolution
-do
-$$
-    declare
-        columns   text[];
-        res       integer;
-        cur_row   jsonb;
-        carry     jsonb;
-        carry_out jsonb;
-    begin
-        columns = '{mapswipe_area}';
-        res = 8;
-        while res >= 0
-            loop
-                select jsonb_object_agg(column_name, 0) from unnest(columns) "column_name" into carry;
-                for cur_row in (select to_jsonb(r) from mapswipe_hot_tasking_data_h3_in r where resolution = res order by h3)
-                    loop
-                        -- recursive сalculation carry value for every type of area
-                        select jsonb_object_agg(c.key, carry_value - carry_out_value),
-                               jsonb_object_agg(c.key, carry_out_value)
-                        from jsonb_each(carry) c,
-                             jsonb_each(cur_row) r,
-                             lateral (select c.value::float + r.value::float "carry_value") "carry_value",
-                             least(carry_value::float, (cur_row -> 'area_km2')::float) "carry_out_value"
-                        where c.key = r.key
-                        into carry, carry_out;
-
-                        -- insert new value when difference between forest and hexagon area area is bigger then zero
-                        if jsonb_path_exists(carry_out, '$.** ? (@ > 0)') then
-                            insert into mapswipe_hot_tasking_data_h3
-                            select *
-                            from jsonb_populate_record(null::mapswipe_hot_tasking_data_h3, cur_row || carry_out);
-                        end if;
-                    end loop;
-                raise notice 'unprocessed carry %', carry;
-                res = res - 1;
-            end loop;
-    end;
-$$;
-
-drop table if exists mapswipe_hot_tasking_data_h3_in;

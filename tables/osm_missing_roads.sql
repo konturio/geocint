@@ -13,17 +13,19 @@ create table osm_missing_roads as
 with q as (select distinct on (s.h3, b.name_en) s.h3 as h3, -- on h3 can intersects w/ >1 cnt polygons
         b.name_en, s.geom,
         population,
-        round(s.highway_length::numeric, 2) as osm_l,
+        round(coalesce(o.highway_length,0)::numeric, 2) as osm_l,
         round(fbr.fb_roads_length::numeric / 1000.0, 2) as fb_l,
-        abs(log(s.highway_length + 1) - log(s.highway_length + (fbr.fb_roads_length / 1000.0) + 1)) as diff
-    from stat_h3 s
-    left join facebook_roads_h3 fbr on fbr.h3 = s.h3 
-    left join country_boundaries_subdivided_in b
-        on ST_Intersects(s.h3::geometry, b.geom)
-    where s.total_road_length > 0   -- fb roads
+        abs(log(coalesce(o.highway_length,0) + 1) - log(coalesce(o.highway_length, 0) + (fbr.fb_roads_length / 1000.0) + 1)) as diff
+    from 
+        facebook_roads_h3 fbr 
+        left join building_count_grid_h3 b on fbr.h3 = b.h3
+        left join osm_object_count_grid o on fbr.h3 = o.h3 
+        left join country_boundaries_subdivided_in b
+            on ST_Intersects(fbr.h3::geometry, b.geom)
+    where o.total_road_length > 0   -- fb roads
         and population > 2 -- take only places with population more than 2
-        and s.resolution = 8
-        and s.total_building_count > 1),-- take only places with building_count more than 1
+        and fbr.resolution = 8
+        and b.total_building_count > 1),-- take only places with building_count more than 1
 res as (select h3, q.name_en, geom,
         -- doing this to take only N biggest diffs, N=100
         -- and biggest rounded to .1 diff within country and h3 w/ highest population 

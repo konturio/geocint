@@ -25,16 +25,19 @@ create index on boundaries_geom_prepared using gist(geom);
 
 drop table if exists boundaries_statistics_prepared;
 create table boundaries_statistics_prepared as (
-    select distinct on (osm_id,h3)  b.osm_id,
-	                                s.population,
-	                                s.area_km2,
-	                                s.populated_area_km2,
-	                                s.building_count,
-	                                s.highway_length,
-	                                s.count,
-	                                s.hazardous_days_count
-    from boundaries_geom_prepared b left join stat_h3 s on st_intersects(b.geom, s.geom)
-    where s.resolution = 8
+    select distinct on (osm_id,s.h3)  b.osm_id,
+	                                p.population,
+	                                s.area / 1000000.0           as area_km2,
+	                                p.populated_area / 1000000.0 as populated_area_km2,
+	                                o.building_count,
+	                                r.highway_length,
+	                                o.count,
+	                                d.hazardous_days_count
+    from boundaries_geom_prepared b left join land_polygons_h3_r8 s on st_intersects(b.geom, s.geom)
+         left join osm_object_count_grid_h3 o on (s.h3 = o.h3)
+         left join kontur_population_h3 p on (s.h3 = p.h3)
+         left join osm_road_segments_h3 r on (s.h3 = r.h3)
+         left join disaster_event_episodes_h3 d on (s.h3 = d.h3)
 );
 
 drop table if exists boundaries_geom_prepared;

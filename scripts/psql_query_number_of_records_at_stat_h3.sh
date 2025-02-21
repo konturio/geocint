@@ -1,2 +1,0 @@
-# query how many not zero rows we have for column $1 at stat_h3 table. Output is like "gsa_ghi,2323432"
-psql -qXc "copy (select '$1', count($1) from stat_h3 where ($1 !=0) and (zoom=8)) to stdout with csv;"

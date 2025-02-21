@@ -11,22 +11,23 @@ create table gatlinburg_geom as (
 
 create index on gatlinburg_geom using gist(geom);
 
--- extract data from stat_h3 for county area
+-- extract data for county area
 drop table if exists gatlinburg_stat_h3_r10;
 create table gatlinburg_stat_h3_r10 as (
     select s.*,
            ST_Transform(h3_cell_to_boundary_geometry(s.h3), 3857) as geom
-    from (select h3_cell_to_children(h3, 10) as h3, 
-                 total_road_length,
-                 avg_slope_gebco_2022, 
-                 forest,
-                 builtup,
-                 gsa_ghi,
+    from (select h3_cell_to_children(s.h3, 10) as h3, 
+                 t.total_road_length,
+                 o.avg_slope_gebco_2022, 
+                 c.forest_area,
+                 c.builtup,
+                 r.gsa_ghi,
                  null::float as population
-          from stat_h3 s, 
-               gatlinburg_geom g 
-          where resolution = 8 
-                and ST_Intersects(s.geom, ST_Transform(g.geom,3857))) s
+          from gatlinburg_geom g left join land_polygons_h3_r8 s on ST_Intersects(s.geom, ST_Transform(g.geom,3857))
+         left join gebco_2022_h3 o on (s.h3 = o.h3)
+         left join total_road_length_h3 t on (s.h3 = t.h3)
+         left join global_solar_atlas_h3 r on (s.h3 = r.h3)
+         left join copernicus_landcover_h3 c on (s.h3 = c.h3)) s
 ); 
 
 -- join with population data on resolution 10

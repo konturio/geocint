@@ -19,7 +19,7 @@ include runner_make osm_make
 
 ## ------------- CONTROL BLOCK -------------------------
 
-all: prod dev data/out/abu_dhabi_export data/out/isochrone_destinations_export data/out/morocco deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/ndpba_rva_h3 db/table/global_rva_h3 data/out/csv/foursquare_places_count.csv data/out/csv/foursquare_visits_count.csv db/table/osm_buildings_use db/index/osm_addresses_geom_idx data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement db/table/us_counties_boundary ## [FINAL] Meta-target on top of all other targets, or targets on parking.
+all: prod dev data/out/isochrone_destinations_export deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/ndpba_rva_h3 db/table/global_rva_h3 data/out/csv/foursquare_places_count.csv data/out/csv/foursquare_visits_count.csv db/table/osm_buildings_use db/index/osm_addresses_geom_idx data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement db/table/us_counties_boundary ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
 dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/dev/uploads/upload_dev data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/dev/custom_axis/all_custom_axis deploy_indicators/dev/presets/all_presets deploy/s3/dev/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
@@ -43,9 +43,6 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	docker image prune --force --filter label=stage=osrm-backend
 
 data/tiles: | data ## Directory for storing generated vector tiles.
-	mkdir -p $@
-
-data/out/morocco_buildings: | data/out ## Data generated within project Morocco Buildings for Swiss Re.
 	mkdir -p $@
 
 data/in/global_fires: | data/in ## Data downloaded within project Global Fires.
@@ -1667,39 +1664,11 @@ db/table/morocco_urban_pixel_mask_h3: db/table/morocco_urban_pixel_mask ## Moroc
 	psql -f tables/morocco_urban_pixel_mask_h3.sql
 	touch $@
 
-data/in/morocco_buildings/morocco_all_tables.sql.gz: | data/in/morocco_buildings ## morocco tables dump download.
-	rm -f $@
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/morocco_all_tables.sql.gz $@ --profile geocint_pipeline_sender	
-
-data/in/morocco_buildings/morocco_all_tables.sql: data/in/morocco_buildings/morocco_all_tables.sql.gz ## morocco all table dump download.
-	rm -f $@
-	gzip -dck data/in/morocco_buildings/morocco_all_tables.sql.gz > $@
-
-db/table/morocco_all_tables: data/in/morocco_buildings/morocco_all_tables.sql | db/table ## restore all morocco tables from dump
-	psql < data/in/morocco_buildings/morocco_all_tables.sql
-	touch $@
-
-db/table/morocco_buildings_manual_roofprints: static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson ## Morocco manually split roofprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
-	psql -c "drop table if exists morocco_buildings_manual_roofprints;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/morocco_buildings_manual_roof_20201030.geojson -nln morocco_buildings_manual_roofprints
-	psql -c "alter table morocco_buildings_manual_roofprints rename column wkb_geometry to geom;"
-	psql -c "alter table morocco_buildings_manual_roofprints alter column geom type geometry;"
-	psql -c "update morocco_buildings_manual_roofprints set geom = ST_Transform(geom, 3857);"
-	touch $@
-
-db/table/morocco_buildings_manual: static_data/morocco_buildings/morocco_buildings_manual_20201030.geojson  ## Morocco manually split footprints of buildings for verification of automatically traced Geoalert building datasets (EPSG-3857).
-	psql -c "drop table if exists morocco_buildings_manual;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/morocco_buildings_manual_20201030.geojson -nln morocco_buildings_manual
-	psql -c "alter table morocco_buildings_manual rename column wkb_geometry to geom;"
-	psql -c "alter table morocco_buildings_manual alter column geom type geometry;"
-	psql -c "update morocco_buildings_manual set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
-	touch $@
-
 data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg: | data/in/morocco_buildings ## Geoalert building dataset for Morocco (Phase 3) downloaded.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/morocco_buildings/geoalert_morocco_stage_3.gpkg $@ --profile geocint_pipeline_sender
 	touch $@
 
-db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg db/table/morocco_all_tables | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
+db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg | db/table  ## Automatically traced Geoalert building dataset for Morocco (Phase 3) imported into database.
 	psql -c "drop table if exists morocco_buildings;"
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:"dbname=gis" data/in/morocco_buildings/geoalert_morocco_stage_3.gpkg "buildings_3" -nln morocco_buildings
 	psql -f tables/morocco_buildings.sql
@@ -1707,117 +1676,6 @@ db/table/morocco_buildings: data/in/morocco_buildings/geoalert_morocco_stage_3.g
 
 db/table/morocco_buildings_h3: db/table/morocco_buildings | db/table  ## Count amount of Morocco buildings at hexagons.
 	psql -f tables/count_items_in_h3.sql -v table=morocco_buildings -v table_h3=morocco_buildings_h3 -v item_count=building_count
-	touch $@
-
-data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz: db/table/morocco_buildings | data/out/morocco_buildings ## Export to GEOJSON and archive Geoalert building dataset for Morocco (Phase 3).
-	rm -f $@ data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson
-	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson PG:"dbname=gis" -sql "select ST_Transform(geom, 4326) as footprint, building_height, height_confidence, is_residential, imagery_vintage, height_is_valid from morocco_buildings_date" -nln morocco_buildings_footprints_phase3
-	cd data/out/morocco_buildings; pigz morocco_buildings_footprints_phase3.geojson
-
-db/table/morocco_buildings_benchmark: static_data/morocco_buildings/phase_3/footprints/agadir_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/casablanca_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/chefchaouen_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/fes_footprints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/footprints/meknes_footprints_benchmark_ph3.geojson | db/table ## Detected benchmark from old satellite imagery (EPSG-3857).
-	psql -c "drop table if exists morocco_buildings_benchmark;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/agadir_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
-	psql -c "alter table morocco_buildings_benchmark add column city text;"
-	psql -c "alter table morocco_buildings_benchmark alter column wkb_geometry type geometry;"
-	psql -c "update morocco_buildings_benchmark set city = 'Agadir' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/casablanca_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
-	psql -c "update morocco_buildings_benchmark set city = 'Casablanca' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/chefchaouen_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
-	psql -c "update morocco_buildings_benchmark set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/fes_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
-	psql -c "update morocco_buildings_benchmark set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/footprints/meknes_footprints_benchmark_ph3.geojson -nln morocco_buildings_benchmark
-	psql -c "update morocco_buildings_benchmark set city = 'Meknes' where city is null;"
-	psql -f tables/morocco_buildings_benchmark.sql -v morocco_buildings=morocco_buildings_benchmark
-	touch $@
-
-db/table/morocco_buildings_benchmark_roofprints: static_data/morocco_buildings/phase_3/roofprints/agadir_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/casablanca_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/chefchaouen_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/fes_roofptints_benchmark_ph3.geojson static_data/morocco_buildings/phase_3/roofprints/meknes_roofptints_benchmark_ph3.geojson | db/table ## Separate datasets of Morocco cities buildings roofrints combined together and imported into database (for further benchmarking automatically segmentized buildings) (EPSG-3857).
-	psql -c "drop table if exists morocco_buildings_benchmark_roofprints;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/agadir_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
-	psql -c "alter table morocco_buildings_benchmark_roofprints add column city text;"
-	psql -c "alter table morocco_buildings_benchmark_roofprints alter column wkb_geometry type geometry;"
-	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Agadir' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/casablanca_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
-	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Casablanca' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/chefchaouen_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
-	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/fes_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
-	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/roofprints/meknes_roofptints_benchmark_ph3.geojson -nln morocco_buildings_benchmark_roofprints
-	psql -c "update morocco_buildings_benchmark_roofprints set city = 'Meknes' where city is null;"
-	psql -f tables/morocco_buildings_benchmark.sql -v morocco_buildings=morocco_buildings_benchmark_roofprints
-	touch $@
-
-db/table/morocco_buildings_extents: static_data/morocco_buildings/extents/agadir_extents.geojson static_data/morocco_buildings/extents/casablanca_extents.geojson static_data/morocco_buildings/extents/chefchaouen_extents.geojson static_data/morocco_buildings/extents/fes_extents.geojson static_data/morocco_buildings/extents/meknes_extents.geojson | db/table ## Combined (for all cities) area of interest as extent mask area from Geoalert's repository (EPSG-3857).
-	psql -c "drop table if exists morocco_buildings_extents;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/agadir_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
-	psql -c "alter table morocco_buildings_extents add column city text;"
-	psql -c "alter table morocco_buildings_extents alter column wkb_geometry type geometry;"
-	psql -c "update morocco_buildings_extents set city = 'Agadir' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/casablanca_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
-	psql -c "update morocco_buildings_extents set city = 'Casablanca' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/chefchaouen_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
-	psql -c "update morocco_buildings_extents set city = 'Chefchaouen' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/fes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
-	psql -c "update morocco_buildings_extents set city = 'Fes' where city is null;"
-	ogr2ogr -append -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/extents/meknes_extents.geojson -a_srs EPSG:3857 -nln morocco_buildings_extents
-	psql -c "update morocco_buildings_extents set city = 'Meknes' where city is null;"
-	psql -c "alter table morocco_buildings_extents rename column wkb_geometry to geom; update morocco_buildings_extents set geom = ST_Transform(geom, 3857);"
-	touch $@
-
-db/table/morocco_buildings_footprints_phase3_clipped: db/table/morocco_buildings db/table/morocco_buildings_extents ## Buildings footprints from Geoalert sampled from Morocco buildings dataset for further benchmarking (EPSG-3857).
-	psql -c "drop table if exists morocco_buildings_footprints_phase3_clipped;"
-	psql -c "create table morocco_buildings_footprints_phase3_clipped as (select a.* from morocco_buildings a join morocco_buildings_extents b on ST_Intersects(a.geom, ST_Transform(b.geom, 4326)));"
-	psql -c "update morocco_buildings_footprints_phase3_clipped set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
-	touch $@
-
-db/table/morocco_buildings_manual_roofprints_phase3: static_data/morocco_buildings/phase_3/fes_meknes_height_patch.geojson db/table/morocco_buildings_manual_roofprints | db/table ## Buildings roofprints from Geoalert sampled from Morocco buildings dataset for further benchmarking (EPSG-3857).
-	psql -c "drop table if exists morocco_buildings_manual_roofprints_phase3;"
-	psql -c "create table morocco_buildings_manual_roofprints_phase3 as (select * from morocco_buildings_manual_roofprints);"
-	psql -c "drop table if exists fes_meknes_height_patch;"
-	ogr2ogr -f PostgreSQL PG:"dbname=gis" static_data/morocco_buildings/phase_3/fes_meknes_height_patch.geojson -nln fes_meknes_height_patch
-	psql -c "alter table fes_meknes_height_patch alter column wkb_geometry type geometry;"
-	psql -c "update fes_meknes_height_patch set wkb_geometry = ST_Transform(wkb_geometry, 3857);"
-	psql -c "update morocco_buildings_manual_roofprints_phase3 a set building_height = machine_height, is_confident = true from fes_meknes_height_patch b where ST_Intersects(ST_PointOnSurface(a.geom), wkb_geometry) and better = 'robo';"
-	psql -c "update morocco_buildings_manual_roofprints_phase3 a set is_confident = false from fes_meknes_height_patch b where ST_Intersects(ST_PointOnSurface(a.geom), wkb_geometry) and better = 'wtf';"
-	psql -c "update morocco_buildings_manual_roofprints_phase3 a set is_confident = true from fes_meknes_height_patch b where ST_Intersects(ST_PointOnSurface(a.geom), wkb_geometry) and better = 'man';"
-	psql -c "update morocco_buildings_manual_roofprints_phase3 set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, 3857)), 3) where ST_SRID(geom) != 3857 or not ST_IsValid(geom);"
-	touch $@
-
-db/table/morocco_buildings_iou: db/table/morocco_buildings_benchmark_roofprints db/table/morocco_buildings_benchmark db/table/morocco_buildings_manual_roofprints db/table/morocco_buildings_manual db/table/morocco_buildings_extents db/table/morocco_buildings_footprints_phase3_clipped db/table/morocco_buildings_manual_roofprints_phase3 | data/out/morocco_buildings ## Calculation IoU metrics for all buildings from Morocco dateset test benchmark
-	rm -f data/out/morocco_buildings/metric_storage.csv
-	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual_roofprints_phase3 -v examinee_buildings_table=morocco_buildings_benchmark_roofprints -v benchmark_clip_table=morocco_buildings_extents -v type=roof
-	echo "morocco_buildings_manual_roofprints_phase3 & morocco_buildings_benchmark_roofprints tables, type=roof" > data/out/morocco_buildings/metric_storage.csv
-	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/out/morocco_buildings/metric_storage.csv
-	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual -v examinee_buildings_table=morocco_buildings_benchmark -v benchmark_clip_table=morocco_buildings_extents -v type=foot
-	echo "morocco_buildings_manual & morocco_buildings_benchmark tables, type=foot" >> data/out/morocco_buildings/metric_storage.csv
-	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/out/morocco_buildings/metric_storage.csv
-	echo "morocco_buildings_manual & morocco_buildings_footprints_phase3_clipped tables, type=foot" >> data/out/morocco_buildings/metric_storage.csv
-	psql -f tables/morocco_buildings_iou.sql -v reference_buildings_table=morocco_buildings_manual -v examinee_buildings_table=morocco_buildings_footprints_phase3_clipped -v benchmark_clip_table=morocco_buildings_extents -v type=foot
-	psql -q -c '\crosstabview' -A -F "," -c "select city, metric, value from metrics_storage order by 1;" | head -6 >> data/out/morocco_buildings/metric_storage.csv
-	touch $@
-
-data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual | data/out/morocco_buildings  ## Morocco Buildings footprints from Geoalert imported into database for further benchmarking(phase 2)(EPSG-3857).
-	rm -f $@
-	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(footprint, 4326), building_height, city, is_confident from morocco_buildings_manual_extent' -nln morocco_buildings_manual_phase2
-	cd data/out/morocco_buildings; pigz morocco_buildings_manual_phase2.geojson
-
-data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz: db/table/morocco_buildings_iou db/table/morocco_buildings_manual_roofprints | data/out/morocco_buildings  ## Morocco Buildings roofprints from Geoalert imported into database for further benchmarking (phase 2)(EPSG-3857).
-	rm -f $@
-	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, is_confident from morocco_buildings_manual_roofprints_extent' -nln morocco_buildings_manual_roofprints_phase2
-	cd data/out/morocco_buildings; pigz morocco_buildings_manual_roofprints_phase2.geojson
-
-data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz: db/table/morocco_buildings_benchmark | data/out/morocco_buildings ## Benchmarks on Morocco Buildings footprints from Geoalert (phase 2)(EPSG-3857).
-	rm -f $@
-	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, height_confidence, is_residential from morocco_buildings_benchmark' -nln morocco_buildings_benchmark
-	cd data/out/morocco_buildings; pigz morocco_buildings_benchmark_phase2.geojson
-
-data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz: db/table/morocco_buildings_benchmark_roofprints | data/out/morocco_buildings ## Benchmarks on Morocco Buildings roofprints from Geoalert (phase 2)(EPSG-3857).
-	rm -f $@
-	ogr2ogr -f GeoJSON data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson PG:'dbname=gis' -sql 'select ST_Transform(geom, 4326), building_height, city, height_confidence, is_residential from morocco_buildings_benchmark_roofprints' -nln morocco_buildings_benchmark_roofprints
-	cd data/out/morocco_buildings; pigz morocco_buildings_benchmark_roofprints_phase2.geojson
-
-data/out/morocco: data/out/morocco_buildings/morocco_buildings_footprints_phase3.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_benchmark_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_roofprints_phase2.geojson.gz data/out/morocco_buildings/morocco_buildings_manual_phase2.geojson.gz | data/out ## Flag all Morocco buildings output datasets are exported.
 	touch $@
 
 ### END Morocco Data block ###

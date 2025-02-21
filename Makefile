@@ -38,6 +38,8 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
 	profile_make_clean data/planet-latest-updated.osm.pbf data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check data/in/hot_projects/hot_projects data/in/live_sensor_data_h3.csv db/table/insights_api_indicators_list_test db/table/insights_api_indicators_list_dev db/table/insights_api_indicators_list_prod data/in/oam_global_coverage.csv data/in/oam_number_of_pixels.csv
 	psql -f scripts/clean.sql
+	# Update bivariate indicators
+	psql -f tables/bivariate_indicators.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
 	docker image prune --force --filter label=stage=osrm-backend
@@ -2128,10 +2130,6 @@ db/table/bivariate_axis_overrides: | db/table ## Overrides for bivariate axis.
 
 db/table/bivariate_overlays: db/table/osm_meta db/table/tile_logs | db/table ## Several default indicator presets for Bivariate manager.
 	psql -f tables/bivariate_overlays.sql
-	touch $@
-
-db/table/bivariate_indicators: | db/table ## Bivariate indicators properties, and attribution used in Bivariate manager.
-	psql -f tables/bivariate_indicators.sql
 	touch $@
 
 data/tile_logs: | data ## Directory for OpenStreetMap tiles usage statistics dataset.

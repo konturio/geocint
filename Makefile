@@ -29,11 +29,7 @@ test: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump de
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod_new_deploy: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy_indicators/prod/uploads/upload_prod deploy/prod/osrm-backend-by-car deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy_indicators/prod/presets/all_presets deploy/s3/prod/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Deploys artifacts to production. Runs only on master branch.
-	touch $@
-	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
-
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy/prod/cleanup_cache_old deploy/prod/osrm-backend-by-car deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy/s3/prod/reports/reports.tar.gz ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy_indicators/prod/uploads/upload_prod deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy_indicators/prod/presets/all_presets deploy/s3/prod/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -217,10 +213,6 @@ deploy/geocint/reports/dev: | deploy/geocint ## Directory for storing deploy rea
 
 deploy/geocint/reports/prod: | deploy/geocint ## Directory for storing deploy ready OpenStreetMap quality report files (production).
 	mkdir -p $@
-
-deploy/prod/osrm-backend-by-car: deploy/geocint/belarus-latest.osm.pbf | deploy/prod ## Send message through Amazon Simple Queue Service to trigger rebuild Belarus road graph in OSRM in Docker on remote server.
-	aws sqs send-message --output json --region eu-central-1 --queue-url https://sqs.eu-central-1.amazonaws.com/001426858141/PuppetmasterInbound.fifo --message-body '{"jsonrpc":"2.0","method":"rebuildDockerImage","params":{"imageName":"kontur-osrm-backend-by-car","osmPbfUrl":"https://geocint.kontur.io/gis/belarus-latest.osm.pbf"},"id":"'`uuid`'"}' --message-group-id rebuildDockerImage--kontur-osrm-backend-by-car
-	touch $@
 
 data/belarus-latest.osm.pbf: data/planet-latest-updated.osm.pbf data/belarus_boundary.geojson | data ## Extract Belarus from planet-latest-updated.osm.pbf using Osmium tool.
 	osmium extract -v -s smart -p data/belarus_boundary.geojson data/planet-latest-updated.osm.pbf -o data/belarus-latest.osm.pbf --overwrite
@@ -1925,23 +1917,6 @@ data/out/morocco: data/out/morocco_buildings/morocco_buildings_footprints_phase3
 ### END Morocco Data block ###
 
 ## start Abu Dhabi block
-
-db/table/abu_dhabi_admin_boundaries: db/table/osm db/index/osm_tags_idx db/table/gadm_countries_boundary | db/table ## Abu Dhabi admin boundaries extracted from GADM (Database of Global Administrative Areas).
-	psql -f tables/abu_dhabi_admin_boundaries.sql
-	touch $@
-
-db/table/abu_dhabi_eatery: db/table/osm db/index/osm_tags_idx db/table/abu_dhabi_admin_boundaries | db/table ## Abu Dhabi eatery extracted from OpenStreetMap.
-	psql -f tables/abu_dhabi_eatery.sql
-	touch $@
-
-db/table/abu_dhabi_food_shops: db/table/osm db/index/osm_tags_idx db/table/abu_dhabi_admin_boundaries | db/table ## Abu Dhabi food shops extracted from OpenStreetMap.
-	psql -f tables/abu_dhabi_food_shops.sql
-	touch $@
-
-db/table/abu_dhabi_bivariate_pop_food_shops: db/table/abu_dhabi_eatery db/table/abu_dhabi_food_shops db/table/kontur_population_h3 | db/table ## H3 bivariate layer with population vs food shops for Abu Dhabi.
-	psql -f tables/abu_dhabi_bivariate_pop_food_shops.sql
-	touch $@
-
 data/in/abu_dhabi_geoalert_v4.geojson: | data/in ## Download buildings dataset from Geoalert for Abu Dhabi.
 	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/abu_dhabi_geoalert_v4.geojson $@ --profile geocint_pipeline_sender
 
@@ -1951,38 +1926,6 @@ db/table/abu_dhabi_buildings: data/in/abu_dhabi_geoalert_v4.geojson | db/table #
 
 db/table/abu_dhabi_buildings_h3: db/table/abu_dhabi_buildings | db/table ## Amount of buildings dataset from Geoalert for Abu Dhabi at H3 hexagons.
 	psql -f tables/count_items_in_h3.sql -v table=abu_dhabi_buildings -v table_h3=abu_dhabi_buildings_h3 -v item_count=building_count
-	touch $@
-
-data/out/abu_dhabi: | data/out ## Directory for Abu Dhabi datasets output.
-	mkdir -p $@
-
-data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson: db/table/abu_dhabi_admin_boundaries | data/out/abu_dhabi  ## Abu Dhabi admin boundaries from GADM (Database of Global Administrative Areas) exported to geojson.
-	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select id as gid, name, gadm_level, geom from abu_dhabi_admin_boundaries' -nln abu_dhabi_admin_boundaries
-
-data/out/abu_dhabi/abu_dhabi_eatery.csv: db/table/abu_dhabi_eatery | data/out/abu_dhabi ## Abu Dhabi eatery from OpenStreetMap exported to csv.
-	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_eatery) to stdout with csv header;' > $@
-
-data/out/abu_dhabi/abu_dhabi_food_shops.csv: db/table/abu_dhabi_food_shops | data/out/abu_dhabi ## Abu Dhabi food shops from OpenStreetMap exported to csv.
-	psql -q -X -c 'copy (select osm_id, type, ST_Y(geom) "lat", ST_X(geom) "lon" from abu_dhabi_food_shops) to stdout with csv header;' > $@
-
-data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv: db/table/abu_dhabi_bivariate_pop_food_shops | data/out/abu_dhabi ## H3 bivariate layer with population vs food shops for Abu Dhabi exported to csv.
-	psql -q -X -c 'copy (select h3, population, places, bivariate_cell_label from abu_dhabi_bivariate_pop_food_shops) to stdout with csv header;' > $@
-
-db/table/abu_dhabi_buildings_population: db/table/abu_dhabi_buildings | db/table ## Distribute Kontur population by buildings in Abu Dhabi.
-	psql -f tables/abu_dhabi_buildings_population.sql
-	touch $@
-
-db/table/abu_dhabi_pds_bicycle_10min: db/table/abu_dhabi_buildings_population deploy/geocint/docker_osrm_backend | db/table ## Buildings with Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
-	psql -c 'drop table if exists abu_dhabi_pds_bicycle_10min;'
-	psql -c 'create table abu_dhabi_pds_bicycle_10min(id integer, height float, pds integer, geom geometry);'
-	psql -X -c 'copy (select id from abu_dhabi_buildings_population) to stdout;' | parallel --eta 'psql -X -f tables/abu_dhabi_pds_bicycle_10min.sql -v id={};'
-	psql -c 'vacuum full abu_dhabi_pds_bicycle_10min;'
-	touch $@
-
-data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson: db/table/abu_dhabi_pds_bicycle_10min | data/out/abu_dhabi ## Export to GeoJson buildings with Population Density Score within 10 minutes accessibility by bicycle profile in Abu Dhabi.
-	ogr2ogr -f GeoJSON $@ PG:'dbname=gis' -sql 'select * from abu_dhabi_pds_bicycle_10min' -nln abu_dhabi_pds_bicycle_10min
-
-data/out/abu_dhabi_export: data/out/abu_dhabi/abu_dhabi_admin_boundaries.geojson data/out/abu_dhabi/abu_dhabi_eatery.csv data/out/abu_dhabi/abu_dhabi_food_shops.csv data/out/abu_dhabi/abu_dhabi_bivariate_pop_food_shops.csv data/out/abu_dhabi/abu_dhabi_pds_bicycle_10min.geojson ## Make sure all Abu Dhabi datasets have been exported.
 	touch $@
 
 ## end Abu Dhabi block

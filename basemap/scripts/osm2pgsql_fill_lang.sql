@@ -6,7 +6,7 @@ with cte as (select osm_id,
              from (select distinct on (p.osm_id) p.osm_id, 
                                                  p.tags, 
                                                  p.name, 
-                                                 default_language as lang
+                                                 'name:' || default_language as lang
                    from planet_osm_point p join kontur_default_languages c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
                    order by p.osm_id, c.admin_level desc) t
@@ -24,7 +24,7 @@ with cte as (select osm_id,
              from (select distinct on (p.osm_id) p.osm_id, 
                                                  p.tags, 
                                                  p.name, 
-                                                 default_language as lang
+                                                 'name:' || default_language as lang
                    from planet_osm_line p join kontur_default_languages c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
                    order by p.osm_id, c.admin_level desc) t
@@ -37,7 +37,7 @@ with cte as (select osm_id, lang
              from (select distinct on (p.osm_id) p.osm_id, 
                                                  p.tags, 
                                                  p.name, 
-                                                 default_language as lang
+                                                 'name:' || default_language as lang
                    from planet_osm_polygon p join kontur_default_languages c on ST_Intersects(p.way, c.geom)
                    where p.name is not null
                    order by p.osm_id, c.admin_level desc) t

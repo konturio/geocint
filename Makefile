@@ -967,7 +967,7 @@ db/table/osm_gadm_comparison: db/table/kontur_boundaries db/table/gadm_boundarie
 	psql -f tables/osm_gadm_comparison.sql
 	touch $@
 
-db/table/osm_unmapped_places_report: db/table/osm_object_count_grid db/table/kontur_population_h3 db/table/tile_logs_h3 db/table/hdx_boundaries | db/table ## Report with a list of viewed but unmapped populated places
+db/table/osm_unmapped_places_report: db/table/osm_object_count_grid_h3 db/table/kontur_population_h3 db/table/tile_logs_h3 db/table/hdx_boundaries | db/table ## Report with a list of viewed but unmapped populated places
 	psql -f tables/osm_unmapped_places_report.sql
 	touch $@
 
@@ -2121,14 +2121,14 @@ db/table/foursquare_os_places_h3: db/table/foursquare_os_places db/table/foursqu
 	psql -f tables/foursquare_os_places_h3.sql
 	touch $@
 
-db/table/all_datasets: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/live_sensor_data_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/oam_global_coverage_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/oam_number_of_pixels_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 db/table/osm_financial_venues_h3 db/table/osm_education_venues_h3 db/table/osm_emergency_facilities_h3 db/table/osm_transport_facilities_h3 db/table/osm_car_parkings_capacity_h3 db/table/osm_heritage_sites_h3 db/table/foursquare_os_places_h3 | db/table ## service target to build all datasets without deployment
+db/table/all_datasets: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs_h3 db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/live_sensor_data_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/oam_global_coverage_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/oam_number_of_pixels_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 db/table/osm_financial_venues_h3 db/table/osm_education_venues_h3 db/table/osm_emergency_facilities_h3 db/table/osm_transport_facilities_h3 db/table/osm_car_parkings_capacity_h3 db/table/osm_heritage_sites_h3 db/table/foursquare_os_places_h3 | db/table ## service target to build all datasets without deployment
 	touch $@
 
 db/table/bivariate_axis_overrides: | db/table ## Overrides for bivariate axis.
 	psql -f tables/bivariate_axis_overrides.sql
 	touch $@
 
-db/table/bivariate_overlays: db/table/osm_meta db/table/tile_logs | db/table ## Several default indicator presets for Bivariate manager.
+db/table/bivariate_overlays: db/table/osm_meta db/table/tile_logs_h3 | db/table ## Several default indicator presets for Bivariate manager.
 	psql -f tables/bivariate_overlays.sql
 	touch $@
 
@@ -2139,7 +2139,7 @@ data/tile_logs/_download: | data/tile_logs data ## Download OpenStreetMap tiles 
 	cd data/tile_logs/ && wget -A xz -r -l 1 -nd -np -nc https://planet.openstreetmap.org/tile_logs/
 	touch $@
 
-db/table/tile_logs: data/tile_logs/_download | db/procedure/generate_overviews db/table ## OpenStreetMap tiles usage logs imported into database.
+db/table/tile_logs_h3: data/tile_logs/_download | db/procedure/generate_overviews db/table ## OpenStreetMap tiles usage logs imported into database.
 	psql -c "drop table if exists tile_logs;"
 	psql -c "create table tile_logs (tile_date timestamptz, z int, x int, y int, view_count int, geom geometry generated always as (ST_Transform(ST_TileEnvelope(z, x, y), 4326)) stored);"
 	find data/tile_logs/ -type f -size +10M | sort -r | head -30 | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs from stdin with csv'"
@@ -2151,7 +2151,7 @@ db/table/tile_logs: data/tile_logs/_download | db/procedure/generate_overviews d
 data/tile_logs/tiles-2022-02-23.txt.xz: | data/tile_logs/_download ## use txt.xz file as footprint not to run next target every run.
 	touch $@
 
-db/table/tile_logs_bf2402: | db/procedure/generate_overviews data/tile_logs/tiles-2022-02-23.txt.xz db/table ## OpenStreetMap tiles logs 30 days before 24.02.2022.
+db/table/tile_logs_bf2402_h3: | db/procedure/generate_overviews data/tile_logs/tiles-2022-02-23.txt.xz db/table ## OpenStreetMap tiles logs 30 days before 24.02.2022.
 	psql -c "drop table if exists tile_logs_bf2402;"
 	psql -c "create table tile_logs_bf2402 (tile_date timestamptz, z int, x int, y int, view_count int);"
 	cat static_data/tile_list/tile_logs_list.txt | parallel "xzcat {} | python3 scripts/import_osm_tile_logs.py {} | psql -c 'copy tile_logs_bf2402 from stdin with csv'"
@@ -2878,7 +2878,7 @@ data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement: data/out/d
 
 ### Deploy through API
 
-data/out/csv/view_count.csv: db/table/tile_logs | data/out/csv ## extract view_count to csv file 
+data/out/csv/view_count.csv: db/table/tile_logs_h3 | data/out/csv ## extract view_count to csv file 
 	psql -q -X -c "copy (select h3, view_count from tile_logs_h3 where h3 is not null and view_count is not null and view_count > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/view_count.csv
 
 data/out/csv/count.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count to csv file 
@@ -2917,7 +2917,7 @@ data/out/csv/avgmax_ts.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## 
 data/out/csv/man_distance_to_fire_brigade.csv: db/table/isodist_fire_stations_h3 | data/out/csv ## extract man_distance_to_fire_brigade to csv file 
 	psql -q -X -c "copy (select h3, man_distance as man_distance_to_fire_brigade from isodist_fire_stations_h3 where h3 is not null and man_distance is not null order by h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_fire_brigade.csv
 
-data/out/csv/view_count_bf2402.csv: db/table/tile_logs_bf2402 | data/out/csv ## extract view_count_bf2402 to csv file 
+data/out/csv/view_count_bf2402.csv: db/table/tile_logs_bf2402_h3 | data/out/csv ## extract view_count_bf2402 to csv file 
 	psql -q -X -c "copy (select h3, view_count_bf2402 from tile_logs_bf2402_h3 where h3 is not null and view_count_bf2402 is not null and view_count_bf2402 > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/view_count_bf2402.csv
 
 data/out/csv/days_mintemp_above_25c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_mintemp_above_25c_1c to csv file 
@@ -3425,7 +3425,7 @@ deploy_indicators/dev/uploads/count_6_months_upload: data/out/csv/count_6_months
 	touch $@
 
 deploy_indicators/dev/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/dev/uploads ## upload view_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count.csv "view_count" db/table/tile_logs
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count.csv "view_count" db/table/tile_logs_h3
 	touch $@
 
 deploy_indicators/dev/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/dev/uploads ## upload avgmax_ts to insight-api
@@ -3641,7 +3641,7 @@ deploy_indicators/dev/uploads/total_road_length_upload: data/out/csv/total_road_
 	touch $@
 
 deploy_indicators/dev/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/dev/uploads ## upload view_count_bf2402 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402_h3
 	touch $@
 
 deploy_indicators/dev/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/dev/uploads ## upload powerlines to insight-api
@@ -4419,7 +4419,7 @@ deploy_indicators/test/uploads/count_6_months_upload: data/out/csv/count_6_month
 	touch $@
 
 deploy_indicators/test/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/test/uploads ## upload view_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count.csv "view_count" db/table/tile_logs
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count.csv "view_count" db/table/tile_logs_h3
 	touch $@
 
 deploy_indicators/test/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/test/uploads ## upload avgmax_ts to insight-api
@@ -4635,7 +4635,7 @@ deploy_indicators/test/uploads/total_road_length_upload: data/out/csv/total_road
 	touch $@
 
 deploy_indicators/test/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/test/uploads ## upload view_count_bf2402 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402_h3
 	touch $@
 
 deploy_indicators/test/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/test/uploads ## upload powerlines to insight-api
@@ -5418,7 +5418,7 @@ deploy_indicators/prod/uploads/count_6_months_upload: data/out/csv/count_6_month
 	touch $@
 
 deploy_indicators/prod/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/prod/uploads ## upload view_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count.csv "view_count" db/table/tile_logs
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count.csv "view_count" db/table/tile_logs_h3
 	touch $@
 
 deploy_indicators/prod/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/prod/uploads ## upload avgmax_ts to insight-api
@@ -5634,7 +5634,7 @@ deploy_indicators/prod/uploads/total_road_length_upload: data/out/csv/total_road
 	touch $@
 
 deploy_indicators/prod/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/prod/uploads ## upload view_count_bf2402 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402_h3
 	touch $@
 
 deploy_indicators/prod/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/prod/uploads ## upload powerlines to insight-api

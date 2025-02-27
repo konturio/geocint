@@ -15,14 +15,14 @@ create table osm_unmapped_places_report_in as (
     from
       tile_logs_h3 v
       join kontur_population_h3 p on (v.h3 = p.h3)
-      left join osm_object_count_grid_h3 c on (v.h3 = c.h3)
+      left join osm_object_count_grid_h3 c on (v.h3 = c.h3),
       ST_Envelope(ST_Transform(p.geom, 4326)) as envelope
     where
       p.population > 1
       and v.view_count > 1000
-      and c.count = 0
+      and c.count is null
     order by
-      floor(log10(population / area_km2)) desc,
+      floor(log10(population / h3_cell_area(p.h3))) desc,
       view_count desc
 );
 

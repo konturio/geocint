@@ -1401,7 +1401,7 @@ db/table/osm_object_count_grid_h3_r8: db/table/osm db/function/h3 db/table/osm_m
 db/table/osm_object_count_grid_h3: db/table/osm_object_count_grid_h3_r8 | db/table ## Object/building/line counts for OpenStreetMap that only mark the changes in last 6 months.
 	psql -c "drop table if exists osm_object_count_grid_h3;"
 	psql -c "create table osm_object_count_grid_h3 as (select h3, count, count_6_months, building_count, building_count_6_months, min_ts, max_ts, avgmax_ts, resolution from osm_object_count_grid_h3_r8);"
-	psql -c "call generate_overviews('osm_object_count_grid_h3', '{count, count_6_months, building_count, building_count_6_months, min_ts, max_ts, avgmax_ts, resolution}'::text[], '{sum,sum,sum,sum,min,max,avg}'::text[], 8);"	
+	psql -c "call generate_overviews('osm_object_count_grid_h3', '{count, count_6_months, building_count, building_count_6_months, min_ts, max_ts, avgmax_ts}'::text[], '{sum,sum,sum,sum,min,max,avg}'::text[], 8);"
 	touch $@
 
 db/table/osm_user_count_grid_h3: db/table/osm_object_count_grid_h3_r8 | db/table ## Users counts for OpenStreetMap.

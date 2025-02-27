@@ -2,7 +2,7 @@
 
 drop table if exists osm_users_hex_in;
 create table osm_users_hex_in as (select *
-                                  from osm_user_count_grid_h3
+                                  from osm_user_activity_h3
                                   order by h3, count desc, osm_user);
 create index osm_users_hex_in_h3_osm_user on osm_users_hex_in (h3, osm_user);
 create index osm_users_hex_in_osm_user_resolution_hours on osm_users_hex_in (osm_user, resolution, hours desc);

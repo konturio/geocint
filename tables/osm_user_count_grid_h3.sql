@@ -1,32 +1,29 @@
-drop table if exists osm_user_activity_h3;
-create table osm_user_activity_h3 as (
-    select resolution,
-           h3,
-           osm_user,
-           count(*) as count,
-           count(distinct hours) as hours
-    from (
-             select
-                 resolution as resolution,
-                 h3         as h3,
-                 osm_user   as osm_user,
-                 date_trunc('hour', ts) as hours
-             from osm,
-                  ST_H3Bucket(geog) as hex
-             where ts > (select (meta -> 'data' -> 'timestamp' ->> 'last')::timestamptz
-                          from osm_meta) - interval '2 years'
-         ) z
-    group by 1, 2, 3
+drop table if exists osm_user_count_grid_h3;
+create table osm_user_count_grid_h3 as (
+    select h3, 
+           osm_users,
+           osm_users_array,
+           resolution 
+    from osm_object_count_grid_h3_r8
 );
 
-delete from osm_user_activity_h3 
-	where exists 
-	(select 1 
-	from users_deleted 
-	where 
-	osm_user_activity_h3.osm_user = users_deleted.osm_user);
-
--- clean up some known bots and import accounts from the low zoom maps.
-delete from osm_user_activity_h3 where osm_user in ('NeisBot', 'b-jazz-bot', 'SomeoneElse_Revert', 'SherbetS_Import', 'Mateusz Konieczny - bot account', 'NorthCrab_upload', 'woodpeck_repair', 'kmpoppe (@ Mapillary Update)', 'autoAWS', '❤‍🔥import', 'latvia-bot', 'kapazao_import', 'cquest_bot', 'zluuzki_Import', 'PlayzinhoAgro-imports', 'wb_import', 'popball-import', 'Reitstoen_import', 'wheelmap_visitor', 'Serbian OSM Lint bot', 'asibwene_ImportAccount', 'William Mponeja_ImportAccount', 'Samwel Kyando_Import Account', 'NeemaAlphonce_ImportAccount', 'Abou kachongo jr_ImportAccount', 'HellenGaspar_ImportAccount', 'addr2osm', 'darkonus - bot account', 'harahu_import', 'nsr2osm', 'NURU ATHUMANI_ImportAccount', 'william bonya_ImportAccount', 'ERASTO ELIUD_ImportAccount', 'NKA', 'avinet_ua', 'RGZ AR Import' );
-
-create index on osm_user_activity_h3 (h3);
+do
+$$
+    declare
+        res integer;
+    begin
+        res = 8;
+        while res > 0
+            loop
+                insert into osm_user_count_grid_h3 (resolution, h3, osm_users, osm_users_array)
+                select (res - 1) as resolution,
+                       h3_cell_to_parent(h3) as h3,
+                       count(distinct osm_user) as osm_users,
+                       array_agg(distinct osm_user) as osm_users_array
+                from osm_user_count_grid_h3, unnest(osm_users_array) as osm_user
+                where resolution = res
+                group by 2;
+                res = res - 1;
+            end loop;
+    end;
+$$;

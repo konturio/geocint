@@ -1394,8 +1394,18 @@ db/table/user_hours_h3: db/function/h3 db/table/osm_user_activity_h3 db/table/os
 	psql -f tables/user_hours_h3.sql
 	touch $@
 
-db/table/osm_object_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta | db/table ## Object/building/line counts for OpenStreetMap that only mark the changes in last 6 months.
-	psql -f tables/osm_object_count_grid_h3.sql
+db/table/osm_object_count_grid_h3_r8: db/table/osm db/function/h3 db/table/osm_meta | db/table ## Object/building/line counts for OpenStreetMap that only mark the changes in last 6 months.
+	psql -f tables/osm_object_count_grid_h3_r8.sql
+	touch $@
+
+db/table/osm_object_count_grid_h3: db/table/osm_object_count_grid_h3_r8 | db/table ## Object/building/line counts for OpenStreetMap that only mark the changes in last 6 months.
+	psql -c "drop table if exists osm_object_count_grid_h3;"
+	psql -c "create table osm_object_count_grid_h3 as (select h3, count, count_6_months, building_count, building_count_6_months, min_ts, max_ts, avgmax_ts, resolution from osm_object_count_grid_h3_r8);"
+	psql -c "call generate_overviews('osm_object_count_grid_h3', '{count, count_6_months, building_count, building_count_6_months, min_ts, max_ts, avgmax_ts, resolution}'::text[], '{sum,sum,sum,sum,min,max,avg}'::text[], 8);"	
+	touch $@
+
+db/table/osm_user_count_grid_h3: db/table/osm_object_count_grid_h3_r8 | db/table ## Users counts for OpenStreetMap.
+	psql -f tables/osm_user_count_grid_h3.sql
 	touch $@
 
 data/in/global_fires/download_firms_archive: | data/in/global_fires ## Download active fire products (FIRMS - Fire Information for Resource Management System) for last 14 months from AWS.
@@ -2121,7 +2131,7 @@ db/table/foursquare_os_places_h3: db/table/foursquare_os_places db/table/foursqu
 	psql -f tables/foursquare_os_places_h3.sql
 	touch $@
 
-db/table/all_datasets: db/table/osm_object_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs_h3 db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 db/table/osm_financial_venues_h3 db/table/osm_education_venues_h3 db/table/osm_emergency_facilities_h3 db/table/osm_transport_facilities_h3 db/table/osm_car_parkings_capacity_h3 db/table/osm_heritage_sites_h3 db/table/foursquare_os_places_h3 | db/table ## service target to build all datasets without deployment
+db/table/all_datasets: db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs_h3 db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 db/table/osm_financial_venues_h3 db/table/osm_education_venues_h3 db/table/osm_emergency_facilities_h3 db/table/osm_transport_facilities_h3 db/table/osm_car_parkings_capacity_h3 db/table/osm_heritage_sites_h3 db/table/foursquare_os_places_h3 | db/table ## service target to build all datasets without deployment
 	touch $@
 
 db/table/bivariate_axis_overrides: | db/table ## Overrides for bivariate axis.
@@ -2903,8 +2913,8 @@ data/out/csv/building_count_6_months.csv: db/table/osm_object_count_grid_h3 | da
 data/out/csv/highway_length_6_months.csv: db/table/osm_road_segments_6_months_h3 | data/out/csv ## extract highway_length_6_months to csv file 
 	psql -q -X -c "copy (select h3, highway_length_6_months from osm_road_segments_6_months_h3 where h3 is not null and highway_length_6_months is not null and highway_length_6_months > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/highway_length_6_months.csv
 
-data/out/csv/osm_users.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract osm_users to csv file 
-	psql -q -X -c "copy (select h3, osm_users from osm_object_count_grid_h3 where h3 is not null and osm_users is not null and osm_users > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/osm_users.csv
+data/out/csv/osm_users.csv: db/table/osm_user_count_grid_h3 | data/out/csv ## extract osm_users to csv file 
+	psql -q -X -c "copy (select h3, osm_users from osm_users_count_grid_h3 where h3 is not null and osm_users is not null and osm_users > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/osm_users.csv
 
 data/out/csv/residential.csv: db/table/residential_pop_h3 | data/out/csv ## extract residential to csv file 
 	psql -q -X -c "copy (select h3, residential from residential_pop_h3 where h3 is not null and residential is not null and residential > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/residential.csv
@@ -3409,7 +3419,7 @@ deploy_indicators/dev/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_in
 	touch $@
 
 deploy_indicators/dev/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/dev/uploads ## upload osm_users to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_users.csv "osm_users" db/table/osm_object_count_grid_h3
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_users.csv "osm_users" db/table/osm_user_count_grid_h3
 	touch $@
 
 deploy_indicators/dev/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/dev/uploads ## upload building_count to insight-api
@@ -4403,7 +4413,7 @@ deploy_indicators/test/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_i
 	touch $@
 
 deploy_indicators/test/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/test/uploads ## upload osm_users to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_users.csv "osm_users" db/table/osm_object_count_grid_h3
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_users.csv "osm_users" db/table/osm_user_count_grid_h3
 	touch $@
 
 deploy_indicators/test/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/test/uploads ## upload building_count to insight-api
@@ -5402,7 +5412,7 @@ deploy_indicators/prod/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_i
 	touch $@
 
 deploy_indicators/prod/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/prod/uploads ## upload osm_users to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_users.csv "osm_users" db/table/osm_object_count_grid_h3
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_users.csv "osm_users" db/table/osm_user_count_grid_h3
 	touch $@
 
 deploy_indicators/prod/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/prod/uploads ## upload building_count to insight-api

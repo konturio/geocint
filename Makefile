@@ -386,11 +386,11 @@ db/table/users_deleted: data/in/users_deleted.txt | db/table ## load list of del
 	cat data/in/users_deleted.txt | sed 's/ //g' | sed 's/^/user_/' | psql -c 'copy users_deleted (osm_user) from stdin with csv header;'
 	touch $@
 
-db/table/osm_user_count_grid_h3: db/table/osm db/function/h3 db/table/osm_meta db/table/users_deleted | db/table ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.
-	psql -f tables/osm_user_count_grid_h3.sql
+db/table/osm_user_activity_h3: db/table/osm db/function/h3 db/table/osm_meta db/table/users_deleted | db/table ## Statistics on OpenStreetMap users activity for last 2 years aggregated on H3 hexagon grid.
+	psql -f tables/osm_user_activity_h3.sql
 	touch $@
 
-db/table/osm_users_hex: db/table/osm_user_count_grid_h3 db/table/osm_local_active_users | db/table ## Select most active user per H3 hexagon cell.
+db/table/osm_users_hex: db/table/osm_user_activity_h3 db/table/osm_local_active_users | db/table ## Select most active user per H3 hexagon cell.
 	psql -f tables/osm_users_hex.sql
 	touch $@
 
@@ -1386,11 +1386,11 @@ db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrs
 	psql -f tables/population_grid_h3_r8.sql
 	touch $@
 
-db/table/osm_local_active_users: db/function/h3 db/table/osm_user_count_grid_h3 | db/table ## OpenStreetMap local active users (heuristics based on user activity).
+db/table/osm_local_active_users: db/function/h3 db/table/osm_user_activity_h3 | db/table ## OpenStreetMap local active users (heuristics based on user activity).
 	psql -f tables/osm_local_active_users.sql
 	touch $@
 
-db/table/user_hours_h3: db/function/h3 db/table/osm_user_count_grid_h3 db/table/osm_local_active_users | db/table ## Statistics on mapping hours (total hours and from local users only) of OpenStreetMap editors aggregated on H3 hexagon grid.
+db/table/user_hours_h3: db/function/h3 db/table/osm_user_activity_h3 db/table/osm_local_active_users | db/table ## Statistics on mapping hours (total hours and from local users only) of OpenStreetMap editors aggregated on H3 hexagon grid.
 	psql -f tables/user_hours_h3.sql
 	touch $@
 

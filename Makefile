@@ -971,7 +971,7 @@ db/table/osm_unmapped_places_report: db/table/osm_object_count_grid_h3 db/table/
 	psql -f tables/osm_unmapped_places_report.sql
 	touch $@
 
-db/table/osm_missing_roads: db/table/osm_object_count_grid_h3 db/table/building_count_grid_h3 db/table/facebook_roads_h3 db/table/osm_admin_boundaries | db/table ## Report with a list places where Facebook has more roads than OpenStreetMap
+db/table/osm_missing_roads: db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/table/total_road_length_h3 db/table/building_count_grid_h3 db/table/facebook_roads_h3 db/table/osm_admin_boundaries | db/table ## Report with a list places where Facebook has more roads than OpenStreetMap
 	psql -f tables/osm_missing_roads.sql
 	touch $@
 

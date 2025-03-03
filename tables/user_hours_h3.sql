@@ -16,7 +16,7 @@ select h3,
                )
            )         as local_hours,
        sum(uc.hours) as total_hours
-from osm_user_count_grid_h3 uc
+from osm_user_activity_h3 uc
 group by h3
 );
 

@@ -32,29 +32,3 @@ set geom = ST_CollectionHomogenize(geom);
 update morocco_buildings
 set geom = ST_CollectionExtract(ST_MakeValid(ST_Transform(ST_MakeValid(ST_Transform(geom, 3857)), 4326)), 3)
 where not ST_IsValid(ST_Transform(geom, 3857));
-
-drop table if exists morocco_buildings_date;
-create table morocco_buildings_date as (
-    select m.*,
-           n.aquisition_date as imagery_vintage
-    from morocco_buildings          m
-         left join morocco_meta_all n
-                   on ST_Intersects(wkb_geometry, ST_PointOnSurface(geom))
-);
-
-alter table morocco_buildings_date
-    add column height_is_valid bool;
-
-update morocco_buildings_date
-set height_is_valid = true
-where building_height is not null;
-
-update morocco_buildings_date
-set height_is_valid = false,
-    building_height = 6
-where building_height is null;
-
-update morocco_buildings_date
-set height_is_valid   = false,
-    height_confidence = 0
-where height_confidence is null;

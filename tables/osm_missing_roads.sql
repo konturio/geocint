@@ -10,20 +10,25 @@ create index on country_boundaries_subdivided_in using gist(geom);
 -- Missing roads table based on difference between OpenStreetMap and Facebook datasets
 drop table if exists osm_missing_roads;
 create table osm_missing_roads as
-with q as (select distinct on (s.h3, b.name_en) s.h3 as h3, -- on h3 can intersects w/ >1 cnt polygons
-        b.name_en, s.geom,
-        population,
-        round(s.highway_length::numeric, 2) as osm_l,
+with q as (select distinct on (fbr.h3, b.name_en) fbr.h3 as h3, -- on h3 can intersects w/ >1 cnt polygons
+        b.name_en, 
+        ST_Transform(h3_cell_to_boundary_geometry(fbr.h3), 3857) as geom,
+        p.population,
+        round(coalesce(o.highway_length,0)::numeric, 2) as osm_l,
         round(fbr.fb_roads_length::numeric / 1000.0, 2) as fb_l,
-        abs(log(s.highway_length + 1) - log(s.highway_length + (fbr.fb_roads_length / 1000.0) + 1)) as diff
-    from stat_h3 s
-    left join facebook_roads_h3 fbr on fbr.h3 = s.h3 
-    left join country_boundaries_subdivided_in b
-        on ST_Intersects(s.h3::geometry, b.geom)
-    where s.total_road_length > 0   -- fb roads
+        abs(log(coalesce(o.highway_length,0) + 1) - log(coalesce(o.highway_length, 0) + (fbr.fb_roads_length / 1000.0) + 1)) as diff
+    from 
+        facebook_roads_h3 fbr 
+        left join building_count_grid_h3 bd on fbr.h3 = bd.h3
+        left join total_road_length_h3 t on fbr.h3 = t.h3
+        left join kontur_population_h3 p on fbr.h3 = p.h3
+        left join osm_road_segments_h3 o on fbr.h3 = o.h3 
+        left join country_boundaries_subdivided_in b
+            on ST_Intersects(fbr.h3::geometry, b.geom)
+    where t.total_road_length > 0   -- fb roads
         and population > 2 -- take only places with population more than 2
-        and s.resolution = 8
-        and s.total_building_count > 1),-- take only places with building_count more than 1
+        and fbr.resolution = 8
+        and bd.building_count > 1),-- take only places with building_count more than 1
 res as (select h3, q.name_en, geom,
         -- doing this to take only N biggest diffs, N=100
         -- and biggest rounded to .1 diff within country and h3 w/ highest population 

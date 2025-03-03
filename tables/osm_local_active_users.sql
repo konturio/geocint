@@ -28,7 +28,7 @@ select
     sum(hours) as hours,
     max(hours) as max_hours
 from
-    osm_user_count_grid_h3
+    osm_user_activity_h3
 where
     resolution = 8
 group by osm_user;

@@ -1,8 +1,0 @@
-{
-"type": "FeatureCollection",
-"name": "chefchaouen",
-"crs": "epsg:3857",
-"features": [
-{ "type": "Feature", "properties": { "fid": 1, "MINX": -587316.0, "MINY": 4186095.0, "MAXX": -585130.625, "MAXY": 4187582.25, "CNTX": -586223.3125, "CNTY": 4186838.625, "AREA": 3250198.96875, "PERIM": 7345.25, "HEIGHT": 1487.25, "WIDTH": 2185.375 }, "geometry": { "type": "Polygon", "coordinates": [ [ [ -587316.0, 4186095.0 ], [ -585130.625, 4186095.0 ], [ -585130.625, 4187582.25 ], [ -587316.0, 4187582.25 ], [ -587316.0, 4186095.0 ] ] ] } }
-]
-}

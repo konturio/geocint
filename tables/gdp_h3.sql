@@ -6,11 +6,14 @@ create table countries_info as (
            gdp,
            gdp_year,
            geom,
-           (
-               select sum(a.population)
-               from kontur_population_h3 a
-               where ST_Intersects(a.geom, c.geom)
-                 and a.resolution = 8
+           (select sum(h.population *
+                       (case
+                            when ST_Within(h.geom, c.geom) then 1
+                            else ST_Area(ST_Intersection(h.geom, c.geom)) / ST_Area(h.geom)
+                        end))
+            from kontur_population_h3 h
+            where ST_Intersects(h.geom, c.geom)
+                 and h.resolution = 8
            ) as population
     from wb_gadm_gdp_countries c
 );

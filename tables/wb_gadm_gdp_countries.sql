@@ -25,3 +25,5 @@ create table wb_gadm_gdp_countries as (
 );
 
 vacuum analyse wb_gadm_gdp_countries;
+
+create index on wb_gadm_gdp_countries using gist(geom);

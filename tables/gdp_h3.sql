@@ -18,8 +18,6 @@ create table countries_info as (
     from wb_gadm_gdp_countries c
 );
 
-drop table if exists tmp_countries_info;
-
 alter table countries_info
     add column population_full float;
 

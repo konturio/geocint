@@ -1265,6 +1265,7 @@ data/in/wb/gdp/wb_gdp.zip: | data/in/wb/gdp ## Download GDP (Gross domestic prod
 	wget http://api.worldbank.org/v2/en/indicator/NY.GDP.MKTP.CD?downloadformat=xml -O $@
 
 data/mid/wb/gdp/wb_gdp.xml: data/in/wb/gdp/wb_gdp.zip | data/mid/wb/gdp ## Unzip GDP (Gross domestic product) dataset from World Bank. Translate and rename XML file.
+	rm -f data/mid/wb/gdp/*.xml
 	unzip -o data/in/wb/gdp/wb_gdp.zip -d data/mid/wb/gdp/
 	cat data/mid/wb/gdp/API_NY*.xml | tr -d '\n\r\t' | sed 's/^.\{1\}//' > $@
 

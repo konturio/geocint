@@ -804,7 +804,7 @@ data/out/required_relations_check: db/table/osm_admin_boundaries | data/out ## C
 	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "select osm_id from required_relations where osm_id not in (select osm_id from osm_admin_boundaries);" >> $@__REQUIRED_RELATIONS_MESSAGE
 	echo '```' >> $@__REQUIRED_RELATIONS_MESSAGE
 	psql -qXtc "select count(*) from required_relations where osm_id not in (select osm_id from osm_admin_boundaries);" > $@__NUMBER_MISSED_REQUIRED_RELATIONS
-	if [ 0 -lt $$(cat $@__NUMBER_MISSED_REQUIRED_RELATIONS) ]; then cat $@__REQUIRED_RELATIONS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	if [ 0 -lt $$(cat $@__NUMBER_MISSED_REQUIRED_RELATIONS) ]; then cat $@__REQUIRED_RELATIONS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; exit 1; fi
 	rm -f $@__REQUIRED_RELATIONS_MESSAGE $@__NUMBER_MISSED_REQUIRED_RELATIONS
 	touch $@
 
@@ -1228,7 +1228,7 @@ db/table/prescale_to_osm: data/in/prescale_to_osm.csv | db/table ## Load prescal
 db/table/prescale_to_osm_boundaries: db/table/prescale_to_osm db/table/osm_admin_boundaries db/table/water_polygons_vector | db/table db/function/parse_integer ## Check changes in osm population tags and create table with polygons|population|admin_level from prescale_to_osm and all polygons, which included in them
 	psql -f tables/prescale_to_osm_boundaries.sql
 	psql -q -X -t -c 'select count(*) from prescale_to_osm_boundaries where osm_id = 3311547;' > $@__IS_CHERNOBYL_AREA_EXIST
-	if [ $$(cat $@__IS_CHERNOBYL_AREA_EXIST) -lt 1 ]; then echo "Chornobyl Nuclear Power Plant Zone of Alienation (osm_id 3311547) was missed. Population in 30km zome may be inaccurate. Stop pipeline." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	if [ $$(cat $@__IS_CHERNOBYL_AREA_EXIST) -lt 1 ]; then echo "Chornobyl Nuclear Power Plant Zone of Alienation (osm_id 3311547) was missed. Population in 30km zome may be inaccurate. Stop pipeline." | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; exit 1; fi
 	rm -f $@__IS_CHERNOBYL_AREA_EXIST
 	touch $@
 
@@ -1252,7 +1252,7 @@ db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/populat
 data/out/reports/population_check_world: db/table/kontur_population_h3 db/table/kontur_population_v5_h3 db/table/kontur_boundaries | data/out/reports ## Compare total population from final Kontur population dataset to previously released and send bug reports to Kontur Slack (#geocint channel).
 	psql -q -X -t -c 'select sum(population) from kontur_population_v5_h3 where resolution = 0' > $@__KONTUR_POP_V5
 	psql -q -X -t -c 'select sum(population) from kontur_population_h3 where resolution = 0;' > $@__KONTUR_POP_V5_1
-	if [ $$(cat $@__KONTUR_POP_V5_1) -lt 8000000000 ]; then echo "*Kontur population is broken*\nless than 8 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI && exit 1; fi
+	if [ $$(cat $@__KONTUR_POP_V5_1) -lt 8000000000 ]; then echo "*Kontur population is broken*\nless than 8 billion people" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; exit 1; fi
 	if [ $$(cat $@__KONTUR_POP_V5_1) -lt $$(cat $@__KONTUR_POP_V5) ]; then echo "Kontur population is less than the previously released" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
 	echo "Actual Kontur Population total is $$(cat $@__KONTUR_POP_V5_1)" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 	rm -f $@__KONTUR_POP_V5 $@__KONTUR_POP_V5_1
@@ -1269,7 +1269,7 @@ data/mid/wb/gdp/wb_gdp.xml: data/in/wb/gdp/wb_gdp.zip | data/mid/wb/gdp ## Unzip
 	unzip -o data/in/wb/gdp/wb_gdp.zip -d data/mid/wb/gdp/
 	cat data/mid/wb/gdp/API_NY*.xml | tr -d '\n\r\t' | sed 's/^.\{1\}//' > $@
 
-db/table/wb_gdp: data/mid/wb/gdp/wb_gdp.xml | db/table ## GDP (Gross domestic product) dataset from World Bank.
+db/table/wb_gdp: data/mid/wb/gdp/wb_gdp.xml | db/table/hdx_locations_with_wikicodes db/table ## GDP (Gross domestic product) dataset from World Bank.
 	# Import input XML into database
 	psql -c "drop table if exists temp_xml;"
 	psql -c "create table temp_xml ( value text );"
@@ -1279,11 +1279,7 @@ db/table/wb_gdp: data/mid/wb/gdp/wb_gdp.xml | db/table ## GDP (Gross domestic pr
 	psql -c "drop table if exists temp_xml;"
 	touch $@
 
-db/table/wb_gadm_gdp_countries: db/table/wb_gdp db/table/gadm_countries_boundary ## Subdivided countries boundaries with joined GDP (Gross domestic product) for the last known year data from World Bank.
-	psql -f tables/wb_gadm_gdp_countries.sql
-	touch $@
-
-db/table/gdp_h3: db/table/kontur_population_h3 db/table/wb_gadm_gdp_countries ## GDP (Gross domestic product) for the last known year from World Bank distributed on H3 hexagons grid.
+db/table/gdp_h3: db/table/wb_gdp | db/procedure/generate_overviews db/table/kontur_boundaries ## GDP (Gross domestic product) for the last known year from World Bank distributed on H3 hexagons grid.
 	psql -f tables/gdp_h3.sql
 	touch $@
 

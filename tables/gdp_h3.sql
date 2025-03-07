@@ -1,40 +1,62 @@
-drop table if exists countries_info;
-create table countries_info as (
-    select gid,
-           code,
+-- Match WB gdp data with geometry boundaries with hasc code
+drop table if exists wb_gdp_countries;
+create table wb_gdp_countries as (
+    with input as (
+        (select distinct on (h.code)
+                h.code       as code,
+                h.country    as name,
+                h.gdp        as gdp,
+                h.year       as gdp_year,
+                k.population as county_population,
+                k.geom       as geom
+        from kontur_boundaries as k
+             inner join wb_gdp as h on h.hasc = k.hasc_wiki
+        where h.gdp is not null
+        order by h.code, gdp_year desc)
+        union all
+        -- IRL Guernsey and Jersey are the separate admin units
+        -- but WB calculates them together as a Channel Islands
+        (select distinct on (h.code)
+                h.code          as code,
+                h.country       as name,
+                h.gdp           as gdp,
+                h.year          as gdp_year,
+                sum(population) as county_population,
+                ST_Union(geom)  as geom
+        from kontur_boundaries as k,
+             wb_gdp as h 
+        where k.hasc_wiki in ('GG', 'JE')
+              and h.code = 'CHI'
+              and h.gdp is not null
+        group by 1,2,3,4
+        order by h.code, gdp_year desc))
+    select code,
            name,
            gdp,
            gdp_year,
-           geom,
-           (
-               select sum(a.population)
-               from kontur_population_h3 a
-               where ST_Intersects(a.geom, c.geom)
-                 and a.resolution = 8
-           ) as population
-    from wb_gadm_gdp_countries c
+           county_population,
+           ST_Subdivide(ST_Transform(geom,3857)) as geom
+    from input
 );
 
-drop table if exists tmp_countries_info;
+vacuum analyse wb_gdp_countries;
 
-alter table countries_info
-    add column population_full float;
-
-update countries_info c
-set population_full = b.population_full
-from (select code, sum(population) as population_full from countries_info group by 1) b
-where b.code = c.code;
-
-create index on countries_info using gist (geom);
+create index on wb_gdp_countries using gist(geom);
 
 drop table if exists gdp_h3;
 create table gdp_h3 as (
-    select h.h3,
-           h.resolution,
-           h.geom,
-           sum(c.gdp * h.population * ST_Area(ST_Intersection(c.geom, h.geom)) / ST_Area(h.geom) /
-               c.population_full) as gdp
-    from kontur_population_h3 h
-             join countries_info c on ST_Intersects(c.geom, h.geom)
-    group by h.h3, h.resolution, h.geom
+    select distinct on (h3) h3,
+                            8 as resolution,
+                            gdp
+    from (select h.h3,
+                 c.county_population,
+                 sum(c.gdp * h.population * ST_Area(ST_Intersection(c.geom, h.geom)) / ST_Area(h.geom) /
+                     c.county_population) as gdp
+          from kontur_population_h3 h
+              join wb_gdp_countries c on ST_Intersects(c.geom, h.geom)
+          where resolution = 8
+          group by h.h3, c.code, c.county_population) a
+    order by h3, county_population asc
 );
+
+call generate_overviews('gdp_h3', '{gdp}'::text[], '{sum}'::text[], 8);

@@ -21,15 +21,15 @@ include runner_make osm_make
 
 all: prod dev data/out/isochrone_destinations_export deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/ndpba_rva_h3 db/table/global_rva_h3 data/out/csv/foursquare_places_count.csv data/out/csv/foursquare_visits_count.csv db/table/osm_buildings_use db/index/osm_addresses_geom_idx data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement db/table/us_counties_boundary ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/dev/uploads/upload_dev data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/dev/custom_axis/all_custom_axis deploy_indicators/dev/presets/all_presets deploy/s3/dev/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/dev/uploads/upload_dev data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/dev/custom_axis/all_custom_axis deploy/s3/dev/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Test target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-test: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/test/uploads/upload_test data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/test/custom_axis/all_custom_axis deploy_indicators/test/presets/all_presets deploy/s3/test/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
+test: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/test/uploads/upload_test data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/test/custom_axis/all_custom_axis deploy/s3/test/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy_indicators/prod/uploads/upload_prod deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy_indicators/prod/presets/all_presets deploy/s3/prod/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy_indicators/prod/uploads/upload_prod deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy/s3/prod/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
@@ -2133,10 +2133,6 @@ db/table/all_datasets: db/table/osm_object_count_grid_h3 db/table/osm_user_count
 
 db/table/bivariate_axis_overrides: | db/table ## Overrides for bivariate axis.
 	psql -f tables/bivariate_axis_overrides.sql
-	touch $@
-
-db/table/bivariate_overlays: db/table/osm_meta db/table/tile_logs_h3 | db/table ## Several default indicator presets for Bivariate manager.
-	psql -f tables/bivariate_overlays.sql
 	touch $@
 
 data/tile_logs: | data ## Directory for OpenStreetMap tiles usage statistics dataset.
@@ -4296,55 +4292,7 @@ deploy_indicators/dev/custom_axis/wildfire_days_count_one: deploy_indicators/dev
 deploy_indicators/dev/custom_axis/all_custom_axis: deploy_indicators/dev/custom_axis/population_area_km2 deploy_indicators/dev/custom_axis/count_area_km2 deploy_indicators/dev/custom_axis/building_count_area_km2 deploy_indicators/dev/custom_axis/local_hours_area_km2 deploy_indicators/dev/custom_axis/total_hours_area_km2 deploy_indicators/dev/custom_axis/view_count_area_km2 deploy_indicators/dev/custom_axis/osm_users_one deploy_indicators/dev/custom_axis/total_building_count_area_km2 deploy_indicators/dev/custom_axis/wildfires_area_km2 deploy_indicators/dev/custom_axis/forest_area_km2 deploy_indicators/dev/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/dev/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/dev/custom_axis/man_distance_to_hospital_one deploy_indicators/dev/custom_axis/highway_length_area_km2 deploy_indicators/dev/custom_axis/total_road_length_area_km2  deploy_indicators/dev/custom_axis/view_count_bf2402_one deploy_indicators/dev/custom_axis/view_count_bf2402_area_km2 deploy_indicators/dev/custom_axis/powerlines_one deploy_indicators/dev/custom_axis/night_lights_intensity_one deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_one deploy_indicators/dev/custom_axis/solar_power_plants_area_km2 deploy_indicators/dev/custom_axis/volcano_days_count_area_km2 deploy_indicators/dev/custom_axis/volcano_days_count_one deploy_indicators/dev/custom_axis/flood_days_count_area_km2 deploy_indicators/dev/custom_axis/flood_days_count_one deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_population deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/dev/custom_axis/building_count_total_building_count deploy_indicators/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/dev/custom_axis/highway_length_total_road_length deploy_indicators/dev/custom_axis/eatery_count_one deploy_indicators/dev/custom_axis/food_shops_count_one deploy_indicators/dev/custom_axis/hazardous_days_count_area_km2 deploy_indicators/dev/custom_axis/hazardous_days_count_one deploy_indicators/dev/custom_axis/earthquake_days_count_area_km2 deploy_indicators/dev/custom_axis/earthquake_days_count_one deploy_indicators/dev/custom_axis/drought_days_count_area_km2 deploy_indicators/dev/custom_axis/drought_days_count_one deploy_indicators/dev/custom_axis/cyclone_days_count_area_km2 deploy_indicators/dev/custom_axis/cyclone_days_count_one deploy_indicators/dev/custom_axis/wildfire_days_count_area_km2 deploy_indicators/dev/custom_axis/wildfire_days_count_one deploy_indicators/dev/custom_axis/man_distance_to_hospital_population | deploy_indicators/dev/custom_axis ## final target for custom axis deployment to dev
 	touch $@
 
-## dev presets upload block
-deploy_indicators/dev/presets/osm_quantity: deploy_indicators/dev/uploads/count_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Quantity overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "count" "area_km2" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/osm_building_completeness: deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/total_building_count_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "building_count" "total_building_count" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/osm_road_completeness: deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "highway_length" "total_road_length" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/osm_mapping_activity: deploy_indicators/dev/uploads/local_hours_upload deploy_indicators/dev/uploads/total_hours_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "local_hours" "area_km2" "total_hours" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/osm_antiquity: deploy_indicators/dev/uploads/avgmax_ts_upload  deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "avgmax_ts" "one" "view_count" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/nighttime_heatwave_risk: deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "days_mintemp_above_25c_1c" "one" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/fire_service_scarcity_risk: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_fire_brigade" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/views_before_after: deploy_indicators/dev/uploads/view_count_bf2402_upload deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Kontur OpenStreetMap Views before after overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "view_count_bf2402" "area_km2" "view_count" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/ev_charging_availability: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy EV Charging Availability overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_charging_stations" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/waste_containers_availability: deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/populated_area_km2_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Waste containers availability overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/shelters_scarcity_risk: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev db/table/bivariate_overlays | deploy_indicators/dev/presets ## Deploy Shelters Scarcity Risk overlay to dev.
-	bash scripts/upload_presets_to_insights_api.sh dev "man_distance_to_bomb_shelters" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/dev/presets/all_presets: deploy_indicators/dev/presets/osm_quantity deploy_indicators/dev/presets/osm_building_completeness deploy_indicators/dev/presets/osm_road_completeness deploy_indicators/dev/presets/osm_mapping_activity deploy_indicators/dev/presets/osm_antiquity deploy_indicators/dev/presets/nighttime_heatwave_risk deploy_indicators/dev/presets/fire_service_scarcity_risk deploy_indicators/dev/presets/views_before_after deploy_indicators/dev/presets/ev_charging_availability deploy_indicators/dev/presets/waste_containers_availability deploy_indicators/dev/presets/shelters_scarcity_risk ## final target for presets deployment to dev
-	touch $@
-
-## END dev presets upload
+## END dev upload
 
 ## Deploy test ##
 db/table/insights_api_indicators_list_test: | db/table ## Refresh insights_api_indicators_list_test table before new deploy cycle
@@ -5290,57 +5238,6 @@ deploy_indicators/test/custom_axis/wildfire_days_count_one: deploy_indicators/te
 	touch $@
 
 deploy_indicators/test/custom_axis/all_custom_axis: deploy_indicators/test/custom_axis/population_area_km2 deploy_indicators/test/custom_axis/count_area_km2 deploy_indicators/test/custom_axis/building_count_area_km2 deploy_indicators/test/custom_axis/local_hours_area_km2 deploy_indicators/test/custom_axis/total_hours_area_km2 deploy_indicators/test/custom_axis/view_count_area_km2 deploy_indicators/test/custom_axis/osm_users_one deploy_indicators/test/custom_axis/total_building_count_area_km2 deploy_indicators/test/custom_axis/wildfires_area_km2 deploy_indicators/test/custom_axis/forest_area_km2 deploy_indicators/test/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/test/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/test/custom_axis/man_distance_to_hospital_one deploy_indicators/test/custom_axis/highway_length_area_km2 deploy_indicators/test/custom_axis/total_road_length_area_km2 deploy_indicators/test/custom_axis/view_count_bf2402_one deploy_indicators/test/custom_axis/view_count_bf2402_area_km2 deploy_indicators/test/custom_axis/powerlines_one deploy_indicators/test/custom_axis/night_lights_intensity_one deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/test/custom_axis/man_distance_to_charging_stations_one deploy_indicators/test/custom_axis/solar_power_plants_area_km2 deploy_indicators/test/custom_axis/volcano_days_count_area_km2 deploy_indicators/test/custom_axis/volcano_days_count_one deploy_indicators/test/custom_axis/flood_days_count_area_km2 deploy_indicators/test/custom_axis/flood_days_count_one deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/test/custom_axis/man_distance_to_charging_stations_population deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/test/custom_axis/building_count_total_building_count deploy_indicators/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/test/custom_axis/highway_length_total_road_length deploy_indicators/test/custom_axis/eatery_count_one deploy_indicators/test/custom_axis/food_shops_count_one deploy_indicators/test/custom_axis/hazardous_days_count_area_km2 deploy_indicators/test/custom_axis/hazardous_days_count_one deploy_indicators/test/custom_axis/earthquake_days_count_area_km2 deploy_indicators/test/custom_axis/earthquake_days_count_one deploy_indicators/test/custom_axis/drought_days_count_area_km2 deploy_indicators/test/custom_axis/drought_days_count_one deploy_indicators/test/custom_axis/cyclone_days_count_area_km2 deploy_indicators/test/custom_axis/cyclone_days_count_one deploy_indicators/test/custom_axis/wildfire_days_count_area_km2 deploy_indicators/test/custom_axis/wildfire_days_count_one deploy_indicators/test/custom_axis/man_distance_to_hospital_population | deploy_indicators/test/custom_axis ## final target for custom axis deployment to test
-	touch $@
-
-## END Custom axis updates block
-
-## TEST Presets upload block
-
-deploy_indicators/test/presets/osm_quantity: deploy_indicators/test/uploads/count_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Quantity overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "count" "area_km2" "population" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/osm_building_completeness: deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/total_building_count_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "building_count" "total_building_count" "population" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/osm_road_completeness: deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "highway_length" "total_road_length" "population" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/osm_mapping_activity: deploy_indicators/test/uploads/local_hours_upload deploy_indicators/test/uploads/total_hours_upload  db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "local_hours" "area_km2" "total_hours" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/osm_antiquity: deploy_indicators/test/uploads/avgmax_ts_upload  deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "avgmax_ts" "one" "view_count" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/nighttime_heatwave_risk: deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "days_mintemp_above_25c_1c" "one" "population" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/fire_service_scarcity_risk: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_fire_brigade" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/views_before_after: deploy_indicators/test/uploads/view_count_bf2402_upload deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Kontur OpenStreetMap Views before after overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "view_count_bf2402" "area_km2" "view_count" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/ev_charging_availability: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy EV Charging Availability overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_charging_stations" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/waste_containers_availability: deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/populated_area_km2_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Waste containers availability overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/shelters_scarcity_risk: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test db/table/bivariate_overlays | deploy_indicators/test/presets ## Deploy Shelters Scarcity Risk overlay to test.
-	bash scripts/upload_presets_to_insights_api.sh test "man_distance_to_bomb_shelters" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/test/presets/all_presets: deploy_indicators/test/presets/osm_quantity deploy_indicators/test/presets/osm_building_completeness deploy_indicators/test/presets/osm_road_completeness deploy_indicators/test/presets/osm_mapping_activity deploy_indicators/test/presets/osm_antiquity deploy_indicators/test/presets/nighttime_heatwave_risk deploy_indicators/test/presets/fire_service_scarcity_risk deploy_indicators/test/presets/views_before_after deploy_indicators/test/presets/ev_charging_availability deploy_indicators/test/presets/waste_containers_availability deploy_indicators/test/presets/shelters_scarcity_risk ## final target for presets deployment to test
 	touch $@
 
 ## END test upload block
@@ -6290,54 +6187,6 @@ deploy_indicators/prod/custom_axis/wildfire_days_count_one: deploy_indicators/pr
 deploy_indicators/prod/custom_axis/all_custom_axis: deploy_indicators/prod/custom_axis/population_area_km2 deploy_indicators/prod/custom_axis/count_area_km2 deploy_indicators/prod/custom_axis/building_count_area_km2 deploy_indicators/prod/custom_axis/local_hours_area_km2 deploy_indicators/prod/custom_axis/total_hours_area_km2 deploy_indicators/prod/custom_axis/view_count_area_km2 deploy_indicators/prod/custom_axis/osm_users_one deploy_indicators/prod/custom_axis/total_building_count_area_km2 deploy_indicators/prod/custom_axis/wildfires_area_km2 deploy_indicators/prod/custom_axis/forest_area_km2 deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/prod/custom_axis/man_distance_to_hospital_one deploy_indicators/prod/custom_axis/highway_length_area_km2 deploy_indicators/prod/custom_axis/total_road_length_area_km2  deploy_indicators/prod/custom_axis/view_count_bf2402_one deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2 deploy_indicators/prod/custom_axis/powerlines_one deploy_indicators/prod/custom_axis/night_lights_intensity_one deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one deploy_indicators/prod/custom_axis/solar_power_plants_area_km2 deploy_indicators/prod/custom_axis/volcano_days_count_area_km2 deploy_indicators/prod/custom_axis/volcano_days_count_one deploy_indicators/prod/custom_axis/flood_days_count_area_km2 deploy_indicators/prod/custom_axis/flood_days_count_one deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/prod/custom_axis/building_count_total_building_count deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/prod/custom_axis/highway_length_total_road_length deploy_indicators/prod/custom_axis/eatery_count_one deploy_indicators/prod/custom_axis/food_shops_count_one deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2 deploy_indicators/prod/custom_axis/hazardous_days_count_one deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2 deploy_indicators/prod/custom_axis/earthquake_days_count_one deploy_indicators/prod/custom_axis/drought_days_count_area_km2 deploy_indicators/prod/custom_axis/drought_days_count_one deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2 deploy_indicators/prod/custom_axis/cyclone_days_count_one deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2 deploy_indicators/prod/custom_axis/wildfire_days_count_one deploy_indicators/prod/custom_axis/man_distance_to_hospital_population | deploy_indicators/prod/custom_axis ## final target for custom axis deployment to prod
 	touch $@
 
-## PROD presets upload block
-deploy_indicators/prod/presets/osm_quantity: deploy_indicators/prod/uploads/count_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Quantity overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "count" "area_km2" "population" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/osm_building_completeness: deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/total_building_count_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Building Completeness overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "building_count" "total_building_count" "population" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/osm_road_completeness: deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Road Completeness overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "highway_length" "total_road_length" "population" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/osm_mapping_activity: deploy_indicators/prod/uploads/local_hours_upload deploy_indicators/prod/uploads/total_hours_upload  db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Mapping Activity overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "local_hours" "area_km2" "total_hours" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/osm_antiquity: deploy_indicators/prod/uploads/avgmax_ts_upload  deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Antiquity overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "avgmax_ts" "one" "view_count" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/nighttime_heatwave_risk: deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload  deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur Nighttime Heatwave Risk overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "days_mintemp_above_25c_1c" "one" "population" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/fire_service_scarcity_risk: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur Fire Service Scarcity Risk overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "man_distance_to_fire_brigade" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/views_before_after: deploy_indicators/prod/uploads/view_count_bf2402_upload deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Kontur OpenStreetMap Views before after overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "view_count_bf2402" "area_km2" "view_count" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/ev_charging_availability: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy EV Charging Availability overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "man_distance_to_charging_stations" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/waste_containers_availability: deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/populated_area_km2_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Waste containers availability overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "waste_basket_coverage_area_km2" "populated_area_km2" "population" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/shelters_scarcity_risk: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod db/table/bivariate_overlays | deploy_indicators/prod/presets ## Deploy Shelters Scarcity Risk overlay to prod.
-	bash scripts/upload_presets_to_insights_api.sh prod "man_distance_to_bomb_shelters" "population" "population" "area_km2"
-	touch $@
-
-deploy_indicators/prod/presets/all_presets: deploy_indicators/prod/presets/osm_quantity deploy_indicators/prod/presets/osm_building_completeness deploy_indicators/prod/presets/osm_road_completeness deploy_indicators/prod/presets/osm_mapping_activity deploy_indicators/prod/presets/osm_antiquity deploy_indicators/prod/presets/nighttime_heatwave_risk deploy_indicators/prod/presets/fire_service_scarcity_risk deploy_indicators/prod/presets/views_before_after deploy_indicators/prod/presets/ev_charging_availability deploy_indicators/prod/presets/waste_containers_availability deploy_indicators/prod/presets/shelters_scarcity_risk ## final target for presets deployment to prod.
-	touch $@
-
-## END PROD presets upload block
+## END PROD presets upload
 
 ### END Deploy through API

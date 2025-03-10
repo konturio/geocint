@@ -3,11 +3,11 @@
 -- to percent of population
 drop procedure if exists transform_hasc_to_h3_percent_of_population;
 create or replace procedure transform_hasc_to_h3_percent_of_population(input_hasc_table text,
-                                                 ouput_h3_table text,
-                                                 hack_field_name text,
-                                                 items text[],
-                                                 resolution integer default 8)
-    language plpgsql
+                                                                       ouput_h3_table text,
+                                                                       hack_field_name text,
+                                                                       items text[],
+                                                                       resolution integer default 8)
+language plpgsql
 as
 $$
 declare
@@ -32,7 +32,7 @@ begin
         -- match indexes with geometry with using hasc (isoalpha2) codes
         execute 'create table ' || input_hasc_table || '_temp_in_table as (
                  select k.kontur_admin_level as admin_level, k.population as kontur_boundaries_population, k.geom as geom, ' || column_list || '
-                 from kontur_boundaries k join ' || input_hasc_table || ' s
+                 from kontur_boundaries_v4 k join ' || input_hasc_table || ' s
                  on s.' || hack_field_name ||' = k.hasc_wiki
                  where k.hasc_wiki in (select ' || hack_field_name ||' from ' || input_hasc_table || '))';
         

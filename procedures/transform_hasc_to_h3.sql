@@ -27,15 +27,6 @@ begin
                  from kontur_boundaries k join ' || input_hasc_table || ' s
                  on s.' || hack_field_name ||' = k.hasc_wiki
                  where k.hasc_wiki in (select ' || hack_field_name ||' from ' || input_hasc_table || '))';
-
-        -- get missed hasc codes and insert to special table kontur_boundaries_hasc_codes_check
-        execute 'insert into kontur_boundaries_hasc_codes_check (missed_hasc, source_of_missed_hasc, found_at)
-                    (select distinct s.' || hack_field_name ||' as missed_hasc, 
-                                     ''' || input_table || ''' as source_of_missed_hasc,
-                                     NOW()                      as found_at
-                    from ' || input_hasc_table || ' s, kontur_boundaries k
-                    where s.' || hack_field_name ||' not in (select hasc_wiki from kontur_boundaries where hasc_wiki is not null))';
-
         
         execute 'drop table if exists ' || ouput_h3_table;
 

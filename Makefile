@@ -1152,7 +1152,7 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 	rm -f data/in/wikidata_population_csv/*_wiki_pop.csv
 
 	# NB! Notice `seq 2` here. First, wget triggers query execution which might take some time.
-	# In 99 of 100 everything goes well but in case of thousands of rows we might catch timout during downloading
+	# In 99 of 100 everything goes well but in case of thousands of rows we might catch timeout during downloading
 	# So we run wget twice because for the second time it uses cached query.
 
 	cat static_data/wikidata_population/wikidata_population_ranges.txt \
@@ -1169,11 +1169,17 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 						?population_statement ps:P1082 ?population . \
 						OPTIONAL { ?population_statement pq:P585 ?census_date . } \
 						FILTER ({1} <= ?population %26%26 ?population < {2}) . \
+						FILTER NOT EXISTS { \
+							?country p:P1082 ?other_statement . \
+							?other_statement ps:P1082 ?other_population . \
+							?other_statement pq:P585 ?other_date . \
+							FILTER (?other_date > ?census_date) \
+						} \
 						SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\" . } }" \
 				--retry-on-http-error=500 \
 				--header "Accept: text/csv" \
 				-O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; \
-			sleep 1'
+				sleep 1'
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.

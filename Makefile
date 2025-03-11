@@ -1156,12 +1156,10 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 	# So we run wget twice because for the second time it uses cached query.
 
 	cat static_data/wikidata_population/wikidata_population_ranges.txt \
-		| parallel -j1 --colsep " " \
-			'seq 2 | xargs -I JUSTAPLACEHOLDER wget \
-				-nv \
-				"https://query.wikidata.org/sparql?query=SELECT \
+		| parallel -j2 --colsep " " \
+			'seq 2 | xargs -I JUSTAPLACEHOLDER bash -c " \
+				wget -nv \"https://query.wikidata.org/sparql?query=SELECT \
 					?country \
-					?countryLabel \
 					?population \
 					?census_date \
 					WHERE { \
@@ -1174,19 +1172,18 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 							?other_statement ps:P1082 ?other_population . \
 							?other_statement pq:P585 ?other_date . \
 							FILTER (?other_date > ?census_date) \
-						} \
-						SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\" . } }" \
+						}}\" \
 				--retry-on-http-error=500 \
-				--header "Accept: text/csv" \
+				--header \"Accept: text/csv\" \
 				-O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; \
-				sleep 1'
+				sleep 5"; sleep 1'
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.
 	grep --include=\*_wiki_pop.csv -rnw 'data/in/wikidata_population_csv/' -e "java.util.concurrent.TimeoutException" | wc -l > $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
 	if [ $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) -lt 1 ]; then \
 		psql -c 'drop table if exists wikidata_population_in;'; \
-		psql -c 'create table wikidata_population_in(wikidata_item text, wikidata_name text, population numeric, census_date text);'; \
+		psql -c 'create table wikidata_population_in(wikidata_item text, population numeric, census_date text);'; \
 		ls data/in/wikidata_population_csv/*_wiki_pop.csv \
 			| parallel 'cat {} | psql -c "copy wikidata_population_in from stdin with csv header;"'; \
 		psql -f tables/wikidata_population.sql; \

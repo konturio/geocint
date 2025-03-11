@@ -17,16 +17,14 @@ language plpgsql;
 drop table if exists wikidata_population;
 
 create table wikidata_population as (
-    select distinct on (wikidata_name, wikidata_item)
+    select distinct on (wikidata_item)
         wikidata_item,
-        wikidata_name,
         population,
         date_or_null(census_date) as census_date
     from
         wikidata_population_in
     order by
-        wikidata_name asc,
         wikidata_item asc,
-        4 desc nulls last,
+        3 desc nulls last,
         population desc
 );

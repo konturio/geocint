@@ -1176,7 +1176,7 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 				--retry-on-http-error=500 \
 				--header \"Accept: text/csv\" \
 				-O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; \
-				sleep 10"; sleep 1'
+				sleep 20"; sleep 1'
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.

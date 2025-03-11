@@ -1156,7 +1156,7 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 	# So we run wget twice because for the second time it uses cached query.
 
 	cat static_data/wikidata_population/wikidata_population_ranges.txt \
-		| parallel -j2 --colsep " " \
+		| parallel -j1 --colsep " " \
 			'seq 2 | xargs -I JUSTAPLACEHOLDER bash -c " \
 				wget -nv \"https://query.wikidata.org/sparql?query=SELECT \
 					?country \
@@ -1176,7 +1176,7 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 				--retry-on-http-error=500 \
 				--header \"Accept: text/csv\" \
 				-O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; \
-				sleep 5"; sleep 1'
+				sleep 10"; sleep 1'
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.

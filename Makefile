@@ -2907,7 +2907,7 @@ data/out/csv/highway_length_6_months.csv: db/table/osm_road_segments_6_months_h3
 	psql -q -X -c "copy (select h3, highway_length_6_months from osm_road_segments_6_months_h3 where h3 is not null and highway_length_6_months is not null and highway_length_6_months > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/highway_length_6_months.csv
 
 data/out/csv/osm_users.csv: db/table/osm_user_count_grid_h3 | data/out/csv ## extract osm_users to csv file 
-	psql -q -X -c "copy (select h3, osm_users from osm_users_count_grid_h3 where h3 is not null and osm_users is not null and osm_users > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/osm_users.csv
+	psql -q -X -c "copy (select h3, osm_users from osm_user_count_grid_h3 where h3 is not null and osm_users is not null and osm_users > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/osm_users.csv
 
 data/out/csv/residential.csv: db/table/residential_pop_h3 | data/out/csv ## extract residential to csv file 
 	psql -q -X -c "copy (select h3, residential from residential_pop_h3 where h3 is not null and residential is not null and residential > 0 order by h3) to stdout with delimiter ',' csv;" > data/out/csv/residential.csv

@@ -1180,8 +1180,8 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.
-	grep --include=\*_wiki_pop.csv -rnw 'data/in/wikidata_population_csv/' -e "java.util.concurrent.TimeoutException" | wc -l > $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
-	if [ $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) -lt 1 ]; then \
+	grep --include=\*_wiki_pop.csv -rnw 'data/in/wikidata_population_csv/' -e "java.util.concurrent.TimeoutException" > $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
+	if [ $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION | wc -l) -lt 1 ]; then \
 		psql -c 'drop table if exists wikidata_population_in;'; \
 		psql -c 'create table wikidata_population_in(wikidata_item text, population numeric, census_date text);'; \
 		ls data/in/wikidata_population_csv/*_wiki_pop.csv \
@@ -1190,8 +1190,8 @@ db/table/wikidata_population: data/in/wikidata_population_csv/download | db/tabl
 		psql -c 'drop table if exists wikidata_population_in;'; \
 	fi
 
-	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) ]; then \
-		echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one." \
+	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION | wc -l) ]; then \
+		echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one. \n\n$$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION)" \
 			| python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; \
 	fi
 	rm -f $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION

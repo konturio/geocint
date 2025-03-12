@@ -1152,7 +1152,7 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 	rm -f data/in/wikidata_population_csv/*_wiki_pop.csv
 
 	# NB! Notice `seq 2` here. First, wget triggers query execution which might take some time.
-	# In 99 of 100 everything goes well but in case of thousands of rows we might catch timeout during downloading
+	# In most cases the process works fine, but with thousands of rows a timeout during downloading may occur.
 	# So we run wget twice because for the second time it uses cached query.
 
 	cat static_data/wikidata_population/wikidata_population_ranges.txt \

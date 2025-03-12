@@ -1188,9 +1188,7 @@ db/table/wikidata_population: data/in/wikidata_population_csv/download | db/tabl
 			| parallel 'cat {} | psql -c "copy wikidata_population_in from stdin with csv header;"'; \
 		psql -f tables/wikidata_population.sql; \
 		psql -c 'drop table if exists wikidata_population_in;'; \
-	fi
-
-	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION | wc -l) ]; then \
+	else \
 		echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one. \n\n$$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION)" \
 			| python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; \
 	fi

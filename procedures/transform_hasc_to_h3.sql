@@ -1,6 +1,6 @@
 drop procedure if exists transform_hasc_to_h3;
 create or replace procedure transform_hasc_to_h3(input_hasc_table text,
-                                                 ouput_h3_table text,
+                                                 output_h3_table text,
                                                  hack_field_name text,
                                                  items text[],
                                                  resolution integer default 8)
@@ -28,11 +28,11 @@ begin
                  on s.' || hack_field_name ||' = k.hasc_wiki
                  where k.hasc_wiki in (select ' || hack_field_name ||' from ' || input_hasc_table || '))';
         
-        execute 'drop table if exists ' || ouput_h3_table;
+        execute 'drop table if exists ' || output_h3_table;
 
         -- transform geometry to h3 hexagons
         -- remove duplicates with low admin level
-        execute 'create table ' || ouput_h3_table || ' as (
+        execute 'create table ' || output_h3_table || ' as (
                  select distinct on (h3) h3_polygon_to_cells(ST_Subdivide(geom), ' || res || ') as h3,' || column_list || ', ' || res::text || ' as resolution
                  from ' || input_hasc_table || '_temp_in_table
                  order by h3, admin_level desc)';

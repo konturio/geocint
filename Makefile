@@ -21,22 +21,22 @@ include runner_make osm_make
 
 all: prod dev data/out/isochrone_destinations_export deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/ndpba_rva_h3 db/table/global_rva_h3 data/out/csv/foursquare_places_count.csv data/out/csv/foursquare_visits_count.csv db/table/osm_buildings_use db/index/osm_addresses_geom_idx data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement db/table/us_counties_boundary ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/dev/uploads/upload_dev data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/dev/custom_axis/all_custom_axis deploy/s3/dev/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
-	touch $@
-	echo "Test target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
-
-test: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/test/uploads/upload_test data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv data/out/missed_hascs_check deploy_indicators/test/custom_axis/all_custom_axis deploy/s3/test/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/dev/uploads/upload_dev data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv deploy_indicators/dev/custom_axis/all_custom_axis deploy/s3/dev/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy_indicators/prod/uploads/upload_prod deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/missed_hascs_check data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy/s3/prod/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+test: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/test/uploads/upload_test data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv deploy_indicators/test/custom_axis/all_custom_axis deploy/s3/test/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
+	touch $@
+	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
+
+prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy_indicators/prod/uploads/upload_prod deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy/s3/prod/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
-	profile_make_clean data/planet-latest-updated.osm.pbf data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt db/table/kontur_boundaries_hasc_codes_check data/in/hot_projects/hot_projects db/table/insights_api_indicators_list_test db/table/insights_api_indicators_list_dev db/table/insights_api_indicators_list_prod 
+	profile_make_clean data/planet-latest-updated.osm.pbf data/tile_logs/_download data/in/global_fires/new_updates/download_new_updates db/table/osm_reports_list data/in/wikidata_hasc_codes.csv data/in/kontur_events/download data/in/event_api_data/kontur_public_feed data/in/wikidata_population_csv/download data/in/prescale_to_osm.csv data/in/mapswipe/projects_new.csv data/in/mapswipe/projects_old.csv data/in/mapswipe/mapswipe.zip data/in/users_deleted.txt data/in/hot_projects/hot_projects db/table/insights_api_indicators_list_test db/table/insights_api_indicators_list_dev db/table/insights_api_indicators_list_prod 
 	psql -f scripts/clean.sql
 	# Update bivariate indicators
 	psql -f tables/bivariate_indicators.sql
@@ -1119,7 +1119,7 @@ db/table/wikidata_naturalization_gap: | db/table ## Global collection of years o
 	psql -c "create index on wikidata_naturalization_gap using btree(hasc);"
 	touch $@
 
-db/table/wikidata_naturalization_gap_h3: db/table/wikidata_naturalization_gap | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviws of wikidata years_to_naturalisation and multiple_citizenship
+db/table/wikidata_naturalization_gap_h3: db/table/wikidata_naturalization_gap | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries_v4 ## Generation overviews of wikidata years_to_naturalisation and multiple_citizenship
 	psql -c "call transform_hasc_to_h3('wikidata_naturalization_gap', 'wikidata_naturalization_gap_h3', 'hasc', '{years_to_naturalisation,multiple_citizenship}'::text[], 8);"
 	psql -c "call generate_overviews('wikidata_naturalization_gap_h3', '{years_to_naturalisation,multiple_citizenship}'::text[], '{max,min}'::text[], 8);"
 	touch $@
@@ -1279,7 +1279,7 @@ db/table/wb_gdp: data/mid/wb/gdp/wb_gdp.xml | db/table/hdx_locations_with_wikico
 	psql -c "drop table if exists temp_xml;"
 	touch $@
 
-db/table/gdp_h3: db/table/wb_gdp | db/procedure/generate_overviews db/table/kontur_boundaries ## GDP (Gross domestic product) for the last known year from World Bank distributed on H3 hexagons grid.
+db/table/gdp_h3: db/table/wb_gdp | db/procedure/generate_overviews db/table/kontur_boundaries_v4 ## GDP (Gross domestic product) for the last known year from World Bank distributed on H3 hexagons grid.
 	psql -f tables/gdp_h3.sql
 	touch $@
 
@@ -1291,7 +1291,7 @@ db/table/worldbank_tax_rate: | db/table ## Global Worldbank Tax Rate (source htt
 	psql -c "create index on worldbank_tax_rate using btree(hasc);"
 	touch $@
 
-db/table/worldbank_tax_rate_h3: db/table/worldbank_tax_rate | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviws of worldbank_tax_rate
+db/table/worldbank_tax_rate_h3: db/table/worldbank_tax_rate | db/table/kontur_boundaries_v4 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviews of worldbank_tax_rate
 	psql -c "call transform_hasc_to_h3('worldbank_tax_rate', 'worldbank_tax_rate_h3', 'hasc', '{t2019}'::text[], 8);"
 	psql -c "call generate_overviews('worldbank_tax_rate_h3', '{t2019}'::text[], '{max}'::text[], 8);"
 	touch $@
@@ -1304,7 +1304,7 @@ db/table/idmc_country_2023: | db/table ## IDMC internal displacemet 2023 (source
 	psql -c "create index on idmc_country_2023 using btree(iso3);"
 	touch $@
 
-db/table/idmc_country_2023_h3: db/table/idmc_country_2023 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3_percent_of_population db/table/kontur_boundaries ## Create idmc_country_2023_h3 and genarate overviews
+db/table/idmc_country_2023_h3: db/table/idmc_country_2023 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3_percent_of_population db/table/kontur_boundaries_v4 ## Create idmc_country_2023_h3 and generate overviews
 	psql -f tables/idmc_country_2023_h3.sql
 	touch $@
 
@@ -1316,7 +1316,7 @@ db/table/worldbank_inflation: | db/table ## Global Worldbank Headline consumer p
 	psql -c "create index on worldbank_inflation using btree(hasc);"
 	touch $@
 
-db/table/worldbank_inflation_h3: db/table/worldbank_inflation | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviws of worldbank_inflation
+db/table/worldbank_inflation_h3: db/table/worldbank_inflation | db/table/kontur_boundaries_v4 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviews of worldbank_inflation
 	psql -c "call transform_hasc_to_h3('worldbank_inflation', 'worldbank_inflation_h3', 'hasc', '{inflation}'::text[], 8);"
 	psql -c "call generate_overviews('worldbank_inflation_h3', '{inflation}'::text[], '{max}'::text[], 8);"
 	touch $@
@@ -2047,7 +2047,7 @@ db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manag
 	psql -c "create index on global_rva_indexes using btree(hasc);"
 	touch $@
 
-db/table/global_rva_h3: db/table/global_rva_indexes | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table ## Generation overviws of global rva indexes
+db/table/global_rva_h3: db/table/global_rva_indexes | db/table/kontur_boundaries_v4 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviews of global rva indexes
 	psql -c "call transform_hasc_to_h3('global_rva_indexes', 'global_rva_h3', 'hasc', '{raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, mhe_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index, population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, vulnerability_index, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale, physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale, marine_protected_area_scale, environmental_capacity_index, coping_capacity_index, resilience_index, mhr_index}'::text[], 8);"
 	psql -c "call generate_overviews('global_rva_h3', '{raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, mhe_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index, population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, vulnerability_index, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale, physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale, marine_protected_area_scale, environmental_capacity_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
@@ -2058,7 +2058,7 @@ db/table/ndpba_rva_indexes: | db/table ## NDPBA RVA indexes
 	cat static_data/pdc_bivariate_manager/ndpba_rva.csv | psql -c "copy ndpba_rva_indexes from stdin with csv header;"
 	touch $@
 
-db/table/ndpba_rva_h3: db/table/ndpba_rva_indexes | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table ## Generation overviews of ndpba rva indexes
+db/table/ndpba_rva_h3: db/table/ndpba_rva_indexes | db/table/kontur_boundaries_v4 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviews of ndpba rva indexes
 	psql -c "call transform_hasc_to_h3('ndpba_rva_indexes', 'ndpba_rva_h3', 'hasc', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], 8);"
 	psql -c "call generate_overviews('ndpba_rva_h3', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
@@ -2600,16 +2600,11 @@ db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx | db
 
 ### Safety index layer - Global Peace Index 2022 ###
 
-db/table/kontur_boundaries_hasc_codes_check: | db/table ## create if not exist table to store hascs that were missed in Kontur Boundaries
-	psql -c "drop table if exists kontur_boundaries_hasc_codes_check;"
-	psql -c "create table if not exists kontur_boundaries_hasc_codes_check (missed_hasc text, source_of_missed_hasc text, found_at TIMESTAMPTZ DEFAULT NOW());"
-	touch $@
-
-db/procedure/transform_hasc_to_h3: | db/table/kontur_boundaries db/table/kontur_boundaries_hasc_codes_check db/procedure ## Transform information with hasc codes to h3 indexes with using kontur_boundaries.
+db/procedure/transform_hasc_to_h3: | db/table/kontur_boundaries_v4 db/procedure ## Transform information with hasc codes to h3 indexes with using kontur_boundaries.
 	psql -f procedures/transform_hasc_to_h3.sql
 	touch $@
 
-db/procedure/transform_hasc_to_h3_percent_of_population: | db/table/kontur_boundaries db/table/kontur_boundaries_hasc_codes_check db/procedure ## Transform information with hasc codes to h3 indexes with using kontur_boundaries.
+db/procedure/transform_hasc_to_h3_percent_of_population: | db/table/kontur_boundaries_v4 db/procedure ## Transform information with hasc codes to h3 indexes with using kontur_boundaries.
 	psql -f procedures/transform_hasc_to_h3_percent_of_population.sql
 	touch $@
 
@@ -2621,20 +2616,10 @@ db/table/safety_index_per_country: | db/table ## Get existing solar power panels
 	psql -c 'create table safety_index_per_country as (select iso3, iso2, name, p.maximum - safety_index as safety_index from safety_index_per_country_in, (select max(safety_index) maximum from safety_index_per_country_in) p);'
 	touch $@
 
-db/table/safety_index_h3: db/table/safety_index_per_country | db/table/kontur_boundaries db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## transform hasc codes to h3 indexes and generate overviews
+db/table/safety_index_h3: db/table/safety_index_per_country | db/table/kontur_boundaries_v4 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## transform hasc codes to h3 indexes and generate overviews
 	psql -c "call transform_hasc_to_h3('safety_index_per_country', 'safety_index_h3', 'iso2', '{safety_index}'::text[], 8);"
 	psql -c "call generate_overviews('safety_index_h3', '{safety_index}'::text[], '{max}'::text[], 8);"
 	psql -c "create index on safety_index_h3 (h3);"
-	touch $@
-
-data/out/missed_hascs_check: db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries db/table/safety_index_h3 db/table/global_rva_h3 db/table/ndpba_rva_h3 | data/out ## Check if hasc codes were missed im kontur boundaries and send a message
-	echo 'List of 15 most frequent missed hasc-codes. Check kontur_boundaries_hasc_codes_check table for additional information.' > $@__MISSED_HASCS_MESSAGE
-	echo '```' >> $@__MISSED_HASCS_MESSAGE
-	psql --set null=¤ --set linestyle=unicode --set border=2 -qXc "select missed_hasc, count(*) from kontur_boundaries_hasc_codes_check group by 1 order by 2 desc limit 15;" >> $@__MISSED_HASCS_MESSAGE
-	echo '```' >> $@__MISSED_HASCS_MESSAGE
-	psql -qXtc "select count(*) from kontur_boundaries_hasc_codes_check;" > $@__NUMBER_MISSED_HASCS
-	if [ 0 -lt $$(cat $@__NUMBER_MISSED_HASCS) ]; then cat $@__MISSED_HASCS_MESSAGE | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; fi
-	rm -f $@__MISSED_HASCS_MESSAGE $@__NUMBER_MISSED_HASCS
 	touch $@
 
 ### End Safety index layer ###
@@ -2763,7 +2748,7 @@ db/table/humanitarian_dev_index_2022: | db/table ## Human Development Index (HDI
 	psql -c 'create table humanitarian_dev_index_2022 as (select country, code, hasc, hdi_2022 from humanitarian_dev_index_2022_in);'
 	touch $@
 
-db/table/humanitarian_dev_index_2022_h3: db/table/humanitarian_dev_index_2022 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviews of Human Development Index (HDI)
+db/table/humanitarian_dev_index_2022_h3: db/table/humanitarian_dev_index_2022 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries_v4 ## Generation overviews of Human Development Index (HDI)
 	psql -c "call transform_hasc_to_h3('humanitarian_dev_index_2022', 'humanitarian_dev_index_2022_h3', 'hasc', '{hdi_2022}'::text[], 8);"
 	psql -c "call generate_overviews('humanitarian_dev_index_2022_h3', '{hdi_2022}'::text[], '{min}'::text[], 8);"
 	touch $@
@@ -2779,7 +2764,7 @@ db/table/inform_risk_profile_2025: | db/table ## Inform Risc Index
 	psql -c 'create table inform_risk_profile_2025 as (select country, hasc, inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care from inform_risk_profile_2025_in);'	
 	touch $@
 
-db/table/inform_risk_profile_2025_h3: db/table/inform_risk_profile_2025 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries ## Generation overviews of Human Development Index (HDI)
+db/table/inform_risk_profile_2025_h3: db/table/inform_risk_profile_2025 | db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 db/table/kontur_boundaries_v4 ## Generation overviews of Inform risk profile 2025
 	psql -c "call transform_hasc_to_h3('inform_risk_profile_2025', 'inform_risk_profile_2025_h3', 'hasc', '{inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care}'::text[], 8);"
 	psql -c "call generate_overviews('inform_risk_profile_2025_h3', '{inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care}'::text[], '{max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,max,min,min,min,min,min,min,min}'::text[], 8);"
 	touch $@

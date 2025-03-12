@@ -9,7 +9,7 @@ create table wb_gdp_countries as (
                 h.year       as gdp_year,
                 k.population as county_population,
                 k.geom       as geom
-        from kontur_boundaries as k
+        from kontur_boundaries_v4 as k
              inner join wb_gdp as h on h.hasc = k.hasc_wiki
         where h.gdp is not null
         order by h.code, gdp_year desc)
@@ -23,7 +23,7 @@ create table wb_gdp_countries as (
                 h.year          as gdp_year,
                 sum(population) as county_population,
                 ST_Union(geom)  as geom
-        from kontur_boundaries as k,
+        from kontur_boundaries_v4 as k,
              wb_gdp as h 
         where k.hasc_wiki in ('GG', 'JE')
               and h.code = 'CHI'

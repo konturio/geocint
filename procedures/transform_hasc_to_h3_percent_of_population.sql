@@ -3,11 +3,11 @@
 -- to percent of population
 drop procedure if exists transform_hasc_to_h3_percent_of_population;
 create or replace procedure transform_hasc_to_h3_percent_of_population(input_hasc_table text,
-                                                 ouput_h3_table text,
-                                                 hack_field_name text,
-                                                 items text[],
-                                                 resolution integer default 8)
-    language plpgsql
+                                                                       output_h3_table text,
+                                                                       hack_field_name text,
+                                                                       items text[],
+                                                                       resolution integer default 8)
+language plpgsql
 as
 $$
 declare
@@ -32,24 +32,15 @@ begin
         -- match indexes with geometry with using hasc (isoalpha2) codes
         execute 'create table ' || input_hasc_table || '_temp_in_table as (
                  select k.kontur_admin_level as admin_level, k.population as kontur_boundaries_population, k.geom as geom, ' || column_list || '
-                 from kontur_boundaries k join ' || input_hasc_table || ' s
+                 from kontur_boundaries_v4 k join ' || input_hasc_table || ' s
                  on s.' || hack_field_name ||' = k.hasc_wiki
                  where k.hasc_wiki in (select ' || hack_field_name ||' from ' || input_hasc_table || '))';
-
-        -- get missed hasc codes and insert to special table kontur_boundaries_hasc_codes_check
-        execute 'insert into kontur_boundaries_hasc_codes_check (missed_hasc, source_of_missed_hasc, found_at)
-                    (select distinct s.' || hack_field_name ||' as missed_hasc, 
-                                     ''' || input_table || ''' as source_of_missed_hasc,
-                                     NOW()                      as found_at
-                    from ' || input_hasc_table || ' s, kontur_boundaries k
-                    where s.' || hack_field_name ||' not in (select hasc_wiki from kontur_boundaries where hasc_wiki is not null))';
-
         
-        execute 'drop table if exists ' || ouput_h3_table;
+        execute 'drop table if exists ' || output_h3_table;
 
         -- transform geometry to h3 hexagons
         -- remove duplicates with low admin level
-        execute 'create table ' || ouput_h3_table || ' as (
+        execute 'create table ' || output_h3_table || ' as (
                  select distinct on (h3) h3_polygon_to_cells(ST_Subdivide(geom), ' || res || ') as h3,' || 
                  column_list_divided_to_population || ', ' || res::text || ' as resolution
                  from ' || input_hasc_table || '_temp_in_table

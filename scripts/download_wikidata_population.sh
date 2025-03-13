@@ -46,7 +46,7 @@ for i in {0..10}; do
         echo  "Loding error"
     fi
 
-    # Wait 1 minute until wikidata will remove cashed response with error 
+    # Wait 1 minute until wikidata will remove cached response with error 
     sleep 60
 done
 

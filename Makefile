@@ -1150,45 +1150,20 @@ data/in/wikidata_population_csv: | data/in ## Wikidata population csv (input).
 
 data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data/in/wikidata_population_csv ## Download Wikidata population.
 	rm -f data/in/wikidata_population_csv/*_wiki_pop.csv
-
-	# NB! Notice `seq 2` here. First, wget triggers query execution which might take some time.
-	# In 99 of 100 everything goes well but in case of thousands of rows we might catch timout during downloading
-	# So we run wget twice because for the second time it uses cached query.
-
-	cat static_data/wikidata_population/wikidata_population_ranges.txt \
-		| parallel -j1 --colsep " " \
-			'seq 2 | xargs -I JUSTAPLACEHOLDER wget \
-				-nv \
-				"https://query.wikidata.org/sparql?query=SELECT \
-					?country \
-					?countryLabel \
-					?population \
-					?census_date \
-					WHERE { \
-						?country p:P1082 ?population_statement . \
-						?population_statement ps:P1082 ?population . \
-						OPTIONAL { ?population_statement pq:P585 ?census_date . } \
-						FILTER ({1} <= ?population %26%26 ?population < {2}) . \
-						SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\" . } }" \
-				--retry-on-http-error=500 \
-				--header "Accept: text/csv" \
-				-O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; \
-			sleep 1'
+	cat static_data/wikidata_population/wikidata_population_ranges.txt | parallel -j1 --colsep " " 'bash scripts/download_wikidata_population.sh {1} {2} data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; sleep 1'
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.
-	grep --include=\*_wiki_pop.csv -rnw 'data/in/wikidata_population_csv/' -e "java.util.concurrent.TimeoutException" | wc -l > $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
-	if [ $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) -lt 1 ]; then \
+	grep --include=\*_wiki_pop.csv -rnw 'data/in/wikidata_population_csv/' -e "java.util.concurrent.TimeoutException" > $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION || true
+	if [ $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION | wc -l) -lt 1 ]; then \
 		psql -c 'drop table if exists wikidata_population_in;'; \
-		psql -c 'create table wikidata_population_in(wikidata_item text, wikidata_name text, population numeric, census_date text);'; \
+		psql -c 'create table wikidata_population_in(wikidata_item text, population numeric, census_date text);'; \
 		ls data/in/wikidata_population_csv/*_wiki_pop.csv \
 			| parallel 'cat {} | psql -c "copy wikidata_population_in from stdin with csv header;"'; \
 		psql -f tables/wikidata_population.sql; \
 		psql -c 'drop table if exists wikidata_population_in;'; \
-	fi
-
-	if [ 0 -lt $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION) ]; then \
-		echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one." \
+	else \
+		echo "Latest wikidata population loading was failed with wikidata TimeoutException, using previous one. \n\n$$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION)" \
 			| python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI; \
 	fi
 	rm -f $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION

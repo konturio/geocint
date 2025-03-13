@@ -1150,33 +1150,7 @@ data/in/wikidata_population_csv: | data/in ## Wikidata population csv (input).
 
 data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data/in/wikidata_population_csv ## Download Wikidata population.
 	rm -f data/in/wikidata_population_csv/*_wiki_pop.csv
-
-	# NB! Notice `seq 2` here. First, wget triggers query execution which might take some time.
-	# In most cases the process works fine, but with thousands of rows a timeout during downloading may occur.
-	# So we run wget twice because for the second time it uses cached query.
-
-	cat static_data/wikidata_population/wikidata_population_ranges.txt \
-		| parallel -j1 --colsep " " \
-			'seq 2 | xargs -I JUSTAPLACEHOLDER bash -c " \
-				wget -nv \"https://query.wikidata.org/sparql?query=SELECT \
-					?country \
-					?population \
-					?census_date \
-					WHERE { \
-						?country p:P1082 ?population_statement . \
-						?population_statement ps:P1082 ?population . \
-						OPTIONAL { ?population_statement pq:P585 ?census_date . } \
-						FILTER ({1} <= ?population %26%26 ?population < {2}) . \
-						FILTER NOT EXISTS { \
-							?country p:P1082 ?other_statement . \
-							?other_statement ps:P1082 ?other_population . \
-							?other_statement pq:P585 ?other_date . \
-							FILTER (?other_date > ?census_date) \
-						}}\" \
-				--retry-on-http-error=500 \
-				--header \"Accept: text/csv\" \
-				-O data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; \
-				sleep 20"; sleep 1'
+	cat static_data/wikidata_population/wikidata_population_ranges.txt | parallel -j1 --colsep " " 'bash scripts/download_wikidata_population.sh {1} {2} data/in/wikidata_population_csv/{1}_{2}_wiki_pop.csv; sleep 1'
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.

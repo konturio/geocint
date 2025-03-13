@@ -1154,7 +1154,7 @@ data/in/wikidata_population_csv/download: data/in/wikidata_hasc_codes.csv | data
 	touch $@
 
 db/table/wikidata_population: data/in/wikidata_population_csv/download | db/table ## Check wikidata population data is valid and complete and import into database if true.
-	grep --include=\*_wiki_pop.csv -rnw 'data/in/wikidata_population_csv/' -e "java.util.concurrent.TimeoutException" > $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION
+	grep --include=\*_wiki_pop.csv -rnw 'data/in/wikidata_population_csv/' -e "java.util.concurrent.TimeoutException" > $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION || true
 	if [ $$(cat $@__WIKIDATA_POP_CSV_WITH_TIMEOUTEXCEPTION | wc -l) -lt 1 ]; then \
 		psql -c 'drop table if exists wikidata_population_in;'; \
 		psql -c 'create table wikidata_population_in(wikidata_item text, population numeric, census_date text);'; \

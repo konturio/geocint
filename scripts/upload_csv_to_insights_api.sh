@@ -65,7 +65,7 @@ layer_last_updated="\"$(date -r "$4" +'%Y-%m-%dT%H:%M:%SZ')\""
 # Check if UUID for the layer exists
 indicators_list=$(bash scripts/update_indicators_list.sh "$1")
 
-if [ -z "$indicators_list" ]; then
+if [[ -z "$indicators_list" ]]; then
   echo "Error: Failed to retrieve a valid indicators list."
   exit 1
 fi

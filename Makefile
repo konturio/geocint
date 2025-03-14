@@ -1432,6 +1432,13 @@ db/table/global_fires_stat_h3: deploy/s3/global_fires ## Aggregate active fire d
 data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset (input).
 	mkdir -p $@
 
+data/in/microsoft_buildings/microsoft_buildings_dataset_links.csv: | data/in/microsoft_buildings ## Download file with Microsoft Building Footprints datasets links.
+	wget https://minedbuildings.z5.web.core.windows.net/global-buildings/dataset-links.csv -O $@
+
+
+
+
+
 data/in/microsoft_buildings/download: | data/in/microsoft_buildings ## Download Microsoft Building Footprints dataset.
 	grep -h -v '^#' static_data/microsoft_buildings/*.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_buildings {}'
 	touch $@
@@ -1440,7 +1447,7 @@ data/in/microsoft_buildings/validity_controlled: data/in/microsoft_buildings/dow
 	ls -1 data/in/microsoft_buildings/*.zip | parallel --halt now,fail=1 unzip -t {}
 	touch $@
 
-db/table/microsoft_buildings: data/in/microsoft_buildings/validity_controlled | db/table  ## Microsoft Building Footprints dataset imported into database.
+db/table/microsoft_buildings: data/in/microsoft_buildings/validity_controlled | db/table  ## Microsoft Building Footprints dataset import into database.
 	psql -c "drop table if exists microsoft_buildings;"
 	psql -c "create table microsoft_buildings(filename text, geom geometry(Geometry,4326));"
 	find data/in/microsoft_buildings/* -type f -name "*.zip" -printf '%s\t%p\n' | sort -r -n | cut -f2- | sed -r 's/(.*\/(.*)\.(.*)$$)/ogr2ogr -append -f PostgreSQL --config PG_USE_COPY YES PG:"dbname=gis" "\/vsizip\/\1" -sql "select '\''\2'\'' as filename, * from \\"\2\\"" -nln microsoft_buildings -a_srs EPSG:4326/' | parallel --eta '{}'
@@ -1451,12 +1458,45 @@ db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Coun
 	psql -f tables/count_items_in_h3.sql -v table=microsoft_buildings -v table_h3=microsoft_buildings_h3 -v item_count=building_count
 	touch $@
 
+
+
+
+
+
 data/in/microsoft_roads: | data/in ## Microsoft Roads dataset (Road detections from Microsoft Maps aerial imagery).
+	mkdir -p $@
+
+data/mid/microsoft_roads: | data/mid ## Unpacked Microsoft Roads files
 	mkdir -p $@
 
 data/in/microsoft_roads/download: | data/in/microsoft_roads ## Download Microsoft roads dataset.
 	cat static_data/microsoft_roads/*.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_roads {}'
 	touch $@
+
+data/in/microsoft_roads/validity_controlled: data/in/microsoft_roads/download | data/in/microsoft_roads ## Check downloaded Microsoft Roads archives.
+	ls -1 data/in/microsoft_roads/*.zip | parallel --halt now,fail=1 unzip -t {}
+	touch $@
+
+data/mid/microsoft_roads/unzip: data/in/microsoft_roads/validity_controlled | data/mid/microsoft_roads  ## Unzip Microsoft Roads dataset.
+	ls data/in/microsoft_roads/*.zip | parallel "unzip -o {} -d data/mid/microsoft_roads/"
+	mv data/mid/microsoft_roads/_USA.tsv data/mid/microsoft_roads/USA.tsv
+	touch $@
+
+db/table/microsoft_roads: data/mid/microsoft_roads/unzip | db/table  ## Microsoft Roads dataset import into database.
+	psql -c "drop table if exists microsoft_roads_in;"
+	psql -c "create table microsoft_roads_in(country text, feature jsonb);"
+# 	TO DO: handle the lines without feature
+	cat data/mid/microsoft_roads/*.tsv | psql -c "COPY microsoft_roads_in (country, feature) FROM STDIN WITH (FORMAT csv, DELIMITER E'\t', QUOTE E'\b', ESCAPE E'\b');"
+	## file for USA has different structure - only geom, without code, so load it separately
+	awk '{print "UNK\t" $$0}' data/mid/microsoft_roads/USA.tsv | psql -c "COPY microsoft_roads_in (country, feature) FROM STDIN WITH (FORMAT csv, DELIMITER E'\t', QUOTE E'\b', ESCAPE E'\b');"
+	psql -c "vacuum analyze microsoft_roads;"
+	touch $@
+
+
+
+
+
+
 
 data/in/new_zealand_buildings: | data/in ## New Zealand's buildings dataset from LINZ (Land Information New Zealand).
 	mkdir -p $@

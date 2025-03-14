@@ -72,7 +72,7 @@ indicator_hash=$(echo "$indicators_list" | jq -c '.[]' | jq -c 'select(.id == "'
 csv_hash=$(md5sum $2 | awk '{print $1}')
 
 if [ "$indicator_hash" = "$csv_hash" ]; then
-  echo "$(date '+%F %H:%M:%S') The upload was stopped because this version of the $3 indicator is already loaded into Insights"
+  echo "$(date '+%F %H:%M:%S') Upload was skipped because this version of the $3 indicator is already loaded into Insights"
   exit 0
 fi
 

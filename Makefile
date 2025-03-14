@@ -1451,6 +1451,13 @@ db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Coun
 	psql -f tables/count_items_in_h3.sql -v table=microsoft_buildings -v table_h3=microsoft_buildings_h3 -v item_count=building_count
 	touch $@
 
+data/in/microsoft_roads: | data/in ## Microsoft Roads dataset (Road detections from Microsoft Maps aerial imagery).
+	mkdir -p $@
+
+data/in/microsoft_roads/download: | data/in/microsoft_roads ## Download Microsoft roads dataset.
+	cat static_data/microsoft_roads/*.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_roads {}'
+	touch $@
+
 data/in/new_zealand_buildings: | data/in ## New Zealand's buildings dataset from LINZ (Land Information New Zealand).
 	mkdir -p $@
 

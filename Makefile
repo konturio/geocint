@@ -161,15 +161,6 @@ deploy_indicators/test/custom_axis: | deploy_indicators/test ## Folder to store 
 deploy_indicators/prod/custom_axis: | deploy_indicators/prod ## Folder to store custom axis deployment fingerprints for prod instance.
 	mkdir -p $@
 
-deploy_indicators/dev/presets: | deploy_indicators/dev ## Folder to store presets deployment fingerprints for dev instance.
-	mkdir -p $@
-
-deploy_indicators/test/presets: | deploy_indicators/test ## Folder to store presets deployment fingerprints for test instance.
-	mkdir -p $@
-
-deploy_indicators/prod/presets: | deploy_indicators/prod ## Folder to store presets deployment fingerprints for prod instance.
-	mkdir -p $@
-
 deploy/geocint: | deploy ## We use geocint as a GIS development server.
 	mkdir -p $@
 
@@ -6147,6 +6138,6 @@ deploy_indicators/prod/custom_axis/wildfire_days_count_one: deploy_indicators/pr
 deploy_indicators/prod/custom_axis/all_custom_axis: deploy_indicators/prod/custom_axis/population_area_km2 deploy_indicators/prod/custom_axis/count_area_km2 deploy_indicators/prod/custom_axis/building_count_area_km2 deploy_indicators/prod/custom_axis/local_hours_area_km2 deploy_indicators/prod/custom_axis/total_hours_area_km2 deploy_indicators/prod/custom_axis/view_count_area_km2 deploy_indicators/prod/custom_axis/osm_users_one deploy_indicators/prod/custom_axis/total_building_count_area_km2 deploy_indicators/prod/custom_axis/wildfires_area_km2 deploy_indicators/prod/custom_axis/forest_area_km2 deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/prod/custom_axis/man_distance_to_hospital_one deploy_indicators/prod/custom_axis/highway_length_area_km2 deploy_indicators/prod/custom_axis/total_road_length_area_km2  deploy_indicators/prod/custom_axis/view_count_bf2402_one deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2 deploy_indicators/prod/custom_axis/powerlines_one deploy_indicators/prod/custom_axis/night_lights_intensity_one deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one deploy_indicators/prod/custom_axis/solar_power_plants_area_km2 deploy_indicators/prod/custom_axis/volcano_days_count_area_km2 deploy_indicators/prod/custom_axis/volcano_days_count_one deploy_indicators/prod/custom_axis/flood_days_count_area_km2 deploy_indicators/prod/custom_axis/flood_days_count_one deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/prod/custom_axis/building_count_total_building_count deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/prod/custom_axis/highway_length_total_road_length deploy_indicators/prod/custom_axis/eatery_count_one deploy_indicators/prod/custom_axis/food_shops_count_one deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2 deploy_indicators/prod/custom_axis/hazardous_days_count_one deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2 deploy_indicators/prod/custom_axis/earthquake_days_count_one deploy_indicators/prod/custom_axis/drought_days_count_area_km2 deploy_indicators/prod/custom_axis/drought_days_count_one deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2 deploy_indicators/prod/custom_axis/cyclone_days_count_one deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2 deploy_indicators/prod/custom_axis/wildfire_days_count_one deploy_indicators/prod/custom_axis/man_distance_to_hospital_population | deploy_indicators/prod/custom_axis ## final target for custom axis deployment to prod
 	touch $@
 
-## END PROD presets upload
+## END PROD upload
 
 ### END Deploy through API

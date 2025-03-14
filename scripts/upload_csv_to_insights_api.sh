@@ -63,17 +63,33 @@ layer_copyrights=$(psql -Xqtc "SELECT copyrights::text FROM bivariate_indicators
 layer_last_updated="\"$(date -r "$4" +'%Y-%m-%dT%H:%M:%SZ')\""
 
 # Check if UUID for the layer exists
-existed_uuid=$(bash scripts/update_indicators_list.sh "$1" | jq -c '.[]' | jq -c 'select(.id == "'"$3"'")' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
+indicators_list=$(bash scripts/update_indicators_list.sh "$1")
+
+if [[ -z "$indicators_list" ]]; then
+  echo "Error: Failed to retrieve a valid indicators list."
+  exit 1
+fi
+
+existing_uuid=$(echo "$indicators_list" | jq -c '.[]' | jq -c 'select(.id == "'"$3"'")' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
+
+indicator_hash=$(echo "$indicators_list" | jq -c '.[]' | jq -c 'select(.id == "'"$3"'")' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].hash' | tail -1)
+
+csv_hash=$(md5sum "$2" | awk '{print $1}')
+
+if [ "$indicator_hash" = "$csv_hash" ]; then
+  echo "$(date '+%F %H:%M:%S') Upload was skipped because this version of the $3 indicator is already loaded into Insights"
+  exit 0
+fi
 
 # Set the method and action for the curl request
-if [[ -z $existed_uuid ]]; then
+if [[ -z $existing_uuid ]]; then
   action="upload"
   method="POST"
-  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"lastUpdated\": ${layer_last_updated}}"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
 else
   action="update"
   method="PUT"
-  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existed_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"lastUpdated\": ${layer_last_updated}}"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existing_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
 fi
 
 # Execute the curl request to upload the file

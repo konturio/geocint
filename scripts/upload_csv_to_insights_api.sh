@@ -65,11 +65,16 @@ layer_last_updated="\"$(date -r "$4" +'%Y-%m-%dT%H:%M:%SZ')\""
 # Check if UUID for the layer exists
 indicators_list=$(bash scripts/update_indicators_list.sh "$1")
 
+if [ -z "$indicators_list" ]; then
+  echo "Error: Failed to retrieve a valid indicators list."
+  exit 1
+fi
+
 existing_uuid=$(echo "$indicators_list" | jq -c '.[]' | jq -c 'select(.id == "'"$3"'")' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
 
 indicator_hash=$(echo "$indicators_list" | jq -c '.[]' | jq -c 'select(.id == "'"$3"'")' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].hash' | tail -1)
 
-csv_hash=$(md5sum $2 | awk '{print $1}')
+csv_hash=$(md5sum "$2" | awk '{print $1}')
 
 if [ "$indicator_hash" = "$csv_hash" ]; then
   echo "$(date '+%F %H:%M:%S') Upload was skipped because this version of the $3 indicator is already loaded into Insights"

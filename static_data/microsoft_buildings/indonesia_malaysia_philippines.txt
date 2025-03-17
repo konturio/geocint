@@ -1,3 +1,0 @@
-https://minedbuildings.blob.core.windows.net/southeast-asia/indonesia.geojsonl.zip
-https://minedbuildings.blob.core.windows.net/southeast-asia/philippines.geojsonl.zip
-https://minedbuildings.blob.core.windows.net/southeast-asia/malaysia.geojsonl.zip

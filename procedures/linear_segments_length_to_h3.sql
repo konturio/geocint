@@ -9,10 +9,8 @@ $$
 declare
     res integer := resolution;
 begin
-
     execute 'drop table if exists ' || output_h3_table;
-    -- transform geometry to h3 hexagons
-    -- remove duplicates with low admin level
+    
     execute 'create table ' || output_h3_table || ' as (
              select h3_lat_lng_to_cell(ST_StartPoint(s.geom)::point, ' || res || ') as h3,
                     sum(ST_Length(s.geom::geography))                               as ' || field_name || ', ' || 

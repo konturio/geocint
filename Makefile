@@ -264,6 +264,7 @@ db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area: | db/procedure ##
 db/procedure/linear_segments_length_to_h3: | db/procedure ## calculate length of linear segments per hexagon
 	psql -f procedures/linear_segments_length_to_h3.sql
 	touch $@
+
 data/in/facebook: | data/in  ## Directory for Facebook data
 	mkdir -p $@
 
@@ -337,7 +338,7 @@ db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last
 	touch $@
 
 db/table/facebook_roads_h3: db/table/facebook_roads | db/procedure/generate_overviews db/procedure/linear_segments_length_to_h3 db/table ## Build h3 overviews for Facebook roads at all levels.
-	psql -c "call linear_segments_length_to_h3 ('facebook_roads','facebook_roads_h3', 'dump', 'fb_roads_length', 11);"
+	psql -c "call linear_segments_length_to_h3 ('facebook_roads','facebook_roads_h3', 'split_and_dump', 'fb_roads_length', 11, 25);"
 	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
@@ -1495,7 +1496,7 @@ db/table/microsoft_roads: data/mid/microsoft_roads/unzip | db/table  ## Microsof
 	touch $@
 
 db/table/microsoft_roads_h3: db/table/microsoft_roads | db/procedure/linear_segments_length_to_h3 db/table ## Microsoft roads segments aggregated to h3
-	psql -c "call linear_segments_length_to_h3 ('microsoft_roads','microsoft_roads_h3', 'dump', 'road_length', 11);"
+	psql -c "call linear_segments_length_to_h3 ('microsoft_roads','microsoft_roads_h3', 'split_and_dump', 'road_length', 11, 25);"
 	touch $@
 
 data/in/new_zealand_buildings: | data/in ## New Zealand's buildings dataset from LINZ (Land Information New Zealand).

@@ -4,14 +4,17 @@ drop table if exists total_road_length_h3;
 
 -- create temporary table with calculating basic total_road_length
 create table total_road_length_h3_temp_in as (
-    select  coalesce(fb.h3, osm.h3)                                           as h3,
-            coalesce(fb.resolution, osm.resolution)                           as resolution,
-            coalesce(fb.fb_roads_length, 0)                                   as fb_roads_length,
-            coalesce(osm.highway_length, 0)                                   as highway_length,
-            coalesce(fb.fb_roads_length, 0) + coalesce(osm.highway_length, 0) as total_road_length
+    select  coalesce(fb.h3, osm.h3)                                                    as h3,
+            coalesce(fb.resolution, osm.resolution)                                    as resolution,
+            coalesce(fb.fb_roads_length, 0)                                            as fb_roads_length,
+            coalesce(osm.highway_length, 0)                                            as highway_length,
+            GREATEST(coalesce(fb.fb_roads_length, 0) + coalesce(osm.highway_length, 0), 
+                     coalesce(mcr.road_length, 0))                                     as total_road_length
     from facebook_roads_h3 fb
          full outer join osm_road_segments_h3 osm
          on fb.h3 = osm.h3
+         full outer join microsoft_roads_h3 mcr
+         on fb.h3 = mcr.h3
     where (coalesce(fb.resolution, osm.resolution) = 8)
 );
 

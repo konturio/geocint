@@ -257,6 +257,9 @@ db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area: | db/procedure ##
 	psql -f procedures/dither_area_to_not_bigger_than_100pc_of_hex_area.sql
 	touch $@
 
+db/procedure/linear_segments_length_to_h3: | db/procedure ## calculate length of linear segments per hexagon
+	psql -f procedures/linear_segments_length_to_h3.sql
+	touch $@
 data/in/facebook: | data/in  ## Directory for Facebook data
 	mkdir -p $@
 
@@ -326,8 +329,8 @@ db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last
 	psql -c "drop table facebook_roads_old; drop table osm_roads_increment;"
 	touch $@
 
-db/table/facebook_roads_h3: db/table/facebook_roads | db/procedure/generate_overviews db/table ## Build h3 overviews for Facebook roads at all levels.
-	psql -f tables/facebook_roads_h3.sql
+db/table/facebook_roads_h3: db/table/facebook_roads | db/procedure/generate_overviews db/procedure/linear_segments_length_to_h3 db/table ## Build h3 overviews for Facebook roads at all levels.
+	psql -c "call linear_segments_length_to_h3 ('facebook_roads','facebook_roads_h3', 'dump', 'fb_roads_length', 8);"
 	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 8);"
 	touch $@
 
@@ -1432,23 +1435,64 @@ db/table/global_fires_stat_h3: deploy/s3/global_fires ## Aggregate active fire d
 data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset (input).
 	mkdir -p $@
 
-data/in/microsoft_buildings/download: | data/in/microsoft_buildings ## Download Microsoft Building Footprints dataset.
-	grep -h -v '^#' static_data/microsoft_buildings/*.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_buildings {}'
+data/in/microsoft_buildings/microsoft_buildings_dataset_links.csv: | data/in/microsoft_buildings ## Download file with Microsoft Building Footprints datasets links.
+	wget https://minedbuildings.z5.web.core.windows.net/global-buildings/dataset-links.csv -O $@
+
+data/in/microsoft_buildings/download: data/in/microsoft_buildings/microsoft_buildings_dataset_links.csv
+	tail -n +2 data/in/microsoft_buildings/microsoft_buildings_dataset_links.csv | cut -f3 -d ',' | parallel --eta 'wget -q -c -nc -P data/in/microsoft_buildings {}'
 	touch $@
 
 data/in/microsoft_buildings/validity_controlled: data/in/microsoft_buildings/download | data/in/microsoft_buildings ## Check downloaded Microsoft Building Footprints archives.
-	ls -1 data/in/microsoft_buildings/*.zip | parallel --halt now,fail=1 unzip -t {}
+	ls -1 data/in/microsoft_buildings/*.gz | parallel --halt now,fail=1 gzip -t {}
 	touch $@
 
-db/table/microsoft_buildings: data/in/microsoft_buildings/validity_controlled | db/table  ## Microsoft Building Footprints dataset imported into database.
+db/table/microsoft_buildings: data/in/microsoft_buildings/validity_controlled | db/table  ## Microsoft Building Footprints dataset import into database.
+	psql -c "drop table if exists microsoft_buildings_in;"
+	psql -c "create table microsoft_buildings_in(feature jsonb);"
+	ls data/in/microsoft_buildings/*.csv.gz | parallel --eta zcat {} | psql -c "COPY microsoft_buildings_in (feature) from stdin with (format csv, header false, delimiter E'\t', quote E'\b', escape E'\b');"
 	psql -c "drop table if exists microsoft_buildings;"
-	psql -c "create table microsoft_buildings(filename text, geom geometry(Geometry,4326));"
-	find data/in/microsoft_buildings/* -type f -name "*.zip" -printf '%s\t%p\n' | sort -r -n | cut -f2- | sed -r 's/(.*\/(.*)\.(.*)$$)/ogr2ogr -append -f PostgreSQL --config PG_USE_COPY YES PG:"dbname=gis" "\/vsizip\/\1" -sql "select '\''\2'\'' as filename, * from \\"\2\\"" -nln microsoft_buildings -a_srs EPSG:4326/' | parallel --eta '{}'
+	psql -c "create table microsoft_buildings as (select st_setsrid(ST_GeomFromGeoJSON(feature ->> 'geometry'),4326) as geom from microsoft_buildings_in);"
 	psql -c "vacuum analyze microsoft_buildings;"
+	psql -c "drop table if exists microsoft_buildings_in;"
 	touch $@
 
 db/table/microsoft_buildings_h3: db/table/microsoft_buildings | db/table ## Count amount of Microsoft Buildings at hexagons.
 	psql -f tables/count_items_in_h3.sql -v table=microsoft_buildings -v table_h3=microsoft_buildings_h3 -v item_count=building_count
+	touch $@
+
+data/in/microsoft_roads: | data/in ## Microsoft Roads dataset (Road detections from Microsoft Maps aerial imagery).
+	mkdir -p $@
+
+data/mid/microsoft_roads: | data/mid ## Unpacked Microsoft Roads files
+	mkdir -p $@
+
+data/in/microsoft_roads/download: | data/in/microsoft_roads ## Download Microsoft roads dataset.
+	cat static_data/microsoft/microsoft_roads_urls.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_roads {}'
+	touch $@
+
+data/in/microsoft_roads/validity_controlled: data/in/microsoft_roads/download | data/in/microsoft_roads ## Check downloaded Microsoft Roads archives.
+	ls -1 data/in/microsoft_roads/*.zip | parallel --halt now,fail=1 unzip -t {}
+	touch $@
+
+data/mid/microsoft_roads/unzip: data/in/microsoft_roads/validity_controlled | data/mid/microsoft_roads  ## Unzip Microsoft Roads dataset.
+	ls data/in/microsoft_roads/*.zip | parallel "unzip -o {} -d data/mid/microsoft_roads/"
+	mv data/mid/microsoft_roads/_USA.tsv data/mid/microsoft_roads/USA.tsv
+	touch $@
+
+db/table/microsoft_roads: data/mid/microsoft_roads/unzip | db/table  ## Microsoft Roads dataset import into database.
+	psql -c "drop table if exists microsoft_roads_in;"
+	psql -c "create table microsoft_roads_in(country text, feature jsonb);"
+	find data/mid/microsoft_roads/*.tsv '!' -name 'USA.tsv' | parallel --eta cat {} | psql -c "COPY microsoft_roads_in (country, feature) from stdin with (format csv, header false, delimiter E'\t', quote E'\b', escape E'\b');"
+	## file for USA has different structure - only geom, without code, so load it separately
+	awk '{print "UNK\t" $$0}' data/mid/microsoft_roads/USA.tsv | psql -c "COPY microsoft_roads_in (country, feature) from stdin with (format csv, header false, delimiter E'\t', quote E'\b', escape E'\b');"
+	psql -c "drop table if exists microsoft_roads;"
+	psql -c "create table microsoft_roads as (select st_setsrid(ST_GeomFromGeoJSON(feature ->> 'geometry'),4326) as geom from microsoft_roads_in);"
+	psql -c "vacuum analyze microsoft_roads;"
+	psql -c "drop table if exists microsoft_roads_in;"
+	touch $@
+
+db/table/microsoft_roads_h3: db/table/microsoft_roads | db/procedure/linear_segments_length_to_h3 db/table ## Microsoft roads segments aggregated to h3
+	psql -c "call linear_segments_length_to_h3 ('microsoft_roads','microsoft_roads_h3', 'dump', 'road_length', 8);"
 	touch $@
 
 data/in/new_zealand_buildings: | data/in ## New Zealand's buildings dataset from LINZ (Land Information New Zealand).
@@ -2282,7 +2326,7 @@ db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/l
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
 
-db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/hexagons_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 | db/procedure/generate_overviews db/table ## adjust total road length with linear regression from population
+db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/hexagons_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/table/microsoft_roads_h3 | db/procedure/generate_overviews db/table ## adjust total road length with linear regression from population
 	psql -f tables/total_road_length_h3.sql
 	psql -c "call generate_overviews('total_road_length_h3', '{total_road_length}'::text[], '{sum}'::text[], 8);"
 	touch $@

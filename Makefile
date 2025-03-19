@@ -1467,7 +1467,7 @@ data/mid/microsoft_roads: | data/mid ## Unpacked Microsoft Roads files
 	mkdir -p $@
 
 data/in/microsoft_roads/download: | data/in/microsoft_roads ## Download Microsoft roads dataset.
-	cat static_data/microsoft_roads/*.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_roads {}'
+	cat static_data/microsoft/microsoft_roads_urls.txt | parallel --eta 'wget -q -c -nc -P data/in/microsoft_roads {}'
 	touch $@
 
 data/in/microsoft_roads/validity_controlled: data/in/microsoft_roads/download | data/in/microsoft_roads ## Check downloaded Microsoft Roads archives.

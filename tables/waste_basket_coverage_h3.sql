@@ -14,18 +14,17 @@ create table waste_basket_coverage_h3_in as (
 -- which gives a diameter of the covered area ~140 meters
 drop table if exists waste_basket_coverage_h3_mid;
 create table waste_basket_coverage_h3_mid as (
-    select h3                                                                             as h3,
-           ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0                         as waste_basket_coverage_area_km2,
+    select h3,
+           ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0 as waste_basket_coverage_area_km2,
            resolution
     from waste_basket_coverage_h3_in
     union all
     select h3,
-           waste_basket_coverage_area_km2,
-           resolution
-    from (select h3_grid_ring_unsafe(h3, 1)                                                     as h3,
-                 ST_Area(h3_cell_to_boundary_geography(h3_grid_ring_unsafe(h3, 1))) / 1000000.0 as waste_basket_coverage_area_km2,
-                 11::integer                                                                    as resolution
-          from waste_basket_coverage_h3_in)
+           ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0 as waste_basket_coverage_area_km2,
+           11::integer                                            as resolution
+    from (select h3_grid_ring_unsafe(h3, 1) as h3
+          from waste_basket_coverage_h3_in
+          group by 1)
     where h3 not in (select h3 from roads_h3_r82 where resolution = 11)
 );
 

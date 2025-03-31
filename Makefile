@@ -489,8 +489,6 @@ db/table/copernicus_builtup_h3: db/table/copernicus_landcover_raster | db/table 
 
 db/table/copernicus_landcover_h3: db/table/copernicus_landcover_raster db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area | db/table ## Forest area in km2 by types from land cover raster into h3 hexagons on 8 resolution.
 	psql -f tables/copernicus_landcover_h3.sql
-	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('copernicus_landcover_h3_in', 'copernicus_landcover_h3', '{forest_area, evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest, cropland, wetland, moss_lichen, bare_vegetation, builtup, snow_ice, permanent_water}'::text[], 8);"
-	psql -c "drop table if exists copernicus_landcover_h3_in;"
 	touch $@
 
 db/table/osm_residential_landuse: db/index/osm_tags_idx ## Residential areas from osm.
@@ -555,8 +553,6 @@ db/table/mapswipe_hot_tasking_data: data/mid/mapswipe/ym_files/update | db/table
 
 db/table/mapswipe_hot_tasking_data_h3: db/table/mapswipe_hot_tasking_data db/table/land_polygons_h3_r8 | db/procedure/generate_overviews db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area db/table ## Create h3 table with mapswipe data
 	psql -f tables/mapswipe_hot_tasking_data_h3.sql
-	psql -c "call dither_area_to_not_bigger_than_100pc_of_hex_area('mapswipe_hot_tasking_data_h3_in', 'mapswipe_hot_tasking_data_h3', '{mapswipe_area}'::text[], 8);"
-	psql -c "drop table if exists mapswipe_hot_tasking_data_h3_in;"
 	touch $@
 
 data/in/raster/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked.dat.tif.gz: | data/in/raster/VNL_v21_npp_2021_global  ## download, tile, pack and upload nightlights rasters
@@ -2138,7 +2134,7 @@ db/table/foursquare_os_places_h3: db/table/foursquare_os_places db/table/foursqu
 	psql -f tables/foursquare_os_places_h3.sql
 	touch $@
 
-db/table/all_datasets: db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs_h3 db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_containers_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 db/table/osm_financial_venues_h3 db/table/osm_education_venues_h3 db/table/osm_emergency_facilities_h3 db/table/osm_transport_facilities_h3 db/table/osm_car_parkings_capacity_h3 db/table/osm_heritage_sites_h3 db/table/foursquare_os_places_h3 | db/table ## service target to build all datasets without deployment
+db/table/all_datasets: db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs_h3 db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_basket_coverage_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 db/table/osm_financial_venues_h3 db/table/osm_education_venues_h3 db/table/osm_emergency_facilities_h3 db/table/osm_transport_facilities_h3 db/table/osm_car_parkings_capacity_h3 db/table/osm_heritage_sites_h3 db/table/foursquare_os_places_h3 | db/table ## service target to build all datasets without deployment
 	touch $@
 
 db/table/bivariate_axis_overrides: | db/table ## Overrides for bivariate axis.
@@ -2518,9 +2514,8 @@ db/table/powerlines_proximity_h3_r8: db/table/powerlines_proximity | db/table ##
 
 ### City Waste management block ###
 
-db/table/waste_containers_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## create a table with the average number of waste containers within a hexagon or less than 75m apart per hexagon
-	psql -f tables/waste_containers_h3.sql
-	psql -c "call generate_overviews('waste_containers_h3', '{waste_basket_coverage}'::text[], '{sum}'::text[], 8);"
+db/table/waste_basket_coverage_h3: db/index/osm_tags_idx | db/procedure/generate_overviews db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area db/table ## create a table with waste containers coverage area
+	psql -f tables/waste_basket_coverage_h3.sql
 	touch $@
 
 ### End City waste management block ###
@@ -2967,8 +2962,8 @@ data/out/csv/eatery_count.csv: db/table/osm_places_eatery_h3 | data/out/csv ## e
 data/out/csv/food_shops_count.csv: db/table/osm_places_food_shops_h3 | data/out/csv ## extract food_shops_count to csv file 
 	psql -q -X -c "copy (select h3, food_shops_count from osm_places_food_shops_h3 where h3 is not null and food_shops_count is not null and food_shops_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/food_shops_count.csv
 
-data/out/csv/waste_basket_coverage_area_km2.csv: db/table/waste_containers_h3 | data/out/csv ## extract waste_basket_coverage_area_km2 to csv file 
-	psql -q -X -c "copy (select h3, (ST_Area(h3_cell_to_boundary_geography(h3)) / 1000000.0) * waste_basket_coverage / (49.0 * POWER(7, 8 - resolution)) as waste_basket_coverage_area_km2 from waste_containers_h3 where h3 is not null and waste_basket_coverage is not null and waste_basket_coverage > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/waste_basket_coverage_area_km2.csv
+data/out/csv/waste_basket_coverage_area_km2.csv: db/table/waste_basket_coverage_h3 | data/out/csv ## extract waste_basket_coverage_area_km2 to csv file 
+	psql -q -X -c "copy (select h3, waste_basket_coverage_area_km2 from waste_basket_coverage_h3 where h3 is not null and waste_basket_coverage_area_km2 is not null and waste_basket_coverage_area_km2 > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/waste_basket_coverage_area_km2.csv
 
 data/out/csv/solar_farms_placement_suitability.csv: db/table/solar_farms_placement_suitability_synthetic_h3 | data/out/csv ## extract solar_farms_placement_suitability to csv file 
 	psql -q -X -c "copy (select h3, solar_farms_placement_suitability from solar_farms_placement_suitability_synthetic_h3 where h3 is not null and solar_farms_placement_suitability is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/solar_farms_placement_suitability.csv
@@ -3651,7 +3646,7 @@ deploy_indicators/dev/uploads/powerlines_proximity_m_upload: data/out/csv/powerl
 	touch $@
 
 deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/dev/uploads ## upload waste_basket_coverage_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_containers_h3
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_basket_coverage_h3
 	touch $@
 
 deploy_indicators/dev/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/dev/uploads ## upload populated_areas_proximity_m to insight-api
@@ -4597,7 +4592,7 @@ deploy_indicators/test/uploads/powerlines_proximity_m_upload: data/out/csv/power
 	touch $@
 
 deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/test/uploads ## upload waste_basket_coverage_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_containers_h3
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_basket_coverage_h3
 	touch $@
 
 deploy_indicators/test/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/test/uploads ## upload populated_areas_proximity_m to insight-api
@@ -5545,7 +5540,7 @@ deploy_indicators/prod/uploads/powerlines_proximity_m_upload: data/out/csv/power
 	touch $@
 
 deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/prod/uploads ## upload waste_basket_coverage_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_containers_h3
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_basket_coverage_h3
 	touch $@
 
 deploy_indicators/prod/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/prod/uploads ## upload populated_areas_proximity_m to insight-api

@@ -40,7 +40,7 @@ begin
         select 
             h3_lat_lng_to_cell(st_startpoint(s.geom)::point, %s) as h3,
             sum(st_length(s.geom::geography)) as %I,
-            %L as resolution
+            %L::integer as resolution
         from %I r, %s
         where s.geom is not null
         group by h3',

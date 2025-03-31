@@ -25,7 +25,7 @@ create table waste_basket_coverage_h3_mid as (
     from (select h3_grid_ring_unsafe(h3, 1) as h3
           from waste_basket_coverage_h3_in
           group by 1)
-    where h3 not in (select h3 from roads_h3_r82 where resolution = 11)
+    where h3 not in (select h3 from waste_basket_coverage_h3_in where resolution = 11)
 );
 
 drop table if exists waste_basket_coverage_h3_in;

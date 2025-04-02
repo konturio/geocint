@@ -49,8 +49,6 @@ values
     ('man_distance_to_hospital', 'population', 'Distance to hospitals'),
     ('highway_length', 'area_km2', 'OSM roads density'),
     ('total_road_length', 'area_km2', 'Total roads density estimate'),
-    --('foursquare_places_count', 'one', 'Foursquare Japan places count'),
-    --('foursquare_visits_count', 'one', 'Foursquare Japan visits count'),
     ('view_count_bf2402', 'one', 'Map views 30 days before 24.02.2022'),
     ('view_count_bf2402', 'area_km2', 'OSM Map Views, Jan 25-Feb 24 2022'),
     ('powerlines', 'one', 'Medium voltage powerlines distribution estimation'),

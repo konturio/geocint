@@ -40,6 +40,7 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	psql -f scripts/clean.sql
 	# Update bivariate indicators
 	psql -f tables/bivariate_indicators.sql
+	psql -f tables/bivariate_axis_overrides.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder
 	docker image prune --force --filter label=stage=osrm-backend
@@ -2137,10 +2138,6 @@ db/table/foursquare_os_places_h3: db/table/foursquare_os_places db/table/foursqu
 db/table/all_datasets: db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs_h3 db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_basket_coverage_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 db/table/osm_financial_venues_h3 db/table/osm_education_venues_h3 db/table/osm_emergency_facilities_h3 db/table/osm_transport_facilities_h3 db/table/osm_car_parkings_capacity_h3 db/table/osm_heritage_sites_h3 db/table/foursquare_os_places_h3 | db/table ## service target to build all datasets without deployment
 	touch $@
 
-db/table/bivariate_axis_overrides: | db/table ## Overrides for bivariate axis.
-	psql -f tables/bivariate_axis_overrides.sql
-	touch $@
-
 data/tile_logs: | data ## Directory for OpenStreetMap tiles usage statistics dataset.
 	mkdir -p $@
 
@@ -3996,277 +3993,277 @@ deploy_indicators/dev/uploads/events_fsq_count_upload: data/out/csv/events_fsq_c
 deploy_indicators/dev/uploads/upload_dev: deploy_indicators/dev/uploads/view_count_upload deploy_indicators/dev/uploads/count_upload deploy_indicators/dev/uploads/population_next_gen_upload deploy_indicators/dev/uploads/populated_area_km2_next_gen_upload deploy_indicators/dev/uploads/population_upload deploy_indicators/dev/uploads/populated_area_km2_upload deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload deploy_indicators/dev/uploads/local_hours_upload deploy_indicators/dev/uploads/total_hours_upload deploy_indicators/dev/uploads/avgmax_ts_upload deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/view_count_bf2402_upload deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/dev/uploads/total_building_count_upload deploy_indicators/dev/uploads/count_6_months_upload deploy_indicators/dev/uploads/building_count_6_months_upload deploy_indicators/dev/uploads/highway_length_6_months_upload deploy_indicators/dev/uploads/osm_users_upload deploy_indicators/dev/uploads/residential_upload deploy_indicators/dev/uploads/gdp_upload deploy_indicators/dev/uploads/min_ts_upload deploy_indicators/dev/uploads/max_ts_upload deploy_indicators/dev/uploads/wildfires_upload deploy_indicators/dev/uploads/industrial_area_upload deploy_indicators/dev/uploads/volcanos_count_upload deploy_indicators/dev/uploads/pop_under_5_total_upload deploy_indicators/dev/uploads/pop_over_65_total_upload deploy_indicators/dev/uploads/poverty_families_total_upload deploy_indicators/dev/uploads/pop_disability_total_upload deploy_indicators/dev/uploads/pop_not_well_eng_speak_upload deploy_indicators/dev/uploads/pop_without_car_upload deploy_indicators/dev/uploads/man_distance_to_hospital_upload deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload  deploy_indicators/dev/uploads/eatery_count_upload deploy_indicators/dev/uploads/food_shops_count_upload deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload deploy_indicators/dev/uploads/mapswipe_area_km2_upload deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload deploy_indicators/dev/uploads/forest_upload deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/dev/uploads/shrubs_upload deploy_indicators/dev/uploads/herbage_upload deploy_indicators/dev/uploads/unknown_forest_upload deploy_indicators/dev/uploads/avg_ndvi_upload deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/dev/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/dev/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/dev/uploads/hazardous_days_count_upload deploy_indicators/dev/uploads/earthquake_days_count_upload deploy_indicators/dev/uploads/wildfire_days_count_upload deploy_indicators/dev/uploads/drought_days_count_upload deploy_indicators/dev/uploads/cyclone_days_count_upload deploy_indicators/dev/uploads/volcano_days_count_upload deploy_indicators/dev/uploads/flood_days_count_upload deploy_indicators/dev/uploads/powerlines_upload deploy_indicators/dev/uploads/night_lights_intensity_upload deploy_indicators/dev/uploads/gsa_ghi_upload deploy_indicators/dev/uploads/worldclim_avg_temperature_upload deploy_indicators/dev/uploads/worldclim_min_temperature_upload deploy_indicators/dev/uploads/worldclim_max_temperature_upload deploy_indicators/dev/uploads/worldclim_amp_temperature_upload deploy_indicators/dev/uploads/powerlines_proximity_m_upload deploy_indicators/dev/uploads/populated_areas_proximity_m_upload deploy_indicators/dev/uploads/power_substations_proximity_m_upload deploy_indicators/dev/uploads/solar_power_plants_upload deploy_indicators/dev/uploads/safety_index_upload deploy_indicators/dev/uploads/avg_forest_canopy_height_upload deploy_indicators/dev/uploads/max_forest_canopy_height_upload deploy_indicators/dev/uploads/worldbank_tax_rate_upload deploy_indicators/dev/uploads/years_to_naturalisation_upload deploy_indicators/dev/uploads/multiple_citizenship_upload deploy_indicators/dev/uploads/ghs_max_building_height_upload deploy_indicators/dev/uploads/ghs_avg_building_height_upload deploy_indicators/dev/uploads/max_osm_building_levels_upload deploy_indicators/dev/uploads/avg_osm_building_levels_upload deploy_indicators/dev/uploads/osm_hotels_count_upload deploy_indicators/dev/uploads/max_osm_hotels_assesment_upload deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/dev/uploads/osm_art_venues_count_upload deploy_indicators/dev/uploads/osm_entertainment_venues_count_upload deploy_indicators/dev/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/dev/uploads/worldbank_inflation_upload deploy_indicators/dev/uploads/cropland_upload deploy_indicators/dev/uploads/wetland_upload deploy_indicators/dev/uploads/moss_lichen_upload deploy_indicators/dev/uploads/bare_vegetation_upload deploy_indicators/dev/uploads/builtup_upload deploy_indicators/dev/uploads/snow_ice_upload deploy_indicators/dev/uploads/permanent_water_upload deploy_indicators/dev/uploads/osm_pharmacy_count_upload deploy_indicators/dev/uploads/conflict_stock_displacement_upload deploy_indicators/dev/uploads/disaster_stock_displacement_upload deploy_indicators/dev/uploads/conflict_internal_displacements_upload deploy_indicators/dev/uploads/disaster_internal_displacements_upload deploy_indicators/dev/uploads/hdi_2022_upload deploy_indicators/dev/uploads/inform_risk_upload deploy_indicators/dev/uploads/hazard_and_exposure_upload deploy_indicators/dev/uploads/natural_0_to_10_upload deploy_indicators/dev/uploads/earthquake_upload deploy_indicators/dev/uploads/river_flood_upload deploy_indicators/dev/uploads/tsunami_upload deploy_indicators/dev/uploads/tropical_cyclone_upload deploy_indicators/dev/uploads/coastal_flood_upload deploy_indicators/dev/uploads/drought_upload deploy_indicators/dev/uploads/epidemic_upload deploy_indicators/dev/uploads/human_upload deploy_indicators/dev/uploads/projected_conflict_probability_upload deploy_indicators/dev/uploads/current_conflict_intensity_upload deploy_indicators/dev/uploads/vulnerability_upload deploy_indicators/dev/uploads/socio_economic_vulnerability_upload deploy_indicators/dev/uploads/development_and_deprivation_upload deploy_indicators/dev/uploads/inequality_upload deploy_indicators/dev/uploads/economic_dependency_upload deploy_indicators/dev/uploads/vulnerable_groups_upload deploy_indicators/dev/uploads/uprooted_people_upload deploy_indicators/dev/uploads/health_conditions_upload deploy_indicators/dev/uploads/children_u5_upload deploy_indicators/dev/uploads/recent_shocks_upload deploy_indicators/dev/uploads/food_security_upload deploy_indicators/dev/uploads/other_vulnerable_groups_upload deploy_indicators/dev/uploads/lack_of_coping_capacity_upload deploy_indicators/dev/uploads/institutional_upload deploy_indicators/dev/uploads/drr_upload deploy_indicators/dev/uploads/governance_upload deploy_indicators/dev/uploads/infrastructure_upload deploy_indicators/dev/uploads/communication_upload deploy_indicators/dev/uploads/physical_infrastructure_upload deploy_indicators/dev/uploads/access_to_health_care_upload deploy_indicators/dev/uploads/osm_banks_count_upload deploy_indicators/dev/uploads/osm_atms_count_upload deploy_indicators/dev/uploads/osm_kindergartens_count_upload deploy_indicators/dev/uploads/osm_schools_count_upload deploy_indicators/dev/uploads/osm_colleges_count_upload deploy_indicators/dev/uploads/osm_universities_count_upload deploy_indicators/dev/uploads/osm_defibrillators_count_upload deploy_indicators/dev/uploads/osm_airports_count_upload deploy_indicators/dev/uploads/osm_railway_stations_count_upload deploy_indicators/dev/uploads/osm_public_transport_stops_count_upload deploy_indicators/dev/uploads/osm_car_parkings_capacity_upload deploy_indicators/dev/uploads/osm_heritage_sites_count_upload deploy_indicators/dev/uploads/min_osm_heritage_admin_level_upload deploy_indicators/dev/uploads/foursquare_os_places_count_upload deploy_indicators/dev/uploads/coffee_shops_fsq_count_upload deploy_indicators/dev/uploads/kebab_restaurants_fsq_count_upload deploy_indicators/dev/uploads/business_and_professional_services_fsq_count_upload deploy_indicators/dev/uploads/dining_and_drinking_fsq_count_upload deploy_indicators/dev/uploads/retail_fsq_count_upload deploy_indicators/dev/uploads/community_and_government_fsq_count_upload deploy_indicators/dev/uploads/travel_and_transportation_fsq_count_upload deploy_indicators/dev/uploads/landmarks_and_outdoors_fsq_count_upload deploy_indicators/dev/uploads/health_and_medicine_fsq_count_upload deploy_indicators/dev/uploads/arts_and_entertainment_fsq_count_upload deploy_indicators/dev/uploads/sports_and_recreation_fsq_count_upload deploy_indicators/dev/uploads/events_fsq_count_upload | deploy_indicators/dev/uploads ## Control of layer uplodings to Insigths API for DEV without one and area_km2
 	touch $@
 
-deploy_indicators/dev/custom_axis/population_area_km2: deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for population area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/population_area_km2: deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for population area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "population" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/count_area_km2: deploy_indicators/dev/uploads/count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/count_area_km2: deploy_indicators/dev/uploads/count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/building_count_area_km2: deploy_indicators/dev/uploads/building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/building_count_area_km2: deploy_indicators/dev/uploads/building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for building_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "building_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/local_hours_area_km2: deploy_indicators/dev/uploads/local_hours_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for local_hours area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/local_hours_area_km2: deploy_indicators/dev/uploads/local_hours_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for local_hours area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "local_hours" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/total_hours_area_km2: deploy_indicators/dev/uploads/total_hours_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_hours area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/total_hours_area_km2: deploy_indicators/dev/uploads/total_hours_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for total_hours area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "total_hours" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/view_count_area_km2: deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/view_count_area_km2: deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for view_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "view_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/osm_users_one: deploy_indicators/dev/uploads/osm_users_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for osm_users one axis on dev.
+deploy_indicators/dev/custom_axis/osm_users_one: deploy_indicators/dev/uploads/osm_users_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for osm_users one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "osm_users" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/total_building_count_area_km2: deploy_indicators/dev/uploads/total_building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_building_count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/total_building_count_area_km2: deploy_indicators/dev/uploads/total_building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for total_building_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "total_building_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/wildfires_area_km2: deploy_indicators/dev/uploads/wildfires_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfires area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/wildfires_area_km2: deploy_indicators/dev/uploads/wildfires_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for wildfires area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfires" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/forest_area_km2: deploy_indicators/dev/uploads/forest_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for forest area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/forest_area_km2: deploy_indicators/dev/uploads/forest_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for forest area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "forest" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_maxtemp_over_32c_1c one axis on dev.
+deploy_indicators/dev/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for days_maxtemp_over_32c_1c one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "days_maxtemp_over_32c_1c" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_mintemp_above_25c_1c one axis on dev.
+deploy_indicators/dev/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for days_mintemp_above_25c_1c one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "days_mintemp_above_25c_1c" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade one axis on dev.
+deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_fire_brigade one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_fire_brigade" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/man_distance_to_hospital_one: deploy_indicators/dev/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital one axis on dev.
+deploy_indicators/dev/custom_axis/man_distance_to_hospital_one: deploy_indicators/dev/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_hospital one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_hospital" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/man_distance_to_hospital_population: deploy_indicators/dev/uploads/man_distance_to_hospital_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital population axis on dev.
+deploy_indicators/dev/custom_axis/man_distance_to_hospital_population: deploy_indicators/dev/uploads/man_distance_to_hospital_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_hospital population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_hospital" "population"
 	touch $@
 
-deploy_indicators/dev/custom_axis/highway_length_area_km2: deploy_indicators/dev/uploads/highway_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/highway_length_area_km2: deploy_indicators/dev/uploads/highway_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for highway_length area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "highway_length" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/total_road_length_area_km2: deploy_indicators/dev/uploads/total_road_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_road_length area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/total_road_length_area_km2: deploy_indicators/dev/uploads/total_road_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for total_road_length area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "total_road_length" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/view_count_bf2402_one: deploy_indicators/dev/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 one axis on dev.
+deploy_indicators/dev/custom_axis/view_count_bf2402_one: deploy_indicators/dev/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for view_count_bf2402 one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "view_count_bf2402" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/view_count_bf2402_area_km2: deploy_indicators/dev/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/view_count_bf2402_area_km2: deploy_indicators/dev/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for view_count_bf2402 area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "view_count_bf2402" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/powerlines_one: deploy_indicators/dev/uploads/powerlines_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for powerlines one axis on dev.
+deploy_indicators/dev/custom_axis/powerlines_one: deploy_indicators/dev/uploads/powerlines_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for powerlines one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "powerlines" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/night_lights_intensity_one: deploy_indicators/dev/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for night_lights_intensity one axis on dev.
+deploy_indicators/dev/custom_axis/night_lights_intensity_one: deploy_indicators/dev/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for night_lights_intensity one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "night_lights_intensity" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters one axis on dev.
+deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_bomb_shelters" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations one axis on dev.
+deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_charging_stations one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_charging_stations" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/solar_power_plants_area_km2: deploy_indicators/dev/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for solar_power_plants area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/solar_power_plants_area_km2: deploy_indicators/dev/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for solar_power_plants area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "solar_power_plants" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/volcano_days_count_area_km2: deploy_indicators/dev/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/volcano_days_count_area_km2: deploy_indicators/dev/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for volcano_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "volcano_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/volcano_days_count_one: deploy_indicators/dev/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count one axis on dev.
+deploy_indicators/dev/custom_axis/volcano_days_count_one: deploy_indicators/dev/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for volcano_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "volcano_days_count" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/flood_days_count_area_km2: deploy_indicators/dev/uploads/flood_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/flood_days_count_area_km2: deploy_indicators/dev/uploads/flood_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for flood_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "flood_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/flood_days_count_one: deploy_indicators/dev/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count one axis on dev.
+deploy_indicators/dev/custom_axis/flood_days_count_one: deploy_indicators/dev/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for flood_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "flood_days_count" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters population axis on dev.
+deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_bomb_shelters" "population"
 	touch $@
 
-deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations population axis on dev.
+deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_charging_stations population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_charging_stations" "population"
 	touch $@
 
-deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade population axis on dev.
+deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_fire_brigade population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_fire_brigade" "population"
 	touch $@
 
-deploy_indicators/dev/custom_axis/building_count_total_building_count: deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/total_building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count total_building_count axis on dev.
+deploy_indicators/dev/custom_axis/building_count_total_building_count: deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/total_building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for building_count total_building_count axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "building_count" "total_building_count"
 	touch $@
 
-deploy_indicators/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "waste_basket_coverage_area_km2" "populated_area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/highway_length_total_road_length: deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length total_road_length axis on dev.
+deploy_indicators/dev/custom_axis/highway_length_total_road_length: deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for highway_length total_road_length axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "highway_length" "total_road_length"
 	touch $@
 
-deploy_indicators/dev/custom_axis/eatery_count_one: deploy_indicators/dev/uploads/eatery_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for eatery_count one axis on dev.
+deploy_indicators/dev/custom_axis/eatery_count_one: deploy_indicators/dev/uploads/eatery_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for eatery_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "eatery_count" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/food_shops_count_one: deploy_indicators/dev/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for food_shops_count one axis on dev.
+deploy_indicators/dev/custom_axis/food_shops_count_one: deploy_indicators/dev/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for food_shops_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "food_shops_count" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/hazardous_days_count_area_km2: deploy_indicators/dev/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/hazardous_days_count_area_km2: deploy_indicators/dev/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for hazardous_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "hazardous_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/hazardous_days_count_one: deploy_indicators/dev/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count one axis on dev.
+deploy_indicators/dev/custom_axis/hazardous_days_count_one: deploy_indicators/dev/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for hazardous_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "hazardous_days_count" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/earthquake_days_count_area_km2: deploy_indicators/dev/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/earthquake_days_count_area_km2: deploy_indicators/dev/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for earthquake_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "earthquake_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/earthquake_days_count_one: deploy_indicators/dev/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count one axis on dev.
+deploy_indicators/dev/custom_axis/earthquake_days_count_one: deploy_indicators/dev/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for earthquake_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "earthquake_days_count" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/drought_days_count_area_km2: deploy_indicators/dev/uploads/drought_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/drought_days_count_area_km2: deploy_indicators/dev/uploads/drought_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for drought_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "drought_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/drought_days_count_one: deploy_indicators/dev/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count one axis on dev.
+deploy_indicators/dev/custom_axis/drought_days_count_one: deploy_indicators/dev/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for drought_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "drought_days_count" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/cyclone_days_count_area_km2: deploy_indicators/dev/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/cyclone_days_count_area_km2: deploy_indicators/dev/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for cyclone_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "cyclone_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/cyclone_days_count_one: deploy_indicators/dev/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count one axis on dev.
+deploy_indicators/dev/custom_axis/cyclone_days_count_one: deploy_indicators/dev/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for cyclone_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "cyclone_days_count" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/wildfire_days_count_area_km2: deploy_indicators/dev/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count area_km2 axis on dev.
+deploy_indicators/dev/custom_axis/wildfire_days_count_area_km2: deploy_indicators/dev/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for wildfire_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfire_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/wildfire_days_count_one: deploy_indicators/dev/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count one axis on dev.
+deploy_indicators/dev/custom_axis/wildfire_days_count_one: deploy_indicators/dev/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for wildfire_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfire_days_count" "one"
@@ -4940,277 +4937,277 @@ deploy_indicators/test/uploads/upload_test: deploy_indicators/test/uploads/view_
 	touch $@
 
 ## Custom axis updates block
-deploy_indicators/test/custom_axis/population_area_km2: deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for population area_km2 axis on test.
+deploy_indicators/test/custom_axis/population_area_km2: deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for population area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "population" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/count_area_km2: deploy_indicators/test/uploads/count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for count area_km2 axis on test.
+deploy_indicators/test/custom_axis/count_area_km2: deploy_indicators/test/uploads/count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/building_count_area_km2: deploy_indicators/test/uploads/building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count area_km2 axis on test.
+deploy_indicators/test/custom_axis/building_count_area_km2: deploy_indicators/test/uploads/building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for building_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "building_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/local_hours_area_km2: deploy_indicators/test/uploads/local_hours_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for local_hours area_km2 axis on test.
+deploy_indicators/test/custom_axis/local_hours_area_km2: deploy_indicators/test/uploads/local_hours_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for local_hours area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "local_hours" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/total_hours_area_km2: deploy_indicators/test/uploads/total_hours_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_hours area_km2 axis on test.
+deploy_indicators/test/custom_axis/total_hours_area_km2: deploy_indicators/test/uploads/total_hours_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for total_hours area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "total_hours" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/view_count_area_km2: deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count area_km2 axis on test.
+deploy_indicators/test/custom_axis/view_count_area_km2: deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for view_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "view_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/osm_users_one: deploy_indicators/test/uploads/osm_users_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for osm_users one axis on test.
+deploy_indicators/test/custom_axis/osm_users_one: deploy_indicators/test/uploads/osm_users_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for osm_users one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "osm_users" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/total_building_count_area_km2: deploy_indicators/test/uploads/total_building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_building_count area_km2 axis on test.
+deploy_indicators/test/custom_axis/total_building_count_area_km2: deploy_indicators/test/uploads/total_building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for total_building_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "total_building_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/wildfires_area_km2: deploy_indicators/test/uploads/wildfires_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfires area_km2 axis on test.
+deploy_indicators/test/custom_axis/wildfires_area_km2: deploy_indicators/test/uploads/wildfires_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for wildfires area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfires" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/forest_area_km2: deploy_indicators/test/uploads/forest_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for forest area_km2 axis on test.
+deploy_indicators/test/custom_axis/forest_area_km2: deploy_indicators/test/uploads/forest_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for forest area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "forest" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_maxtemp_over_32c_1c one axis on test.
+deploy_indicators/test/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for days_maxtemp_over_32c_1c one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "days_maxtemp_over_32c_1c" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_mintemp_above_25c_1c one axis on test.
+deploy_indicators/test/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for days_mintemp_above_25c_1c one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "days_mintemp_above_25c_1c" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade one axis on test.
+deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_fire_brigade one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_fire_brigade" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/man_distance_to_hospital_one: deploy_indicators/test/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital one axis on test.
+deploy_indicators/test/custom_axis/man_distance_to_hospital_one: deploy_indicators/test/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_hospital one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_hospital" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/man_distance_to_hospital_population: deploy_indicators/test/uploads/man_distance_to_hospital_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital population axis on test.
+deploy_indicators/test/custom_axis/man_distance_to_hospital_population: deploy_indicators/test/uploads/man_distance_to_hospital_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_hospital population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_hospital" "population"
 	touch $@
 
-deploy_indicators/test/custom_axis/highway_length_area_km2: deploy_indicators/test/uploads/highway_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length area_km2 axis on test.
+deploy_indicators/test/custom_axis/highway_length_area_km2: deploy_indicators/test/uploads/highway_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for highway_length area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "highway_length" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/total_road_length_area_km2: deploy_indicators/test/uploads/total_road_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_road_length area_km2 axis on test.
+deploy_indicators/test/custom_axis/total_road_length_area_km2: deploy_indicators/test/uploads/total_road_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for total_road_length area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "total_road_length" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/view_count_bf2402_one: deploy_indicators/test/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 one axis on test.
+deploy_indicators/test/custom_axis/view_count_bf2402_one: deploy_indicators/test/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for view_count_bf2402 one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "view_count_bf2402" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/view_count_bf2402_area_km2: deploy_indicators/test/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 area_km2 axis on test.
+deploy_indicators/test/custom_axis/view_count_bf2402_area_km2: deploy_indicators/test/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for view_count_bf2402 area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "view_count_bf2402" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/powerlines_one: deploy_indicators/test/uploads/powerlines_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for powerlines one axis on test.
+deploy_indicators/test/custom_axis/powerlines_one: deploy_indicators/test/uploads/powerlines_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for powerlines one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "powerlines" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/night_lights_intensity_one: deploy_indicators/test/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for night_lights_intensity one axis on test.
+deploy_indicators/test/custom_axis/night_lights_intensity_one: deploy_indicators/test/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for night_lights_intensity one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "night_lights_intensity" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters one axis on test.
+deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_bomb_shelters" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations one axis on test.
+deploy_indicators/test/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_charging_stations one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_charging_stations" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/solar_power_plants_area_km2: deploy_indicators/test/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for solar_power_plants area_km2 axis on test.
+deploy_indicators/test/custom_axis/solar_power_plants_area_km2: deploy_indicators/test/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for solar_power_plants area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "solar_power_plants" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/volcano_days_count_area_km2: deploy_indicators/test/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count area_km2 axis on test.
+deploy_indicators/test/custom_axis/volcano_days_count_area_km2: deploy_indicators/test/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for volcano_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "volcano_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/volcano_days_count_one: deploy_indicators/test/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count one axis on test.
+deploy_indicators/test/custom_axis/volcano_days_count_one: deploy_indicators/test/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for volcano_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "volcano_days_count" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/flood_days_count_area_km2: deploy_indicators/test/uploads/flood_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count area_km2 axis on test.
+deploy_indicators/test/custom_axis/flood_days_count_area_km2: deploy_indicators/test/uploads/flood_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for flood_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "flood_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/flood_days_count_one: deploy_indicators/test/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count one axis on test.
+deploy_indicators/test/custom_axis/flood_days_count_one: deploy_indicators/test/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for flood_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "flood_days_count" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters population axis on test.
+deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_bomb_shelters" "population"
 	touch $@
 
-deploy_indicators/test/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations population axis on test.
+deploy_indicators/test/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_charging_stations population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_charging_stations" "population"
 	touch $@
 
-deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade population axis on test.
+deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_fire_brigade population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_fire_brigade" "population"
 	touch $@
 
-deploy_indicators/test/custom_axis/building_count_total_building_count: deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/total_building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count total_building_count axis on test.
+deploy_indicators/test/custom_axis/building_count_total_building_count: deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/total_building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for building_count total_building_count axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "building_count" "total_building_count"
 	touch $@
 
-deploy_indicators/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on test.
+deploy_indicators/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "waste_basket_coverage_area_km2" "populated_area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/highway_length_total_road_length: deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length total_road_length axis on test.
+deploy_indicators/test/custom_axis/highway_length_total_road_length: deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for highway_length total_road_length axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "highway_length" "total_road_length"
 	touch $@
 
-deploy_indicators/test/custom_axis/eatery_count_one: deploy_indicators/test/uploads/eatery_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for eatery_count one axis on test.
+deploy_indicators/test/custom_axis/eatery_count_one: deploy_indicators/test/uploads/eatery_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for eatery_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "eatery_count" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/food_shops_count_one: deploy_indicators/test/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for food_shops_count one axis on test.
+deploy_indicators/test/custom_axis/food_shops_count_one: deploy_indicators/test/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for food_shops_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "food_shops_count" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/hazardous_days_count_area_km2: deploy_indicators/test/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count area_km2 axis on test.
+deploy_indicators/test/custom_axis/hazardous_days_count_area_km2: deploy_indicators/test/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for hazardous_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "hazardous_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/hazardous_days_count_one: deploy_indicators/test/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count one axis on test.
+deploy_indicators/test/custom_axis/hazardous_days_count_one: deploy_indicators/test/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for hazardous_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "hazardous_days_count" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/earthquake_days_count_area_km2: deploy_indicators/test/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count area_km2 axis on test.
+deploy_indicators/test/custom_axis/earthquake_days_count_area_km2: deploy_indicators/test/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for earthquake_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "earthquake_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/earthquake_days_count_one: deploy_indicators/test/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count one axis on test.
+deploy_indicators/test/custom_axis/earthquake_days_count_one: deploy_indicators/test/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for earthquake_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "earthquake_days_count" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/drought_days_count_area_km2: deploy_indicators/test/uploads/drought_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count area_km2 axis on test.
+deploy_indicators/test/custom_axis/drought_days_count_area_km2: deploy_indicators/test/uploads/drought_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for drought_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "drought_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/drought_days_count_one: deploy_indicators/test/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count one axis on test.
+deploy_indicators/test/custom_axis/drought_days_count_one: deploy_indicators/test/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for drought_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "drought_days_count" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/cyclone_days_count_area_km2: deploy_indicators/test/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count area_km2 axis on test.
+deploy_indicators/test/custom_axis/cyclone_days_count_area_km2: deploy_indicators/test/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for cyclone_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "cyclone_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/cyclone_days_count_one: deploy_indicators/test/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count one axis on test.
+deploy_indicators/test/custom_axis/cyclone_days_count_one: deploy_indicators/test/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for cyclone_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "cyclone_days_count" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/wildfire_days_count_area_km2: deploy_indicators/test/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count area_km2 axis on test.
+deploy_indicators/test/custom_axis/wildfire_days_count_area_km2: deploy_indicators/test/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for wildfire_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfire_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/wildfire_days_count_one: deploy_indicators/test/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count one axis on test.
+deploy_indicators/test/custom_axis/wildfire_days_count_one: deploy_indicators/test/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for wildfire_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfire_days_count" "one"
@@ -5883,277 +5880,277 @@ deploy_indicators/prod/uploads/events_fsq_count_upload: data/out/csv/events_fsq_
 deploy_indicators/prod/uploads/upload_prod: deploy_indicators/prod/uploads/view_count_upload deploy_indicators/prod/uploads/count_upload deploy_indicators/prod/uploads/population_next_gen_upload deploy_indicators/prod/uploads/populated_area_km2_next_gen_upload deploy_indicators/prod/uploads/population_upload deploy_indicators/prod/uploads/populated_area_km2_upload deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload deploy_indicators/prod/uploads/local_hours_upload deploy_indicators/prod/uploads/total_hours_upload deploy_indicators/prod/uploads/avgmax_ts_upload deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/view_count_bf2402_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/prod/uploads/total_building_count_upload deploy_indicators/prod/uploads/count_6_months_upload deploy_indicators/prod/uploads/building_count_6_months_upload deploy_indicators/prod/uploads/highway_length_6_months_upload deploy_indicators/prod/uploads/osm_users_upload deploy_indicators/prod/uploads/residential_upload deploy_indicators/prod/uploads/gdp_upload deploy_indicators/prod/uploads/min_ts_upload deploy_indicators/prod/uploads/max_ts_upload deploy_indicators/prod/uploads/wildfires_upload deploy_indicators/prod/uploads/industrial_area_upload deploy_indicators/prod/uploads/volcanos_count_upload deploy_indicators/prod/uploads/pop_under_5_total_upload deploy_indicators/prod/uploads/pop_over_65_total_upload deploy_indicators/prod/uploads/poverty_families_total_upload deploy_indicators/prod/uploads/pop_disability_total_upload deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload deploy_indicators/prod/uploads/pop_without_car_upload deploy_indicators/prod/uploads/man_distance_to_hospital_upload deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  deploy_indicators/prod/uploads/eatery_count_upload deploy_indicators/prod/uploads/food_shops_count_upload deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload deploy_indicators/prod/uploads/mapswipe_area_km2_upload deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload deploy_indicators/prod/uploads/forest_upload deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/prod/uploads/shrubs_upload deploy_indicators/prod/uploads/herbage_upload deploy_indicators/prod/uploads/unknown_forest_upload deploy_indicators/prod/uploads/avg_ndvi_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/hazardous_days_count_upload deploy_indicators/prod/uploads/earthquake_days_count_upload deploy_indicators/prod/uploads/wildfire_days_count_upload deploy_indicators/prod/uploads/drought_days_count_upload deploy_indicators/prod/uploads/cyclone_days_count_upload deploy_indicators/prod/uploads/volcano_days_count_upload deploy_indicators/prod/uploads/flood_days_count_upload deploy_indicators/prod/uploads/powerlines_upload deploy_indicators/prod/uploads/night_lights_intensity_upload deploy_indicators/prod/uploads/gsa_ghi_upload deploy_indicators/prod/uploads/worldclim_avg_temperature_upload deploy_indicators/prod/uploads/worldclim_min_temperature_upload deploy_indicators/prod/uploads/worldclim_max_temperature_upload deploy_indicators/prod/uploads/worldclim_amp_temperature_upload deploy_indicators/prod/uploads/powerlines_proximity_m_upload deploy_indicators/prod/uploads/populated_areas_proximity_m_upload deploy_indicators/prod/uploads/power_substations_proximity_m_upload deploy_indicators/prod/uploads/solar_power_plants_upload deploy_indicators/prod/uploads/safety_index_upload deploy_indicators/prod/uploads/avg_forest_canopy_height_upload deploy_indicators/prod/uploads/max_forest_canopy_height_upload deploy_indicators/prod/uploads/worldbank_tax_rate_upload deploy_indicators/prod/uploads/years_to_naturalisation_upload deploy_indicators/prod/uploads/multiple_citizenship_upload deploy_indicators/prod/uploads/ghs_max_building_height_upload deploy_indicators/prod/uploads/ghs_avg_building_height_upload deploy_indicators/prod/uploads/max_osm_building_levels_upload deploy_indicators/prod/uploads/avg_osm_building_levels_upload deploy_indicators/prod/uploads/osm_hotels_count_upload deploy_indicators/prod/uploads/max_osm_hotels_assesment_upload deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/prod/uploads/osm_art_venues_count_upload deploy_indicators/prod/uploads/osm_entertainment_venues_count_upload deploy_indicators/prod/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/prod/uploads/worldbank_inflation_upload deploy_indicators/prod/uploads/cropland_upload deploy_indicators/prod/uploads/wetland_upload deploy_indicators/prod/uploads/moss_lichen_upload deploy_indicators/prod/uploads/bare_vegetation_upload deploy_indicators/prod/uploads/builtup_upload deploy_indicators/prod/uploads/snow_ice_upload deploy_indicators/prod/uploads/permanent_water_upload deploy_indicators/prod/uploads/osm_pharmacy_count_upload deploy_indicators/prod/uploads/conflict_stock_displacement_upload deploy_indicators/prod/uploads/disaster_stock_displacement_upload deploy_indicators/prod/uploads/conflict_internal_displacements_upload deploy_indicators/prod/uploads/disaster_internal_displacements_upload deploy_indicators/prod/uploads/hdi_2022_upload deploy_indicators/prod/uploads/inform_risk_upload deploy_indicators/prod/uploads/hazard_and_exposure_upload deploy_indicators/prod/uploads/natural_0_to_10_upload deploy_indicators/prod/uploads/earthquake_upload deploy_indicators/prod/uploads/river_flood_upload deploy_indicators/prod/uploads/tsunami_upload deploy_indicators/prod/uploads/tropical_cyclone_upload deploy_indicators/prod/uploads/coastal_flood_upload deploy_indicators/prod/uploads/drought_upload deploy_indicators/prod/uploads/epidemic_upload deploy_indicators/prod/uploads/human_upload deploy_indicators/prod/uploads/projected_conflict_probability_upload deploy_indicators/prod/uploads/current_conflict_intensity_upload deploy_indicators/prod/uploads/vulnerability_upload deploy_indicators/prod/uploads/socio_economic_vulnerability_upload deploy_indicators/prod/uploads/development_and_deprivation_upload deploy_indicators/prod/uploads/inequality_upload deploy_indicators/prod/uploads/economic_dependency_upload deploy_indicators/prod/uploads/vulnerable_groups_upload deploy_indicators/prod/uploads/uprooted_people_upload deploy_indicators/prod/uploads/health_conditions_upload deploy_indicators/prod/uploads/children_u5_upload deploy_indicators/prod/uploads/recent_shocks_upload deploy_indicators/prod/uploads/food_security_upload deploy_indicators/prod/uploads/other_vulnerable_groups_upload deploy_indicators/prod/uploads/lack_of_coping_capacity_upload deploy_indicators/prod/uploads/institutional_upload deploy_indicators/prod/uploads/drr_upload deploy_indicators/prod/uploads/governance_upload deploy_indicators/prod/uploads/infrastructure_upload deploy_indicators/prod/uploads/communication_upload deploy_indicators/prod/uploads/physical_infrastructure_upload deploy_indicators/prod/uploads/access_to_health_care_upload deploy_indicators/prod/uploads/osm_banks_count_upload deploy_indicators/prod/uploads/osm_atms_count_upload deploy_indicators/prod/uploads/osm_kindergartens_count_upload deploy_indicators/prod/uploads/osm_schools_count_upload deploy_indicators/prod/uploads/osm_colleges_count_upload deploy_indicators/prod/uploads/osm_universities_count_upload deploy_indicators/prod/uploads/osm_defibrillators_count_upload deploy_indicators/prod/uploads/osm_airports_count_upload deploy_indicators/prod/uploads/osm_railway_stations_count_upload deploy_indicators/prod/uploads/osm_public_transport_stops_count_upload deploy_indicators/prod/uploads/osm_car_parkings_capacity_upload deploy_indicators/prod/uploads/osm_heritage_sites_count_upload deploy_indicators/prod/uploads/min_osm_heritage_admin_level_upload deploy_indicators/prod/uploads/foursquare_os_places_count_upload deploy_indicators/prod/uploads/coffee_shops_fsq_count_upload deploy_indicators/prod/uploads/kebab_restaurants_fsq_count_upload deploy_indicators/prod/uploads/business_and_professional_services_fsq_count_upload deploy_indicators/prod/uploads/dining_and_drinking_fsq_count_upload deploy_indicators/prod/uploads/retail_fsq_count_upload deploy_indicators/prod/uploads/community_and_government_fsq_count_upload deploy_indicators/prod/uploads/travel_and_transportation_fsq_count_upload deploy_indicators/prod/uploads/landmarks_and_outdoors_fsq_count_upload deploy_indicators/prod/uploads/health_and_medicine_fsq_count_upload deploy_indicators/prod/uploads/arts_and_entertainment_fsq_count_upload deploy_indicators/prod/uploads/sports_and_recreation_fsq_count_upload deploy_indicators/prod/uploads/events_fsq_count_upload | deploy_indicators/prod/uploads ## Control of layer uplodings to Insigths API for prod without one and area_km2
 	touch $@
 
-deploy_indicators/prod/custom_axis/population_area_km2: deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for population area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/population_area_km2: deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for population area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "population" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/count_area_km2: deploy_indicators/prod/uploads/count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/count_area_km2: deploy_indicators/prod/uploads/count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/building_count_area_km2: deploy_indicators/prod/uploads/building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/building_count_area_km2: deploy_indicators/prod/uploads/building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for building_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "building_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/local_hours_area_km2: deploy_indicators/prod/uploads/local_hours_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for local_hours area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/local_hours_area_km2: deploy_indicators/prod/uploads/local_hours_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for local_hours area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "local_hours" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/total_hours_area_km2: deploy_indicators/prod/uploads/total_hours_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_hours area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/total_hours_area_km2: deploy_indicators/prod/uploads/total_hours_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for total_hours area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_hours" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/view_count_area_km2: deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/view_count_area_km2: deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for view_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/osm_users_one: deploy_indicators/prod/uploads/osm_users_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for osm_users one axis on prod.
+deploy_indicators/prod/custom_axis/osm_users_one: deploy_indicators/prod/uploads/osm_users_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for osm_users one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "osm_users" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/total_building_count_area_km2: deploy_indicators/prod/uploads/total_building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_building_count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/total_building_count_area_km2: deploy_indicators/prod/uploads/total_building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for total_building_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_building_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/wildfires_area_km2: deploy_indicators/prod/uploads/wildfires_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfires area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/wildfires_area_km2: deploy_indicators/prod/uploads/wildfires_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for wildfires area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfires" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/forest_area_km2: deploy_indicators/prod/uploads/forest_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for forest area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/forest_area_km2: deploy_indicators/prod/uploads/forest_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for forest area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "forest" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_maxtemp_over_32c_1c one axis on prod.
+deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for days_maxtemp_over_32c_1c one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "days_maxtemp_over_32c_1c" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for days_mintemp_above_25c_1c one axis on prod.
+deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for days_mintemp_above_25c_1c one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "days_mintemp_above_25c_1c" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade one axis on prod.
+deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_fire_brigade one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_fire_brigade" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/man_distance_to_hospital_one: deploy_indicators/prod/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital one axis on prod.
+deploy_indicators/prod/custom_axis/man_distance_to_hospital_one: deploy_indicators/prod/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_hospital one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_hospital" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/man_distance_to_hospital_population: deploy_indicators/prod/uploads/man_distance_to_hospital_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_hospital population axis on prod.
+deploy_indicators/prod/custom_axis/man_distance_to_hospital_population: deploy_indicators/prod/uploads/man_distance_to_hospital_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_hospital population axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_hospital" "population"
 	touch $@
 
-deploy_indicators/prod/custom_axis/highway_length_area_km2: deploy_indicators/prod/uploads/highway_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/highway_length_area_km2: deploy_indicators/prod/uploads/highway_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for highway_length area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "highway_length" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/total_road_length_area_km2: deploy_indicators/prod/uploads/total_road_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for total_road_length area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/total_road_length_area_km2: deploy_indicators/prod/uploads/total_road_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for total_road_length area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_road_length" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/view_count_bf2402_one: deploy_indicators/prod/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 one axis on prod.
+deploy_indicators/prod/custom_axis/view_count_bf2402_one: deploy_indicators/prod/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for view_count_bf2402 one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count_bf2402" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2: deploy_indicators/prod/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for view_count_bf2402 area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2: deploy_indicators/prod/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for view_count_bf2402 area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count_bf2402" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/powerlines_one: deploy_indicators/prod/uploads/powerlines_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for powerlines one axis on prod.
+deploy_indicators/prod/custom_axis/powerlines_one: deploy_indicators/prod/uploads/powerlines_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for powerlines one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "powerlines" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/night_lights_intensity_one: deploy_indicators/prod/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for night_lights_intensity one axis on prod.
+deploy_indicators/prod/custom_axis/night_lights_intensity_one: deploy_indicators/prod/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for night_lights_intensity one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "night_lights_intensity" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters one axis on prod.
+deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_bomb_shelters" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations one axis on prod.
+deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_charging_stations one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_charging_stations" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/solar_power_plants_area_km2: deploy_indicators/prod/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for solar_power_plants area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/solar_power_plants_area_km2: deploy_indicators/prod/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for solar_power_plants area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "solar_power_plants" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/volcano_days_count_area_km2: deploy_indicators/prod/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/volcano_days_count_area_km2: deploy_indicators/prod/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for volcano_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "volcano_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/volcano_days_count_one: deploy_indicators/prod/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for volcano_days_count one axis on prod.
+deploy_indicators/prod/custom_axis/volcano_days_count_one: deploy_indicators/prod/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for volcano_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "volcano_days_count" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/flood_days_count_area_km2: deploy_indicators/prod/uploads/flood_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/flood_days_count_area_km2: deploy_indicators/prod/uploads/flood_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for flood_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "flood_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/flood_days_count_one: deploy_indicators/prod/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for flood_days_count one axis on prod.
+deploy_indicators/prod/custom_axis/flood_days_count_one: deploy_indicators/prod/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for flood_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "flood_days_count" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_bomb_shelters population axis on prod.
+deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters population axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_bomb_shelters" "population"
 	touch $@
 
-deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_charging_stations population axis on prod.
+deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_charging_stations population axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_charging_stations" "population"
 	touch $@
 
-deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for man_distance_to_fire_brigade population axis on prod.
+deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_fire_brigade population axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_fire_brigade" "population"
 	touch $@
 
-deploy_indicators/prod/custom_axis/building_count_total_building_count: deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/total_building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for building_count total_building_count axis on prod.
+deploy_indicators/prod/custom_axis/building_count_total_building_count: deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/total_building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for building_count total_building_count axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "building_count" "total_building_count"
 	touch $@
 
-deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "waste_basket_coverage_area_km2" "populated_area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/highway_length_total_road_length: deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for highway_length total_road_length axis on prod.
+deploy_indicators/prod/custom_axis/highway_length_total_road_length: deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for highway_length total_road_length axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "highway_length" "total_road_length"
 	touch $@
 
-deploy_indicators/prod/custom_axis/eatery_count_one: deploy_indicators/prod/uploads/eatery_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for eatery_count one axis on prod.
+deploy_indicators/prod/custom_axis/eatery_count_one: deploy_indicators/prod/uploads/eatery_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for eatery_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "eatery_count" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/food_shops_count_one: deploy_indicators/prod/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for food_shops_count one axis on prod.
+deploy_indicators/prod/custom_axis/food_shops_count_one: deploy_indicators/prod/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for food_shops_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "food_shops_count" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2: deploy_indicators/prod/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2: deploy_indicators/prod/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for hazardous_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "hazardous_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/hazardous_days_count_one: deploy_indicators/prod/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for hazardous_days_count one axis on prod.
+deploy_indicators/prod/custom_axis/hazardous_days_count_one: deploy_indicators/prod/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for hazardous_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "hazardous_days_count" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2: deploy_indicators/prod/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2: deploy_indicators/prod/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for earthquake_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "earthquake_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/earthquake_days_count_one: deploy_indicators/prod/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for earthquake_days_count one axis on prod.
+deploy_indicators/prod/custom_axis/earthquake_days_count_one: deploy_indicators/prod/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for earthquake_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "earthquake_days_count" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/drought_days_count_area_km2: deploy_indicators/prod/uploads/drought_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/drought_days_count_area_km2: deploy_indicators/prod/uploads/drought_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for drought_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "drought_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/drought_days_count_one: deploy_indicators/prod/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for drought_days_count one axis on prod.
+deploy_indicators/prod/custom_axis/drought_days_count_one: deploy_indicators/prod/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for drought_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "drought_days_count" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2: deploy_indicators/prod/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2: deploy_indicators/prod/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for cyclone_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "cyclone_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/cyclone_days_count_one: deploy_indicators/prod/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for cyclone_days_count one axis on prod.
+deploy_indicators/prod/custom_axis/cyclone_days_count_one: deploy_indicators/prod/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for cyclone_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "cyclone_days_count" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2: deploy_indicators/prod/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count area_km2 axis on prod.
+deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2: deploy_indicators/prod/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for wildfire_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfire_days_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/wildfire_days_count_one: deploy_indicators/prod/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis db/table/bivariate_axis_overrides ## Deploy custom values for wildfire_days_count one axis on prod.
+deploy_indicators/prod/custom_axis/wildfire_days_count_one: deploy_indicators/prod/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for wildfire_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfire_days_count" "one"

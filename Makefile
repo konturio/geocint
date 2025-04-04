@@ -3336,7 +3336,7 @@ data/out/csv/events_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/c
 db/table/insights_api_indicators_list_dev: | db/table ## Refresh insights_api_indicators_list_dev table before new deploy cycle
 	psql -c "drop table if exists insights_api_indicators_list_dev;"
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	touch $@
 
 deploy_indicators/dev/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/dev/uploads ## upload count to insight-api
@@ -3995,277 +3995,277 @@ deploy_indicators/dev/uploads/upload_dev: deploy_indicators/dev/uploads/view_cou
 
 deploy_indicators/dev/custom_axis/population_area_km2: deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for population area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "population" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/count_area_km2: deploy_indicators/dev/uploads/count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/building_count_area_km2: deploy_indicators/dev/uploads/building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for building_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "building_count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/local_hours_area_km2: deploy_indicators/dev/uploads/local_hours_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for local_hours area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "local_hours" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/total_hours_area_km2: deploy_indicators/dev/uploads/total_hours_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for total_hours area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "total_hours" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/view_count_area_km2: deploy_indicators/dev/uploads/view_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for view_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "view_count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/osm_users_one: deploy_indicators/dev/uploads/osm_users_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for osm_users one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "osm_users" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/total_building_count_area_km2: deploy_indicators/dev/uploads/total_building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for total_building_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "total_building_count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/wildfires_area_km2: deploy_indicators/dev/uploads/wildfires_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for wildfires area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfires" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/forest_area_km2: deploy_indicators/dev/uploads/forest_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for forest area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "forest" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for days_maxtemp_over_32c_1c one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "days_maxtemp_over_32c_1c" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for days_mintemp_above_25c_1c one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "days_mintemp_above_25c_1c" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_fire_brigade one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_fire_brigade" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/man_distance_to_hospital_one: deploy_indicators/dev/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_hospital one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_hospital" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/man_distance_to_hospital_population: deploy_indicators/dev/uploads/man_distance_to_hospital_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_hospital population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_hospital" "population"
 	touch $@
 
 deploy_indicators/dev/custom_axis/highway_length_area_km2: deploy_indicators/dev/uploads/highway_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for highway_length area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "highway_length" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/total_road_length_area_km2: deploy_indicators/dev/uploads/total_road_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for total_road_length area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "total_road_length" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/view_count_bf2402_one: deploy_indicators/dev/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for view_count_bf2402 one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "view_count_bf2402" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/view_count_bf2402_area_km2: deploy_indicators/dev/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for view_count_bf2402 area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "view_count_bf2402" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/powerlines_one: deploy_indicators/dev/uploads/powerlines_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for powerlines one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "powerlines" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/night_lights_intensity_one: deploy_indicators/dev/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for night_lights_intensity one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "night_lights_intensity" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_bomb_shelters" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_charging_stations one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_charging_stations" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/solar_power_plants_area_km2: deploy_indicators/dev/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for solar_power_plants area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "solar_power_plants" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/volcano_days_count_area_km2: deploy_indicators/dev/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for volcano_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "volcano_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/volcano_days_count_one: deploy_indicators/dev/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for volcano_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "volcano_days_count" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/flood_days_count_area_km2: deploy_indicators/dev/uploads/flood_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for flood_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "flood_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/flood_days_count_one: deploy_indicators/dev/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for flood_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "flood_days_count" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_bomb_shelters" "population"
 	touch $@
 
 deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_charging_stations population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_charging_stations" "population"
 	touch $@
 
 deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for man_distance_to_fire_brigade population axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "man_distance_to_fire_brigade" "population"
 	touch $@
 
 deploy_indicators/dev/custom_axis/building_count_total_building_count: deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/total_building_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for building_count total_building_count axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "building_count" "total_building_count"
 	touch $@
 
 deploy_indicators/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "waste_basket_coverage_area_km2" "populated_area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/highway_length_total_road_length: deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for highway_length total_road_length axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "highway_length" "total_road_length"
 	touch $@
 
 deploy_indicators/dev/custom_axis/eatery_count_one: deploy_indicators/dev/uploads/eatery_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for eatery_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "eatery_count" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/food_shops_count_one: deploy_indicators/dev/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for food_shops_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "food_shops_count" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/hazardous_days_count_area_km2: deploy_indicators/dev/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for hazardous_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "hazardous_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/hazardous_days_count_one: deploy_indicators/dev/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for hazardous_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "hazardous_days_count" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/earthquake_days_count_area_km2: deploy_indicators/dev/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for earthquake_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "earthquake_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/earthquake_days_count_one: deploy_indicators/dev/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for earthquake_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "earthquake_days_count" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/drought_days_count_area_km2: deploy_indicators/dev/uploads/drought_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for drought_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "drought_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/drought_days_count_one: deploy_indicators/dev/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for drought_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "drought_days_count" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/cyclone_days_count_area_km2: deploy_indicators/dev/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for cyclone_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "cyclone_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/cyclone_days_count_one: deploy_indicators/dev/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for cyclone_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "cyclone_days_count" "one"
 	touch $@
 
 deploy_indicators/dev/custom_axis/wildfire_days_count_area_km2: deploy_indicators/dev/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for wildfire_days_count area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfire_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/dev/custom_axis/wildfire_days_count_one: deploy_indicators/dev/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for wildfire_days_count one axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
+	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfire_days_count" "one"
 	touch $@
 
@@ -4278,7 +4278,7 @@ deploy_indicators/dev/custom_axis/all_custom_axis: deploy_indicators/dev/custom_
 db/table/insights_api_indicators_list_test: | db/table ## Refresh insights_api_indicators_list_test table before new deploy cycle
 	psql -c "drop table if exists insights_api_indicators_list_test;"
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	touch $@
 
 deploy_indicators/test/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/test/uploads ## upload count to insight-api
@@ -4939,277 +4939,277 @@ deploy_indicators/test/uploads/upload_test: deploy_indicators/test/uploads/view_
 ## Custom axis updates block
 deploy_indicators/test/custom_axis/population_area_km2: deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for population area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "population" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/count_area_km2: deploy_indicators/test/uploads/count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/building_count_area_km2: deploy_indicators/test/uploads/building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for building_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "building_count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/local_hours_area_km2: deploy_indicators/test/uploads/local_hours_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for local_hours area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "local_hours" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/total_hours_area_km2: deploy_indicators/test/uploads/total_hours_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for total_hours area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "total_hours" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/view_count_area_km2: deploy_indicators/test/uploads/view_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for view_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "view_count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/osm_users_one: deploy_indicators/test/uploads/osm_users_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for osm_users one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "osm_users" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/total_building_count_area_km2: deploy_indicators/test/uploads/total_building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for total_building_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "total_building_count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/wildfires_area_km2: deploy_indicators/test/uploads/wildfires_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for wildfires area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfires" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/forest_area_km2: deploy_indicators/test/uploads/forest_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for forest area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "forest" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for days_maxtemp_over_32c_1c one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "days_maxtemp_over_32c_1c" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for days_mintemp_above_25c_1c one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "days_mintemp_above_25c_1c" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_fire_brigade one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_fire_brigade" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/man_distance_to_hospital_one: deploy_indicators/test/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_hospital one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_hospital" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/man_distance_to_hospital_population: deploy_indicators/test/uploads/man_distance_to_hospital_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_hospital population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_hospital" "population"
 	touch $@
 
 deploy_indicators/test/custom_axis/highway_length_area_km2: deploy_indicators/test/uploads/highway_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for highway_length area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "highway_length" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/total_road_length_area_km2: deploy_indicators/test/uploads/total_road_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for total_road_length area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "total_road_length" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/view_count_bf2402_one: deploy_indicators/test/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for view_count_bf2402 one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "view_count_bf2402" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/view_count_bf2402_area_km2: deploy_indicators/test/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for view_count_bf2402 area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "view_count_bf2402" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/powerlines_one: deploy_indicators/test/uploads/powerlines_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for powerlines one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "powerlines" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/night_lights_intensity_one: deploy_indicators/test/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for night_lights_intensity one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "night_lights_intensity" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_bomb_shelters" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_charging_stations one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_charging_stations" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/solar_power_plants_area_km2: deploy_indicators/test/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for solar_power_plants area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "solar_power_plants" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/volcano_days_count_area_km2: deploy_indicators/test/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for volcano_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "volcano_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/volcano_days_count_one: deploy_indicators/test/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for volcano_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "volcano_days_count" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/flood_days_count_area_km2: deploy_indicators/test/uploads/flood_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for flood_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "flood_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/flood_days_count_one: deploy_indicators/test/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for flood_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "flood_days_count" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_bomb_shelters" "population"
 	touch $@
 
 deploy_indicators/test/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/test/uploads/man_distance_to_charging_stations_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_charging_stations population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_charging_stations" "population"
 	touch $@
 
 deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/population_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for man_distance_to_fire_brigade population axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_fire_brigade" "population"
 	touch $@
 
 deploy_indicators/test/custom_axis/building_count_total_building_count: deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/total_building_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for building_count total_building_count axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "building_count" "total_building_count"
 	touch $@
 
 deploy_indicators/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "waste_basket_coverage_area_km2" "populated_area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/highway_length_total_road_length: deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for highway_length total_road_length axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "highway_length" "total_road_length"
 	touch $@
 
 deploy_indicators/test/custom_axis/eatery_count_one: deploy_indicators/test/uploads/eatery_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for eatery_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "eatery_count" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/food_shops_count_one: deploy_indicators/test/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for food_shops_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "food_shops_count" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/hazardous_days_count_area_km2: deploy_indicators/test/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for hazardous_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "hazardous_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/hazardous_days_count_one: deploy_indicators/test/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for hazardous_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "hazardous_days_count" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/earthquake_days_count_area_km2: deploy_indicators/test/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for earthquake_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "earthquake_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/earthquake_days_count_one: deploy_indicators/test/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for earthquake_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "earthquake_days_count" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/drought_days_count_area_km2: deploy_indicators/test/uploads/drought_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for drought_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "drought_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/drought_days_count_one: deploy_indicators/test/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for drought_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "drought_days_count" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/cyclone_days_count_area_km2: deploy_indicators/test/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for cyclone_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "cyclone_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/cyclone_days_count_one: deploy_indicators/test/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for cyclone_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "cyclone_days_count" "one"
 	touch $@
 
 deploy_indicators/test/custom_axis/wildfire_days_count_area_km2: deploy_indicators/test/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for wildfire_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfire_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/test/custom_axis/wildfire_days_count_one: deploy_indicators/test/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for wildfire_days_count one axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfire_days_count" "one"
 	touch $@
 
@@ -5222,7 +5222,7 @@ deploy_indicators/test/custom_axis/all_custom_axis: deploy_indicators/test/custo
 db/table/insights_api_indicators_list_prod: | db/table ## Refresh insights_api_indicators_list_prod table before new deploy cycle
 	psql -c "drop table if exists insights_api_indicators_list_prod;"
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	touch $@
 
 deploy_indicators/prod/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/prod/uploads ## upload count to insight-api
@@ -5882,277 +5882,277 @@ deploy_indicators/prod/uploads/upload_prod: deploy_indicators/prod/uploads/view_
 
 deploy_indicators/prod/custom_axis/population_area_km2: deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for population area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "population" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/count_area_km2: deploy_indicators/prod/uploads/count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/building_count_area_km2: deploy_indicators/prod/uploads/building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for building_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "building_count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/local_hours_area_km2: deploy_indicators/prod/uploads/local_hours_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for local_hours area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "local_hours" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/total_hours_area_km2: deploy_indicators/prod/uploads/total_hours_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for total_hours area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_hours" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/view_count_area_km2: deploy_indicators/prod/uploads/view_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for view_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/osm_users_one: deploy_indicators/prod/uploads/osm_users_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for osm_users one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "osm_users" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/total_building_count_area_km2: deploy_indicators/prod/uploads/total_building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for total_building_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_building_count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/wildfires_area_km2: deploy_indicators/prod/uploads/wildfires_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for wildfires area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfires" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/forest_area_km2: deploy_indicators/prod/uploads/forest_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for forest area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "forest" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one: deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for days_maxtemp_over_32c_1c one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "days_maxtemp_over_32c_1c" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one: deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for days_mintemp_above_25c_1c one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "days_mintemp_above_25c_1c" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_fire_brigade one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_fire_brigade" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/man_distance_to_hospital_one: deploy_indicators/prod/uploads/man_distance_to_hospital_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_hospital one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_hospital" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/man_distance_to_hospital_population: deploy_indicators/prod/uploads/man_distance_to_hospital_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_hospital population axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_hospital" "population"
 	touch $@
 
 deploy_indicators/prod/custom_axis/highway_length_area_km2: deploy_indicators/prod/uploads/highway_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for highway_length area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "highway_length" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/total_road_length_area_km2: deploy_indicators/prod/uploads/total_road_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for total_road_length area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_road_length" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/view_count_bf2402_one: deploy_indicators/prod/uploads/view_count_bf2402_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for view_count_bf2402 one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count_bf2402" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2: deploy_indicators/prod/uploads/view_count_bf2402_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for view_count_bf2402 area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "view_count_bf2402" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/powerlines_one: deploy_indicators/prod/uploads/powerlines_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for powerlines one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "powerlines" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/night_lights_intensity_one: deploy_indicators/prod/uploads/night_lights_intensity_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for night_lights_intensity one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "night_lights_intensity" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_bomb_shelters" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_charging_stations one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_charging_stations" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/solar_power_plants_area_km2: deploy_indicators/prod/uploads/solar_power_plants_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for solar_power_plants area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "solar_power_plants" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/volcano_days_count_area_km2: deploy_indicators/prod/uploads/volcano_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for volcano_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "volcano_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/volcano_days_count_one: deploy_indicators/prod/uploads/volcano_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for volcano_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "volcano_days_count" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/flood_days_count_area_km2: deploy_indicators/prod/uploads/flood_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for flood_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "flood_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/flood_days_count_one: deploy_indicators/prod/uploads/flood_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for flood_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "flood_days_count" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population: deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_bomb_shelters population axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_bomb_shelters" "population"
 	touch $@
 
 deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population: deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_charging_stations population axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_charging_stations" "population"
 	touch $@
 
 deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population: deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for man_distance_to_fire_brigade population axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "man_distance_to_fire_brigade" "population"
 	touch $@
 
 deploy_indicators/prod/custom_axis/building_count_total_building_count: deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/total_building_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for building_count total_building_count axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "building_count" "total_building_count"
 	touch $@
 
 deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2: deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/populated_area_km2_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for waste_basket_coverage_area_km2 populated_area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "waste_basket_coverage_area_km2" "populated_area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/highway_length_total_road_length: deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for highway_length total_road_length axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "highway_length" "total_road_length"
 	touch $@
 
 deploy_indicators/prod/custom_axis/eatery_count_one: deploy_indicators/prod/uploads/eatery_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for eatery_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "eatery_count" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/food_shops_count_one: deploy_indicators/prod/uploads/food_shops_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for food_shops_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "food_shops_count" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2: deploy_indicators/prod/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for hazardous_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "hazardous_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/hazardous_days_count_one: deploy_indicators/prod/uploads/hazardous_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for hazardous_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "hazardous_days_count" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2: deploy_indicators/prod/uploads/earthquake_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for earthquake_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "earthquake_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/earthquake_days_count_one: deploy_indicators/prod/uploads/earthquake_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for earthquake_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "earthquake_days_count" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/drought_days_count_area_km2: deploy_indicators/prod/uploads/drought_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for drought_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "drought_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/drought_days_count_one: deploy_indicators/prod/uploads/drought_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for drought_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "drought_days_count" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2: deploy_indicators/prod/uploads/cyclone_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for cyclone_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "cyclone_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/cyclone_days_count_one: deploy_indicators/prod/uploads/cyclone_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for cyclone_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "cyclone_days_count" "one"
 	touch $@
 
 deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2: deploy_indicators/prod/uploads/wildfire_days_count_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for wildfire_days_count area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfire_days_count" "area_km2"
 	touch $@
 
 deploy_indicators/prod/custom_axis/wildfire_days_count_one: deploy_indicators/prod/uploads/wildfire_days_count_upload  db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for wildfire_days_count one axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
+	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfire_days_count" "one"
 	touch $@
 

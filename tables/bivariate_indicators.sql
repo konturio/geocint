@@ -240,11 +240,6 @@ values ('flood_days_count', 'Flood exposure', jsonb_build_array(
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Number of days in the last year when severe and extreme floods were recorded. ', 'World', 'daily', 'days', TRUE, '🌊📅','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('covid19_confirmed', 'COVID-19 confirmed сases', jsonb_build_array(
-'© Data from JHU CSSE COVID-19 Dataset'),
-   '[["good"], ["bad"]]'::jsonb, 'Number of COVID-19 confirmed cases for the entire observation period according to the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University (JHU).', 'World', 'daily', 'n', TRUE, '🦠','proportional');
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('avg_slope_gebco_2022', 'Slope', jsonb_build_array(
 '© Data from General Bathymatric Chart of the Oceans, www.gebco.net'),
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Average surface slope.', 'World', 'static', 'deg', TRUE, '⛷️','equal');

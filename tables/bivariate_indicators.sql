@@ -240,11 +240,6 @@ values ('flood_days_count', 'Flood exposure', jsonb_build_array(
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Number of days in the last year when severe and extreme floods were recorded. ', 'World', 'daily', 'days', TRUE, '🌊📅','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('covid19_confirmed', 'COVID-19 confirmed сases', jsonb_build_array(
-'© Data from JHU CSSE COVID-19 Dataset'),
-   '[["good"], ["bad"]]'::jsonb, 'Number of COVID-19 confirmed cases for the entire observation period according to the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University (JHU).', 'World', 'daily', 'n', TRUE, '🦠','proportional');
-
-insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('avg_slope_gebco_2022', 'Slope', jsonb_build_array(
 '© Data from General Bathymatric Chart of the Oceans, www.gebco.net'),
     '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Average surface slope.', 'World', 'static', 'deg', TRUE, '⛷️','equal');
@@ -426,9 +421,9 @@ values ('powerlines_proximity_m', 'Powerlines proximity', jsonb_build_array(
         '[["important"], ["unimportant"]]'::jsonb, 'Distance to closest powerline', 'World', 'static', 'm', TRUE, '⚡👫','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('waste_basket_coverage_area_km2', 'Waste containers', jsonb_build_array(
+values ('waste_basket_coverage_area_km2', 'Waste containers coverage', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["bad"], ["good"]]'::jsonb, 'Number of waste containers in a given area.', 'World', 'daily', 'n', TRUE, '🗑️','proportional');
+        '[["bad"], ["good"]]'::jsonb, 'The area covered by waste containers mapped in OSM, based on a service radius of 70 meters around of container.', 'World', 'daily', 'km2', TRUE, '🗑️','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('populated_areas_proximity_m', 'Densely populated area proximity', jsonb_build_array(

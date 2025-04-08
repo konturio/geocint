@@ -1,7 +1,7 @@
 -- dither areas to not be bigger than 100% of hexagon's area for every resolution
 drop procedure if exists dither_area_to_not_bigger_than_100pc_of_hex_area;
 create or replace procedure dither_area_to_not_bigger_than_100pc_of_hex_area(input_table text,
-                                                                             table_h3 text,                                                                             
+                                                                             table_h3 text,                                                                    
                                                                              columns text[],
                                                                              resolution integer default 8)
 language plpgsql
@@ -14,6 +14,9 @@ $$
         carry       jsonb;
         carry_out   jsonb;
     begin
+
+        execute 'drop table if exists '|| quote_ident(table_h3) || ';
+                 create table '|| quote_ident(table_h3) || ' (like '|| quote_ident(input_table) || ')';
 
         while res >= 0
             loop

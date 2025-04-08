@@ -56,8 +56,6 @@ $$
     end;
 $$;
 
-drop table if exists mapswipe_hot_tasking_data_h3;
-create table mapswipe_hot_tasking_data_h3
-(
-    like mapswipe_hot_tasking_data_h3_in
-);
+call dither_area_to_not_bigger_than_100pc_of_hex_area('mapswipe_hot_tasking_data_h3_in', 'mapswipe_hot_tasking_data_h3', '{mapswipe_area}'::text[], 8);
+
+drop table if exists mapswipe_hot_tasking_data_h3_in;

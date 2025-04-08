@@ -78,8 +78,6 @@ $$
     end;
 $$;
 
-drop table if exists copernicus_landcover_h3;
-create table copernicus_landcover_h3
-(
-    like copernicus_landcover_h3_in
-);
+call dither_area_to_not_bigger_than_100pc_of_hex_area('copernicus_landcover_h3_in', 'copernicus_landcover_h3', '{forest_area, evergreen_needle_leaved_forest, shrubs, herbage, unknown_forest, cropland, wetland, moss_lichen, bare_vegetation, builtup, snow_ice, permanent_water}'::text[], 8);
+
+drop table if exists copernicus_landcover_h3_in;

@@ -74,7 +74,7 @@ create table disaster_event_episodes_validated_subdivided as (
     from disaster_event_episodes
     left join disaster_event_episodes_severities using (episode_severity)
     where
-        episode_type in (
+        ((episode_type in (
             'CYCLONE',
             'DROUGHT',
             'EARTHQUAKE',
@@ -83,11 +83,13 @@ create table disaster_event_episodes_validated_subdivided as (
             'TORNADO',
             'TSUNAMI',
             'VOLCANO',
-            'WILDFIRE',
             'WINTER_STORM'
-        )
+        )        
+        and episode_severity_level > 3)
+        or
+        episode_type = 'WILDFIRE')
+
         and episode_endedat > now() at time zone 'utc' - interval '1 year'
-        and episode_severity_level > 3
 );
 
 create index on disaster_event_episodes_validated_subdivided using gist(geom);

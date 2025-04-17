@@ -1,4 +1,3 @@
--- commented out WorldPop population dataset
 drop table if exists population_grid_h3_r11_in;
 create table population_grid_h3_r11_in as (
     select h3,

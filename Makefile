@@ -2119,7 +2119,7 @@ db/table/foursquare_os_places: data/in/foursquare/foursquare_os_places/download 
 	psql -c "create server if not exists parquet_srv foreign data wrapper parquet_fdw options (public 'true');"
 	psql -c "drop table if exists foursquare_os_places;"
 	psql -c "create table foursquare_os_places (fsq_place_id text,name text,latitude double precision,longitude double precision,address text,locality text,region text,postcode text,admin_region text,post_town text,po_box text,country text,date_created text,date_refreshed text,date_closed text,tel text,website text,email text,facebook_id bigint,instagram text,twitter text,fsq_category_ids text[],fsq_category_labels text[],geom bytea);"
-	ls ${GEOCINT_WORK_DIRECTORY}/geocint/data/in/foursquare_os_places/places-*.zstd.parquet | parallel -j 1 "psql -f tables/foursquare_os_places_import.sql -v parquet_file='{}'"
+	ls ${GEOCINT_WORK_DIRECTORY}/geocint/data/in/foursquare/foursquare_os_places/places-*.zstd.parquet | parallel -j 1 "psql -f tables/foursquare_os_places_import.sql -v parquet_file='{}'"
 	psql -c "create index on foursquare_os_places using gin(fsq_category_ids);"
 	touch $@
 

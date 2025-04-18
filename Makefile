@@ -19,7 +19,7 @@ include runner_make osm_make
 
 ## ------------- CONTROL BLOCK -------------------------
 
-all: prod dev data/out/isochrone_destinations_export deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx db/table/foursquare_places_h3 db/table/foursquare_visits_h3 db/table/ndpba_rva_h3 db/table/global_rva_h3 data/out/csv/foursquare_places_count.csv data/out/csv/foursquare_visits_count.csv db/table/osm_buildings_use db/index/osm_addresses_geom_idx data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement db/table/us_counties_boundary ## [FINAL] Meta-target on top of all other targets, or targets on parking.
+all: prod dev data/out/isochrone_destinations_export deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx db/table/ndpba_rva_h3 db/table/global_rva_h3 db/table/osm_buildings_use db/index/osm_addresses_geom_idx data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement db/table/us_counties_boundary ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
 dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/dev/uploads/upload_dev data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv deploy_indicators/dev/custom_axis/all_custom_axis deploy/s3/dev/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
@@ -103,6 +103,9 @@ data/mid/foursquare: | data/mid ## Directory for storing unzipped foursquare dat
 	mkdir -p $@
 
 data/in/foursquare/foursquare_os_places: | data/in/foursquare ## create input folder for foursquare os places
+	mkdir -p $@
+
+data/mid/foursquare/foursquare_os_places: | data/in/foursquare ## create mid folder for foursquare os places
 	mkdir -p $@
 
 data/mid/wb/gdp: | data/mid ## Intermediate GDP (Gross domestic product) World Bank data.
@@ -648,7 +651,7 @@ data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326: data/mid/ndvi_2019_06_10/generate_
 
 db/table/ndvi_2019_06_10: data/mid/ndvi_2019_06_10/warp_ndvi_tifs_4326 | db/table ## Put NDVI rasters in table.
 	psql -c "drop table if exists ndvi_2019_06_10;"
-	raster2pgsql -p -Y -s 4326 data/mid/ndvi_2019_06_10/ndvi_1_4326.tif -t auto ndvi_2019_06_10 | psql -q
+	ls data/mid/ndvi_2019_06_10/*.tif | head -1 | parallel 'raster2pgsql -p -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
 	psql -c 'alter table ndvi_2019_06_10 drop constraint if exists ndvi_2019_06_10_pkey;'
 	ls data/mid/ndvi_2019_06_10/*.tif | parallel --eta 'raster2pgsql -a -Y -s 4326 {} -t auto ndvi_2019_06_10 | psql -q'
 	psql -c "vacuum analyze ndvi_2019_06_10;"
@@ -2070,65 +2073,27 @@ db/table/ndpba_rva_h3: db/table/ndpba_rva_indexes | db/table/kontur_boundaries_v
 	psql -c "call generate_overviews('ndpba_rva_h3', '{raw_population_exposure_index,raw_economic_exposure,relative_population_exposure_index,relative_economic_exposure,poverty,economic_dependency,maternal_mortality,infant_mortality,malnutrition,population_change,urban_pop_change,school_enrollment,years_of_schooling,fem_to_male_labor,proportion_of_female_seats_in_government,life_expectancy,protected_area,physicians_per_10000_persons,nurse_midwife_per_10k,distance_to_hospital,hbeds_per_10000_persons,distance_to_port,road_density,households_with_fixed_phone,households_with_cell_phone,voter_participation}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
 	touch $@
 
-data/in/foursquare/downloaded: | data/in/foursquare ## download and rename 4sq archives
-	cd data/in/foursquare; aws s3 sync s3://geodata-eu-central-1-kontur/private/geocint/in/foursquare/ ./ --profile geocint_pipeline_sender
-	touch $@
-
-data/mid/foursquare/kontour_places.csv: data/in/foursquare/downloaded | data/mid/foursquare ## extract archive and filter csv
-	rm -f $@
-	zcat data/in/foursquare/kontour_places.csv.gz | sed ':a;s/^\(\([^"]*,\?\|"[^",]*",\?\)*"[^",]*\),/\1 /;ta' | cut -d, -f1,4,5 | egrep -v "\[ | evaluation_sample | roof" | grep -vP "\w*[A-Z]+\w*" | sed '/,/!d' > $@
-
-data/mid/foursquare/kontour_visits_csv: data/in/foursquare/downloaded | data/mid/foursquare ## extract archives and filter csv
-	rm -f data/mid/foursquare/kontour_visits*.csv
-	zcat data/in/foursquare/part-00132-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195596-1.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2021_08.csv
-	zcat data/in/foursquare/part-00191-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195595-1.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2021_09.csv
-	zcat data/in/foursquare/part-00075-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195592-1.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2021_10.csv
-	zcat data/in/foursquare/part-00055-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195594-1.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2021_11.csv
-	zcat data/in/foursquare/part-00075-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195592-2.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2021_12.csv
-	zcat data/in/foursquare/part-00194-tid-3339978440558258505-6a4e8282-87e3-454b-a65f-d919022a27fd-4195593-1.c000.csv.gz | cut -d, -f2,6,7 > data/mid/foursquare/kontour_visits_2022_01.csv
-	touch $@
-
-db/table/foursquare_places: data/mid/foursquare/kontour_places.csv | db/table ## Import 4sq places into database.
-	psql -c 'drop table if exists foursquare_places;'
-	psql -c 'create table foursquare_places(fsq_id text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_lat_lng_to_cell(ST_SetSrid(ST_Point(longitude, latitude), 4326)::point, 8)) STORED);'
-	cat data/mid/foursquare/kontour_places.csv | psql -c "copy foursquare_places (fsq_id, latitude, longitude) from stdin with csv header delimiter ','"
-	touch $@
-
-db/table/foursquare_visits: data/mid/foursquare/kontour_visits_csv | db/table ## Import 4sq visits into database.
-	psql -c 'drop table if exists foursquare_visits;'
-	psql -c 'create table foursquare_visits (protectedts text, latitude float, longitude float, h3_r8 h3index GENERATED ALWAYS AS (h3_lat_lng_to_cell(ST_SetSrid(ST_Point(longitude, latitude), 4326)::point, 8)) STORED);'
-	ls data/mid/foursquare/kontour_visits*.csv | parallel 'cat {} | psql -c "copy foursquare_visits (protectedts, latitude, longitude) from stdin with csv header; "'
-	touch $@
-
-db/table/foursquare_places_h3: db/table/foursquare_places | db/procedure/generate_overviews db/table ## Aggregate 4sq places count  on H3 hexagon grid.
-	psql -f tables/foursquare_places_h3.sql
-	psql -c "call generate_overviews('foursquare_places_h3', '{foursquare_places_count}'::text[], '{sum}'::text[], 8);"
-	touch $@
-
-db/table/foursquare_visits_h3: db/table/foursquare_visits | db/procedure/generate_overviews db/table ## Aggregate 4sq visits count on H3 hexagon grid.
-	psql -f tables/foursquare_visits_h3.sql
-	psql -c "call generate_overviews('foursquare_visits_h3', '{foursquare_visits_count}'::text[], '{sum}'::text[], 8);"
-	touch $@
-
 data/in/foursquare/foursquare_os_places/download: | data/in/foursquare/foursquare_os_places ## download input data
 	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/places/parquet data/in/foursquare/foursquare_os_places/ --recursive --profile geocint_pipeline_sender
 	aws s3 cp s3://fsq-os-places-us-east-1/release/dt=2024-12-03/categories/parquet data/in/foursquare/foursquare_os_places/ --recursive --profile geocint_pipeline_sender
 	touch $@
 
+data/mid/foursquare/foursquare_os_places/transform_to_csv: data/in/foursquare/foursquare_os_places/download | data/mid/foursquare/foursquare_os_places ## transform data from parquet to csv
+	basename -a data/in/foursquare/foursquare_os_places/places*.zstd.parquet | sed 's/\.zstd.parquet$//' | parallel 'python3 scripts/parquet_to_csv.py data/in/foursquare/foursquare_os_places/{}.zstd.parquet data/mid/foursquare/foursquare_os_places/{}.csv fsq_place_id latitude longitude date_created date_refreshed date_closed fsq_category_ids'
+	python3 scripts/parquet_to_csv.py data/in/foursquare/foursquare_os_places/categories.zstd.parquet data/mid/foursquare/foursquare_os_places/categories.csv
+	touch $@
+
 db/table/foursquare_os_places: data/in/foursquare/foursquare_os_places/download | db/table ## load data to database
-	psql -c "create server if not exists parquet_srv foreign data wrapper parquet_fdw options (public 'true');"
 	psql -c "drop table if exists foursquare_os_places;"
-	psql -c "create table foursquare_os_places (fsq_place_id text,name text,latitude double precision,longitude double precision,address text,locality text,region text,postcode text,admin_region text,post_town text,po_box text,country text,date_created text,date_refreshed text,date_closed text,tel text,website text,email text,facebook_id bigint,instagram text,twitter text,fsq_category_ids text[],fsq_category_labels text[],geom bytea);"
-	ls ${GEOCINT_WORK_DIRECTORY}/geocint/data/in/foursquare/foursquare_os_places/places-*.zstd.parquet | parallel -j 1 "psql -f tables/foursquare_os_places_import.sql -v parquet_file='{}'"
+	psql -c "create table foursquare_os_places (fsq_place_id text, latitude double precision,longitude double precision,date_created text,date_refreshed text,date_closed text,fsq_category_ids text[]);"
+	ls data/mid/foursquare/foursquare_os_places/places*.csv | parallel "psql -c \"copy foursquare_os_places from stdin with csv header delimiter ';';\" < {}"
 	psql -c "create index on foursquare_os_places using gin(fsq_category_ids);"
 	touch $@
 
 db/table/foursquare_os_places_categories: data/in/foursquare/foursquare_os_places/download | db/table ## load categories to database
-	psql -c "drop foreign table if exists temp_parquet_table;"
-	psql -c "create foreign table temp_parquet_table (category_id text, category_level int, category_name text, category_label text, level1_category_id text, level1_category_name text, level2_category_id text, level2_category_name text, level3_category_id text, level3_category_name text, level4_category_id text, level4_category_name text, level5_category_id text, level5_category_name text, level6_category_id text, level6_category_name text) server parquet_srv options (filename '${GEOCINT_WORK_DIRECTORY}/geocint/data/in/foursquare/foursquare_os_places/categories.zstd.parquet');"
 	psql -c "drop table if exists foursquare_os_places_categories;"
-	psql -c "create table foursquare_os_places_categories as (select * from temp_parquet_table);"
-	psql -c "drop foreign table if exists temp_parquet_table;"
+	psql -c "create table foursquare_os_places_categories (category_id text, category_level int, category_name text, category_label text, level1_category_id text, level1_category_name text, level2_category_id text, level2_category_name text, level3_category_id text, level3_category_name text, level4_category_id text, level4_category_name text, level5_category_id text, level5_category_name text, level6_category_id text, level6_category_name text);"
+	cat data/mid/foursquare/foursquare_os_places/categories.csv | psql -c "copy foursquare_os_places_categories from stdin with csv header delimiter ';';"
 	touch $@
 
 db/table/foursquare_os_places_h3: db/table/foursquare_os_places db/table/foursquare_os_places_categories | db/table ## transform foursquare data to h3
@@ -2943,12 +2908,6 @@ data/out/csv/man_distance_to_bomb_shelters.csv: db/table/isodist_bomb_shelters_h
 
 data/out/csv/man_distance_to_charging_stations.csv: db/table/isodist_charging_stations_h3 | data/out/csv ## extract man_distance_to_charging_stations to csv file 
 	psql -q -X -c "copy (select h3, man_distance as man_distance_to_charging_stations from isodist_charging_stations_h3 where h3 is not null and man_distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_charging_stations.csv
-
-data/out/csv/foursquare_places_count.csv: db/table/foursquare_places_h3 | data/out/csv ## extract foursquare_places_count to csv file 
-	psql -q -X -c "copy (select h3, foursquare_places_count from foursquare_places_h3 where h3 is not null and foursquare_places_count is not null and foursquare_places_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/foursquare_places_count.csv
-
-data/out/csv/foursquare_visits_count.csv: db/table/foursquare_visits_h3 | data/out/csv ## extract foursquare_visits_count to csv file 
-	psql -q -X -c "copy (select h3, foursquare_visits_count from foursquare_visits_h3 where h3 is not null and foursquare_visits_count is not null and foursquare_visits_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/foursquare_visits_count.csv
 
 data/out/csv/eatery_count.csv: db/table/osm_places_eatery_h3 | data/out/csv ## extract eatery_count to csv file 
 	psql -q -X -c "copy (select h3, eatery_count from osm_places_eatery_h3 where h3 is not null and eatery_count is not null and eatery_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/eatery_count.csv

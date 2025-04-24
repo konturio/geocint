@@ -392,7 +392,7 @@ values ('mapswipe_area_km2', 'MapSwipe human activity', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('gsa_ghi', 'Global Horizontal Irradiance', jsonb_build_array(
         'Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use'),
-        '[["bad", "unimportant"], ["good", "important"]]'::jsonb, 'Total amount of shortwave terrestrial irradiance received by a surface horizontal to the ground.', 'World (-60:60 latitudes)', 'static', 'W_m2', TRUE, '☀️','equal');
+        '[["bad", "unimportant"], ["good", "important"]]'::jsonb, 'Total amount of shortwave terrestrial irradiance received by a surface horizontal to the ground.', 'World (-60:60 latitudes)', 'static', 'kW_m2', TRUE, '☀️','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('worldclim_avg_temperature', 'Air temperature average', jsonb_build_array(

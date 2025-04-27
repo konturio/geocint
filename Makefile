@@ -246,7 +246,7 @@ data/out/tile_zoom_level_to_h3_resolution_test: db/function/tile_zoom_level_to_h
 	touch $@
 
 db/function/h3_raster_agg_to_h3: | db/function ## Aggregate raster values on H3 hexagon grid (default sum, options - min, max, avg, count).
-	psql -f functions/h3_raster_agg_to_h3.sq
+	psql -f functions/h3_raster_agg_to_h3.sql
 	touch $@
 
 db/function/max_of_array: | db/function ## Get max value from int[]

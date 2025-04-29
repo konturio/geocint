@@ -24,7 +24,7 @@ create table waste_basket_coverage_h3_mid as (
            11::integer                                            as resolution
     from (select h3_grid_ring_unsafe(h3, 1) as h3
           from waste_basket_coverage_h3_in
-          group by 1)
+          group by 1) a
     where h3 not in (select h3 from waste_basket_coverage_h3_in where resolution = 11)
 );
 

@@ -24,7 +24,7 @@ create table osm_building_levels_h3 as (
                   levels,
                   height
           from osm_buildings_parts_in
-          where (levels < 165 and levels >= 0) or (height < 840 and levels is null and height >= 0))
+          where (levels < 165 and levels >= 0) or (height < 840 and levels is null and height >= 0)) a
     group by 1
 );
 

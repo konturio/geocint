@@ -24,10 +24,10 @@ values ('one', '1', '["Numbers © Muḥammad ibn Mūsā al-Khwārizmī"]'::json,
 
 -- area is mostly used in denominator so start the name as lowercase to build better sentences
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('area_km2', 'area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', 'km2', TRUE, '📐', NULL);
+values ('area_km2', 'Area', '["Concept of areas © Brahmagupta, René Descartes"]'::json, '[["neutral"], ["neutral"]]'::jsonb, '', 'World', 'static', 'km2', TRUE, '📐', NULL);
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('populated_area_km2_next_gen', 'populated area (next generation)', jsonb_build_array(
+values ('populated_area_km2_next_gen', 'Populated area (next generation)', jsonb_build_array(
         '© Kontur https://kontur.io/',
         'Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/',
         'Dataset: Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC) PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE Concept & Methodology: Freire S., MacManus K., Pesaresi M., Doxsey-Whitfield E., Mills J. (2016) Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World; Association of Geographic Information Laboratories in Europe (AGILE), AGILE 2016',
@@ -39,7 +39,7 @@ values ('populated_area_km2_next_gen', 'populated area (next generation)', jsonb
         '[["unimportant"], ["important"]]'::jsonb, 'Populated area according to the most recent daily build of Kontur Population dataset', 'World', 'daily', 'km2', TRUE, '🏡','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('populated_area_km2', 'populated area', jsonb_build_array(
+values ('populated_area_km2', 'Populated area', jsonb_build_array(
         '© Kontur https://kontur.io/',
         'Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/',
         'Dataset: Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC) PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE Concept & Methodology: Freire S., MacManus K., Pesaresi M., Doxsey-Whitfield E., Mills J. (2016) Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World; Association of Geographic Information Laboratories in Europe (AGILE), AGILE 2016',
@@ -51,7 +51,7 @@ values ('populated_area_km2', 'populated area', jsonb_build_array(
         '[["unimportant"], ["important"]]'::jsonb, 'Populated area according to the actual release of Kontur Population dataset (2023.11.01).', 'World', 'daily', 'km2', TRUE, '🏡','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('population_next_gen', 'population (next generation)', jsonb_build_array(
+values ('population_next_gen', 'Population (next generation)', jsonb_build_array(
         '© Kontur https://kontur.io/',
         'Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/',
         'Dataset: Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC) PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE Concept & Methodology: Freire S., MacManus K., Pesaresi M., Doxsey-Whitfield E., Mills J. (2016) Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World; Association of Geographic Information Laboratories in Europe (AGILE), AGILE 2016',
@@ -63,7 +63,7 @@ values ('population_next_gen', 'population (next generation)', jsonb_build_array
         '[["unimportant"], ["important"]]'::jsonb, 'Number of people living in a given area according to the most recent daily build of Kontur Population dataset. The dataset was produced by overlaying the Global Human Settlement Layer (GHSL) with available Facebook population data and constraining known artifacts using OpenStreetMap data. The datasets detailed methodology is available here: https://data.humdata.org/dataset/kontur-population-dataset', 'World', 'daily', 'ppl', TRUE, '👫','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('population', 'population', jsonb_build_array(
+values ('population', 'Population', jsonb_build_array(
         '© Kontur https://kontur.io/',
         'Facebook Connectivity Lab and Center for International Earth Science Information Network - CIESIN - Columbia University. 2016. High Resolution Settlement Layer (HRSL). Source imagery for HRSL © 2016 DigitalGlobe. https://dataforgood.fb.com/tools/population-density-maps/',
         'Dataset: Schiavina M., Freire S., Carioli A., MacManus K. (2023): GHS-POP R2023A - GHS population grid multitemporal (1975-2030).European Commission, Joint Research Centre (JRC) PID: http://data.europa.eu/89h/2ff68a52-5b5b-4a22-8f40-c41da8332cfe, doi:10.2905/2FF68A52-5B5B-4A22-8F40-C41DA8332CFE Concept & Methodology: Freire S., MacManus K., Pesaresi M., Doxsey-Whitfield E., Mills J. (2016) Development of new open and free multi-temporal global population grids at 250 m resolution. Geospatial Data in a Changing World; Association of Geographic Information Laboratories in Europe (AGILE), AGILE 2016',
@@ -87,10 +87,10 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('avgmax_ts', 'OSM last edit (avg)', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb, 'Average of latest OpenStreetMap edit dates in a given area.', 'World', 'daily', 'unixtime', TRUE, '🕓👥','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('max_ts', 'OSM last edit', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb, 'Date of latest OpenStreetMap edit in a given area at highest resolution.', 'World', 'daily', 'unixtime', TRUE, '🕓','equal');
+values ('max_ts', 'OSM last edit', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad", "unimportant"], ["good"]]'::jsonb, 'The date of the very latest OpenStreetMap update in the area, showing the freshest available edit.', 'World', 'daily', 'unixtime', TRUE, '🕓','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('min_ts', 'OSM first edit', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["neutral"]]'::jsonb, 'Date of earliest OpenStreetMap edit in a given area.', 'World', 'daily', 'unixtime', TRUE, '🕒','equal');
+values ('min_ts', 'OSM first edit', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["good"], ["neutral"]]'::jsonb, 'The date when OpenStreetMap data first appeared for the area, showing how long it has been mapped.', 'World', 'daily', 'unixtime', TRUE, '🕒','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('osm_users', 'OSM contributors', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of users who have edited a given area in OpenStreetMap.', 'World', 'daily', 'ppl', TRUE, '👥','equal');
@@ -187,7 +187,7 @@ values ('gdp', 'Gross Domestic Product', jsonb_build_array(
         '[["bad"], ["good"]]'::jsonb, 'A country GDP (Gross Domestic Product) per capita multiplied by the population in a given area. For areas covering multiple countries, a sum of their respective GDP portions is used. GDP is the standard measure of the value created through the production of goods and services in a country during a certain period.', 'World', 'static', 'USD', TRUE, '💰','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('total_building_count', 'buildings', jsonb_build_array(
+values ('total_building_count', 'Buildings', jsonb_build_array(
         '© Kontur https://kontur.io/',
         'Copernicus Global Land Service: Land Cover 100 m: Marcel Buchhorn, Bruno Smets, Luc Bertels, Bert De Roo, MyroslavaLesiv, Nandin - Erdene Tsendbazar, … Steffen Fritz. (2020). Copernicus Global Land Service: Land Cover 100m: collection 3: epoch 2019: Globe (Version V3.0.1) Data set. Zenodo. http://doi.org/10.5281/zenodo.3939050',
         'Geoalert Urban Mapping: Chechnya, Moscow region, Tyva, Tashkent, Bukhara, Samarkand, Navoi, Chirchiq - https://github.com/Geoalert/urban-mapping',
@@ -329,30 +329,30 @@ values ('days_maxwetbulb_over_32c_2c', 'Days above 32°C wet-bulb (+2°C scenari
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('mandays_maxtemp_over_32c_1c', 'Man-days above 32°C, (+1°C scenario)', jsonb_build_array(
         '© 2021 Probable Futures, a Project of the SouthCoast Community Foundation. https://probablefutures.org/, CC BY 4.0'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'other', TRUE, '🌞👥','proportional');
+        '[["good"], ["bad"]]'::jsonb, 'The number of person-days per year where the temperature exceeds 32°C, assuming a +1°C climate warming scenario. Higher values indicate greater exposure to extreme heat.', 'World', 'daily', 'other', TRUE, '🌞👥','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('man_distance_to_fire_brigade', 'Man-distance to fire brigade', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'ppl_km2', TRUE, '🚒🏃','proportional');
+        '[["good"], ["bad"]]'::jsonb, 'The total cumulative distance (in person-kilometers) from the population to the nearest fire stations, reflecting how close emergency services are positioned. Lower values indicate better emergency coverage.', 'World', 'daily', 'ppl_km2', TRUE, '🚒🏃','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('man_distance_to_hospital', 'Man-distance to hospitals', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'ppl_km2', TRUE, '🏥🏃','proportional');
+        '[["good"], ["bad"]]'::jsonb, 'The total cumulative distance (in person-kilometers) from the population to the nearest hospitals, reflecting how close emergency services are positioned. Lower values indicate better emergency coverage.', 'World', 'daily', 'ppl_km2', TRUE, '🏥🏃','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('man_distance_to_bomb_shelters', 'Man-distance to bomb shelters', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'ppl_km2', TRUE, '🏠🏃','proportional');
+        '[["good"], ["bad"]]'::jsonb, 'The total cumulative distance (in person-kilometers) that people must travel to reach the nearest bomb shelters. Lower values indicate better access to shelters.', 'World', 'daily', 'ppl_km2', TRUE, '🏠🏃','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('man_distance_to_charging_stations', 'Man-distance to charging stations', jsonb_build_array(
         '© Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, '', 'World', 'daily', 'ppl_km2', TRUE, '🔌🏃','proportional');
+        '[["good"], ["bad"]]'::jsonb, 'The total cumulative distance (in person-kilometers) that people must travel to reach the nearest electric vehicle charging stations. Reflects accessibility to EV infrastructure.', 'World', 'daily', 'ppl_km2', TRUE, '🔌🏃','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('total_road_length', 'road length', jsonb_build_array(
+values ('total_road_length', 'Road length', jsonb_build_array(
         '©2019 Facebook, Inc. and its affiliates https://github.com/facebookmicrosites/Open-Mapping-At-Facebook/blob/main/LICENSE.md',
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright', '© Kontur https://kontur.io/'),
         '[["unimportant"], ["important"]]'::jsonb, 'Estimated total road length according to Meta (Facebook) AI and OpenStreetMap data. For places where Meta (Facebook) roads data are unavailable, the estimation is based on statistical regression from Kontur Population data.', 'World', 'daily', 'km', TRUE, '🛣️📏','proportional');

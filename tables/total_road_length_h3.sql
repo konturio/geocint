@@ -1,7 +1,3 @@
-
-
-
-
 -- create temporary table with calculating basic total_road_length
 drop table if exists total_road_length_h3_temp_in;
 create table total_road_length_h3_temp_in as (
@@ -15,7 +11,7 @@ create table total_road_length_h3_temp_in as (
          full outer join osm_road_segments_h3 osm
          on fb.h3 = osm.h3
          full outer join microsoft_roads_h3 mcr
-         on fb.h3 = mcr.h3
+         on coalesce(fb.h3, osm.h3) = mcr.h3
     where (coalesce(fb.resolution, osm.resolution, mcr.resolution) = 11)
 );
 

@@ -25,3 +25,5 @@ create table osm_object_count_grid_h3_r8 as (
          ) z
     group by h3
 );
+
+create index on osm_object_count_grid_h3 (h3);

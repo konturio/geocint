@@ -17,6 +17,7 @@ create table land_polygons_h3_r8 as (
 );
 
 create index on land_polygons_h3_r8 (h3);
+create index on land_polygons_h3_r8 using gist(geom);
 
 -- Remove temporary table
 drop table if exists land_polygons_h3_r8_in;

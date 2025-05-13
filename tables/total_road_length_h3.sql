@@ -1,40 +1,46 @@
-drop table if exists total_road_length_h3_temp;
-drop table if exists total_road_length_h3_temp_in;
-drop table if exists total_road_length_h3;
-
 -- create temporary table with calculating basic total_road_length
+drop table if exists total_road_length_h3_temp_in;
 create table total_road_length_h3_temp_in as (
-    select  coalesce(fb.h3, osm.h3)                                                    as h3,
-            coalesce(fb.resolution, osm.resolution)                                    as resolution,
+    select  coalesce(fb.h3, osm.h3, mcr.h3)                                            as h3,
             coalesce(fb.fb_roads_length, 0)                                            as fb_roads_length,
             coalesce(osm.highway_length, 0)                                            as highway_length,
             GREATEST(coalesce(fb.fb_roads_length, 0) + coalesce(osm.highway_length, 0), 
-                     coalesce(mcr.road_length, 0))                                     as total_road_length
+                     coalesce(mcr.road_length, 0))                                     as total_road_length,
+            h3_cell_to_boundary_geometry(coalesce(fb.h3, osm.h3, mcr.h3))              as geom
     from facebook_roads_h3 fb
          full outer join osm_road_segments_h3 osm
          on fb.h3 = osm.h3
          full outer join microsoft_roads_h3 mcr
-         on fb.h3 = mcr.h3
-    where (coalesce(fb.resolution, osm.resolution) = 8)
+         on coalesce(fb.h3, osm.h3) = mcr.h3
+    where (coalesce(fb.resolution, osm.resolution, mcr.resolution) = 11)
 );
 
+create index on total_road_length_h3_temp_in using gist(geom);
+
 -- add facebook roads length before filtering
+drop table if exists total_road_length_h3_temp;
 create table total_road_length_h3_temp as (
-    select t.h3,
-           t.resolution,
-           t.fb_roads_length,
-           t.highway_length,
-           t.total_road_length,
-           h.h3 as no_facebook_mark,
-           coalesce(fin.fb_roads_in_length, 0) as fb_roads_in_length
+    select  t.h3,
+            11::integer                         as resolution,
+            t.fb_roads_length,
+            t.highway_length,
+            t.total_road_length,
+            case 
+                when h.geom is not null then t.h3
+            end                                 as no_facebook_mark,
+            coalesce(fin.fb_roads_in_length, 0) as fb_roads_in_length
     from total_road_length_h3_temp_in t
-         left join hexagons_for_regression h
-         on t.h3 = h.h3
-         left join facebook_roads_in_h3_r8 fin
+         left join areas_for_regression h
+         on ST_Intersects(t.geom,h.geom)
+         left join facebook_roads_in_h3_r11 fin
          on t.h3 = fin.h3
 );
 
+-- drop temporary tables
+drop table if exists total_road_length_h3_temp_in;
+
 -- calculate regression coefficients
+drop table if exists total_road_length_h3;
 with regression as (select regr_slope(trl.total_road_length, pop.population)     as slope,
                            regr_intercept(trl.total_road_length, pop.population) as intercept
 
@@ -45,7 +51,7 @@ with regression as (select regr_slope(trl.total_road_length, pop.population)    
                                  percentile_disc(0.95) within group (order by pop.population) pop_upper_threshold
                           from kontur_population_h3 pop
                           where (pop.population > 0)
-                            and (pop.resolution = 8)) as pop_thr,
+                            and (pop.resolution = 11)) as pop_thr,
 
                          (select percentile_disc(0.01) within group (order by trl.total_road_length) road_lower_threshold,
                                  percentile_disc(0.99) within group (order by trl.total_road_length) road_upper_threshold
@@ -78,5 +84,4 @@ from regression,
          left outer join kontur_population_h3 pop on trl.h3 = pop.h3;
 
 -- drop temporary tables
-drop table if exists total_road_length_h3_temp_in;
 drop table if exists total_road_length_h3_temp;

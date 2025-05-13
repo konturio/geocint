@@ -264,6 +264,7 @@ db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area: | db/procedure ##
 db/procedure/linear_segments_length_to_h3: | db/procedure ## calculate length of linear segments per hexagon
 	psql -f procedures/linear_segments_length_to_h3.sql
 	touch $@
+
 data/in/facebook: | data/in  ## Directory for Facebook data
 	mkdir -p $@
 
@@ -308,22 +309,25 @@ data/mid/facebook_roads/extracted: data/in/facebook_roads/validity_controlled | 
 	touch $@
 
 db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## Loading Facebook roads into db.
+	psql -c "drop table if exists facebook_roads_raw;"
+	psql -c "create table facebook_roads_raw (way_fbid text, highway_tag text, geom geometry(geometry, 4326));"
+	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_raw'
 	psql -c "drop table if exists facebook_roads_in;"
-	psql -c "create table facebook_roads_in (way_fbid text, highway_tag text, geom geometry(geometry, 4326));"
-	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_in'
+	psql -c "create table facebook_roads_in as (select way_fbid, highway_tag, st_segmentize(geom::geography, 25)::geometry as geom from facebook_roads_raw);"
 	psql -c "vacuum analyse facebook_roads_in;"
+	psql -c "drop table if exists facebook_roads_raw;"
 	touch $@
 
-db/table/facebook_roads_in_h3_r8: db/table/facebook_roads_in | db/table ## Build h3 overviews for prefiltered Facebook roads at all levels.
-	psql -f tables/facebook_roads_in_h3_r8.sql
+db/table/facebook_roads_in_h3_r11: db/table/facebook_roads_in | db/table ## Build h3 overviews for prefiltered Facebook roads at all levels.
+	psql -f tables/facebook_roads_in_h3_r11.sql
 	touch $@
 
 db/table/facebook_roads_last_filtered: db/table/facebook_roads_in | db/table ## Save first timestamp for Facebook road filter.
 	psql -c "create table if not exists facebook_roads_last_filtered as (select '2006-01-01'::date::timestamp as ts);"
 	touch $@
 
-db/table/hexagons_for_regression: db/table/kontur_boundaries db/table/land_polygons_h3_r8 ## Create table with hexes only from countries where facebook data were not published
-	psql -f tables/hexagons_for_regression.sql
+db/table/areas_for_regression: db/table/kontur_boundaries ## Create table with areas only from countries where facebook data were not published
+	psql -f tables/areas_for_regression.sql
 	touch $@
 
 db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last_filtered db/table/osm_roads | db/table ## Filter Facebook roads.
@@ -334,8 +338,8 @@ db/table/facebook_roads: db/table/facebook_roads_in db/table/facebook_roads_last
 	touch $@
 
 db/table/facebook_roads_h3: db/table/facebook_roads | db/procedure/generate_overviews db/procedure/linear_segments_length_to_h3 db/table ## Build h3 overviews for Facebook roads at all levels.
-	psql -c "call linear_segments_length_to_h3 ('facebook_roads','facebook_roads_h3', 'dump', 'fb_roads_length', 8);"
-	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 8);"
+	psql -c "call linear_segments_length_to_h3 ('facebook_roads','facebook_roads_h3', 'split_and_dump', 'fb_roads_length', 11, 25);"
+	psql -c "call generate_overviews('facebook_roads_h3', '{fb_roads_length}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 db/table/osm_roads: db/table/osm | db/table ## Roads from OpenStreetMap.
@@ -364,7 +368,7 @@ db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_seg
 
 db/table/osm_road_segments_h3: db/table/osm_road_segments | db/procedure/generate_overviews db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_h3.sql
-	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);"
+	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 db/table/osm_road_segments_6_months: db/table/osm_roads db/table/osm_meta | db/table ## osm road segments for 6 months
@@ -408,8 +412,8 @@ db/table/hrsl_population_raster: data/in/raster/hrsl_cogs/download | db/table ##
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
 
-db/table/hrsl_population_grid_h3_r8: db/table/hrsl_population_raster db/function/h3_raster_agg_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 8 resolution.
-	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r8=hrsl_population_grid_h3_r8
+db/table/hrsl_population_grid_h3_r11: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 11 resolution.
+	psql -f tables/population_raster_grid_h3_r11.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r11=hrsl_population_grid_h3_r11
 	touch $@
 
 db/table/hrsl_population_boundary: db/table/gadm_countries_boundary db/table/hrsl_population_raster | db/table ## Boundaries where HRSL data is available.
@@ -434,9 +438,9 @@ db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_
 	raster2pgsql -M -Y -s 54009 data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.tif -t auto ghs_globe_population_raster | psql -q
 	touch $@
 
-db/table/ghs_globe_population_grid_h3_r8: db/table/ghs_globe_population_raster db/procedure/insert_projection_54009 db/function/h3_raster_agg_to_h3 | db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 8 resolution.
-	psql -f tables/population_raster_grid_h3_r8.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r8=ghs_globe_population_grid_h3_r8
-	psql -c "delete from ghs_globe_population_grid_h3_r8 where population = 0;"
+db/table/ghs_globe_population_grid_h3_r11: db/table/ghs_globe_population_raster | db/function/h3_raster_sum_to_h3 db/procedure/insert_projection_54009 db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 11 resolution.
+	psql -f tables/population_raster_grid_h3_r11.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r11=ghs_globe_population_grid_h3_r11
+	psql -c "delete from ghs_globe_population_grid_h3_r11 where population = 0;"
 	touch $@
 
 data/in/raster/GHS_SMOD_POP2015_GLOBE_R2016A_54009_1k_v1_0.zip: | data/in/raster  ## Download GHS-SMOD (Global Human Settlement Model) grid dataset archive.
@@ -663,13 +667,13 @@ db/table/ndvi_2019_06_10_h3: db/table/ndvi_2019_06_10 | db/procedure/generate_ov
 	psql -c "create index on ndvi_2019_06_10_h3 (h3, avg_ndvi);"
 	touch $@
 
-db/table/osm_building_count_grid_h3_r8: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.
-	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r8 -v item_count=building_count
+db/table/osm_building_count_grid_h3_r11: db/table/osm_buildings | db/table ## Count amount of OSM buildings at hexagons.
+	psql -f tables/count_items_in_h3.sql -v table=osm_buildings -v table_h3=osm_building_count_grid_h3_r11 -v item_count=building_count
 	touch $@
 
-db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r8 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 | db/procedure/generate_overviews db/table ## Count max amount of buildings at hexagons from all building datasets.
+db/table/building_count_grid_h3: db/table/osm_building_count_grid_h3_r11 db/table/microsoft_buildings_h3 db/table/morocco_urban_pixel_mask_h3 db/table/morocco_buildings_h3 db/table/copernicus_builtup_h3 db/table/geoalert_urban_mapping_h3 db/table/new_zealand_buildings_h3 db/table/abu_dhabi_buildings_h3 | db/procedure/generate_overviews db/table ## Count max amount of buildings at hexagons from all building datasets.
 	psql -f tables/building_count_grid_h3.sql
-	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 8);"
+	psql -c "call generate_overviews('building_count_grid_h3', '{building_count}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 db/table/osm_building_levels_h3: db/table/osm_buildings | db/procedure/generate_overviews db/table ## Calculate max and average levels of OSM buildings at hexagons.
@@ -1213,7 +1217,7 @@ db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries: db/table/presca
 	seq 2 1 26 | xargs -I {} psql -f procedures/decimate_admin_level_in_prescale_to_osm_boundaries.sql -v current_level={}
 	touch $@
 
-db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r8 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/function/h3 db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table  ## Kontur Population (most recent).
+db/table/kontur_population_h3: db/table/osm_residential_landuse db/table/population_grid_h3_r11 db/table/building_count_grid_h3 db/table/osm_unpopulated db/table/osm_water_polygons db/table/morocco_urban_pixel_mask_h3 db/index/osm_tags_idx db/procedure/decimate_admin_level_in_prescale_to_osm_boundaries | db/table  ## Kontur Population (most recent).
 	psql -f tables/kontur_population_h3.sql
 	touch $@
 
@@ -1347,8 +1351,8 @@ db/procedure/insert_projection_54009: | db/procedure ## Add ESRI-54009 projectio
 	psql -f procedures/insert_projection_54009.sql || true
 	touch $@
 
-db/table/population_grid_h3_r8: db/table/hrsl_population_grid_h3_r8 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r8 | db/table ## General table for population data at hexagons.
-	psql -f tables/population_grid_h3_r8.sql
+db/table/population_grid_h3_r11: db/table/hrsl_population_grid_h3_r11 db/table/hrsl_population_boundary db/table/ghs_globe_population_grid_h3_r11 | db/table ## General table for population data at hexagons.
+	psql -f tables/population_grid_h3_r11.sql
 	touch $@
 
 db/table/osm_local_active_users: db/function/h3 db/table/osm_user_activity_h3 | db/table ## OpenStreetMap local active users (heuristics based on user activity).
@@ -1492,7 +1496,7 @@ db/table/microsoft_roads: data/mid/microsoft_roads/unzip | db/table  ## Microsof
 	touch $@
 
 db/table/microsoft_roads_h3: db/table/microsoft_roads | db/procedure/linear_segments_length_to_h3 db/table ## Microsoft roads segments aggregated to h3
-	psql -c "call linear_segments_length_to_h3 ('microsoft_roads','microsoft_roads_h3', 'dump', 'road_length', 8);"
+	psql -c "call linear_segments_length_to_h3 ('microsoft_roads','microsoft_roads_h3', 'split_and_dump', 'road_length', 11, 25);"
 	touch $@
 
 data/in/new_zealand_buildings: | data/in ## New Zealand's buildings dataset from LINZ (Land Information New Zealand).
@@ -2284,9 +2288,9 @@ db/table/disaster_event_episodes_h3: db/table/disaster_event_episodes db/table/l
 	psql -f tables/disaster_event_episodes_h3.sql
 	touch $@
 
-db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/hexagons_for_regression db/table/facebook_roads_in_h3_r8 db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/table/microsoft_roads_h3 | db/procedure/generate_overviews db/table ## adjust total road length with linear regression from population
+db/table/total_road_length_h3: db/table/facebook_roads_h3 db/table/areas_for_regression db/table/facebook_roads_in_h3_r11 db/table/osm_road_segments_h3 db/table/kontur_population_h3 db/table/microsoft_roads_h3 | db/procedure/generate_overviews db/table ## adjust total road length with linear regression from population
 	psql -f tables/total_road_length_h3.sql
-	psql -c "call generate_overviews('total_road_length_h3', '{total_road_length}'::text[], '{sum}'::text[], 8);"
+	psql -c "call generate_overviews('total_road_length_h3', '{total_road_length}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 ### Global solar atlas ###

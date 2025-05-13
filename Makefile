@@ -368,7 +368,6 @@ db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_seg
 
 db/table/osm_road_segments_h3: db/table/osm_road_segments | db/procedure/generate_overviews db/table ## osm road segments aggregated to h3
 	psql -f tables/osm_road_segments_h3.sql
-	psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 db/table/osm_road_segments_6_months: db/table/osm_roads db/table/osm_meta | db/table ## osm road segments for 6 months

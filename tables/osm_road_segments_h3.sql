@@ -7,5 +7,8 @@ create table osm_road_segments_h3  as (
     from osm_road_segments r,
          ST_DumpSegments(st_segmentize(r.seg_geom::geography, 25)::geometry) s
     where seg_geom is not null
-    group by h3
-);
+    group by h3);
+
+call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);
+
+create index on osm_road_segments_h3 (h3);

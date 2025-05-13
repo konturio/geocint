@@ -171,3 +171,5 @@ create table disaster_event_episodes_h3 as (
 
 -- drop table if exists disaster_event_episodes_validated_subdivided;
 -- drop table if exists disaster_event_episodes_h3_multidaterange;
+
+create index on disaster_event_episodes_h3 (h3);

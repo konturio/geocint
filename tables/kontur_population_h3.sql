@@ -306,3 +306,4 @@ create table kontur_population_h3 as (
 
 drop table if exists kontur_population_mid4m;
 create index on kontur_population_h3 using gist (resolution, geom);
+create index on kontur_population_h3 (h3);

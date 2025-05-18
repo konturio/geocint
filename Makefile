@@ -316,7 +316,7 @@ db/table/facebook_roads_in: data/mid/facebook_roads/extracted | db/table ## Load
 	psql -c "create table facebook_roads_raw (way_fbid text, highway_tag text, geom geometry(geometry, 4326));"
 	ls data/mid/facebook_roads/*.gpkg | parallel 'ogr2ogr --config PG_USE_COPY YES -append -f PostgreSQL PG:"dbname=gis" {} -nln facebook_roads_raw'
 	psql -c "drop table if exists facebook_roads_in;"
-	psql -c "create table facebook_roads_in as (select way_fbid, highway_tag, st_segmentize(geom::geography, 25)::geometry as geom from facebook_roads_raw);"
+	psql -c "create table facebook_roads_in as (select way_fbid, highway_tag, ST_Segmentize(geom::geography, 25)::geometry as geom from facebook_roads_raw);"
 	psql -c "vacuum analyse facebook_roads_in;"
 	psql -c "drop table if exists facebook_roads_raw;"
 	touch $@
@@ -1457,7 +1457,7 @@ db/table/microsoft_buildings: data/in/microsoft_buildings/validity_controlled | 
 	psql -c "create table microsoft_buildings_in(feature jsonb);"
 	find data/in/microsoft_buildings -name "*.csv.gz" | parallel --eta zcat {} | psql -c "COPY microsoft_buildings_in (feature) from stdin with (format csv, header false, delimiter E'\t', quote E'\b', escape E'\b');"
 	psql -c "drop table if exists microsoft_buildings;"
-	psql -c "create table microsoft_buildings as (select st_setsrid(ST_GeomFromGeoJSON(feature ->> 'geometry'),4326) as geom from microsoft_buildings_in);"
+	psql -c "create table microsoft_buildings as (select ST_SetSRID(ST_GeomFromGeoJSON(feature ->> 'geometry'),4326) as geom from microsoft_buildings_in);"
 	psql -c "vacuum analyze microsoft_buildings;"
 	psql -c "drop table if exists microsoft_buildings_in;"
 	touch $@
@@ -1492,7 +1492,7 @@ db/table/microsoft_roads: data/mid/microsoft_roads/unzip | db/table  ## Microsof
 	## file for USA has different structure - only geom, without code, so load it separately
 	awk '{print "UNK\t" $$0}' data/mid/microsoft_roads/USA.tsv | psql -c "COPY microsoft_roads_in (country, feature) from stdin with (format csv, header false, delimiter E'\t', quote E'\b', escape E'\b');"
 	psql -c "drop table if exists microsoft_roads;"
-	psql -c "create table microsoft_roads as (select st_setsrid(ST_GeomFromGeoJSON(feature ->> 'geometry'),4326) as geom from microsoft_roads_in);"
+	psql -c "create table microsoft_roads as (select ST_SetSRID(ST_GeomFromGeoJSON(feature ->> 'geometry'),4326) as geom from microsoft_roads_in);"
 	psql -c "vacuum analyze microsoft_roads;"
 	psql -c "drop table if exists microsoft_roads_in;"
 	touch $@
@@ -1633,7 +1633,7 @@ data/out/kontur_population_v5_r6.gpkg.gz: db/table/kontur_population_v5_h3 | dat
 	rm -f data/out/kontur_population_v5_r6.gpkg
 	ogr2ogr \
 		-f GPKG \
-		-sql "select h3, population, st_transform(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v5_h3 where population > 0 and resolution = 6 order by h3" \
+		-sql "select h3, population, ST_Transform(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v5_h3 where population > 0 and resolution = 6 order by h3" \
 		-lco "SPATIAL_INDEX=YES" \
 		-nln population \
 		-gt 65536 \
@@ -1646,7 +1646,7 @@ data/out/kontur_population_v5_r4.gpkg.gz: db/table/kontur_population_v5_h3 | dat
 	rm -f data/out/kontur_population_v5_r4.gpkg
 	ogr2ogr \
 		-f GPKG \
-		-sql "select h3, population, st_transform(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v5_h3 where population > 0 and resolution = 4 order by h3" \
+		-sql "select h3, population, ST_Transform(h3_cell_to_boundary_geometry(h3), 3857) from kontur_population_v5_h3 where population > 0 and resolution = 4 order by h3" \
 		-lco "SPATIAL_INDEX=YES" \
 		-nln population \
 		-gt 65536 \
@@ -2024,7 +2024,7 @@ db/function/calculate_isodist_h3: db/table/osm_road_segments | db/function ## H3
 db/table/update_isochrone_destinations_h3_r8: db/table/isochrone_destinations_new db/table/isochrone_destinations_h3_r8 db/function/calculate_isodist_h3 | db/table ## Aggregate 30 km isodists to H3 hexagons with resolution 8 for new isochrone destinations.
 	psql -c 'delete from isochrone_destinations_h3_r8 where osm_id in (select osm_id from isochrone_destinations except all select osm_id from isochrone_destinations_new);'
 	psql -c 'vacuum isochrone_destinations_h3_r8;'
-	psql -X -c 'copy (select osm_id from isochrone_destinations_new except all select osm_id from isochrone_destinations) to stdout;' | parallel --eta 'psql -c "insert into isochrone_destinations_h3_r8(osm_id, h3, type, distance, geom) select d.osm_id, i.h3, d.type, i.distance, st_setsrid(i.geom, 4326) from isochrone_destinations_new d, calculate_isodist_h3(geom, 30000, 8) i where d.osm_id = {};"'
+	psql -X -c 'copy (select osm_id from isochrone_destinations_new except all select osm_id from isochrone_destinations) to stdout;' | parallel --eta 'psql -c "insert into isochrone_destinations_h3_r8(osm_id, h3, type, distance, geom) select d.osm_id, i.h3, d.type, i.distance, ST_SetSRID(i.geom, 4326) from isochrone_destinations_new d, calculate_isodist_h3(geom, 30000, 8) i where d.osm_id = {};"'
 	touch $@
 
 db/table/update_isochrone_destinations: db/table/update_isochrone_destinations_h3_r8 | db/table ## Update update_isochrone_destinations table.
@@ -2517,7 +2517,7 @@ db/table/populated_areas_proximity_h3_r8: db/table/populated_areas_proximity | d
 ### Proximity to electric power substations ###
 
 data/in/power_substations.gpkg: db/index/osm_tags_idx | data/in ## Get power substations GPKG
-	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "power_substations" -sql "SELECT osm_id, st_centroid(geog)::geometry as geometry FROM osm WHERE tags@>'{\"power\":\"substation\"}'"
+	ogr2ogr -f GPKG $@ PG:"dbname=gis" -nln "power_substations" -sql "SELECT osm_id, ST_Centroid(geog)::geometry as geometry FROM osm WHERE tags@>'{\"power\":\"substation\"}'"
 	touch $@
 
 data/mid/power_substations: | data/mid ## Directory for calculations of power substations proximity
@@ -2610,7 +2610,7 @@ db/table/hot_projects: data/in/hot_projects/hot_projects | db/table ##load hot p
 	psql -c "alter table hot_projects drop column mappingtypes;"
 	psql -c "alter table hot_projects add column mappingtypes character varying[];"
 	ls -S data/in/hot_projects/hot_projects_*.geojson | parallel -j 1 'ogr2ogr -append -f PostgreSQL -a_srs EPSG:4326 PG:"dbname=gis" {} -nln hot_projects --config PG_USE_COPY YES'
-	psql -c "update hot_projects set geom = st_makevalid(geom);"
+	psql -c "update hot_projects set geom = ST_MakeValid(geom);"
 	psql -c "create index on hot_projects using gist(geom);"
 	touch $@
 

@@ -1,6 +1,6 @@
 drop table if exists isodist_hospitals_h3_distinct;
 create table isodist_hospitals_h3_distinct as (
-    select h3, min(distance) as distance, st_setsrid(geom,4326) as geom
+    select h3, min(distance) as distance, ST_SetSRID(geom,4326) as geom
     from isochrone_destinations_h3_r8
     where type = 'hospital'
     group by h3, geom

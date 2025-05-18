@@ -3,7 +3,7 @@ create table osm_poles_towers as (
     select osm_id, 
            osm_type, 
            tags, 
-           st_normalize(geog::geometry) as geom 
+           ST_Normalize(geog::geometry) as geom 
     from osm 
     where tags @> '{"power":"pole"}' 
        or tags @> '{"power":"tower"}'
@@ -17,7 +17,7 @@ create table gatlinburg_poles as (
            'osm'    as source,
            geom
     from osm_poles_towers p, gatlinburg g 
-    where st_intersects(p.geom, g.geom)
+    where ST_Intersects(p.geom, g.geom)
     union all
     select objectid,
            source,

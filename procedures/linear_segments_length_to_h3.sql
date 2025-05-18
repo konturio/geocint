@@ -26,9 +26,9 @@ declare
 begin
     
     if mode = 'dump' then
-        source_data := 'st_dumpsegments(r.geom) s';
+        source_data := 'ST_DumpSegments(r.geom) s';
     elsif mode = 'split_and_dump' then
-        source_data := 'st_dumpsegments(st_segmentize(r.geom::geography, ' || split_distance || ')::geometry) s';
+        source_data := 'ST_DumpSegments(ST_Segmentize(r.geom::geography, ' || split_distance || ')::geometry) s';
     else
         raise exception 'Wrong mode value. Available options: dump, split_and_dump';
     end if;
@@ -38,8 +38,8 @@ begin
     sql := format('
         create table %I as 
         select 
-            h3_lat_lng_to_cell(st_startpoint(s.geom)::point, %s) as h3,
-            sum(st_length(s.geom::geography)) as %I,
+            h3_lat_lng_to_cell(ST_StartPoint(s.geom)::point, %s) as h3,
+            sum(ST_Length(s.geom::geography)) as %I,
             %L::integer as resolution
         from %I r, %s
         where s.geom is not null

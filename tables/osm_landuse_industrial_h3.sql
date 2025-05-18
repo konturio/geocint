@@ -19,13 +19,13 @@ create table osm_landuse_industrial_plain as (
 drop table if exists osm_landuse_industrial_h3_in;
 create table osm_landuse_industrial_h3_in as (
     select h3,
-           st_setsrid(h3_cell_to_boundary_geometry(h3), 4326) as geom
+           ST_SetSRID(h3_cell_to_boundary_geometry(h3), 4326) as geom
     from (select distinct h3_polygon_to_cells(geom, 8) as h3
           from osm_landuse_industrial_plain
           union
           select distinct h3_grid_path_cells(
-                                  h3_lat_lng_to_cell(st_startpoint(b.line_segment)::point, 8),
-                                  h3_lat_lng_to_cell(st_endpoint(b.line_segment)::point, 8))
+                                  h3_lat_lng_to_cell(ST_StartPoint(b.line_segment)::point, 8),
+                                  h3_lat_lng_to_cell(ST_EndPoint(b.line_segment)::point, 8))
                 from
                      (select (ST_DumpSegments(geom)).geom as line_segment from osm_landuse_industrial_plain) b
          ) a

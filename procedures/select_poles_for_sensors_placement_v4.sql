@@ -8,8 +8,8 @@ drop table if exists gatlinburg_stat_h3_r10_filtred;
 create table gatlinburg_stat_h3_r10_filtred as (
     select distinct s.*
     from gatlinburg_stat_h3_r10 s,
-         (select st_collect(p.geom)::geography as geog from gatlinburg_poles p) q
-    where not ST_Dwithin(q.geog,
+         (select ST_Collect(p.geom)::geography as geog from gatlinburg_poles p) q
+    where not ST_DWithin(q.geog,
                          ST_Transform(s.geom, 4326)::geography,
                          1609.3/2)
 );
@@ -32,7 +32,7 @@ create table gatlinburg_stat_h3_r10_clusters as (
 -- transform cluster areas to centroids (proposed sensors placement)
 drop table if exists proposed_centroids ;
 create table proposed_centroids as (
-    select ST_Setsrid(ST_Centroid(ST_Collect(geom)),3857) as geom, 
+    select ST_SetSRID(ST_Centroid(ST_Collect(geom)),3857) as geom, 
            row_number() over (order by sum(cost) desc) n, 
            sum(cost),
            ST_WeightedCentroids(geom, cost) as weighted_centroid
@@ -51,7 +51,7 @@ create table gatlinburg_candidates_in as (
           union all
           select 'centroid' as source,
                  n + 10000 as id,
-                 ST_Transform(ST_Setsrid(geom,3857),4326) geom
+                 ST_Transform(ST_SetSRID(geom,3857),4326) geom
           from proposed_centroids) a,
         gatlinburg g
     where ST_Within(a.geom,g.geom)
@@ -68,7 +68,7 @@ create table gatlinburg_candidates as (
            g.geom::geography as geog           
     from gatlinburg_candidates_in g,
          gatlinburg_stat_h3_r10 c
-    where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4827.9) -- 3 mile zone
+    where ST_DWithin(ST_Transform(g.geom,3857), c.geom, 4827.9) -- 3 mile zone
     group by 1,2,4,6
 );
 
@@ -111,7 +111,7 @@ create table proposed_points_1_scenario as (
 update gatlinburg_candidates_copy
 set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
 from (select geog from proposed_points_1_scenario) k
-where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3218.6);
+where ST_DWithin(gatlinburg_candidates_copy.geog,k.geog,3218.6);
 
 -- use nested cycle with 5 iteration to optimize cluster placement
 -- after first naive attempt move starting point to the nearest to cluster centroid point
@@ -147,7 +147,7 @@ begin
                 set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
                 from (select ST_Collect(geog::geometry)::geography as geog
                       from proposed_points_1_scenario) k
-                where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3218.6);
+                where ST_DWithin(gatlinburg_candidates_copy.geog,k.geog,3218.6);
 
                 counter := counter + 1;
             end loop;
@@ -207,7 +207,7 @@ begin
         update gatlinburg_candidates_copy
         set dist_network = ST_Distance(gatlinburg_candidates_copy.geog,k.geog)
         from (select geog from proposed_points_1_scenario) k
-        where ST_Dwithin(gatlinburg_candidates_copy.geog,k.geog,3218.6);
+        where ST_DWithin(gatlinburg_candidates_copy.geog,k.geog,3218.6);
 
         out_counter := out_counter + 1;
     end loop;
@@ -254,11 +254,11 @@ create table gatlinburg_candidates as (
            g.geog
     from gatlinburg_candidates_in g,
          gatlinburg_stat_h3_r10 c
-    where ST_Dwithin(c.geog, g.geog, 4827.9) -- 3 mile zone
-    -- ST_Dwithin shouldn't be used with 3857, but this option was used for generation result, that we took as a final
+    where ST_DWithin(c.geog, g.geog, 4827.9) -- 3 mile zone
+    -- ST_DWithin shouldn't be used with 3857, but this option was used for generation result, that we took as a final
     -- fixed, but keep this line to be able repeat if needed (uncomment 2 lines below)
     -- from gatlinburg_candidates_in g, gatlinburg_stat_h3_r10 c
-    -- where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4827.9) -- 3 mile zone
+    -- where ST_DWithin(ST_Transform(g.geom,3857), c.geom, 4827.9) -- 3 mile zone
     group by 1,2,4,6
 );
 
@@ -281,7 +281,7 @@ create table gatlinburg_candidates_in as (
           union all
           select 'centroid' as source,
                  n + 10000 as id,
-                 ST_Transform(ST_Setsrid(geom,3857),4326) geom
+                 ST_Transform(ST_SetSRID(geom,3857),4326) geom
           from prop_cent_filtered) a,
         gatlinburg g
     where ST_Within(a.geom,g.geom)
@@ -301,12 +301,12 @@ create table gatlinburg_candidates as (
     from gatlinburg_candidates_in g,
          gatlinburg_stat_h3_r10_geog c,
          (select ST_Collect(geog::geometry)::geography as geog from proposed_points_2_scenario_first_cluster) p
-    where ST_Dwithin(c.geog, g.geog, 4827.9) -- 3 mile zone
-          and not ST_Dwithin(g.geog,p.geog,4827.9)
-    -- ST_Dwithin shouldn't be used with 3857, but this option was used for generation result, that we took as a final
+    where ST_DWithin(c.geog, g.geog, 4827.9) -- 3 mile zone
+          and not ST_DWithin(g.geog,p.geog,4827.9)
+    -- ST_DWithin shouldn't be used with 3857, but this option was used for generation result, that we took as a final
     -- fixed, but keep this line to be able repeat if needed (uncomment 2 lines below)
     -- from gatlinburg_candidates_in g, gatlinburg_stat_h3_r10 c
-    -- where ST_Dwithin(ST_Transform(g.geom,3857), c.geom, 4827.9) -- 3 mile zone
+    -- where ST_DWithin(ST_Transform(g.geom,3857), c.geom, 4827.9) -- 3 mile zone
     group by 1,2,4,6
 );
 

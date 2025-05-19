@@ -4581,17 +4581,7 @@ deploy_indicators/dev/custom_axis/all_custom_axis: \
     deploy_indicators/dev/custom_axis/wildfire_days_count_area_km2 \
     deploy_indicators/dev/custom_axis/wildfire_days_count_one \
     deploy_indicators/dev/custom_axis/man_distance_to_hospital_population \
-    | \
-    deploy_indicators/dev/custom_axis \
-    ## \
-    final \
-    target \
-    for \
-    custom \
-    axis \
-    deployment \
-    to \
-    dev
+    | deploy_indicators/dev/custom_axis ##  final target for custom axis deployment to dev
 	touch $@
 
 ## END dev upload
@@ -5512,8 +5502,7 @@ deploy_indicators/test/custom_axis/man_distance_to_hospital_population: deploy_i
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_hospital" "population"
-	touch \
-    $@
+	touch $@
 
 deploy_indicators/test/custom_axis/highway_length_area_km2: deploy_indicators/test/uploads/highway_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for highway_length area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"

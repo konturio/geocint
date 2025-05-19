@@ -730,6 +730,27 @@ values ('sports_and_recreation_fsq_count', 'Sports and recreation', jsonb_build_
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('events_fsq_count', 'Events', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of event POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🎉','proportional');
 
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
+values ('wind_farms', 'Wind farms', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["unimportant"], ["important"]]'::jsonb, 'Number of wind power generators in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🌬️⚡','proportional');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
+values ('pipeline_length', 'Pipeline length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["unimportant"], ["important"]]'::jsonb, 'Total length of pipelines in OpenStreetMap.', 'World', 'daily', 'km', TRUE, '🛢️','proportional');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
+values ('communication_line_length', 'Communication lines length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["unimportant"], ["important"]]'::jsonb, 'Total length of communication lines in OpenStreetMap.', 'World', 'daily', 'km', TRUE, '📡','proportional');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
+values ('motor_vehicle_road_length', 'Motor vehicle road length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["unimportant"], ["important"]]'::jsonb, 'Length of roads drivable by motor vehicle in OpenStreetMap.', 'World', 'daily', 'km', TRUE, '🚗🛣️','proportional');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
+values ('timezone_offset', 'Timezone UTC offset', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["neutral"], ["neutral"]]'::jsonb, 'Average timezone offset from UTC according to timezone tag.', 'World', 'daily', 'h', TRUE, '🕓','equal');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
+values ('building_start_year', 'Building construction year', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["old"], ["new"]]'::jsonb, 'Average construction year of buildings from start_date tag.', 'World', 'daily', 'years', TRUE, '🏠📅','equal');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
+values ('railway_length', 'Railway length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["unimportant"], ["important"]]'::jsonb, 'Total length of railways in OpenStreetMap.', 'World', 'daily', 'km', TRUE, '🚆','proportional');
+
 -- set indicator is_base to become denominators
 update bivariate_indicators
 set is_base = true

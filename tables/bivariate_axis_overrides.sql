@@ -63,7 +63,12 @@ values
     ('man_distance_to_food_shops_eatery', 'population', 'Distance to food shops and eatery'),
     ('waste_basket_coverage_area_km2' , 'populated_area_km2', 'Waste basket coverage (coverage / populated area)'),
     ('man_distance_to_bomb_shelters', 'population', 'Distance to shelters'),
-    ('solar_power_plants', 'area_km2', 'Solar power plants');
+    ('solar_power_plants', 'area_km2', 'Solar power plants'),
+    ('wind_farms', 'area_km2', 'Wind farms'),
+    ('pipeline_length', 'area_km2', 'Pipeline length'),
+    ('communication_line_length', 'area_km2', 'Communication line length'),
+    ('motor_vehicle_road_length', 'area_km2', 'Drivable road length'),
+    ('railway_length', 'area_km2', 'Railway length');
 
 
 insert into bivariate_axis_overrides

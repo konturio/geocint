@@ -2,7 +2,7 @@ set timezone to 'UTC';
 
 drop table if exists global_fires_stat_h3;
 create table global_fires_stat_h3 as (
-    select h3_lat_lng_to_cell(ST_SetSrid(ST_Point(longitude, latitude), 4326)::point, 8) as h3,
+    select h3_lat_lng_to_cell(ST_SetSRID(ST_Point(longitude, latitude), 4326)::point, 8) as h3,
            count(distinct date_trunc('day', acq_datetime))                  as wildfires,
            array_agg(distinct date_trunc('day', acq_datetime))              as days_array,
            8                                                                as resolution

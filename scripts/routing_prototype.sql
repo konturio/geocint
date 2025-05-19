@@ -28,7 +28,7 @@ event_buffer(geom) as (
 hexes(h3) as materialized (
     select h3
     from stat_h3_geom st, event_buffer
-    where st_intersects(st.geom, event_buffer.geom)
+    where ST_Intersects(st.geom, event_buffer.geom)
         and resolution = :resolution
 ),
 population (h3, population) as (
@@ -47,7 +47,7 @@ danger_zones(h3, danger_estimate) as (
     select h3, 1000
     from stat_h3_geom st
     join population using(h3), event
-    where st_intersects(st.geom, event.geom)
+    where ST_Intersects(st.geom, event.geom)
         and resolution = :resolution
 ),
 passable_roads (h3, passability) as (
@@ -84,7 +84,7 @@ select
     d1.h3 source_h3,
     h3index_to_bigint(d2.h3) as target,
     d2.h3 target_h3,
-    st_makeline(
+    ST_MakeLine(
         h3_cell_to_lat_lng(d1.h3)::geometry,
         h3_cell_to_lat_lng(d2.h3)::geometry) geom,
     case
@@ -146,7 +146,7 @@ select
     r.start_vid path_start,
     r.end_vid path_end,
     -- for equal (source, target) tuple there can be 2 distinct geometries depending on edge orientation in current path
-    ST_SetSRID(st_makeline(
+    ST_SetSRID(ST_MakeLine(
         h3_cell_to_lat_lng(case node when source then source_h3 else target_h3 end)::geometry,
         h3_cell_to_lat_lng(case node when source then target_h3 else source_h3 end)::geometry), 4326) geom,
     start_h3.population as population_in_danger,

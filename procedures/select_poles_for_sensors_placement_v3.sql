@@ -128,7 +128,7 @@ from gatlinburg_stat_h3_r10;
 -- transform cluster areas to centroids (proposed sensors placement)
 drop table if exists proposed_centroids ;
 create table proposed_centroids as (
-    select st_centroid(st_collect(geom)) as geom, 
+    select ST_Centroid(ST_Collect(geom)) as geom,
            row_number() over (order by sum(cost) desc) n, 
            sum(cost),
            ST_WeightedCentroids(geom, cost) AS weighted_centroid
@@ -140,7 +140,7 @@ drop table if exists gatlinburg_stat_h3_r10_copy;
 create table gatlinburg_stat_h3_r10_copy as (
     select h3, 
            cost, 
-           st_transform(geom,4326) as geom
+           ST_Transform(geom,4326) as geom
     from gatlinburg_stat_h3_r10
 );
 

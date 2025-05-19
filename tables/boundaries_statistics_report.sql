@@ -7,8 +7,8 @@ create table boundaries_statistics_report_in as (
 	       c.location,
 	       c.population,
 	       string_agg('href_['||h.id::text||'](https://tasks.hotosm.org/projects/'||h.id::text||')',', ') as projects,
-	       st_transform(c.geom, 3857)                                                               as geom
-	from kontur_boundaries_export c left join hot_projects h on st_intersects(c.geom, h.geom)
+	       ST_Transform(c.geom, 3857)                                                               as geom
+	from kontur_boundaries_export c left join hot_projects h on ST_Intersects(c.geom, h.geom)
 	where c.osm_admin_level ~E'^\\d+$' 
 	      and c.osm_admin_level::integer <= 5
 	group by 1,2,3,4,5,6,8
@@ -33,7 +33,7 @@ create table boundaries_statistics_prepared as (
 	                                r.highway_length,
 	                                o.count,
 	                                d.hazardous_days_count
-    from boundaries_geom_prepared b left join land_polygons_h3_r8 s on st_intersects(b.geom, s.geom)
+    from boundaries_geom_prepared b left join land_polygons_h3_r8 s on ST_Intersects(b.geom, s.geom)
          left join osm_object_count_grid_h3 o on (s.h3 = o.h3)
          left join kontur_population_h3 p on (s.h3 = p.h3)
          left join osm_road_segments_h3 r on (s.h3 = r.h3)

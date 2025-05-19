@@ -16,7 +16,7 @@ alter sequence us_counties_boundary_admin_id_seq OWNED BY us_counties_boundary.a
 
 --Utah
 insert into us_counties_boundary (gid, geom, state, county, hasc_code, fips_code)
-select 'USA.45', st_multi(st_union(geom)), 'Utah', '', 'US.UT', '49000'
+select 'USA.45', ST_Multi(ST_Union(geom)), 'Utah', '', 'US.UT', '49000'
 from us_counties_boundary
 where hasc_code like 'US.UT%';
 

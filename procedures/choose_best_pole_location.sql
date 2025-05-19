@@ -28,7 +28,7 @@ begin
     execute 'update ' || input_table || ' g
     set dist_network = ST_Distance(g.geog,k.geog)
     from (select geog from ' || output_table || ') k
-    where ST_Dwithin(g.geog,k.geog, ' || entry_range[2] || ')';
+    where ST_DWithin(g.geog,k.geog, ' || entry_range[2] || ')';
 
     while counter < number_points loop
 
@@ -47,7 +47,7 @@ begin
         set dist_network = ST_Distance(g.geog,k.geog)
         from (select ST_Collect(geog::geometry)::geography as geog
               from ' || output_table || ') k
-        where ST_Dwithin(g.geog,k.geog, ' || entry_range[2] || ')';
+        where ST_DWithin(g.geog,k.geog, ' || entry_range[2] || ')';
 
         counter := counter + 1;
 

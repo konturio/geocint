@@ -1,6 +1,6 @@
 drop table if exists isodist_fire_stations_h3_distinct;
 create table isodist_fire_stations_h3_distinct as (
-    select h3, min(distance) as distance, st_setsrid(geom,4326) as geom
+    select h3, min(distance) as distance, ST_SetSRID(geom,4326) as geom
     from isochrone_destinations_h3_r8
     where type = 'fire_station'
     group by h3, geom

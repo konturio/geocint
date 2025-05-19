@@ -51,7 +51,7 @@ begin
     avg_x := (state -> 'sum_x')::float / (state -> 'sum_cost')::float;
     avg_y := (state -> 'sum_y')::float / (state -> 'sum_cost')::float;
 
-    return ST_Transform(ST_Setsrid(ST_makepoint(avg_x, avg_y), 3857), 4326);
+    return ST_Transform(ST_SetSRID(ST_makepoint(avg_x, avg_y), 3857), 4326);
 end;
 $$
     language plpgsql

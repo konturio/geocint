@@ -7,7 +7,7 @@ drop table if exists hdx_boundaries_iso3_bbox;
 create table hdx_boundaries_iso3_bbox as
 with cnt_polygons as (select  code,
                               hasc_wiki,
-                              st_union(geom) as geom
+                              ST_Union(geom) as geom
                       from hdx_boundaries,
                            hdx_locations_with_wikicodes as hc
                       where hasc_wiki = hc.hasc
@@ -18,12 +18,12 @@ select  code,
                 replace(
                     replace(
                         (case 
-                            when ST_Distance(ST_Centroid(st_envelope(geom)),
+                            when ST_Distance(ST_Centroid(ST_Envelope(geom)),
                                              ST_Centroid(geom::geography)::geometry) > 
-                                 ST_Distance(ST_Centroid(st_envelope(ST_ShiftLongitude(geom))), 
+                                 ST_Distance(ST_Centroid(ST_Envelope(ST_ShiftLongitude(geom))), 
                                              ST_Union(ST_Centroid(geom::geography)::geometry, 
                                                       ST_ShiftLongitude(ST_Centroid(geom::geography)::geometry)))                                             
-                            then box2d(st_shiftlongitude(geom))
+                            then box2d(ST_ShiftLongitude(geom))
                             else box2d(geom)
                         end)::text,'(','='),
                     ')',''),

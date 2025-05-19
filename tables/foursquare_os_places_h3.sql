@@ -1,7 +1,7 @@
 drop table if exists foursquare_os_places_h3;
 create table foursquare_os_places_h3 as (
     select 
-        h3_lat_lng_to_cell(ST_SetSrid(ST_Point(longitude, latitude), 4326)::point, 8) as h3,
+        h3_lat_lng_to_cell(ST_SetSRID(ST_Point(longitude, latitude), 4326)::point, 8) as h3,
         count(*)                                                                      as foursquare_os_places_count,
         count(*) filter (where '4bf58dd8d48988d1e0931735' = any(fsq_category_ids))    as coffee_shops_fsq_count,
         count(*) filter (where '5283c7b4e4b094cb91ec88d7' = any(fsq_category_ids))    as kebab_restaurants_fsq_count,

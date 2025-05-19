@@ -16,7 +16,6 @@ current_date:=$(shell date '+%Y%m%d')
 # runner_make contains basic set of targets for creation project folder structure
 # osm_make contains contain set of targets for osm data processing
 include runner_make osm_make
-include scripts/upload_deps.mk
 
 ## ------------- CONTROL BLOCK -------------------------
 

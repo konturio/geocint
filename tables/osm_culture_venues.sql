@@ -28,24 +28,25 @@ create table osm_culture_venues as (
             end as type,
             tags ->> 'name' as name,
             tags
-    from osm o
+from osm o
+    -- index-friendly tag compares
     where (tags ? 'historic' and tags ->> 'historic' is not null)
-          or tags ->> 'amenity' = 'museum'
-          or tags ->> 'building' in ('museum','castle')
-          or tags ->> 'tourism' = 'museum'
-          or tags ->> 'tourism' in ('artwork','gallery')
-          or tags ->> 'amenity' in ('exhibition_centre','arts_centre')
-          or tags ->> 'amenity' in ('theatre','cinema','brothel','casino',
-                                            'fountain','gambling','love_hotel',
-                                            'music_venue','nightclub','planetarium',
-                                            'public_bookcase','library','stripclub',
-                                            'swingerclub','dive_center','public_bath',
-                                            'bbq','sports_centre')
-          or tags ->> 'amenity' in ('community_centre','conference_centre',
-                                            'events_venue','exhibition_centre',
-                                            'social_centre','stage','townhall',
-                                            'internet_cafe','place_of_mourning',
-                                            'social_facility','training')
+          or tags @> '{"amenity":"museum"}'
+          or (tags ? 'building' and tags->>'building' in ('museum','castle'))
+          or tags @> '{"tourism":"museum"}'
+          or (tags ? 'tourism' and tags->>'tourism' in ('artwork','gallery'))
+          or (tags ? 'amenity' and tags->>'amenity' in ('exhibition_centre','arts_centre'))
+          or (tags ? 'amenity' and tags->>'amenity' in ('theatre','cinema','brothel','casino',
+                                              'fountain','gambling','love_hotel',
+                                              'music_venue','nightclub','planetarium',
+                                              'public_bookcase','library','stripclub',
+                                              'swingerclub','dive_center','public_bath',
+                                              'bbq','sports_centre'))
+          or (tags ? 'amenity' and tags->>'amenity' in ('community_centre','conference_centre',
+                                              'events_venue','exhibition_centre',
+                                              'social_centre','stage','townhall',
+                                              'internet_cafe','place_of_mourning',
+                                              'social_facility','training'))
 
     order by 1,2,_ST_SortableHash(geog::geometry)
 );

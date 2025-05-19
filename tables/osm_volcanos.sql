@@ -5,8 +5,10 @@ create table osm_volcanos as (
            tags ->> 'volcano:status' as status,
            geog::geometry            as geom
     from osm
+    -- index-friendly tag compares
     where tags @> '{"natural":"volcano"}'
-      and tags ->> 'volcano:status' in ('active', 'dormant')
+      and tags ? 'volcano:status'
+      and tags->>'volcano:status' in ('active', 'dormant')
       and ST_Dimension(geog::geometry) = 0
 );
 

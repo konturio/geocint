@@ -13,12 +13,13 @@ create table osm_unpopulated as (
     where
         (tags?'natural' or tags?'landuse' or tags?'population' or tags?'highway')
 	and
-	(
-	        (tags ->> 'natural') in ('wood', 'glacier', 'wetland', 'sand')
-	        or (tags ->> 'landuse') in ('forest', 'quarry', 'farmland')
-	        or tags @> '{"population":"0"}'
-	        or (tags ->> 'highway') in ('motorway','trunk', 'primary', 'secondary', 'tertiary')
-	)
+        (
+                -- index-friendly tag compares
+                (tags ? 'natural' and tags->>'natural' in ('wood', 'glacier', 'wetland', 'sand'))
+                or (tags ? 'landuse' and tags->>'landuse' in ('forest', 'quarry', 'farmland'))
+                or tags @> '{"population":"0"}'
+                or (tags ? 'highway' and tags->>'highway' in ('motorway','trunk', 'primary', 'secondary', 'tertiary'))
+        )
 );
 
 create index on osm_unpopulated using gist (geom);

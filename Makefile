@@ -16,24 +16,166 @@ current_date:=$(shell date '+%Y%m%d')
 # runner_make contains basic set of targets for creation project folder structure
 # osm_make contains contain set of targets for osm data processing
 include runner_make osm_make
+include scripts/upload_deps.mk
 
 ## ------------- CONTROL BLOCK -------------------------
 
-all: prod db/table/all_datasets dev deploy/geocint/users_tiles db/table/iso_codes db/table/un_population deploy/geocint/docker_osrm_backend data/out/kontur_boundaries_per_country/export db/function/build_isochrone deploy/dev/users_tiles db/table/ghsl_h3 data/out/ghsl_output/export_gpkg data/out/kontur_topology_boundaries_per_country/export data/out/hdxloader/hdxloader_update_customviz deploy/kontur_boundaries_new_release_on_hdx db/table/ndpba_rva_h3 db/table/global_rva_h3 db/table/osm_buildings_use db/index/osm_addresses_geom_idx data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement db/table/us_counties_boundary deploy_indicators/prod/uploads/population_next_gen_upload deploy_indicators/prod/uploads/populated_area_km2_next_gen_upload ## [FINAL] Meta-target on top of all other targets, or targets on parking.
+all: prod \
+    db/table/all_datasets \
+    dev \
+    deploy/geocint/users_tiles \
+    db/table/iso_codes \
+    db/table/un_population \
+    deploy/geocint/docker_osrm_backend \
+    data/out/kontur_boundaries_per_country/export \
+    db/function/build_isochrone \
+    deploy/dev/users_tiles \
+    db/table/ghsl_h3 \
+    data/out/ghsl_output/export_gpkg \
+    data/out/kontur_topology_boundaries_per_country/export \
+    data/out/hdxloader/hdxloader_update_customviz \
+    deploy/kontur_boundaries_new_release_on_hdx \
+    db/table/ndpba_rva_h3 \
+    db/table/global_rva_h3 \
+    db/table/osm_buildings_use \
+    db/index/osm_addresses_geom_idx \
+    data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement \
+    db/table/us_counties_boundary \
+    deploy_indicators/prod/uploads/population_next_gen_upload \
+    deploy_indicators/prod/uploads/populated_area_km2_next_gen_upload \
+    ## [FINAL] Meta-target on top of all other targets, or targets on parking.
 
-dev: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/dev/uploads/upload_dev data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/dev/reports/dev_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv deploy_indicators/dev/custom_axis/all_custom_axis deploy/s3/dev/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
+dev: deploy/geocint/belarus-latest.osm.pbf \
+    deploy/s3/test/osm_users_hex_dump \
+    deploy/test/users_tiles \
+    deploy/geocint/isochrone_tables \
+    deploy_indicators/dev/uploads/upload_dev \
+    data/out/kontur_population.gpkg.gz \
+    data/out/kontur_population_r6.gpkg.gz \
+    data/out/kontur_population_r4.gpkg.gz \
+    data/planet-check-refs \
+    deploy/s3/dev/reports/dev_reports_public \
+    data/out/kontur_population_per_country/export \
+    db/table/ndpba_rva_h3 \
+    deploy/s3/test/kontur_events_updated \
+    db/table/prescale_to_osm_check_changes \
+    data/out/kontur_population_v5_r4.gpkg.gz \
+    data/out/kontur_population_v5_r6.gpkg.gz \
+    data/out/kontur_population_v5_r4.csv \
+    data/out/kontur_population_v5_r6.csv \
+    data/out/kontur_population_v5.csv \
+    deploy_indicators/dev/custom_axis/all_custom_axis \
+    deploy/s3/dev/reports/reports.tar.gz \
+    | deploy/s3/cod_pcodes_general_dataset \
+    ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-test: deploy/geocint/belarus-latest.osm.pbf deploy/s3/test/osm_users_hex_dump deploy/test/users_tiles deploy/geocint/isochrone_tables deploy_indicators/test/uploads/upload_test data/out/kontur_population.gpkg.gz data/out/kontur_population_r6.gpkg.gz data/out/kontur_population_r4.gpkg.gz data/planet-check-refs deploy/s3/test/reports/test_reports_public data/out/kontur_population_per_country/export db/table/ndpba_rva_h3 deploy/s3/test/kontur_events_updated db/table/prescale_to_osm_check_changes data/out/kontur_population_v5_r4.gpkg.gz data/out/kontur_population_v5_r6.gpkg.gz data/out/kontur_population_v5_r4.csv data/out/kontur_population_v5_r6.csv data/out/kontur_population_v5.csv deploy_indicators/test/custom_axis/all_custom_axis deploy/s3/test/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Builds all targets for development. Run on every branch.
+test: deploy/geocint/belarus-latest.osm.pbf \
+    deploy/s3/test/osm_users_hex_dump \
+    deploy/test/users_tiles \
+    deploy/geocint/isochrone_tables \
+    deploy_indicators/test/uploads/upload_test \
+    data/out/kontur_population.gpkg.gz \
+    data/out/kontur_population_r6.gpkg.gz \
+    data/out/kontur_population_r4.gpkg.gz \
+    data/planet-check-refs \
+    deploy/s3/test/reports/test_reports_public \
+    data/out/kontur_population_per_country/export \
+    db/table/ndpba_rva_h3 \
+    deploy/s3/test/kontur_events_updated \
+    db/table/prescale_to_osm_check_changes \
+    data/out/kontur_population_v5_r4.gpkg.gz \
+    data/out/kontur_population_v5_r6.gpkg.gz \
+    data/out/kontur_population_v5_r4.csv \
+    data/out/kontur_population_v5_r6.csv \
+    data/out/kontur_population_v5.csv \
+    deploy_indicators/test/custom_axis/all_custom_axis \
+    deploy/s3/test/reports/reports.tar.gz \
+    | deploy/s3/cod_pcodes_general_dataset \
+    ## [FINAL] Builds all targets for development. Run on every branch.
 	touch $@
 	echo "Dev target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-prod: deploy/prod/users_tiles deploy/s3/prod/osm_users_hex_dump deploy_indicators/prod/uploads/upload_prod deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz data/out/reports/population_check deploy/s3/prod/reports/prod_reports_public data/planet-check-refs deploy/s3/topology_boundaries data/mid/mapswipe/mapswipe_s3_data_update deploy/s3/prod/kontur_events_updated data/out/kontur_boundaries/kontur_boundaries.gpkg.gz deploy/s3/kontur_default_languages.gpkg.gz data/out/reports/kontur_boundaries_compare_with_latest_on_hdx deploy_indicators/prod/custom_axis/all_custom_axis deploy/s3/prod/reports/reports.tar.gz | deploy/s3/cod_pcodes_general_dataset ## [FINAL] Deploys artifacts to production. Runs only on master branch.
+prod: deploy/prod/users_tiles \
+    deploy/s3/prod/osm_users_hex_dump \
+    deploy_indicators/prod/uploads/upload_prod \
+    deploy/s3/kontur_boundaries_for_boundary_selector.geojson.gz \
+    data/out/reports/population_check \
+    deploy/s3/prod/reports/prod_reports_public \
+    data/planet-check-refs \
+    deploy/s3/topology_boundaries \
+    data/mid/mapswipe/mapswipe_s3_data_update \
+    deploy/s3/prod/kontur_events_updated \
+    data/out/kontur_boundaries/kontur_boundaries.gpkg.gz \
+    deploy/s3/kontur_default_languages.gpkg.gz \
+    data/out/reports/kontur_boundaries_compare_with_latest_on_hdx \
+    deploy_indicators/prod/custom_axis/all_custom_axis \
+    deploy/s3/prod/reports/reports.tar.gz \
+    | deploy/s3/cod_pcodes_general_dataset \
+    ## [FINAL] Deploys artifacts to production. Runs only on master branch.
 	touch $@
 	echo "Prod target has built!" | python3 scripts/slack_message.py $$SLACK_CHANNEL ${SLACK_BOT_NAME} $$SLACK_BOT_EMOJI
 
-db/table/all_datasets: db/table/osm_object_count_grid_h3 db/table/osm_user_count_grid_h3 db/table/residential_pop_h3 db/table/gdp_h3 db/table/user_hours_h3 db/table/tile_logs_h3 db/table/global_fires_stat_h3 db/table/building_count_grid_h3 db/table/copernicus_landcover_h3 db/table/gebco_2022_h3 db/table/ndvi_2019_06_10_h3 db/table/kontur_population_v5_h3 db/table/osm_landuse_industrial_h3 db/table/osm_volcanos_h3 db/table/us_census_tracts_stats_h3 db/table/pf_maxtemp_h3 db/table/isodist_fire_stations_h3 db/table/isodist_hospitals_h3 db/table/facebook_roads_h3 db/table/tile_logs_bf2402_h3 db/table/osm_road_segments_h3 db/table/osm_road_segments_6_months_h3 db/table/disaster_event_episodes_h3 db/table/facebook_medium_voltage_distribution_h3 db/table/night_lights_h3 db/table/osm_places_food_shops_h3 db/table/osm_places_eatery_h3 db/table/mapswipe_hot_tasking_data_h3 db/table/total_road_length_h3 db/table/global_solar_atlas_h3 db/table/worldclim_temperatures_h3 db/table/isodist_bomb_shelters_h3 db/table/isodist_charging_stations_h3 db/table/waste_basket_coverage_h3 db/table/proximities_h3 db/table/solar_farms_placement_suitability_synthetic_h3 db/table/existing_solar_power_panels_h3 db/table/safety_index_h3 db/table/meta_forest_canopy_height_h3 db/table/worldbank_tax_rate_h3 db/table/wikidata_naturalization_gap_h3 db/table/ghs_building_height_grid_h3 db/table/osm_building_levels_h3 db/table/osm_hotels_h3 db/table/osm_culture_venues_h3 db/table/worldbank_inflation_h3 db/table/osm_pharmacy_h3 db/table/idmc_country_2023_h3 db/table/humanitarian_dev_index_2022_h3 db/table/osm_financial_venues_h3 db/table/osm_education_venues_h3 db/table/osm_emergency_facilities_h3 db/table/osm_transport_facilities_h3 db/table/osm_car_parkings_capacity_h3 db/table/osm_heritage_sites_h3 db/table/foursquare_os_places_h3 db/table/kontur_population_h3 | db/table ## service target to build all datasets without deployment
+db/table/all_datasets: \
+    db/table/osm_object_count_grid_h3 \
+    db/table/osm_user_count_grid_h3 \
+    db/table/residential_pop_h3 \
+    db/table/gdp_h3 \
+    db/table/user_hours_h3 \
+    db/table/tile_logs_h3 \
+    db/table/global_fires_stat_h3 \
+    db/table/building_count_grid_h3 \
+    db/table/copernicus_landcover_h3 \
+    db/table/gebco_2022_h3 \
+    db/table/ndvi_2019_06_10_h3 \
+    db/table/kontur_population_v5_h3 \
+    db/table/osm_landuse_industrial_h3 \
+    db/table/osm_volcanos_h3 \
+    db/table/us_census_tracts_stats_h3 \
+    db/table/pf_maxtemp_h3 \
+    db/table/isodist_fire_stations_h3 \
+    db/table/isodist_hospitals_h3 \
+    db/table/facebook_roads_h3 \
+    db/table/tile_logs_bf2402_h3 \
+    db/table/osm_road_segments_h3 \
+    db/table/osm_road_segments_6_months_h3 \
+    db/table/disaster_event_episodes_h3 \
+    db/table/facebook_medium_voltage_distribution_h3 \
+    db/table/night_lights_h3 \
+    db/table/osm_places_food_shops_h3 \
+    db/table/osm_places_eatery_h3 \
+    db/table/mapswipe_hot_tasking_data_h3 \
+    db/table/total_road_length_h3 \
+    db/table/global_solar_atlas_h3 \
+    db/table/worldclim_temperatures_h3 \
+    db/table/isodist_bomb_shelters_h3 \
+    db/table/isodist_charging_stations_h3 \
+    db/table/waste_basket_coverage_h3 \
+    db/table/proximities_h3 \
+    db/table/solar_farms_placement_suitability_synthetic_h3 \
+    db/table/existing_solar_power_panels_h3 \
+    db/table/safety_index_h3 \
+    db/table/meta_forest_canopy_height_h3 \
+    db/table/worldbank_tax_rate_h3 \
+    db/table/wikidata_naturalization_gap_h3 \
+    db/table/ghs_building_height_grid_h3 \
+    db/table/osm_building_levels_h3 \
+    db/table/osm_hotels_h3 \
+    db/table/osm_culture_venues_h3 \
+    db/table/worldbank_inflation_h3 \
+    db/table/osm_pharmacy_h3 \
+    db/table/idmc_country_2023_h3 \
+    db/table/humanitarian_dev_index_2022_h3 \
+    db/table/osm_financial_venues_h3 \
+    db/table/osm_education_venues_h3 \
+    db/table/osm_emergency_facilities_h3 \
+    db/table/osm_transport_facilities_h3 \
+    db/table/osm_car_parkings_capacity_h3 \
+    db/table/osm_heritage_sites_h3 \
+    db/table/foursquare_os_places_h3 \
+    db/table/kontur_population_h3 \
+    | db/table ## service target to build all datasets without deployment
 	touch $@
 
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
@@ -2057,15 +2199,13 @@ db/table/isodist_bomb_shelters_h3: db/table/update_isochrone_destinations db/tab
 ## Isochrones calculation block end
 
 db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manager
-	psql -c "drop table if exists global_rva_indexes;"
-	psql -c "create table global_rva_indexes (country_name text,iso_code text,hasc text,raw_mhe_pop_scaled numeric,raw_mhe_cap_scaled numeric,raw_mhe_index numeric,relative_mhe_pop_scaled numeric,relative_mhe_cap_scaled numeric,relative_mhe_index numeric,mhe_index numeric,life_expectancy_scale numeric,infant_mortality_scale numeric,maternal_mortality_scale numeric,prevalence_undernourished_scale numeric,vulnerable_health_status_index numeric,pop_wout_improved_sanitation_scale numeric,pop_wout_improved_water_scale numeric,clean_water_access_vulnerability_index numeric,adult_illiteracy_scale numeric,gross_enrollment_scale numeric,years_of_schooling_scale numeric,pop_wout_internet_scale numeric,info_access_vulnerability_index numeric,export_minus_import_percent_scale numeric,average_inflation_scale numeric,economic_dependency_scale numeric,economic_constraints_index numeric,female_govt_seats_scale numeric,female_male_secondary_enrollment_scale numeric,female_male_labor_ratio_scale numeric,gender_inequality_index numeric,max_political_discrimination_scale numeric,max_economic_discrimination_scale numeric,ethnic_discrimination_index numeric,marginalization_index numeric,population_change_scale numeric,urban_population_change_scale numeric,population_pressures_index numeric,freshwater_withdrawals_scale numeric,forest_area_change_scale numeric,ruminant_density_scale numeric,environmental_stress_index numeric,recent_disaster_losses_scale numeric,recent_disaster_deaths_scale numeric,recent_disaster_impacts_index numeric,recent_conflict_deaths_scale numeric,displaced_populations_scale numeric,conflict_impacts_index numeric,vulnerability_index numeric,voice_and_accountability_scale numeric,rule_of_law_scale numeric,political_stability_scale numeric,govt_effectiveness_scale numeric,control_of_corruption_scale numeric,governance_index numeric,gni_per_capita_scale numeric,reserves_per_capita_scale numeric,economic_capacity_index numeric,fixed_phone_access_scale numeric,mobile_phone_access_scale numeric,internet_server_access_scale numeric,communications_capacity_index numeric,port_rnwy_density_scale numeric,road_rr_density_scale numeric,transportation_index numeric,hospital_bed_density_scale numeric,nurses_midwives_scale numeric,physicians_scale numeric,health_care_capacity_index numeric,infrastructure_capacity_index numeric,biome_protection_scale numeric,marine_protected_area_scale numeric,environmental_capacity_index numeric,coping_capacity_index numeric,resilience_index numeric,mhr_index numeric);"
-	cat static_data/pdc_bivariate_manager/global_rva_hasc.csv | psql -c "copy global_rva_indexes from stdin with csv header;"
-	psql -c "create index on global_rva_indexes using btree(hasc);"
-	touch $@
+       psql -f tables/global_rva_indexes.sql
+       cat static_data/pdc_bivariate_manager/global_rva_hasc.csv | psql -c "copy global_rva_indexes from stdin with csv header;"
+       psql -c "create index on global_rva_indexes using btree(hasc);"
+       touch $@
 
 db/table/global_rva_h3: db/table/global_rva_indexes | db/table/kontur_boundaries_v4 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviews of global rva indexes
-	psql -c "call transform_hasc_to_h3('global_rva_indexes', 'global_rva_h3', 'hasc', '{raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, mhe_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index, population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, vulnerability_index, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale, physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale, marine_protected_area_scale, environmental_capacity_index, coping_capacity_index, resilience_index, mhr_index}'::text[], 8);"
-	psql -c "call generate_overviews('global_rva_h3', '{raw_mhe_pop_scaled, raw_mhe_cap_scaled, raw_mhe_index, relative_mhe_pop_scaled, relative_mhe_cap_scaled, relative_mhe_index, mhe_index, life_expectancy_scale, infant_mortality_scale, maternal_mortality_scale, prevalence_undernourished_scale, vulnerable_health_status_index, pop_wout_improved_sanitation_scale, pop_wout_improved_water_scale, clean_water_access_vulnerability_index, adult_illiteracy_scale, gross_enrollment_scale, years_of_schooling_scale, pop_wout_internet_scale, info_access_vulnerability_index, export_minus_import_percent_scale, average_inflation_scale, economic_dependency_scale, economic_constraints_index, female_govt_seats_scale, female_male_secondary_enrollment_scale, female_male_labor_ratio_scale, gender_inequality_index, max_political_discrimination_scale, max_economic_discrimination_scale, ethnic_discrimination_index, marginalization_index, population_change_scale, urban_population_change_scale, population_pressures_index, freshwater_withdrawals_scale, forest_area_change_scale, ruminant_density_scale, environmental_stress_index, recent_disaster_losses_scale, recent_disaster_deaths_scale, recent_disaster_impacts_index, recent_conflict_deaths_scale, displaced_populations_scale, conflict_impacts_index, vulnerability_index, voice_and_accountability_scale, rule_of_law_scale, political_stability_scale, govt_effectiveness_scale, control_of_corruption_scale, governance_index, gni_per_capita_scale, reserves_per_capita_scale, economic_capacity_index, fixed_phone_access_scale, mobile_phone_access_scale, internet_server_access_scale, communications_capacity_index, port_rnwy_density_scale, road_rr_density_scale, transportation_index, hospital_bed_density_scale, nurses_midwives_scale, physicians_scale, health_care_capacity_index, infrastructure_capacity_index, biome_protection_scale, marine_protected_area_scale, environmental_capacity_index, coping_capacity_index, resilience_index, mhr_index}'::text[], '{avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg,avg}'::text[], 8);"
+	psql -f tables/global_rva_h3.sql
 	touch $@
 
 db/table/ndpba_rva_indexes: | db/table ## NDPBA RVA indexes
@@ -2712,8 +2852,7 @@ db/table/meta_forest_canopy_height_h3: db/table/meta_forest_canopy_height | db/p
 
 ### Humanitarian Development Index
 db/table/humanitarian_dev_index_2022: | db/table ## Human Development Index (HDI)
-	psql -c "drop table if exists humanitarian_dev_index_2022_in;"
-	psql -c 'create table humanitarian_dev_index_2022_in(country text, code text, hasc text, hdi_2022 numeric, hdi_rank_2022 integer, hdi_rank_2021 integer, inequality_adjusted_hdi_2022 numeric, inequality_adjusted_hdi_overal_loss_pct_2022 numeric, inequality_adjusted_hdi_difference_2022 integer, coefficient_human_inequality_2022 numeric, inequality_in_life_expectancy_pct_2022 numeric, inequality_adjusted_life_expectancy_index_2022 numeric, inequality_in_education_pct_2022 numeric, inequality_adjusted_education_index_2022 numeric, inequality_in_income_pct_2022 numeric, inequality_adjusted_income_index_2022 numeric, income_shares_held_by_poorest_40_percent_2010_2022 numeric, income_shares_held_by_richest_10_percent_2010_2022 numeric, income_shares_held_by_richest_1_percent_2021 numeric, gini_coefficient_2010_2022 numeric, life_expectancy_at_birth_years_2022 numeric, expected_years_of_schooling_2022 numeric, man_years_of_schooling_2022 numeric, gni_per_capita_2017_ppp_usd_2022 numeric, gni_per_capita_rank_minus_hdi_rank_2022 numeric);'
+	psql -f tables/humanitarian_dev_index_2022.sql
 	cat static_data/humanitarian_development_index/hdi_total_2022.csv | psql -c "copy humanitarian_dev_index_2022_in from stdin with csv header;"
 	psql -c 'drop table if exists humanitarian_dev_index_2022;'
 	psql -c 'create table humanitarian_dev_index_2022 as (select country, code, hasc, hdi_2022 from humanitarian_dev_index_2022_in);'
@@ -2728,8 +2867,7 @@ db/table/humanitarian_dev_index_2022_h3: db/table/humanitarian_dev_index_2022 | 
 
 ### Inform Risk Index
 db/table/inform_risk_profile_2025: | db/table ## Inform Risc Index
-	psql -c "drop table if exists inform_risk_profile_2025_in;"
-	psql -c 'create table inform_risk_profile_2025_in (country text, iso3 text, hasc text, inform_risk float, risk_class integer, rank integer, hazard_and_exposure float, natural_0_to_10 float, earthquake float, river_flood float, tsunami float, tropical_cyclone float, coastal_flood float, drought float, epidemic float, human float, projected_conflict_probability float, current_conflict_intensity float, vulnerability float, socio_economic_vulnerability float, development_and_deprivation float, inequality float, economic_dependency float, vulnerable_groups float, uprooted_people float, health_conditions float, children_u5 float, recent_shocks float, food_security float, other_vulnerable_groups float, lack_of_coping_capacity float, institutional float, drr float, governance float, infrastructure float, communication float, physical_infrastructure float, access_to_health_care float, number_of_missing_indicators integer, missing_indicators_pct integer, countries_in_hvc integer, recentness_data_average_years float);'
+	psql -f tables/inform_risk_profile_2025.sql
 	cat static_data/inform_risk_index/inform_risk_2025_v069.csv | psql -c "copy inform_risk_profile_2025_in from stdin with csv header;"
 	psql -c 'drop table if exists inform_risk_profile_2025;'
 	psql -c 'create table inform_risk_profile_2025 as (select country, hasc, inform_risk, hazard_and_exposure, natural_0_to_10, earthquake, river_flood, tsunami, tropical_cyclone, coastal_flood, drought, epidemic, human, projected_conflict_probability, current_conflict_intensity, vulnerability, socio_economic_vulnerability, development_and_deprivation, inequality, economic_dependency, vulnerable_groups, uprooted_people, health_conditions, children_u5, recent_shocks, food_security, other_vulnerable_groups, lack_of_coping_capacity, institutional, drr, governance, infrastructure, communication, physical_infrastructure, access_to_health_care from inform_risk_profile_2025_in);'	
@@ -3953,7 +4091,187 @@ deploy_indicators/dev/uploads/events_fsq_count_upload: data/out/csv/events_fsq_c
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/upload_dev: deploy_indicators/dev/uploads/view_count_upload deploy_indicators/dev/uploads/count_upload deploy_indicators/dev/uploads/population_next_gen_upload deploy_indicators/dev/uploads/populated_area_km2_next_gen_upload deploy_indicators/dev/uploads/population_upload deploy_indicators/dev/uploads/populated_area_km2_upload deploy_indicators/dev/uploads/building_count_upload deploy_indicators/dev/uploads/highway_length_upload deploy_indicators/dev/uploads/total_road_length_upload deploy_indicators/dev/uploads/local_hours_upload deploy_indicators/dev/uploads/total_hours_upload deploy_indicators/dev/uploads/avgmax_ts_upload deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload deploy_indicators/dev/uploads/view_count_bf2402_upload deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/dev/uploads/total_building_count_upload deploy_indicators/dev/uploads/count_6_months_upload deploy_indicators/dev/uploads/building_count_6_months_upload deploy_indicators/dev/uploads/highway_length_6_months_upload deploy_indicators/dev/uploads/osm_users_upload deploy_indicators/dev/uploads/residential_upload deploy_indicators/dev/uploads/gdp_upload deploy_indicators/dev/uploads/min_ts_upload deploy_indicators/dev/uploads/max_ts_upload deploy_indicators/dev/uploads/wildfires_upload deploy_indicators/dev/uploads/industrial_area_upload deploy_indicators/dev/uploads/volcanos_count_upload deploy_indicators/dev/uploads/pop_under_5_total_upload deploy_indicators/dev/uploads/pop_over_65_total_upload deploy_indicators/dev/uploads/poverty_families_total_upload deploy_indicators/dev/uploads/pop_disability_total_upload deploy_indicators/dev/uploads/pop_not_well_eng_speak_upload deploy_indicators/dev/uploads/pop_without_car_upload deploy_indicators/dev/uploads/man_distance_to_hospital_upload deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload  deploy_indicators/dev/uploads/eatery_count_upload deploy_indicators/dev/uploads/food_shops_count_upload deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload deploy_indicators/dev/uploads/mapswipe_area_km2_upload deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload deploy_indicators/dev/uploads/forest_upload deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/dev/uploads/shrubs_upload deploy_indicators/dev/uploads/herbage_upload deploy_indicators/dev/uploads/unknown_forest_upload deploy_indicators/dev/uploads/avg_ndvi_upload deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/dev/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/dev/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/dev/uploads/hazardous_days_count_upload deploy_indicators/dev/uploads/earthquake_days_count_upload deploy_indicators/dev/uploads/wildfire_days_count_upload deploy_indicators/dev/uploads/drought_days_count_upload deploy_indicators/dev/uploads/cyclone_days_count_upload deploy_indicators/dev/uploads/volcano_days_count_upload deploy_indicators/dev/uploads/flood_days_count_upload deploy_indicators/dev/uploads/powerlines_upload deploy_indicators/dev/uploads/night_lights_intensity_upload deploy_indicators/dev/uploads/gsa_ghi_upload deploy_indicators/dev/uploads/worldclim_avg_temperature_upload deploy_indicators/dev/uploads/worldclim_min_temperature_upload deploy_indicators/dev/uploads/worldclim_max_temperature_upload deploy_indicators/dev/uploads/worldclim_amp_temperature_upload deploy_indicators/dev/uploads/powerlines_proximity_m_upload deploy_indicators/dev/uploads/populated_areas_proximity_m_upload deploy_indicators/dev/uploads/power_substations_proximity_m_upload deploy_indicators/dev/uploads/solar_power_plants_upload deploy_indicators/dev/uploads/safety_index_upload deploy_indicators/dev/uploads/avg_forest_canopy_height_upload deploy_indicators/dev/uploads/max_forest_canopy_height_upload deploy_indicators/dev/uploads/worldbank_tax_rate_upload deploy_indicators/dev/uploads/years_to_naturalisation_upload deploy_indicators/dev/uploads/multiple_citizenship_upload deploy_indicators/dev/uploads/ghs_max_building_height_upload deploy_indicators/dev/uploads/ghs_avg_building_height_upload deploy_indicators/dev/uploads/max_osm_building_levels_upload deploy_indicators/dev/uploads/avg_osm_building_levels_upload deploy_indicators/dev/uploads/osm_hotels_count_upload deploy_indicators/dev/uploads/max_osm_hotels_assesment_upload deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/dev/uploads/osm_art_venues_count_upload deploy_indicators/dev/uploads/osm_entertainment_venues_count_upload deploy_indicators/dev/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/dev/uploads/worldbank_inflation_upload deploy_indicators/dev/uploads/cropland_upload deploy_indicators/dev/uploads/wetland_upload deploy_indicators/dev/uploads/moss_lichen_upload deploy_indicators/dev/uploads/bare_vegetation_upload deploy_indicators/dev/uploads/builtup_upload deploy_indicators/dev/uploads/snow_ice_upload deploy_indicators/dev/uploads/permanent_water_upload deploy_indicators/dev/uploads/osm_pharmacy_count_upload deploy_indicators/dev/uploads/conflict_stock_displacement_upload deploy_indicators/dev/uploads/disaster_stock_displacement_upload deploy_indicators/dev/uploads/conflict_internal_displacements_upload deploy_indicators/dev/uploads/disaster_internal_displacements_upload deploy_indicators/dev/uploads/hdi_2022_upload deploy_indicators/dev/uploads/inform_risk_upload deploy_indicators/dev/uploads/hazard_and_exposure_upload deploy_indicators/dev/uploads/natural_0_to_10_upload deploy_indicators/dev/uploads/earthquake_upload deploy_indicators/dev/uploads/river_flood_upload deploy_indicators/dev/uploads/tsunami_upload deploy_indicators/dev/uploads/tropical_cyclone_upload deploy_indicators/dev/uploads/coastal_flood_upload deploy_indicators/dev/uploads/drought_upload deploy_indicators/dev/uploads/epidemic_upload deploy_indicators/dev/uploads/human_upload deploy_indicators/dev/uploads/projected_conflict_probability_upload deploy_indicators/dev/uploads/current_conflict_intensity_upload deploy_indicators/dev/uploads/vulnerability_upload deploy_indicators/dev/uploads/socio_economic_vulnerability_upload deploy_indicators/dev/uploads/development_and_deprivation_upload deploy_indicators/dev/uploads/inequality_upload deploy_indicators/dev/uploads/economic_dependency_upload deploy_indicators/dev/uploads/vulnerable_groups_upload deploy_indicators/dev/uploads/uprooted_people_upload deploy_indicators/dev/uploads/health_conditions_upload deploy_indicators/dev/uploads/children_u5_upload deploy_indicators/dev/uploads/recent_shocks_upload deploy_indicators/dev/uploads/food_security_upload deploy_indicators/dev/uploads/other_vulnerable_groups_upload deploy_indicators/dev/uploads/lack_of_coping_capacity_upload deploy_indicators/dev/uploads/institutional_upload deploy_indicators/dev/uploads/drr_upload deploy_indicators/dev/uploads/governance_upload deploy_indicators/dev/uploads/infrastructure_upload deploy_indicators/dev/uploads/communication_upload deploy_indicators/dev/uploads/physical_infrastructure_upload deploy_indicators/dev/uploads/access_to_health_care_upload deploy_indicators/dev/uploads/osm_banks_count_upload deploy_indicators/dev/uploads/osm_atms_count_upload deploy_indicators/dev/uploads/osm_kindergartens_count_upload deploy_indicators/dev/uploads/osm_schools_count_upload deploy_indicators/dev/uploads/osm_colleges_count_upload deploy_indicators/dev/uploads/osm_universities_count_upload deploy_indicators/dev/uploads/osm_defibrillators_count_upload deploy_indicators/dev/uploads/osm_airports_count_upload deploy_indicators/dev/uploads/osm_railway_stations_count_upload deploy_indicators/dev/uploads/osm_public_transport_stops_count_upload deploy_indicators/dev/uploads/osm_car_parkings_capacity_upload deploy_indicators/dev/uploads/osm_heritage_sites_count_upload deploy_indicators/dev/uploads/min_osm_heritage_admin_level_upload deploy_indicators/dev/uploads/foursquare_os_places_count_upload deploy_indicators/dev/uploads/coffee_shops_fsq_count_upload deploy_indicators/dev/uploads/kebab_restaurants_fsq_count_upload deploy_indicators/dev/uploads/business_and_professional_services_fsq_count_upload deploy_indicators/dev/uploads/dining_and_drinking_fsq_count_upload deploy_indicators/dev/uploads/retail_fsq_count_upload deploy_indicators/dev/uploads/community_and_government_fsq_count_upload deploy_indicators/dev/uploads/travel_and_transportation_fsq_count_upload deploy_indicators/dev/uploads/landmarks_and_outdoors_fsq_count_upload deploy_indicators/dev/uploads/health_and_medicine_fsq_count_upload deploy_indicators/dev/uploads/arts_and_entertainment_fsq_count_upload deploy_indicators/dev/uploads/sports_and_recreation_fsq_count_upload deploy_indicators/dev/uploads/events_fsq_count_upload | deploy_indicators/dev/uploads ## Control of layer uplodings to Insigths API for DEV without one and area_km2
+deploy_indicators/dev/uploads/upload_dev: 
+    deploy_indicators/dev/uploads/view_count_upload 
+    deploy_indicators/dev/uploads/count_upload 
+    deploy_indicators/dev/uploads/population_next_gen_upload 
+    deploy_indicators/dev/uploads/populated_area_km2_next_gen_upload 
+    deploy_indicators/dev/uploads/population_upload 
+    deploy_indicators/dev/uploads/populated_area_km2_upload 
+    deploy_indicators/dev/uploads/building_count_upload 
+    deploy_indicators/dev/uploads/highway_length_upload 
+    deploy_indicators/dev/uploads/total_road_length_upload 
+    deploy_indicators/dev/uploads/local_hours_upload 
+    deploy_indicators/dev/uploads/total_hours_upload 
+    deploy_indicators/dev/uploads/avgmax_ts_upload 
+    deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload 
+    deploy_indicators/dev/uploads/view_count_bf2402_upload 
+    deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload 
+    deploy_indicators/dev/uploads/total_building_count_upload 
+    deploy_indicators/dev/uploads/count_6_months_upload 
+    deploy_indicators/dev/uploads/building_count_6_months_upload 
+    deploy_indicators/dev/uploads/highway_length_6_months_upload 
+    deploy_indicators/dev/uploads/osm_users_upload 
+    deploy_indicators/dev/uploads/residential_upload 
+    deploy_indicators/dev/uploads/gdp_upload 
+    deploy_indicators/dev/uploads/min_ts_upload 
+    deploy_indicators/dev/uploads/max_ts_upload 
+    deploy_indicators/dev/uploads/wildfires_upload 
+    deploy_indicators/dev/uploads/industrial_area_upload 
+    deploy_indicators/dev/uploads/volcanos_count_upload 
+    deploy_indicators/dev/uploads/pop_under_5_total_upload 
+    deploy_indicators/dev/uploads/pop_over_65_total_upload 
+    deploy_indicators/dev/uploads/poverty_families_total_upload 
+    deploy_indicators/dev/uploads/pop_disability_total_upload 
+    deploy_indicators/dev/uploads/pop_not_well_eng_speak_upload 
+    deploy_indicators/dev/uploads/pop_without_car_upload 
+    deploy_indicators/dev/uploads/man_distance_to_hospital_upload 
+    deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload 
+    deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload 
+     
+    deploy_indicators/dev/uploads/eatery_count_upload 
+    deploy_indicators/dev/uploads/food_shops_count_upload 
+    deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload 
+    deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload 
+    deploy_indicators/dev/uploads/mapswipe_area_km2_upload 
+    deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload 
+    deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload 
+    deploy_indicators/dev/uploads/forest_upload 
+    deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload 
+    deploy_indicators/dev/uploads/shrubs_upload 
+    deploy_indicators/dev/uploads/herbage_upload 
+    deploy_indicators/dev/uploads/unknown_forest_upload 
+    deploy_indicators/dev/uploads/avg_ndvi_upload 
+    deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload 
+    deploy_indicators/dev/uploads/days_maxtemp_over_32c_2c_upload 
+    deploy_indicators/dev/uploads/days_mintemp_above_25c_2c_upload 
+    deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_1c_upload 
+    deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload 
+    deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload 
+    deploy_indicators/dev/uploads/hazardous_days_count_upload 
+    deploy_indicators/dev/uploads/earthquake_days_count_upload 
+    deploy_indicators/dev/uploads/wildfire_days_count_upload 
+    deploy_indicators/dev/uploads/drought_days_count_upload 
+    deploy_indicators/dev/uploads/cyclone_days_count_upload 
+    deploy_indicators/dev/uploads/volcano_days_count_upload 
+    deploy_indicators/dev/uploads/flood_days_count_upload 
+    deploy_indicators/dev/uploads/powerlines_upload 
+    deploy_indicators/dev/uploads/night_lights_intensity_upload 
+    deploy_indicators/dev/uploads/gsa_ghi_upload 
+    deploy_indicators/dev/uploads/worldclim_avg_temperature_upload 
+    deploy_indicators/dev/uploads/worldclim_min_temperature_upload 
+    deploy_indicators/dev/uploads/worldclim_max_temperature_upload 
+    deploy_indicators/dev/uploads/worldclim_amp_temperature_upload 
+    deploy_indicators/dev/uploads/powerlines_proximity_m_upload 
+    deploy_indicators/dev/uploads/populated_areas_proximity_m_upload 
+    deploy_indicators/dev/uploads/power_substations_proximity_m_upload 
+    deploy_indicators/dev/uploads/solar_power_plants_upload 
+    deploy_indicators/dev/uploads/safety_index_upload 
+    deploy_indicators/dev/uploads/avg_forest_canopy_height_upload 
+    deploy_indicators/dev/uploads/max_forest_canopy_height_upload 
+    deploy_indicators/dev/uploads/worldbank_tax_rate_upload 
+    deploy_indicators/dev/uploads/years_to_naturalisation_upload 
+    deploy_indicators/dev/uploads/multiple_citizenship_upload 
+    deploy_indicators/dev/uploads/ghs_max_building_height_upload 
+    deploy_indicators/dev/uploads/ghs_avg_building_height_upload 
+    deploy_indicators/dev/uploads/max_osm_building_levels_upload 
+    deploy_indicators/dev/uploads/avg_osm_building_levels_upload 
+    deploy_indicators/dev/uploads/osm_hotels_count_upload 
+    deploy_indicators/dev/uploads/max_osm_hotels_assesment_upload 
+    deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload 
+    deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload 
+    deploy_indicators/dev/uploads/osm_art_venues_count_upload 
+    deploy_indicators/dev/uploads/osm_entertainment_venues_count_upload 
+    deploy_indicators/dev/uploads/osm_cultural_and_comunity_centers_count_upload 
+    deploy_indicators/dev/uploads/worldbank_inflation_upload 
+    deploy_indicators/dev/uploads/cropland_upload 
+    deploy_indicators/dev/uploads/wetland_upload 
+    deploy_indicators/dev/uploads/moss_lichen_upload 
+    deploy_indicators/dev/uploads/bare_vegetation_upload 
+    deploy_indicators/dev/uploads/builtup_upload 
+    deploy_indicators/dev/uploads/snow_ice_upload 
+    deploy_indicators/dev/uploads/permanent_water_upload 
+    deploy_indicators/dev/uploads/osm_pharmacy_count_upload 
+    deploy_indicators/dev/uploads/conflict_stock_displacement_upload 
+    deploy_indicators/dev/uploads/disaster_stock_displacement_upload 
+    deploy_indicators/dev/uploads/conflict_internal_displacements_upload 
+    deploy_indicators/dev/uploads/disaster_internal_displacements_upload 
+    deploy_indicators/dev/uploads/hdi_2022_upload 
+    deploy_indicators/dev/uploads/inform_risk_upload 
+    deploy_indicators/dev/uploads/hazard_and_exposure_upload 
+    deploy_indicators/dev/uploads/natural_0_to_10_upload 
+    deploy_indicators/dev/uploads/earthquake_upload 
+    deploy_indicators/dev/uploads/river_flood_upload 
+    deploy_indicators/dev/uploads/tsunami_upload 
+    deploy_indicators/dev/uploads/tropical_cyclone_upload 
+    deploy_indicators/dev/uploads/coastal_flood_upload 
+    deploy_indicators/dev/uploads/drought_upload 
+    deploy_indicators/dev/uploads/epidemic_upload 
+    deploy_indicators/dev/uploads/human_upload 
+    deploy_indicators/dev/uploads/projected_conflict_probability_upload 
+    deploy_indicators/dev/uploads/current_conflict_intensity_upload 
+    deploy_indicators/dev/uploads/vulnerability_upload 
+    deploy_indicators/dev/uploads/socio_economic_vulnerability_upload 
+    deploy_indicators/dev/uploads/development_and_deprivation_upload 
+    deploy_indicators/dev/uploads/inequality_upload 
+    deploy_indicators/dev/uploads/economic_dependency_upload 
+    deploy_indicators/dev/uploads/vulnerable_groups_upload 
+    deploy_indicators/dev/uploads/uprooted_people_upload 
+    deploy_indicators/dev/uploads/health_conditions_upload 
+    deploy_indicators/dev/uploads/children_u5_upload 
+    deploy_indicators/dev/uploads/recent_shocks_upload 
+    deploy_indicators/dev/uploads/food_security_upload 
+    deploy_indicators/dev/uploads/other_vulnerable_groups_upload 
+    deploy_indicators/dev/uploads/lack_of_coping_capacity_upload 
+    deploy_indicators/dev/uploads/institutional_upload 
+    deploy_indicators/dev/uploads/drr_upload 
+    deploy_indicators/dev/uploads/governance_upload 
+    deploy_indicators/dev/uploads/infrastructure_upload 
+    deploy_indicators/dev/uploads/communication_upload 
+    deploy_indicators/dev/uploads/physical_infrastructure_upload 
+    deploy_indicators/dev/uploads/access_to_health_care_upload 
+    deploy_indicators/dev/uploads/osm_banks_count_upload 
+    deploy_indicators/dev/uploads/osm_atms_count_upload 
+    deploy_indicators/dev/uploads/osm_kindergartens_count_upload 
+    deploy_indicators/dev/uploads/osm_schools_count_upload 
+    deploy_indicators/dev/uploads/osm_colleges_count_upload 
+    deploy_indicators/dev/uploads/osm_universities_count_upload 
+    deploy_indicators/dev/uploads/osm_defibrillators_count_upload 
+    deploy_indicators/dev/uploads/osm_airports_count_upload 
+    deploy_indicators/dev/uploads/osm_railway_stations_count_upload 
+    deploy_indicators/dev/uploads/osm_public_transport_stops_count_upload 
+    deploy_indicators/dev/uploads/osm_car_parkings_capacity_upload 
+    deploy_indicators/dev/uploads/osm_heritage_sites_count_upload 
+    deploy_indicators/dev/uploads/min_osm_heritage_admin_level_upload 
+    deploy_indicators/dev/uploads/foursquare_os_places_count_upload 
+    deploy_indicators/dev/uploads/coffee_shops_fsq_count_upload 
+    deploy_indicators/dev/uploads/kebab_restaurants_fsq_count_upload 
+    deploy_indicators/dev/uploads/business_and_professional_services_fsq_count_upload 
+    deploy_indicators/dev/uploads/dining_and_drinking_fsq_count_upload 
+    deploy_indicators/dev/uploads/retail_fsq_count_upload 
+    deploy_indicators/dev/uploads/community_and_government_fsq_count_upload 
+    deploy_indicators/dev/uploads/travel_and_transportation_fsq_count_upload 
+    deploy_indicators/dev/uploads/landmarks_and_outdoors_fsq_count_upload 
+    deploy_indicators/dev/uploads/health_and_medicine_fsq_count_upload 
+    deploy_indicators/dev/uploads/arts_and_entertainment_fsq_count_upload 
+    deploy_indicators/dev/uploads/sports_and_recreation_fsq_count_upload 
+    deploy_indicators/dev/uploads/events_fsq_count_upload 
+    | 
+    deploy_indicators/dev/uploads 
+    ## 
+    Control 
+    of 
+    layer 
+    uplodings 
+    to 
+    Insigths 
+    API 
+    for 
+    DEV 
+    without 
+    one 
+    and 
+    area_km2
 	touch $@
 
 deploy_indicators/dev/custom_axis/population_area_km2: deploy_indicators/dev/uploads/population_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for population area_km2 axis on dev.
@@ -4232,7 +4550,65 @@ deploy_indicators/dev/custom_axis/wildfire_days_count_one: deploy_indicators/dev
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfire_days_count" "one"
 	touch $@
 
-deploy_indicators/dev/custom_axis/all_custom_axis: deploy_indicators/dev/custom_axis/population_area_km2 deploy_indicators/dev/custom_axis/count_area_km2 deploy_indicators/dev/custom_axis/building_count_area_km2 deploy_indicators/dev/custom_axis/local_hours_area_km2 deploy_indicators/dev/custom_axis/total_hours_area_km2 deploy_indicators/dev/custom_axis/view_count_area_km2 deploy_indicators/dev/custom_axis/osm_users_one deploy_indicators/dev/custom_axis/total_building_count_area_km2 deploy_indicators/dev/custom_axis/wildfires_area_km2 deploy_indicators/dev/custom_axis/forest_area_km2 deploy_indicators/dev/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/dev/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/dev/custom_axis/man_distance_to_hospital_one deploy_indicators/dev/custom_axis/highway_length_area_km2 deploy_indicators/dev/custom_axis/total_road_length_area_km2  deploy_indicators/dev/custom_axis/view_count_bf2402_one deploy_indicators/dev/custom_axis/view_count_bf2402_area_km2 deploy_indicators/dev/custom_axis/powerlines_one deploy_indicators/dev/custom_axis/night_lights_intensity_one deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_one deploy_indicators/dev/custom_axis/solar_power_plants_area_km2 deploy_indicators/dev/custom_axis/volcano_days_count_area_km2 deploy_indicators/dev/custom_axis/volcano_days_count_one deploy_indicators/dev/custom_axis/flood_days_count_area_km2 deploy_indicators/dev/custom_axis/flood_days_count_one deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_population deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/dev/custom_axis/building_count_total_building_count deploy_indicators/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/dev/custom_axis/highway_length_total_road_length deploy_indicators/dev/custom_axis/eatery_count_one deploy_indicators/dev/custom_axis/food_shops_count_one deploy_indicators/dev/custom_axis/hazardous_days_count_area_km2 deploy_indicators/dev/custom_axis/hazardous_days_count_one deploy_indicators/dev/custom_axis/earthquake_days_count_area_km2 deploy_indicators/dev/custom_axis/earthquake_days_count_one deploy_indicators/dev/custom_axis/drought_days_count_area_km2 deploy_indicators/dev/custom_axis/drought_days_count_one deploy_indicators/dev/custom_axis/cyclone_days_count_area_km2 deploy_indicators/dev/custom_axis/cyclone_days_count_one deploy_indicators/dev/custom_axis/wildfire_days_count_area_km2 deploy_indicators/dev/custom_axis/wildfire_days_count_one deploy_indicators/dev/custom_axis/man_distance_to_hospital_population | deploy_indicators/dev/custom_axis ## final target for custom axis deployment to dev
+deploy_indicators/dev/custom_axis/all_custom_axis: \
+    deploy_indicators/dev/custom_axis/population_area_km2 \
+    deploy_indicators/dev/custom_axis/count_area_km2 \
+    deploy_indicators/dev/custom_axis/building_count_area_km2 \
+    deploy_indicators/dev/custom_axis/local_hours_area_km2 \
+    deploy_indicators/dev/custom_axis/total_hours_area_km2 \
+    deploy_indicators/dev/custom_axis/view_count_area_km2 \
+    deploy_indicators/dev/custom_axis/osm_users_one \
+    deploy_indicators/dev/custom_axis/total_building_count_area_km2 \
+    deploy_indicators/dev/custom_axis/wildfires_area_km2 \
+    deploy_indicators/dev/custom_axis/forest_area_km2 \
+    deploy_indicators/dev/custom_axis/days_maxtemp_over_32c_1c_one \
+    deploy_indicators/dev/custom_axis/days_mintemp_above_25c_1c_one \
+    deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_one \
+    deploy_indicators/dev/custom_axis/man_distance_to_hospital_one \
+    deploy_indicators/dev/custom_axis/highway_length_area_km2 \
+    deploy_indicators/dev/custom_axis/total_road_length_area_km2 \
+     \
+    deploy_indicators/dev/custom_axis/view_count_bf2402_one \
+    deploy_indicators/dev/custom_axis/view_count_bf2402_area_km2 \
+    deploy_indicators/dev/custom_axis/powerlines_one \
+    deploy_indicators/dev/custom_axis/night_lights_intensity_one \
+    deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_one \
+    deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_one \
+    deploy_indicators/dev/custom_axis/solar_power_plants_area_km2 \
+    deploy_indicators/dev/custom_axis/volcano_days_count_area_km2 \
+    deploy_indicators/dev/custom_axis/volcano_days_count_one \
+    deploy_indicators/dev/custom_axis/flood_days_count_area_km2 \
+    deploy_indicators/dev/custom_axis/flood_days_count_one \
+    deploy_indicators/dev/custom_axis/man_distance_to_bomb_shelters_population \
+    deploy_indicators/dev/custom_axis/man_distance_to_charging_stations_population \
+    deploy_indicators/dev/custom_axis/man_distance_to_fire_brigade_population \
+    deploy_indicators/dev/custom_axis/building_count_total_building_count \
+    deploy_indicators/dev/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 \
+    deploy_indicators/dev/custom_axis/highway_length_total_road_length \
+    deploy_indicators/dev/custom_axis/eatery_count_one \
+    deploy_indicators/dev/custom_axis/food_shops_count_one \
+    deploy_indicators/dev/custom_axis/hazardous_days_count_area_km2 \
+    deploy_indicators/dev/custom_axis/hazardous_days_count_one \
+    deploy_indicators/dev/custom_axis/earthquake_days_count_area_km2 \
+    deploy_indicators/dev/custom_axis/earthquake_days_count_one \
+    deploy_indicators/dev/custom_axis/drought_days_count_area_km2 \
+    deploy_indicators/dev/custom_axis/drought_days_count_one \
+    deploy_indicators/dev/custom_axis/cyclone_days_count_area_km2 \
+    deploy_indicators/dev/custom_axis/cyclone_days_count_one \
+    deploy_indicators/dev/custom_axis/wildfire_days_count_area_km2 \
+    deploy_indicators/dev/custom_axis/wildfire_days_count_one \
+    deploy_indicators/dev/custom_axis/man_distance_to_hospital_population \
+    | \
+    deploy_indicators/dev/custom_axis \
+    ## \
+    final \
+    target \
+    for \
+    custom \
+    axis \
+    deployment \
+    to \
+    dev
 	touch $@
 
 ## END dev upload
@@ -4716,7 +5092,15 @@ deploy_indicators/test/uploads/vulnerability_upload: data/out/csv/vulnerability.
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/vulnerability.csv "vulnerability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv | deploy_indicators/test/uploads ## upload socio_economic_vulnerability to insight-api
+deploy_indicators/test/uploads/socio_economic_vulnerability_upload: \
+    data/out/csv/socio_economic_vulnerability.csv \
+    | \
+    deploy_indicators/test/uploads \
+    ## \
+    upload \
+    socio_economic_vulnerability \
+    to \
+    insight-api
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/socio_economic_vulnerability.csv "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
@@ -4896,7 +5280,188 @@ deploy_indicators/test/uploads/events_fsq_count_upload: data/out/csv/events_fsq_
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/upload_test: deploy_indicators/test/uploads/view_count_upload deploy_indicators/test/uploads/count_upload deploy_indicators/test/uploads/population_next_gen_upload deploy_indicators/test/uploads/populated_area_km2_next_gen_upload deploy_indicators/test/uploads/population_upload deploy_indicators/test/uploads/populated_area_km2_upload deploy_indicators/test/uploads/building_count_upload deploy_indicators/test/uploads/highway_length_upload deploy_indicators/test/uploads/total_road_length_upload deploy_indicators/test/uploads/local_hours_upload deploy_indicators/test/uploads/total_hours_upload deploy_indicators/test/uploads/avgmax_ts_upload deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload deploy_indicators/test/uploads/view_count_bf2402_upload deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/test/uploads/total_building_count_upload deploy_indicators/test/uploads/count_6_months_upload deploy_indicators/test/uploads/building_count_6_months_upload deploy_indicators/test/uploads/highway_length_6_months_upload deploy_indicators/test/uploads/osm_users_upload deploy_indicators/test/uploads/residential_upload deploy_indicators/test/uploads/gdp_upload deploy_indicators/test/uploads/min_ts_upload deploy_indicators/test/uploads/max_ts_upload deploy_indicators/test/uploads/wildfires_upload deploy_indicators/test/uploads/industrial_area_upload deploy_indicators/test/uploads/volcanos_count_upload deploy_indicators/test/uploads/pop_under_5_total_upload deploy_indicators/test/uploads/pop_over_65_total_upload deploy_indicators/test/uploads/poverty_families_total_upload deploy_indicators/test/uploads/pop_disability_total_upload deploy_indicators/test/uploads/pop_not_well_eng_speak_upload deploy_indicators/test/uploads/pop_without_car_upload deploy_indicators/test/uploads/man_distance_to_hospital_upload deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/test/uploads/man_distance_to_charging_stations_upload  deploy_indicators/test/uploads/eatery_count_upload deploy_indicators/test/uploads/food_shops_count_upload deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/test/uploads/solar_farms_placement_suitability_upload deploy_indicators/test/uploads/mapswipe_area_km2_upload deploy_indicators/test/uploads/avg_slope_gebco_2022_upload deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload deploy_indicators/test/uploads/forest_upload deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/test/uploads/shrubs_upload deploy_indicators/test/uploads/herbage_upload deploy_indicators/test/uploads/unknown_forest_upload deploy_indicators/test/uploads/avg_ndvi_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/test/uploads/hazardous_days_count_upload deploy_indicators/test/uploads/earthquake_days_count_upload deploy_indicators/test/uploads/wildfire_days_count_upload deploy_indicators/test/uploads/drought_days_count_upload deploy_indicators/test/uploads/cyclone_days_count_upload deploy_indicators/test/uploads/volcano_days_count_upload deploy_indicators/test/uploads/flood_days_count_upload deploy_indicators/test/uploads/powerlines_upload deploy_indicators/test/uploads/night_lights_intensity_upload deploy_indicators/test/uploads/gsa_ghi_upload deploy_indicators/test/uploads/worldclim_avg_temperature_upload deploy_indicators/test/uploads/worldclim_min_temperature_upload deploy_indicators/test/uploads/worldclim_max_temperature_upload deploy_indicators/test/uploads/worldclim_amp_temperature_upload deploy_indicators/test/uploads/powerlines_proximity_m_upload deploy_indicators/test/uploads/populated_areas_proximity_m_upload deploy_indicators/test/uploads/power_substations_proximity_m_upload deploy_indicators/test/uploads/solar_power_plants_upload deploy_indicators/test/uploads/safety_index_upload deploy_indicators/test/uploads/avg_forest_canopy_height_upload deploy_indicators/test/uploads/max_forest_canopy_height_upload deploy_indicators/test/uploads/worldbank_tax_rate_upload deploy_indicators/test/uploads/years_to_naturalisation_upload deploy_indicators/test/uploads/multiple_citizenship_upload deploy_indicators/test/uploads/ghs_max_building_height_upload deploy_indicators/test/uploads/ghs_avg_building_height_upload deploy_indicators/test/uploads/max_osm_building_levels_upload deploy_indicators/test/uploads/avg_osm_building_levels_upload deploy_indicators/test/uploads/osm_hotels_count_upload deploy_indicators/test/uploads/max_osm_hotels_assesment_upload deploy_indicators/test/uploads/avg_osm_hotels_assesment_upload deploy_indicators/test/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/test/uploads/osm_art_venues_count_upload deploy_indicators/test/uploads/osm_entertainment_venues_count_upload deploy_indicators/test/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/test/uploads/worldbank_inflation_upload deploy_indicators/test/uploads/cropland_upload deploy_indicators/test/uploads/wetland_upload deploy_indicators/test/uploads/moss_lichen_upload deploy_indicators/test/uploads/bare_vegetation_upload deploy_indicators/test/uploads/builtup_upload deploy_indicators/test/uploads/snow_ice_upload deploy_indicators/test/uploads/permanent_water_upload deploy_indicators/test/uploads/osm_pharmacy_count_upload deploy_indicators/test/uploads/conflict_stock_displacement_upload deploy_indicators/test/uploads/disaster_stock_displacement_upload deploy_indicators/test/uploads/conflict_internal_displacements_upload deploy_indicators/test/uploads/disaster_internal_displacements_upload deploy_indicators/test/uploads/hdi_2022_upload deploy_indicators/test/uploads/inform_risk_upload deploy_indicators/test/uploads/hazard_and_exposure_upload deploy_indicators/test/uploads/natural_0_to_10_upload deploy_indicators/test/uploads/earthquake_upload deploy_indicators/test/uploads/river_flood_upload deploy_indicators/test/uploads/tsunami_upload deploy_indicators/test/uploads/tropical_cyclone_upload deploy_indicators/test/uploads/coastal_flood_upload deploy_indicators/test/uploads/drought_upload deploy_indicators/test/uploads/epidemic_upload deploy_indicators/test/uploads/human_upload deploy_indicators/test/uploads/projected_conflict_probability_upload deploy_indicators/test/uploads/current_conflict_intensity_upload deploy_indicators/test/uploads/vulnerability_upload deploy_indicators/test/uploads/socio_economic_vulnerability_upload deploy_indicators/test/uploads/development_and_deprivation_upload deploy_indicators/test/uploads/inequality_upload deploy_indicators/test/uploads/economic_dependency_upload deploy_indicators/test/uploads/vulnerable_groups_upload deploy_indicators/test/uploads/uprooted_people_upload deploy_indicators/test/uploads/health_conditions_upload deploy_indicators/test/uploads/children_u5_upload deploy_indicators/test/uploads/recent_shocks_upload deploy_indicators/test/uploads/food_security_upload deploy_indicators/test/uploads/other_vulnerable_groups_upload deploy_indicators/test/uploads/lack_of_coping_capacity_upload deploy_indicators/test/uploads/institutional_upload deploy_indicators/test/uploads/drr_upload deploy_indicators/test/uploads/governance_upload deploy_indicators/test/uploads/infrastructure_upload deploy_indicators/test/uploads/communication_upload deploy_indicators/test/uploads/physical_infrastructure_upload deploy_indicators/test/uploads/access_to_health_care_upload deploy_indicators/test/uploads/osm_banks_count_upload deploy_indicators/test/uploads/osm_atms_count_upload deploy_indicators/test/uploads/osm_kindergartens_count_upload deploy_indicators/test/uploads/osm_schools_count_upload deploy_indicators/test/uploads/osm_colleges_count_upload deploy_indicators/test/uploads/osm_universities_count_upload deploy_indicators/test/uploads/osm_defibrillators_count_upload deploy_indicators/test/uploads/osm_airports_count_upload deploy_indicators/test/uploads/osm_railway_stations_count_upload deploy_indicators/test/uploads/osm_public_transport_stops_count_upload deploy_indicators/test/uploads/osm_car_parkings_capacity_upload deploy_indicators/test/uploads/osm_heritage_sites_count_upload deploy_indicators/test/uploads/min_osm_heritage_admin_level_upload deploy_indicators/test/uploads/foursquare_os_places_count_upload deploy_indicators/test/uploads/coffee_shops_fsq_count_upload deploy_indicators/test/uploads/kebab_restaurants_fsq_count_upload deploy_indicators/test/uploads/business_and_professional_services_fsq_count_upload deploy_indicators/test/uploads/dining_and_drinking_fsq_count_upload deploy_indicators/test/uploads/retail_fsq_count_upload deploy_indicators/test/uploads/community_and_government_fsq_count_upload deploy_indicators/test/uploads/travel_and_transportation_fsq_count_upload deploy_indicators/test/uploads/landmarks_and_outdoors_fsq_count_upload deploy_indicators/test/uploads/health_and_medicine_fsq_count_upload deploy_indicators/test/uploads/arts_and_entertainment_fsq_count_upload deploy_indicators/test/uploads/sports_and_recreation_fsq_count_upload deploy_indicators/test/uploads/events_fsq_count_upload | deploy_indicators/test/uploads ## Control of layer uplodings to Insigths API for TEST - without area_km2 and one
+deploy_indicators/test/uploads/upload_test: \
+    deploy_indicators/test/uploads/view_count_upload \
+    deploy_indicators/test/uploads/count_upload \
+    deploy_indicators/test/uploads/population_next_gen_upload \
+    deploy_indicators/test/uploads/populated_area_km2_next_gen_upload \
+    deploy_indicators/test/uploads/population_upload \
+    deploy_indicators/test/uploads/populated_area_km2_upload \
+    deploy_indicators/test/uploads/building_count_upload \
+    deploy_indicators/test/uploads/highway_length_upload \
+    deploy_indicators/test/uploads/total_road_length_upload \
+    deploy_indicators/test/uploads/local_hours_upload \
+    deploy_indicators/test/uploads/total_hours_upload \
+    deploy_indicators/test/uploads/avgmax_ts_upload \
+    deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload \
+    deploy_indicators/test/uploads/view_count_bf2402_upload \
+    deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload \
+    deploy_indicators/test/uploads/total_building_count_upload \
+    deploy_indicators/test/uploads/count_6_months_upload \
+    deploy_indicators/test/uploads/building_count_6_months_upload \
+    deploy_indicators/test/uploads/highway_length_6_months_upload \
+    deploy_indicators/test/uploads/osm_users_upload \
+    deploy_indicators/test/uploads/residential_upload \
+    deploy_indicators/test/uploads/gdp_upload \
+    deploy_indicators/test/uploads/min_ts_upload \
+    deploy_indicators/test/uploads/max_ts_upload \
+    deploy_indicators/test/uploads/wildfires_upload \
+    deploy_indicators/test/uploads/industrial_area_upload \
+    deploy_indicators/test/uploads/volcanos_count_upload \
+    deploy_indicators/test/uploads/pop_under_5_total_upload \
+    deploy_indicators/test/uploads/pop_over_65_total_upload \
+    deploy_indicators/test/uploads/poverty_families_total_upload \
+    deploy_indicators/test/uploads/pop_disability_total_upload \
+    deploy_indicators/test/uploads/pop_not_well_eng_speak_upload \
+    deploy_indicators/test/uploads/pop_without_car_upload \
+    deploy_indicators/test/uploads/man_distance_to_hospital_upload \
+    deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload \
+    deploy_indicators/test/uploads/man_distance_to_charging_stations_upload \
+     \
+    deploy_indicators/test/uploads/eatery_count_upload \
+    deploy_indicators/test/uploads/food_shops_count_upload \
+    deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload \
+    deploy_indicators/test/uploads/solar_farms_placement_suitability_upload \
+    deploy_indicators/test/uploads/mapswipe_area_km2_upload \
+    deploy_indicators/test/uploads/avg_slope_gebco_2022_upload \
+    deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload \
+    deploy_indicators/test/uploads/forest_upload \
+    deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload \
+    deploy_indicators/test/uploads/shrubs_upload \
+    deploy_indicators/test/uploads/herbage_upload \
+    deploy_indicators/test/uploads/unknown_forest_upload \
+    deploy_indicators/test/uploads/avg_ndvi_upload \
+    deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload \
+    deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload \
+    deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload \
+    deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload \
+    deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload \
+    deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload \
+    deploy_indicators/test/uploads/hazardous_days_count_upload \
+    deploy_indicators/test/uploads/earthquake_days_count_upload \
+    deploy_indicators/test/uploads/wildfire_days_count_upload \
+    deploy_indicators/test/uploads/drought_days_count_upload \
+    deploy_indicators/test/uploads/cyclone_days_count_upload \
+    deploy_indicators/test/uploads/volcano_days_count_upload \
+    deploy_indicators/test/uploads/flood_days_count_upload \
+    deploy_indicators/test/uploads/powerlines_upload \
+    deploy_indicators/test/uploads/night_lights_intensity_upload \
+    deploy_indicators/test/uploads/gsa_ghi_upload \
+    deploy_indicators/test/uploads/worldclim_avg_temperature_upload \
+    deploy_indicators/test/uploads/worldclim_min_temperature_upload \
+    deploy_indicators/test/uploads/worldclim_max_temperature_upload \
+    deploy_indicators/test/uploads/worldclim_amp_temperature_upload \
+    deploy_indicators/test/uploads/powerlines_proximity_m_upload \
+    deploy_indicators/test/uploads/populated_areas_proximity_m_upload \
+    deploy_indicators/test/uploads/power_substations_proximity_m_upload \
+    deploy_indicators/test/uploads/solar_power_plants_upload \
+    deploy_indicators/test/uploads/safety_index_upload \
+    deploy_indicators/test/uploads/avg_forest_canopy_height_upload \
+    deploy_indicators/test/uploads/max_forest_canopy_height_upload \
+    deploy_indicators/test/uploads/worldbank_tax_rate_upload \
+    deploy_indicators/test/uploads/years_to_naturalisation_upload \
+    deploy_indicators/test/uploads/multiple_citizenship_upload \
+    deploy_indicators/test/uploads/ghs_max_building_height_upload \
+    deploy_indicators/test/uploads/ghs_avg_building_height_upload \
+    deploy_indicators/test/uploads/max_osm_building_levels_upload \
+    deploy_indicators/test/uploads/avg_osm_building_levels_upload \
+    deploy_indicators/test/uploads/osm_hotels_count_upload \
+    deploy_indicators/test/uploads/max_osm_hotels_assesment_upload \
+    deploy_indicators/test/uploads/avg_osm_hotels_assesment_upload \
+    deploy_indicators/test/uploads/osm_historical_sites_and_museums_count_upload \
+    deploy_indicators/test/uploads/osm_art_venues_count_upload \
+    deploy_indicators/test/uploads/osm_entertainment_venues_count_upload \
+    deploy_indicators/test/uploads/osm_cultural_and_comunity_centers_count_upload \
+    deploy_indicators/test/uploads/worldbank_inflation_upload \
+    deploy_indicators/test/uploads/cropland_upload \
+    deploy_indicators/test/uploads/wetland_upload \
+    deploy_indicators/test/uploads/moss_lichen_upload \
+    deploy_indicators/test/uploads/bare_vegetation_upload \
+    deploy_indicators/test/uploads/builtup_upload \
+    deploy_indicators/test/uploads/snow_ice_upload \
+    deploy_indicators/test/uploads/permanent_water_upload \
+    deploy_indicators/test/uploads/osm_pharmacy_count_upload \
+    deploy_indicators/test/uploads/conflict_stock_displacement_upload \
+    deploy_indicators/test/uploads/disaster_stock_displacement_upload \
+    deploy_indicators/test/uploads/conflict_internal_displacements_upload \
+    deploy_indicators/test/uploads/disaster_internal_displacements_upload \
+    deploy_indicators/test/uploads/hdi_2022_upload \
+    deploy_indicators/test/uploads/inform_risk_upload \
+    deploy_indicators/test/uploads/hazard_and_exposure_upload \
+    deploy_indicators/test/uploads/natural_0_to_10_upload \
+    deploy_indicators/test/uploads/earthquake_upload \
+    deploy_indicators/test/uploads/river_flood_upload \
+    deploy_indicators/test/uploads/tsunami_upload \
+    deploy_indicators/test/uploads/tropical_cyclone_upload \
+    deploy_indicators/test/uploads/coastal_flood_upload \
+    deploy_indicators/test/uploads/drought_upload \
+    deploy_indicators/test/uploads/epidemic_upload \
+    deploy_indicators/test/uploads/human_upload \
+    deploy_indicators/test/uploads/projected_conflict_probability_upload \
+    deploy_indicators/test/uploads/current_conflict_intensity_upload \
+    deploy_indicators/test/uploads/vulnerability_upload \
+    deploy_indicators/test/uploads/socio_economic_vulnerability_upload \
+    deploy_indicators/test/uploads/development_and_deprivation_upload \
+    deploy_indicators/test/uploads/inequality_upload \
+    deploy_indicators/test/uploads/economic_dependency_upload \
+    deploy_indicators/test/uploads/vulnerable_groups_upload \
+    deploy_indicators/test/uploads/uprooted_people_upload \
+    deploy_indicators/test/uploads/health_conditions_upload \
+    deploy_indicators/test/uploads/children_u5_upload \
+    deploy_indicators/test/uploads/recent_shocks_upload \
+    deploy_indicators/test/uploads/food_security_upload \
+    deploy_indicators/test/uploads/other_vulnerable_groups_upload \
+    deploy_indicators/test/uploads/lack_of_coping_capacity_upload \
+    deploy_indicators/test/uploads/institutional_upload \
+    deploy_indicators/test/uploads/drr_upload \
+    deploy_indicators/test/uploads/governance_upload \
+    deploy_indicators/test/uploads/infrastructure_upload \
+    deploy_indicators/test/uploads/communication_upload \
+    deploy_indicators/test/uploads/physical_infrastructure_upload \
+    deploy_indicators/test/uploads/access_to_health_care_upload \
+    deploy_indicators/test/uploads/osm_banks_count_upload \
+    deploy_indicators/test/uploads/osm_atms_count_upload \
+    deploy_indicators/test/uploads/osm_kindergartens_count_upload \
+    deploy_indicators/test/uploads/osm_schools_count_upload \
+    deploy_indicators/test/uploads/osm_colleges_count_upload \
+    deploy_indicators/test/uploads/osm_universities_count_upload \
+    deploy_indicators/test/uploads/osm_defibrillators_count_upload \
+    deploy_indicators/test/uploads/osm_airports_count_upload \
+    deploy_indicators/test/uploads/osm_railway_stations_count_upload \
+    deploy_indicators/test/uploads/osm_public_transport_stops_count_upload \
+    deploy_indicators/test/uploads/osm_car_parkings_capacity_upload \
+    deploy_indicators/test/uploads/osm_heritage_sites_count_upload \
+    deploy_indicators/test/uploads/min_osm_heritage_admin_level_upload \
+    deploy_indicators/test/uploads/foursquare_os_places_count_upload \
+    deploy_indicators/test/uploads/coffee_shops_fsq_count_upload \
+    deploy_indicators/test/uploads/kebab_restaurants_fsq_count_upload \
+    deploy_indicators/test/uploads/business_and_professional_services_fsq_count_upload \
+    deploy_indicators/test/uploads/dining_and_drinking_fsq_count_upload \
+    deploy_indicators/test/uploads/retail_fsq_count_upload \
+    deploy_indicators/test/uploads/community_and_government_fsq_count_upload \
+    deploy_indicators/test/uploads/travel_and_transportation_fsq_count_upload \
+    deploy_indicators/test/uploads/landmarks_and_outdoors_fsq_count_upload \
+    deploy_indicators/test/uploads/health_and_medicine_fsq_count_upload \
+    deploy_indicators/test/uploads/arts_and_entertainment_fsq_count_upload \
+    deploy_indicators/test/uploads/sports_and_recreation_fsq_count_upload \
+    deploy_indicators/test/uploads/events_fsq_count_upload \
+    | \
+    deploy_indicators/test/uploads \
+    ## \
+    Control \
+    of \
+    layer \
+    uplodings \
+    to \
+    Insigths \
+    API \
+    for \
+    TEST \
+    - \
+    without \
+    area_km2 \
+    and \
+    one
 	touch $@
 
 ## Custom axis updates block
@@ -4988,7 +5553,8 @@ deploy_indicators/test/custom_axis/man_distance_to_hospital_population: deploy_i
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "man_distance_to_hospital" "population"
-	touch $@
+	touch \
+    $@
 
 deploy_indicators/test/custom_axis/highway_length_area_km2: deploy_indicators/test/uploads/highway_length_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for highway_length area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
@@ -5118,7 +5684,19 @@ deploy_indicators/test/custom_axis/food_shops_count_one: deploy_indicators/test/
 
 deploy_indicators/test/custom_axis/hazardous_days_count_area_km2: deploy_indicators/test/uploads/hazardous_days_count_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for hazardous_days_count area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
+	bash \
+    scripts/update_indicators_list.sh \
+    test \
+    | \
+    sed \
+    's/\\"/\\\\\"/g' \
+    | \
+    psql \
+    -c \
+    "copy \
+    insights_api_indicators_list_test(j) \
+    from \
+    stdin;"
 	bash scripts/upload_custom_axis_to_insights_api.sh test "hazardous_days_count" "area_km2"
 	touch $@
 
@@ -5176,7 +5754,64 @@ deploy_indicators/test/custom_axis/wildfire_days_count_one: deploy_indicators/te
 	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfire_days_count" "one"
 	touch $@
 
-deploy_indicators/test/custom_axis/all_custom_axis: deploy_indicators/test/custom_axis/population_area_km2 deploy_indicators/test/custom_axis/count_area_km2 deploy_indicators/test/custom_axis/building_count_area_km2 deploy_indicators/test/custom_axis/local_hours_area_km2 deploy_indicators/test/custom_axis/total_hours_area_km2 deploy_indicators/test/custom_axis/view_count_area_km2 deploy_indicators/test/custom_axis/osm_users_one deploy_indicators/test/custom_axis/total_building_count_area_km2 deploy_indicators/test/custom_axis/wildfires_area_km2 deploy_indicators/test/custom_axis/forest_area_km2 deploy_indicators/test/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/test/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/test/custom_axis/man_distance_to_hospital_one deploy_indicators/test/custom_axis/highway_length_area_km2 deploy_indicators/test/custom_axis/total_road_length_area_km2 deploy_indicators/test/custom_axis/view_count_bf2402_one deploy_indicators/test/custom_axis/view_count_bf2402_area_km2 deploy_indicators/test/custom_axis/powerlines_one deploy_indicators/test/custom_axis/night_lights_intensity_one deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/test/custom_axis/man_distance_to_charging_stations_one deploy_indicators/test/custom_axis/solar_power_plants_area_km2 deploy_indicators/test/custom_axis/volcano_days_count_area_km2 deploy_indicators/test/custom_axis/volcano_days_count_one deploy_indicators/test/custom_axis/flood_days_count_area_km2 deploy_indicators/test/custom_axis/flood_days_count_one deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/test/custom_axis/man_distance_to_charging_stations_population deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/test/custom_axis/building_count_total_building_count deploy_indicators/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/test/custom_axis/highway_length_total_road_length deploy_indicators/test/custom_axis/eatery_count_one deploy_indicators/test/custom_axis/food_shops_count_one deploy_indicators/test/custom_axis/hazardous_days_count_area_km2 deploy_indicators/test/custom_axis/hazardous_days_count_one deploy_indicators/test/custom_axis/earthquake_days_count_area_km2 deploy_indicators/test/custom_axis/earthquake_days_count_one deploy_indicators/test/custom_axis/drought_days_count_area_km2 deploy_indicators/test/custom_axis/drought_days_count_one deploy_indicators/test/custom_axis/cyclone_days_count_area_km2 deploy_indicators/test/custom_axis/cyclone_days_count_one deploy_indicators/test/custom_axis/wildfire_days_count_area_km2 deploy_indicators/test/custom_axis/wildfire_days_count_one deploy_indicators/test/custom_axis/man_distance_to_hospital_population | deploy_indicators/test/custom_axis ## final target for custom axis deployment to test
+deploy_indicators/test/custom_axis/all_custom_axis: \
+    deploy_indicators/test/custom_axis/population_area_km2 \
+    deploy_indicators/test/custom_axis/count_area_km2 \
+    deploy_indicators/test/custom_axis/building_count_area_km2 \
+    deploy_indicators/test/custom_axis/local_hours_area_km2 \
+    deploy_indicators/test/custom_axis/total_hours_area_km2 \
+    deploy_indicators/test/custom_axis/view_count_area_km2 \
+    deploy_indicators/test/custom_axis/osm_users_one \
+    deploy_indicators/test/custom_axis/total_building_count_area_km2 \
+    deploy_indicators/test/custom_axis/wildfires_area_km2 \
+    deploy_indicators/test/custom_axis/forest_area_km2 \
+    deploy_indicators/test/custom_axis/days_maxtemp_over_32c_1c_one \
+    deploy_indicators/test/custom_axis/days_mintemp_above_25c_1c_one \
+    deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_one \
+    deploy_indicators/test/custom_axis/man_distance_to_hospital_one \
+    deploy_indicators/test/custom_axis/highway_length_area_km2 \
+    deploy_indicators/test/custom_axis/total_road_length_area_km2 \
+    deploy_indicators/test/custom_axis/view_count_bf2402_one \
+    deploy_indicators/test/custom_axis/view_count_bf2402_area_km2 \
+    deploy_indicators/test/custom_axis/powerlines_one \
+    deploy_indicators/test/custom_axis/night_lights_intensity_one \
+    deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_one \
+    deploy_indicators/test/custom_axis/man_distance_to_charging_stations_one \
+    deploy_indicators/test/custom_axis/solar_power_plants_area_km2 \
+    deploy_indicators/test/custom_axis/volcano_days_count_area_km2 \
+    deploy_indicators/test/custom_axis/volcano_days_count_one \
+    deploy_indicators/test/custom_axis/flood_days_count_area_km2 \
+    deploy_indicators/test/custom_axis/flood_days_count_one \
+    deploy_indicators/test/custom_axis/man_distance_to_bomb_shelters_population \
+    deploy_indicators/test/custom_axis/man_distance_to_charging_stations_population \
+    deploy_indicators/test/custom_axis/man_distance_to_fire_brigade_population \
+    deploy_indicators/test/custom_axis/building_count_total_building_count \
+    deploy_indicators/test/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 \
+    deploy_indicators/test/custom_axis/highway_length_total_road_length \
+    deploy_indicators/test/custom_axis/eatery_count_one \
+    deploy_indicators/test/custom_axis/food_shops_count_one \
+    deploy_indicators/test/custom_axis/hazardous_days_count_area_km2 \
+    deploy_indicators/test/custom_axis/hazardous_days_count_one \
+    deploy_indicators/test/custom_axis/earthquake_days_count_area_km2 \
+    deploy_indicators/test/custom_axis/earthquake_days_count_one \
+    deploy_indicators/test/custom_axis/drought_days_count_area_km2 \
+    deploy_indicators/test/custom_axis/drought_days_count_one \
+    deploy_indicators/test/custom_axis/cyclone_days_count_area_km2 \
+    deploy_indicators/test/custom_axis/cyclone_days_count_one \
+    deploy_indicators/test/custom_axis/wildfire_days_count_area_km2 \
+    deploy_indicators/test/custom_axis/wildfire_days_count_one \
+    deploy_indicators/test/custom_axis/man_distance_to_hospital_population \
+    | \
+    deploy_indicators/test/custom_axis \
+    ## \
+    final \
+    target \
+    for \
+    custom \
+    axis \
+    deployment \
+    to \
+    test
 	touch $@
 
 ## END test upload block
@@ -5840,7 +6475,185 @@ deploy_indicators/prod/uploads/events_fsq_count_upload: data/out/csv/events_fsq_
 	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/upload_prod: deploy_indicators/prod/uploads/view_count_upload deploy_indicators/prod/uploads/count_upload deploy_indicators/prod/uploads/population_upload deploy_indicators/prod/uploads/populated_area_km2_upload deploy_indicators/prod/uploads/building_count_upload deploy_indicators/prod/uploads/highway_length_upload deploy_indicators/prod/uploads/total_road_length_upload deploy_indicators/prod/uploads/local_hours_upload deploy_indicators/prod/uploads/total_hours_upload deploy_indicators/prod/uploads/avgmax_ts_upload deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload deploy_indicators/prod/uploads/view_count_bf2402_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload deploy_indicators/prod/uploads/total_building_count_upload deploy_indicators/prod/uploads/count_6_months_upload deploy_indicators/prod/uploads/building_count_6_months_upload deploy_indicators/prod/uploads/highway_length_6_months_upload deploy_indicators/prod/uploads/osm_users_upload deploy_indicators/prod/uploads/residential_upload deploy_indicators/prod/uploads/gdp_upload deploy_indicators/prod/uploads/min_ts_upload deploy_indicators/prod/uploads/max_ts_upload deploy_indicators/prod/uploads/wildfires_upload deploy_indicators/prod/uploads/industrial_area_upload deploy_indicators/prod/uploads/volcanos_count_upload deploy_indicators/prod/uploads/pop_under_5_total_upload deploy_indicators/prod/uploads/pop_over_65_total_upload deploy_indicators/prod/uploads/poverty_families_total_upload deploy_indicators/prod/uploads/pop_disability_total_upload deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload deploy_indicators/prod/uploads/pop_without_car_upload deploy_indicators/prod/uploads/man_distance_to_hospital_upload deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload  deploy_indicators/prod/uploads/eatery_count_upload deploy_indicators/prod/uploads/food_shops_count_upload deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload deploy_indicators/prod/uploads/mapswipe_area_km2_upload deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload deploy_indicators/prod/uploads/forest_upload deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload deploy_indicators/prod/uploads/shrubs_upload deploy_indicators/prod/uploads/herbage_upload deploy_indicators/prod/uploads/unknown_forest_upload deploy_indicators/prod/uploads/avg_ndvi_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload deploy_indicators/prod/uploads/hazardous_days_count_upload deploy_indicators/prod/uploads/earthquake_days_count_upload deploy_indicators/prod/uploads/wildfire_days_count_upload deploy_indicators/prod/uploads/drought_days_count_upload deploy_indicators/prod/uploads/cyclone_days_count_upload deploy_indicators/prod/uploads/volcano_days_count_upload deploy_indicators/prod/uploads/flood_days_count_upload deploy_indicators/prod/uploads/powerlines_upload deploy_indicators/prod/uploads/night_lights_intensity_upload deploy_indicators/prod/uploads/gsa_ghi_upload deploy_indicators/prod/uploads/worldclim_avg_temperature_upload deploy_indicators/prod/uploads/worldclim_min_temperature_upload deploy_indicators/prod/uploads/worldclim_max_temperature_upload deploy_indicators/prod/uploads/worldclim_amp_temperature_upload deploy_indicators/prod/uploads/powerlines_proximity_m_upload deploy_indicators/prod/uploads/populated_areas_proximity_m_upload deploy_indicators/prod/uploads/power_substations_proximity_m_upload deploy_indicators/prod/uploads/solar_power_plants_upload deploy_indicators/prod/uploads/safety_index_upload deploy_indicators/prod/uploads/avg_forest_canopy_height_upload deploy_indicators/prod/uploads/max_forest_canopy_height_upload deploy_indicators/prod/uploads/worldbank_tax_rate_upload deploy_indicators/prod/uploads/years_to_naturalisation_upload deploy_indicators/prod/uploads/multiple_citizenship_upload deploy_indicators/prod/uploads/ghs_max_building_height_upload deploy_indicators/prod/uploads/ghs_avg_building_height_upload deploy_indicators/prod/uploads/max_osm_building_levels_upload deploy_indicators/prod/uploads/avg_osm_building_levels_upload deploy_indicators/prod/uploads/osm_hotels_count_upload deploy_indicators/prod/uploads/max_osm_hotels_assesment_upload deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload deploy_indicators/prod/uploads/osm_art_venues_count_upload deploy_indicators/prod/uploads/osm_entertainment_venues_count_upload deploy_indicators/prod/uploads/osm_cultural_and_comunity_centers_count_upload deploy_indicators/prod/uploads/worldbank_inflation_upload deploy_indicators/prod/uploads/cropland_upload deploy_indicators/prod/uploads/wetland_upload deploy_indicators/prod/uploads/moss_lichen_upload deploy_indicators/prod/uploads/bare_vegetation_upload deploy_indicators/prod/uploads/builtup_upload deploy_indicators/prod/uploads/snow_ice_upload deploy_indicators/prod/uploads/permanent_water_upload deploy_indicators/prod/uploads/osm_pharmacy_count_upload deploy_indicators/prod/uploads/conflict_stock_displacement_upload deploy_indicators/prod/uploads/disaster_stock_displacement_upload deploy_indicators/prod/uploads/conflict_internal_displacements_upload deploy_indicators/prod/uploads/disaster_internal_displacements_upload deploy_indicators/prod/uploads/hdi_2022_upload deploy_indicators/prod/uploads/inform_risk_upload deploy_indicators/prod/uploads/hazard_and_exposure_upload deploy_indicators/prod/uploads/natural_0_to_10_upload deploy_indicators/prod/uploads/earthquake_upload deploy_indicators/prod/uploads/river_flood_upload deploy_indicators/prod/uploads/tsunami_upload deploy_indicators/prod/uploads/tropical_cyclone_upload deploy_indicators/prod/uploads/coastal_flood_upload deploy_indicators/prod/uploads/drought_upload deploy_indicators/prod/uploads/epidemic_upload deploy_indicators/prod/uploads/human_upload deploy_indicators/prod/uploads/projected_conflict_probability_upload deploy_indicators/prod/uploads/current_conflict_intensity_upload deploy_indicators/prod/uploads/vulnerability_upload deploy_indicators/prod/uploads/socio_economic_vulnerability_upload deploy_indicators/prod/uploads/development_and_deprivation_upload deploy_indicators/prod/uploads/inequality_upload deploy_indicators/prod/uploads/economic_dependency_upload deploy_indicators/prod/uploads/vulnerable_groups_upload deploy_indicators/prod/uploads/uprooted_people_upload deploy_indicators/prod/uploads/health_conditions_upload deploy_indicators/prod/uploads/children_u5_upload deploy_indicators/prod/uploads/recent_shocks_upload deploy_indicators/prod/uploads/food_security_upload deploy_indicators/prod/uploads/other_vulnerable_groups_upload deploy_indicators/prod/uploads/lack_of_coping_capacity_upload deploy_indicators/prod/uploads/institutional_upload deploy_indicators/prod/uploads/drr_upload deploy_indicators/prod/uploads/governance_upload deploy_indicators/prod/uploads/infrastructure_upload deploy_indicators/prod/uploads/communication_upload deploy_indicators/prod/uploads/physical_infrastructure_upload deploy_indicators/prod/uploads/access_to_health_care_upload deploy_indicators/prod/uploads/osm_banks_count_upload deploy_indicators/prod/uploads/osm_atms_count_upload deploy_indicators/prod/uploads/osm_kindergartens_count_upload deploy_indicators/prod/uploads/osm_schools_count_upload deploy_indicators/prod/uploads/osm_colleges_count_upload deploy_indicators/prod/uploads/osm_universities_count_upload deploy_indicators/prod/uploads/osm_defibrillators_count_upload deploy_indicators/prod/uploads/osm_airports_count_upload deploy_indicators/prod/uploads/osm_railway_stations_count_upload deploy_indicators/prod/uploads/osm_public_transport_stops_count_upload deploy_indicators/prod/uploads/osm_car_parkings_capacity_upload deploy_indicators/prod/uploads/osm_heritage_sites_count_upload deploy_indicators/prod/uploads/min_osm_heritage_admin_level_upload deploy_indicators/prod/uploads/foursquare_os_places_count_upload deploy_indicators/prod/uploads/coffee_shops_fsq_count_upload deploy_indicators/prod/uploads/kebab_restaurants_fsq_count_upload deploy_indicators/prod/uploads/business_and_professional_services_fsq_count_upload deploy_indicators/prod/uploads/dining_and_drinking_fsq_count_upload deploy_indicators/prod/uploads/retail_fsq_count_upload deploy_indicators/prod/uploads/community_and_government_fsq_count_upload deploy_indicators/prod/uploads/travel_and_transportation_fsq_count_upload deploy_indicators/prod/uploads/landmarks_and_outdoors_fsq_count_upload deploy_indicators/prod/uploads/health_and_medicine_fsq_count_upload deploy_indicators/prod/uploads/arts_and_entertainment_fsq_count_upload deploy_indicators/prod/uploads/sports_and_recreation_fsq_count_upload deploy_indicators/prod/uploads/events_fsq_count_upload | deploy_indicators/prod/uploads ## Control of layer uplodings to Insigths API for prod without one and area_km2
+deploy_indicators/prod/uploads/upload_prod: \
+    deploy_indicators/prod/uploads/view_count_upload \
+    deploy_indicators/prod/uploads/count_upload \
+    deploy_indicators/prod/uploads/population_upload \
+    deploy_indicators/prod/uploads/populated_area_km2_upload \
+    deploy_indicators/prod/uploads/building_count_upload \
+    deploy_indicators/prod/uploads/highway_length_upload \
+    deploy_indicators/prod/uploads/total_road_length_upload \
+    deploy_indicators/prod/uploads/local_hours_upload \
+    deploy_indicators/prod/uploads/total_hours_upload \
+    deploy_indicators/prod/uploads/avgmax_ts_upload \
+    deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload \
+    deploy_indicators/prod/uploads/view_count_bf2402_upload \
+    deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload \
+    deploy_indicators/prod/uploads/total_building_count_upload \
+    deploy_indicators/prod/uploads/count_6_months_upload \
+    deploy_indicators/prod/uploads/building_count_6_months_upload \
+    deploy_indicators/prod/uploads/highway_length_6_months_upload \
+    deploy_indicators/prod/uploads/osm_users_upload \
+    deploy_indicators/prod/uploads/residential_upload \
+    deploy_indicators/prod/uploads/gdp_upload \
+    deploy_indicators/prod/uploads/min_ts_upload \
+    deploy_indicators/prod/uploads/max_ts_upload \
+    deploy_indicators/prod/uploads/wildfires_upload \
+    deploy_indicators/prod/uploads/industrial_area_upload \
+    deploy_indicators/prod/uploads/volcanos_count_upload \
+    deploy_indicators/prod/uploads/pop_under_5_total_upload \
+    deploy_indicators/prod/uploads/pop_over_65_total_upload \
+    deploy_indicators/prod/uploads/poverty_families_total_upload \
+    deploy_indicators/prod/uploads/pop_disability_total_upload \
+    deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload \
+    deploy_indicators/prod/uploads/pop_without_car_upload \
+    deploy_indicators/prod/uploads/man_distance_to_hospital_upload \
+    deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload \
+    deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload \
+     \
+    deploy_indicators/prod/uploads/eatery_count_upload \
+    deploy_indicators/prod/uploads/food_shops_count_upload \
+    deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload \
+    deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload \
+    deploy_indicators/prod/uploads/mapswipe_area_km2_upload \
+    deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload \
+    deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload \
+    deploy_indicators/prod/uploads/forest_upload \
+    deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload \
+    deploy_indicators/prod/uploads/shrubs_upload \
+    deploy_indicators/prod/uploads/herbage_upload \
+    deploy_indicators/prod/uploads/unknown_forest_upload \
+    deploy_indicators/prod/uploads/avg_ndvi_upload \
+    deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload \
+    deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload \
+    deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload \
+    deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload \
+    deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload \
+    deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload \
+    deploy_indicators/prod/uploads/hazardous_days_count_upload \
+    deploy_indicators/prod/uploads/earthquake_days_count_upload \
+    deploy_indicators/prod/uploads/wildfire_days_count_upload \
+    deploy_indicators/prod/uploads/drought_days_count_upload \
+    deploy_indicators/prod/uploads/cyclone_days_count_upload \
+    deploy_indicators/prod/uploads/volcano_days_count_upload \
+    deploy_indicators/prod/uploads/flood_days_count_upload \
+    deploy_indicators/prod/uploads/powerlines_upload \
+    deploy_indicators/prod/uploads/night_lights_intensity_upload \
+    deploy_indicators/prod/uploads/gsa_ghi_upload \
+    deploy_indicators/prod/uploads/worldclim_avg_temperature_upload \
+    deploy_indicators/prod/uploads/worldclim_min_temperature_upload \
+    deploy_indicators/prod/uploads/worldclim_max_temperature_upload \
+    deploy_indicators/prod/uploads/worldclim_amp_temperature_upload \
+    deploy_indicators/prod/uploads/powerlines_proximity_m_upload \
+    deploy_indicators/prod/uploads/populated_areas_proximity_m_upload \
+    deploy_indicators/prod/uploads/power_substations_proximity_m_upload \
+    deploy_indicators/prod/uploads/solar_power_plants_upload \
+    deploy_indicators/prod/uploads/safety_index_upload \
+    deploy_indicators/prod/uploads/avg_forest_canopy_height_upload \
+    deploy_indicators/prod/uploads/max_forest_canopy_height_upload \
+    deploy_indicators/prod/uploads/worldbank_tax_rate_upload \
+    deploy_indicators/prod/uploads/years_to_naturalisation_upload \
+    deploy_indicators/prod/uploads/multiple_citizenship_upload \
+    deploy_indicators/prod/uploads/ghs_max_building_height_upload \
+    deploy_indicators/prod/uploads/ghs_avg_building_height_upload \
+    deploy_indicators/prod/uploads/max_osm_building_levels_upload \
+    deploy_indicators/prod/uploads/avg_osm_building_levels_upload \
+    deploy_indicators/prod/uploads/osm_hotels_count_upload \
+    deploy_indicators/prod/uploads/max_osm_hotels_assesment_upload \
+    deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload \
+    deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload \
+    deploy_indicators/prod/uploads/osm_art_venues_count_upload \
+    deploy_indicators/prod/uploads/osm_entertainment_venues_count_upload \
+    deploy_indicators/prod/uploads/osm_cultural_and_comunity_centers_count_upload \
+    deploy_indicators/prod/uploads/worldbank_inflation_upload \
+    deploy_indicators/prod/uploads/cropland_upload \
+    deploy_indicators/prod/uploads/wetland_upload \
+    deploy_indicators/prod/uploads/moss_lichen_upload \
+    deploy_indicators/prod/uploads/bare_vegetation_upload \
+    deploy_indicators/prod/uploads/builtup_upload \
+    deploy_indicators/prod/uploads/snow_ice_upload \
+    deploy_indicators/prod/uploads/permanent_water_upload \
+    deploy_indicators/prod/uploads/osm_pharmacy_count_upload \
+    deploy_indicators/prod/uploads/conflict_stock_displacement_upload \
+    deploy_indicators/prod/uploads/disaster_stock_displacement_upload \
+    deploy_indicators/prod/uploads/conflict_internal_displacements_upload \
+    deploy_indicators/prod/uploads/disaster_internal_displacements_upload \
+    deploy_indicators/prod/uploads/hdi_2022_upload \
+    deploy_indicators/prod/uploads/inform_risk_upload \
+    deploy_indicators/prod/uploads/hazard_and_exposure_upload \
+    deploy_indicators/prod/uploads/natural_0_to_10_upload \
+    deploy_indicators/prod/uploads/earthquake_upload \
+    deploy_indicators/prod/uploads/river_flood_upload \
+    deploy_indicators/prod/uploads/tsunami_upload \
+    deploy_indicators/prod/uploads/tropical_cyclone_upload \
+    deploy_indicators/prod/uploads/coastal_flood_upload \
+    deploy_indicators/prod/uploads/drought_upload \
+    deploy_indicators/prod/uploads/epidemic_upload \
+    deploy_indicators/prod/uploads/human_upload \
+    deploy_indicators/prod/uploads/projected_conflict_probability_upload \
+    deploy_indicators/prod/uploads/current_conflict_intensity_upload \
+    deploy_indicators/prod/uploads/vulnerability_upload \
+    deploy_indicators/prod/uploads/socio_economic_vulnerability_upload \
+    deploy_indicators/prod/uploads/development_and_deprivation_upload \
+    deploy_indicators/prod/uploads/inequality_upload \
+    deploy_indicators/prod/uploads/economic_dependency_upload \
+    deploy_indicators/prod/uploads/vulnerable_groups_upload \
+    deploy_indicators/prod/uploads/uprooted_people_upload \
+    deploy_indicators/prod/uploads/health_conditions_upload \
+    deploy_indicators/prod/uploads/children_u5_upload \
+    deploy_indicators/prod/uploads/recent_shocks_upload \
+    deploy_indicators/prod/uploads/food_security_upload \
+    deploy_indicators/prod/uploads/other_vulnerable_groups_upload \
+    deploy_indicators/prod/uploads/lack_of_coping_capacity_upload \
+    deploy_indicators/prod/uploads/institutional_upload \
+    deploy_indicators/prod/uploads/drr_upload \
+    deploy_indicators/prod/uploads/governance_upload \
+    deploy_indicators/prod/uploads/infrastructure_upload \
+    deploy_indicators/prod/uploads/communication_upload \
+    deploy_indicators/prod/uploads/physical_infrastructure_upload \
+    deploy_indicators/prod/uploads/access_to_health_care_upload \
+    deploy_indicators/prod/uploads/osm_banks_count_upload \
+    deploy_indicators/prod/uploads/osm_atms_count_upload \
+    deploy_indicators/prod/uploads/osm_kindergartens_count_upload \
+    deploy_indicators/prod/uploads/osm_schools_count_upload \
+    deploy_indicators/prod/uploads/osm_colleges_count_upload \
+    deploy_indicators/prod/uploads/osm_universities_count_upload \
+    deploy_indicators/prod/uploads/osm_defibrillators_count_upload \
+    deploy_indicators/prod/uploads/osm_airports_count_upload \
+    deploy_indicators/prod/uploads/osm_railway_stations_count_upload \
+    deploy_indicators/prod/uploads/osm_public_transport_stops_count_upload \
+    deploy_indicators/prod/uploads/osm_car_parkings_capacity_upload \
+    deploy_indicators/prod/uploads/osm_heritage_sites_count_upload \
+    deploy_indicators/prod/uploads/min_osm_heritage_admin_level_upload \
+    deploy_indicators/prod/uploads/foursquare_os_places_count_upload \
+    deploy_indicators/prod/uploads/coffee_shops_fsq_count_upload \
+    deploy_indicators/prod/uploads/kebab_restaurants_fsq_count_upload \
+    deploy_indicators/prod/uploads/business_and_professional_services_fsq_count_upload \
+    deploy_indicators/prod/uploads/dining_and_drinking_fsq_count_upload \
+    deploy_indicators/prod/uploads/retail_fsq_count_upload \
+    deploy_indicators/prod/uploads/community_and_government_fsq_count_upload \
+    deploy_indicators/prod/uploads/travel_and_transportation_fsq_count_upload \
+    deploy_indicators/prod/uploads/landmarks_and_outdoors_fsq_count_upload \
+    deploy_indicators/prod/uploads/health_and_medicine_fsq_count_upload \
+    deploy_indicators/prod/uploads/arts_and_entertainment_fsq_count_upload \
+    deploy_indicators/prod/uploads/sports_and_recreation_fsq_count_upload \
+    deploy_indicators/prod/uploads/events_fsq_count_upload \
+    | \
+    deploy_indicators/prod/uploads \
+    ## \
+    Control \
+    of \
+    layer \
+    uplodings \
+    to \
+    Insigths \
+    API \
+    for \
+    prod \
+    without \
+    one \
+    and \
+    area_km2
 	touch $@
 
 deploy_indicators/prod/custom_axis/population_area_km2: deploy_indicators/prod/uploads/population_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for population area_km2 axis on prod.
@@ -6119,7 +6932,65 @@ deploy_indicators/prod/custom_axis/wildfire_days_count_one: deploy_indicators/pr
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfire_days_count" "one"
 	touch $@
 
-deploy_indicators/prod/custom_axis/all_custom_axis: deploy_indicators/prod/custom_axis/population_area_km2 deploy_indicators/prod/custom_axis/count_area_km2 deploy_indicators/prod/custom_axis/building_count_area_km2 deploy_indicators/prod/custom_axis/local_hours_area_km2 deploy_indicators/prod/custom_axis/total_hours_area_km2 deploy_indicators/prod/custom_axis/view_count_area_km2 deploy_indicators/prod/custom_axis/osm_users_one deploy_indicators/prod/custom_axis/total_building_count_area_km2 deploy_indicators/prod/custom_axis/wildfires_area_km2 deploy_indicators/prod/custom_axis/forest_area_km2 deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one deploy_indicators/prod/custom_axis/man_distance_to_hospital_one deploy_indicators/prod/custom_axis/highway_length_area_km2 deploy_indicators/prod/custom_axis/total_road_length_area_km2  deploy_indicators/prod/custom_axis/view_count_bf2402_one deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2 deploy_indicators/prod/custom_axis/powerlines_one deploy_indicators/prod/custom_axis/night_lights_intensity_one deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one deploy_indicators/prod/custom_axis/solar_power_plants_area_km2 deploy_indicators/prod/custom_axis/volcano_days_count_area_km2 deploy_indicators/prod/custom_axis/volcano_days_count_one deploy_indicators/prod/custom_axis/flood_days_count_area_km2 deploy_indicators/prod/custom_axis/flood_days_count_one deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population deploy_indicators/prod/custom_axis/building_count_total_building_count deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 deploy_indicators/prod/custom_axis/highway_length_total_road_length deploy_indicators/prod/custom_axis/eatery_count_one deploy_indicators/prod/custom_axis/food_shops_count_one deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2 deploy_indicators/prod/custom_axis/hazardous_days_count_one deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2 deploy_indicators/prod/custom_axis/earthquake_days_count_one deploy_indicators/prod/custom_axis/drought_days_count_area_km2 deploy_indicators/prod/custom_axis/drought_days_count_one deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2 deploy_indicators/prod/custom_axis/cyclone_days_count_one deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2 deploy_indicators/prod/custom_axis/wildfire_days_count_one deploy_indicators/prod/custom_axis/man_distance_to_hospital_population | deploy_indicators/prod/custom_axis ## final target for custom axis deployment to prod
+deploy_indicators/prod/custom_axis/all_custom_axis: \
+    deploy_indicators/prod/custom_axis/population_area_km2 \
+    deploy_indicators/prod/custom_axis/count_area_km2 \
+    deploy_indicators/prod/custom_axis/building_count_area_km2 \
+    deploy_indicators/prod/custom_axis/local_hours_area_km2 \
+    deploy_indicators/prod/custom_axis/total_hours_area_km2 \
+    deploy_indicators/prod/custom_axis/view_count_area_km2 \
+    deploy_indicators/prod/custom_axis/osm_users_one \
+    deploy_indicators/prod/custom_axis/total_building_count_area_km2 \
+    deploy_indicators/prod/custom_axis/wildfires_area_km2 \
+    deploy_indicators/prod/custom_axis/forest_area_km2 \
+    deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one \
+    deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one \
+    deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_one \
+    deploy_indicators/prod/custom_axis/man_distance_to_hospital_one \
+    deploy_indicators/prod/custom_axis/highway_length_area_km2 \
+    deploy_indicators/prod/custom_axis/total_road_length_area_km2 \
+     \
+    deploy_indicators/prod/custom_axis/view_count_bf2402_one \
+    deploy_indicators/prod/custom_axis/view_count_bf2402_area_km2 \
+    deploy_indicators/prod/custom_axis/powerlines_one \
+    deploy_indicators/prod/custom_axis/night_lights_intensity_one \
+    deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_one \
+    deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_one \
+    deploy_indicators/prod/custom_axis/solar_power_plants_area_km2 \
+    deploy_indicators/prod/custom_axis/volcano_days_count_area_km2 \
+    deploy_indicators/prod/custom_axis/volcano_days_count_one \
+    deploy_indicators/prod/custom_axis/flood_days_count_area_km2 \
+    deploy_indicators/prod/custom_axis/flood_days_count_one \
+    deploy_indicators/prod/custom_axis/man_distance_to_bomb_shelters_population \
+    deploy_indicators/prod/custom_axis/man_distance_to_charging_stations_population \
+    deploy_indicators/prod/custom_axis/man_distance_to_fire_brigade_population \
+    deploy_indicators/prod/custom_axis/building_count_total_building_count \
+    deploy_indicators/prod/custom_axis/waste_basket_coverage_area_km2_populated_area_km2 \
+    deploy_indicators/prod/custom_axis/highway_length_total_road_length \
+    deploy_indicators/prod/custom_axis/eatery_count_one \
+    deploy_indicators/prod/custom_axis/food_shops_count_one \
+    deploy_indicators/prod/custom_axis/hazardous_days_count_area_km2 \
+    deploy_indicators/prod/custom_axis/hazardous_days_count_one \
+    deploy_indicators/prod/custom_axis/earthquake_days_count_area_km2 \
+    deploy_indicators/prod/custom_axis/earthquake_days_count_one \
+    deploy_indicators/prod/custom_axis/drought_days_count_area_km2 \
+    deploy_indicators/prod/custom_axis/drought_days_count_one \
+    deploy_indicators/prod/custom_axis/cyclone_days_count_area_km2 \
+    deploy_indicators/prod/custom_axis/cyclone_days_count_one \
+    deploy_indicators/prod/custom_axis/wildfire_days_count_area_km2 \
+    deploy_indicators/prod/custom_axis/wildfire_days_count_one \
+    deploy_indicators/prod/custom_axis/man_distance_to_hospital_population \
+    | \
+    deploy_indicators/prod/custom_axis \
+    ## \
+    final \
+    target \
+    for \
+    custom \
+    axis \
+    deployment \
+    to \
+    prod
 	touch $@
 
 ## END PROD upload

@@ -7,6 +7,7 @@ create table osm_emergency_facilities as (
             tags ->> 'name' as name,
             tags
     from osm o
-    where tags ->> 'emergency' = 'defibrillator'
+    -- index-friendly tag compare
+    where tags @> '{"emergency":"defibrillator"}'
     order by 1,2,_ST_SortableHash(geog::geometry)
 );

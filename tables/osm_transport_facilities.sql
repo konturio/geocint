@@ -22,10 +22,11 @@ create table osm_transport_facilities as (
             tags ->> 'name' as name,
             tags
     from osm o
-    where (tags ->> 'aeroway' = 'aerodrome'
+    -- index-friendly tag compares
+    where (tags @> '{"aeroway":"aerodrome"}'
           and (tags ->> 'landuse' not in ('military', 'construction') or tags ->> 'landuse' is null))
-          or tags ->> 'railway' = 'station'
-          or ((tags ->> 'highway' = 'bus_stop' or tags ->> 'public_transport' = 'stop_position' or tags ->> 'railway' = 'tram_stop')
+          or tags @> '{"railway":"station"}'
+          or ((tags @> '{"highway":"bus_stop"}' or tags @> '{"public_transport":"stop_position"}' or tags @> '{"railway":"tram_stop"}')
           and (not (tags ? 'train') or tags ->> 'train' != 'yes'))
     order by 1,2,_ST_SortableHash(geog::geometry)
 );

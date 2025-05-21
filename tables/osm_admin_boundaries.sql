@@ -9,13 +9,14 @@ create table osm_admin_boundaries as (
            ST_Normalize(geog::geometry)         as geom
     from osm
     where ((tags ? 'admin_level'
+           -- index-friendly tag compares
            and tags @> '{"boundary":"administrative"}'           
            and not (tags ->> 'name' is null and tags @> '{"admin_level":"2"}'))
            -- Special rule for Palestinian Territories - because of it's disputed status it often lacks admin_level key
            -- also for 'Swalbard and Jan Mayen', 'United States Minor Islands' and 'Western Sahara' where admin_level doesn't exist
            or 
-           (tags ->> 'ISO3166-1' in ('PS','SJ','UM','EH') 
-           and osm_id in (1703814, 2559126, 2185386, 3245620)))
+            (tags ? 'ISO3166-1' and tags->>'ISO3166-1' in ('PS','SJ','UM','EH')
+            and osm_id in (1703814, 2559126, 2185386, 3245620)))
            and ST_Dimension(geog::geometry) = 2
 );
 
@@ -149,7 +150,7 @@ where   o.osm_id = u.osm_id;
 -- update kontur_admin_level for countries and Western Sahara
 update  osm_admin_boundaries as o
 set     kontur_admin_level = 2
-where 	admin_level = '2' or (osm_id = 2559126 and tags ->> 'ISO3166-1' in ('EH'));
+where 	admin_level = '2' or (osm_id = 2559126 and (tags ? 'ISO3166-1' and tags->>'ISO3166-1' in ('EH')));
 
 -- kontur_admin_level is null for all objects with errors in admin_level (f.e. text value in admin_level)
 -- i left this on purpose, it is discussable 

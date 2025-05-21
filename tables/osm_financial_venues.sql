@@ -12,6 +12,7 @@ create table osm_financial_venues as (
             tags ->> 'name' as name,
             tags
     from osm o
-    where tags ->> 'amenity' in ('bank','atm')
+    -- index-friendly tag compare
+    where (tags ? 'amenity' and tags->>'amenity' in ('bank','atm'))
     order by 1,2,_ST_SortableHash(geog::geometry)
 );

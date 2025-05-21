@@ -16,8 +16,9 @@ create table osm_car_parkings_capacity_in as (
             end                                        as capacity,
             geog                                       as geog
     from osm o
-    where (tags ->> 'amenity' in ('parking', 'parking_space')
-          or (tags ? 'parking' and tags ->> 'parking' not in ('no','disabled')))
+    -- use index-friendly tag compare
+    where ((tags ? 'amenity' and tags->>'amenity' in ('parking', 'parking_space'))
+          or (tags ? 'parking' and tags->>'parking' not in ('no','disabled')))
     order by 1, 2, ST_Dimension(ST_Normalize(geog::geometry)) desc
 );
 

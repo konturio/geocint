@@ -9,8 +9,9 @@ create table osm_hotels_in as (
             tags ->> 'operator' as operator,
             tags
     from osm o
-    where tags @> '{"amenity":"love_hotel"}' 
-          or tags ->> 'tourism' in ('guest_house','hotel','hostel','motel')    
+    -- index-friendly tag compares
+    where tags @> '{"amenity":"love_hotel"}'
+          or (tags ? 'tourism' and tags->>'tourism' in ('guest_house','hotel','hostel','motel'))
 );
 
 drop table if exists osm_hotels;

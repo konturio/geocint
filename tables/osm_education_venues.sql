@@ -21,8 +21,9 @@ create table osm_education_venues as (
             tags ->> 'name' as name,
             tags
     from osm o
-    where tags ->> 'amenity' in ('kindergarten','school','college','university')
-          or tags ->> 'building' in ('kindergarten','school','college','university')
-          or tags ->> 'military' = 'school'
+    -- index-friendly tag compares
+    where (tags ? 'amenity' and tags->>'amenity' in ('kindergarten','school','college','university'))
+          or (tags ? 'building' and tags->>'building' in ('kindergarten','school','college','university'))
+          or tags @> '{"military":"school"}'
     order by 1,2,_ST_SortableHash(geog::geometry)
 );

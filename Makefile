@@ -38,7 +38,7 @@ all: prod \
     db/table/global_rva_h3 \
     db/table/osm_buildings_use \
     db/index/osm_addresses_geom_idx \
-    data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement \
+    data/out/produce_set_of_data_for_wildfire_sensors_placement \
     db/table/us_counties_boundary \
     deploy_indicators/prod/uploads/population_next_gen_upload \
     deploy_indicators/prod/uploads/populated_area_km2_next_gen_upload \
@@ -2913,20 +2913,20 @@ db/procedures/poles_for_sensors_placement_v3: db/table/gatlinburg_poles db/table
 	psql -f procedures/poles_for_sensors_placement_v3.sql
 	touch $@
 
-data/out/data/out/v3_output: db/table/poles_for_sensors_placement_v3 | data/out/wildfire_sensors_placement ## proposed locations for sensors placement
-	rm -f data/out/data/out/wildfire_sensors_placement.gpkg
-	ogr2ogr -f GPKG data/out/data/out/wildfire_sensors_placement.gpkg PG:'dbname=gis' -sql "select * from poles_for_sensors_placement where updated_cost > 0 order by rank" -lco "SPATIAL_INDEX=NO" -nln poles_for_sensors_placement
-	rm -f data/out/data/out/wildfire_sensors_placement_1_mile_buffer.gpkg
-	ogr2ogr -f GPKG data/out/data/out/wildfire_sensors_placement_1_mile_buffer.gpkg PG:'dbname=gis' -sql "select * from wildfire_sensors_placement_1_mile_buffer order by rank" -lco "SPATIAL_INDEX=NO" -nln wildfire_sensors_placement_1_mile_buffer
-	rm -f data/out/data/out/uncovered_areas.gpkg
-	ogr2ogr -f GPKG data/out/data/out/uncovered_areas.gpkg PG:'dbname=gis' -sql "select h3, cost, updated_cost, geom from gatlinburg_stat_h3_r10 where updated_cost > 0 order by h3" -lco "SPATIAL_INDEX=NO" -nln uncovered_areas
+data/out/v3_output: db/table/poles_for_sensors_placement_v3 | data/out/wildfire_sensors_placement ## proposed locations for sensors placement
+	rm -f data/out/wildfire_sensors_placement.gpkg
+	ogr2ogr -f GPKG data/out/wildfire_sensors_placement.gpkg PG:'dbname=gis' -sql "select * from poles_for_sensors_placement where updated_cost > 0 order by rank" -lco "SPATIAL_INDEX=NO" -nln poles_for_sensors_placement
+	rm -f data/out/wildfire_sensors_placement_1_mile_buffer.gpkg
+	ogr2ogr -f GPKG data/out/wildfire_sensors_placement_1_mile_buffer.gpkg PG:'dbname=gis' -sql "select * from wildfire_sensors_placement_1_mile_buffer order by rank" -lco "SPATIAL_INDEX=NO" -nln wildfire_sensors_placement_1_mile_buffer
+	rm -f data/out/uncovered_areas.gpkg
+	ogr2ogr -f GPKG data/out/uncovered_areas.gpkg PG:'dbname=gis' -sql "select h3, cost, updated_cost, geom from gatlinburg_stat_h3_r10 where updated_cost > 0 order by h3" -lco "SPATIAL_INDEX=NO" -nln uncovered_areas
 	touch $@
 
 db/procedures/poles_for_sensors_placement_v4: db/procedures/poles_for_sensors_placement_v3 db/function/st_weightedcentroids | db/procedures ## V4 create 2 scenarios for wildfire sensors placement (ruquires kontur_population on resolution 10) version 4 with new requirements about placement sensors between 1 and 2 miles
 	psql -f procedures/poles_for_sensors_placement_v4.sql
 	touch $@
 
-data/out/data/out/v4_output: db/table/poles_for_sensors_placement_v3 | data/out/wildfire_sensors_placement ## proposed locations for sensors placement 1 mile buffers
+data/out/v4_output: db/table/poles_for_sensors_placement_v3 | data/out/wildfire_sensors_placement ## proposed locations for sensors placement 1 mile buffers
 	rm -f proposed_points_v4_2_scenario_output.gpkg
 	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_2_scenario_output order by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_2_scenario_output
 	rm -f proposed_points_v4_buffer_1_mile_2_clusters.gpkg
@@ -2937,7 +2937,7 @@ data/out/data/out/v4_output: db/table/poles_for_sensors_placement_v3 | data/out/
 	ogr2ogr -f GPKG $@ PG:'dbname=gis' -sql "select * from proposed_points_v4_buffer_1_mile_1_clusters order by rank" -lco "SPATIAL_INDEX=NO" -nln proposed_points_v4_buffer_1_mile_1_clusters
 	touch @$
 
-data/out/data/out/produce_set_of_data_for_wildfire_sensors_placement: data/out/data/out/v3_output data/out/data/out/v4_output db/procedures/poles_for_sensors_placement_v4 ## final target
+data/out/produce_set_of_data_for_wildfire_sensors_placement: data/out/v3_output data/out/v4_output db/procedures/poles_for_sensors_placement_v4 ## final target
 	touch $@
 
 ### Deploy through API
@@ -4162,7 +4162,7 @@ deploy_indicators/dev/uploads/upload_dev: \
     deploy_indicators/dev/uploads/worldclim_amp_temperature_upload \
     deploy_indicators/dev/uploads/powerlines_proximity_m_upload \
     deploy_indicators/dev/uploads/populated_areas_proximity_m_upload \
-    deploy_indicators/dev/uploads/power_substations_proximity_m_upload \ 
+    deploy_indicators/dev/uploads/power_substations_proximity_m_upload \
     deploy_indicators/dev/uploads/solar_power_plants_upload \
     deploy_indicators/dev/uploads/safety_index_upload \
     deploy_indicators/dev/uploads/avg_forest_canopy_height_upload \
@@ -4215,7 +4215,7 @@ deploy_indicators/dev/uploads/upload_dev: \
     deploy_indicators/dev/uploads/economic_dependency_upload \
     deploy_indicators/dev/uploads/vulnerable_groups_upload \
     deploy_indicators/dev/uploads/uprooted_people_upload \
-    deploy_indicators/dev/uploads/health_conditions_upload\ 
+    deploy_indicators/dev/uploads/health_conditions_upload\
     deploy_indicators/dev/uploads/children_u5_upload \
     deploy_indicators/dev/uploads/recent_shocks_upload \
     deploy_indicators/dev/uploads/food_security_upload \
@@ -5281,7 +5281,6 @@ deploy_indicators/test/uploads/upload_test: \
     deploy_indicators/test/uploads/man_distance_to_hospital_upload \
     deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload \
     deploy_indicators/test/uploads/man_distance_to_charging_stations_upload \
-     \
     deploy_indicators/test/uploads/eatery_count_upload \
     deploy_indicators/test/uploads/food_shops_count_upload \
     deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload \

@@ -414,7 +414,7 @@ db/table/hrsl_population_raster: data/in/raster/hrsl_cogs/download | db/table ##
 	psql -c "vacuum analyze hrsl_population_raster;"
 	touch $@
 
-db/table/hrsl_population_grid_h3_r11: db/table/hrsl_population_raster db/function/h3_raster_sum_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 11 resolution.
+db/table/hrsl_population_grid_h3_r11: db/table/hrsl_population_raster db/function/h3_raster_agg_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 11 resolution.
 	psql -f tables/population_raster_grid_h3_r11.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r11=hrsl_population_grid_h3_r11
 	touch $@
 
@@ -440,7 +440,7 @@ db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_
 	raster2pgsql -M -Y -s 54009 data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0/GHS_POP_E2020_GLOBE_R2023A_54009_100_V1_0.tif -t auto ghs_globe_population_raster | psql -q
 	touch $@
 
-db/table/ghs_globe_population_grid_h3_r11: db/table/ghs_globe_population_raster | db/function/h3_raster_sum_to_h3 db/procedure/insert_projection_54009 db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 11 resolution.
+db/table/ghs_globe_population_grid_h3_r11: db/table/ghs_globe_population_raster | db/function/h3_raster_agg_to_h3 db/procedure/insert_projection_54009 db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 11 resolution.
 	psql -f tables/population_raster_grid_h3_r11.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r11=ghs_globe_population_grid_h3_r11
 	psql -c "delete from ghs_globe_population_grid_h3_r11 where population = 0;"
 	touch $@
@@ -2089,7 +2089,7 @@ data/mid/foursquare/foursquare_os_places/transform_to_csv: data/in/foursquare/fo
 	python3 scripts/parquet_to_csv.py data/in/foursquare/foursquare_os_places/categories.zstd.parquet data/mid/foursquare/foursquare_os_places/categories.csv
 	touch $@
 
-db/table/foursquare_os_places: data/in/foursquare/foursquare_os_places/transform_to_csv | db/table ## load data to database
+db/table/foursquare_os_places: data/mid/foursquare/foursquare_os_places/transform_to_csv | db/table ## load data to database
 	psql -c "drop table if exists foursquare_os_places;"
 	psql -c "create table foursquare_os_places (fsq_place_id text, latitude double precision,longitude double precision,date_created text,date_refreshed text,date_closed text,fsq_category_ids text[]);"
 	ls data/mid/foursquare/foursquare_os_places/places*.csv | parallel "psql -c \"copy foursquare_os_places from stdin with csv header delimiter ';';\" < {}"

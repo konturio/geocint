@@ -4270,6 +4270,13 @@ deploy_indicators/dev/uploads/upload_dev: \
     deploy_indicators/dev/uploads/populated_areas_proximity_m_upload \
     deploy_indicators/dev/uploads/power_substations_proximity_m_upload \
     deploy_indicators/dev/uploads/solar_power_plants_upload \
+    deploy_indicators/dev/uploads/wind_farms_upload \
+    deploy_indicators/dev/uploads/pipeline_length_upload \
+    deploy_indicators/dev/uploads/communication_line_length_upload \
+    deploy_indicators/dev/uploads/motor_vehicle_road_length_upload \
+    deploy_indicators/dev/uploads/timezone_offset_upload \
+    deploy_indicators/dev/uploads/building_start_year_upload \
+    deploy_indicators/dev/uploads/railway_length_upload \
     deploy_indicators/dev/uploads/safety_index_upload \
     deploy_indicators/dev/uploads/avg_forest_canopy_height_upload \
     deploy_indicators/dev/uploads/max_forest_canopy_height_upload \
@@ -5452,6 +5459,13 @@ deploy_indicators/test/uploads/upload_test: \
     deploy_indicators/test/uploads/populated_areas_proximity_m_upload \
     deploy_indicators/test/uploads/power_substations_proximity_m_upload \
     deploy_indicators/test/uploads/solar_power_plants_upload \
+    deploy_indicators/test/uploads/wind_farms_upload \
+    deploy_indicators/test/uploads/pipeline_length_upload \
+    deploy_indicators/test/uploads/communication_line_length_upload \
+    deploy_indicators/test/uploads/motor_vehicle_road_length_upload \
+    deploy_indicators/test/uploads/timezone_offset_upload \
+    deploy_indicators/test/uploads/building_start_year_upload \
+    deploy_indicators/test/uploads/railway_length_upload \
     deploy_indicators/test/uploads/safety_index_upload \
     deploy_indicators/test/uploads/avg_forest_canopy_height_upload \
     deploy_indicators/test/uploads/max_forest_canopy_height_upload \
@@ -6600,6 +6614,13 @@ deploy_indicators/prod/uploads/upload_prod: \
     deploy_indicators/prod/uploads/food_shops_count_upload \
     deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload \
     deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload \
+    deploy_indicators/prod/uploads/wind_farms_upload \
+    deploy_indicators/prod/uploads/pipeline_length_upload \
+    deploy_indicators/prod/uploads/communication_line_length_upload \
+    deploy_indicators/prod/uploads/motor_vehicle_road_length_upload \
+    deploy_indicators/prod/uploads/timezone_offset_upload \
+    deploy_indicators/prod/uploads/building_start_year_upload \
+    deploy_indicators/prod/uploads/railway_length_upload \
     deploy_indicators/prod/uploads/mapswipe_area_km2_upload \
     deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload \
     deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload \

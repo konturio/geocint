@@ -1,0 +1,28 @@
+drop table if exists humanitarian_dev_index_2022_in;
+create table humanitarian_dev_index_2022_in (
+    country text,
+    code text,
+    hasc text,
+    hdi_2022 numeric,
+    hdi_rank_2022 integer,
+    hdi_rank_2021 integer,
+    inequality_adjusted_hdi_2022 numeric,
+    inequality_adjusted_hdi_overal_loss_pct_2022 numeric,
+    inequality_adjusted_hdi_difference_2022 integer,
+    coefficient_human_inequality_2022 numeric,
+    inequality_in_life_expectancy_pct_2022 numeric,
+    inequality_adjusted_life_expectancy_index_2022 numeric,
+    inequality_in_education_pct_2022 numeric,
+    inequality_adjusted_education_index_2022 numeric,
+    inequality_in_income_pct_2022 numeric,
+    inequality_adjusted_income_index_2022 numeric,
+    income_shares_held_by_poorest_40_percent_2010_2022 numeric,
+    income_shares_held_by_richest_10_percent_2010_2022 numeric,
+    income_shares_held_by_richest_1_percent_2021 numeric,
+    gini_coefficient_2010_2022 numeric,
+    life_expectancy_at_birth_years_2022 numeric,
+    expected_years_of_schooling_2022 numeric,
+    man_years_of_schooling_2022 numeric,
+    gni_per_capita_2017_ppp_usd_2022 numeric,
+    gni_per_capita_rank_minus_hdi_rank_2022 numeric
+);

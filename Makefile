@@ -2711,53 +2711,53 @@ db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx | db
 ### Wind farms count layer ###
 
 db/table/wind_farms_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## Count of wind farms
-psql -f tables/wind_farms_h3.sql
-psql -c "call generate_overviews('wind_farms_h3', '{wind_farms}'::text[], '{sum}'::text[], 8);"
-psql -c "create index on wind_farms_h3 (h3);"
-touch $@
+	psql -f tables/wind_farms_h3.sql
+	psql -c "call generate_overviews('wind_farms_h3', '{wind_farms}'::text[], '{sum}'::text[], 8);"
+	psql -c "create index on wind_farms_h3 (h3);"
+	touch $@
 
 ### Pipeline length layer ###
 
 db/table/pipeline_length_h3: db/table/osm db/index/osm_tags_idx | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Pipeline length per hexagon
-psql -f tables/pipeline_length_h3.sql
-psql -c "call generate_overviews('pipeline_length_h3', '{pipeline_length}'::text[], '{sum}'::text[], 8);"
-touch $@
+	psql -f tables/pipeline_length_h3.sql
+	psql -c "call generate_overviews('pipeline_length_h3', '{pipeline_length}'::text[], '{sum}'::text[], 8);"
+	touch $@
 
 ### Communication line length layer ###
 
 db/table/communication_line_length_h3: db/table/osm db/index/osm_tags_idx | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Communication lines length per hexagon
-psql -f tables/communication_line_length_h3.sql
-psql -c "call generate_overviews('communication_line_length_h3', '{communication_length}'::text[], '{sum}'::text[], 8);"
-touch $@
+	psql -f tables/communication_line_length_h3.sql
+	psql -c "call generate_overviews('communication_line_length_h3', '{communication_length}'::text[], '{sum}'::text[], 8);"
+	touch $@
 
 ### Motor vehicle road length layer ###
 
 db/table/motor_vehicle_road_length_h3: db/table/osm_road_segments | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Drivable road length per hexagon
-psql -f tables/motor_vehicle_road_length_h3.sql
-psql -c "call generate_overviews('motor_vehicle_road_length_h3', '{road_length}'::text[], '{sum}'::text[], 8);"
-psql -c "create index on motor_vehicle_road_length_h3 (h3);"
-touch $@
+	psql -f tables/motor_vehicle_road_length_h3.sql
+	psql -c "call generate_overviews('motor_vehicle_road_length_h3', '{road_length}'::text[], '{sum}'::text[], 8);"
+	psql -c "create index on motor_vehicle_road_length_h3 (h3);"
+	touch $@
 
 ### Timezone offset layer ###
 
 db/table/timezone_offset_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## Timezone UTC offset
-psql -f tables/timezone_offset_h3.sql
-psql -c "call generate_overviews('timezone_offset_h3', '{utc_offset}'::text[], '{avg}'::text[], 8);"
-touch $@
+	psql -f tables/timezone_offset_h3.sql
+	psql -c "call generate_overviews('timezone_offset_h3', '{utc_offset}'::text[], '{avg}'::text[], 8);"
+	touch $@
 
 ### Building start year layer ###
 
 db/table/building_start_year_h3: db/table/osm db/index/osm_tags_idx db/function/parse_integer | db/procedure/generate_overviews db/table ## Average building start year per hexagon
-psql -f tables/building_start_year_h3.sql
-psql -c "call generate_overviews('building_start_year_h3', '{start_year}'::text[], '{avg}'::text[], 8);"
-touch $@
+	psql -f tables/building_start_year_h3.sql
+	psql -c "call generate_overviews('building_start_year_h3', '{start_year}'::text[], '{avg}'::text[], 8);"
+	touch $@
 
 ### Railway length layer ###
 
 db/table/railway_length_h3: db/table/osm db/index/osm_tags_idx | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Railway length per hexagon
-psql -f tables/railway_length_h3.sql
-psql -c "call generate_overviews('railway_length_h3', '{railway_length}'::text[], '{sum}'::text[], 8);"
-touch $@
+	psql -f tables/railway_length_h3.sql
+	psql -c "call generate_overviews('railway_length_h3', '{railway_length}'::text[], '{sum}'::text[], 8);"
+	touch $@
 
 ### Safety index layer - Global Peace Index 2022 ###
 
@@ -3231,28 +3231,28 @@ data/out/csv/power_substations_proximity_m.csv: db/table/proximities_h3 | data/o
 	psql -q -X -c "copy (select h3, power_substations_proximity_m from proximities_h3 where h3 is not null and power_substations_proximity_m is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/power_substations_proximity_m.csv
 
 data/out/csv/solar_power_plants.csv: db/table/existing_solar_power_panels_h3 | data/out/csv ## extract solar_power_plants to csv file
-psql -q -X -c "copy (select h3, solar_power_plants from existing_solar_power_panels_h3 where h3 is not null and solar_power_plants is not null and solar_power_plants > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/solar_power_plants.csv
+	psql -q -X -c "copy (select h3, solar_power_plants from existing_solar_power_panels_h3 where h3 is not null and solar_power_plants is not null and solar_power_plants > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/solar_power_plants.csv
 
 data/out/csv/wind_farms.csv: db/table/wind_farms_h3 | data/out/csv ## extract wind_farms to csv file
-psql -q -X -c "copy (select h3, wind_farms from wind_farms_h3 where h3 is not null and wind_farms is not null and wind_farms > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, wind_farms from wind_farms_h3 where h3 is not null and wind_farms is not null and wind_farms > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/pipeline_length.csv: db/table/pipeline_length_h3 | data/out/csv ## extract pipeline_length to csv file
-psql -q -X -c "copy (select h3, pipeline_length::float/1000.0 from pipeline_length_h3 where h3 is not null and pipeline_length is not null and pipeline_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, pipeline_length::float/1000.0 from pipeline_length_h3 where h3 is not null and pipeline_length is not null and pipeline_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/communication_line_length.csv: db/table/communication_line_length_h3 | data/out/csv ## extract communication_line_length to csv file
-psql -q -X -c "copy (select h3, communication_length::float/1000.0 from communication_line_length_h3 where h3 is not null and communication_length is not null and communication_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, communication_length::float/1000.0 from communication_line_length_h3 where h3 is not null and communication_length is not null and communication_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/motor_vehicle_road_length.csv: db/table/motor_vehicle_road_length_h3 | data/out/csv ## extract motor_vehicle_road_length to csv file
-psql -q -X -c "copy (select h3, road_length::float/1000.0 from motor_vehicle_road_length_h3 where h3 is not null and road_length is not null and road_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, road_length::float/1000.0 from motor_vehicle_road_length_h3 where h3 is not null and road_length is not null and road_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/timezone_offset.csv: db/table/timezone_offset_h3 | data/out/csv ## extract timezone_offset to csv file
-psql -q -X -c "copy (select h3, utc_offset from timezone_offset_h3 where h3 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, utc_offset from timezone_offset_h3 where h3 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/building_start_year.csv: db/table/building_start_year_h3 | data/out/csv ## extract building_start_year to csv file
-psql -q -X -c "copy (select h3, start_year from building_start_year_h3 where h3 is not null and start_year is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, start_year from building_start_year_h3 where h3 is not null and start_year is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/railway_length.csv: db/table/railway_length_h3 | data/out/csv ## extract railway_length to csv file
-psql -q -X -c "copy (select h3, railway_length::float/1000.0 from railway_length_h3 where h3 is not null and railway_length is not null and railway_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, railway_length::float/1000.0 from railway_length_h3 where h3 is not null and railway_length is not null and railway_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/safety_index.csv: db/table/safety_index_h3 | data/out/csv ## extract safety_index to csv file 
 	psql -q -X -c "copy (select h3, safety_index from safety_index_h3 where h3 is not null and safety_index is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/safety_index.csv
@@ -3828,36 +3828,36 @@ deploy_indicators/dev/uploads/residential_upload: data/out/csv/residential.csv |
 	touch $@
 
 deploy_indicators/dev/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/dev/uploads ## upload solar_power_plants to insight-api
-bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
+	touch $@
 
 deploy_indicators/dev/uploads/wind_farms_upload: data/out/csv/wind_farms.csv | deploy_indicators/dev/uploads ## upload wind_farms to insight-api
-bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wind_farms.csv "wind_farms" db/table/wind_farms_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wind_farms.csv "wind_farms" db/table/wind_farms_h3
+	touch $@
 
 deploy_indicators/dev/uploads/pipeline_length_upload: data/out/csv/pipeline_length.csv | deploy_indicators/dev/uploads ## upload pipeline_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pipeline_length.csv "pipeline_length" db/table/pipeline_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pipeline_length.csv "pipeline_length" db/table/pipeline_length_h3
+	touch $@
 
 deploy_indicators/dev/uploads/communication_line_length_upload: data/out/csv/communication_line_length.csv | deploy_indicators/dev/uploads ## upload communication_line_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/communication_line_length.csv "communication_line_length" db/table/communication_line_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/communication_line_length.csv "communication_line_length" db/table/communication_line_length_h3
+	touch $@
 
 deploy_indicators/dev/uploads/motor_vehicle_road_length_upload: data/out/csv/motor_vehicle_road_length.csv | deploy_indicators/dev/uploads ## upload motor_vehicle_road_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/motor_vehicle_road_length.csv "motor_vehicle_road_length" db/table/motor_vehicle_road_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/motor_vehicle_road_length.csv "motor_vehicle_road_length" db/table/motor_vehicle_road_length_h3
+	touch $@
 
 deploy_indicators/dev/uploads/timezone_offset_upload: data/out/csv/timezone_offset.csv | deploy_indicators/dev/uploads ## upload timezone_offset to insight-api
-bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/timezone_offset.csv "timezone_offset" db/table/timezone_offset_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/timezone_offset.csv "timezone_offset" db/table/timezone_offset_h3
+	touch $@
 
 deploy_indicators/dev/uploads/building_start_year_upload: data/out/csv/building_start_year.csv | deploy_indicators/dev/uploads ## upload building_start_year to insight-api
-bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_start_year.csv "building_start_year" db/table/building_start_year_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_start_year.csv "building_start_year" db/table/building_start_year_h3
+	touch $@
 
 deploy_indicators/dev/uploads/railway_length_upload: data/out/csv/railway_length.csv | deploy_indicators/dev/uploads ## upload railway_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/railway_length.csv "railway_length" db/table/railway_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/railway_length.csv "railway_length" db/table/railway_length_h3
+	touch $@
 
 deploy_indicators/dev/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/dev/uploads ## upload safety_index to insight-api
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
@@ -5009,36 +5009,36 @@ deploy_indicators/test/uploads/residential_upload: data/out/csv/residential.csv 
 	touch $@
 
 deploy_indicators/test/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/test/uploads ## upload solar_power_plants to insight-api
-bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
+	touch $@
 
 deploy_indicators/test/uploads/wind_farms_upload: data/out/csv/wind_farms.csv | deploy_indicators/test/uploads ## upload wind_farms to insight-api
-bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wind_farms.csv "wind_farms" db/table/wind_farms_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wind_farms.csv "wind_farms" db/table/wind_farms_h3
+	touch $@
 
 deploy_indicators/test/uploads/pipeline_length_upload: data/out/csv/pipeline_length.csv | deploy_indicators/test/uploads ## upload pipeline_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pipeline_length.csv "pipeline_length" db/table/pipeline_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pipeline_length.csv "pipeline_length" db/table/pipeline_length_h3
+	touch $@
 
 deploy_indicators/test/uploads/communication_line_length_upload: data/out/csv/communication_line_length.csv | deploy_indicators/test/uploads ## upload communication_line_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh test data/out/csv/communication_line_length.csv "communication_line_length" db/table/communication_line_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/communication_line_length.csv "communication_line_length" db/table/communication_line_length_h3
+	touch $@
 
 deploy_indicators/test/uploads/motor_vehicle_road_length_upload: data/out/csv/motor_vehicle_road_length.csv | deploy_indicators/test/uploads ## upload motor_vehicle_road_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh test data/out/csv/motor_vehicle_road_length.csv "motor_vehicle_road_length" db/table/motor_vehicle_road_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/motor_vehicle_road_length.csv "motor_vehicle_road_length" db/table/motor_vehicle_road_length_h3
+	touch $@
 
 deploy_indicators/test/uploads/timezone_offset_upload: data/out/csv/timezone_offset.csv | deploy_indicators/test/uploads ## upload timezone_offset to insight-api
-bash scripts/upload_csv_to_insights_api.sh test data/out/csv/timezone_offset.csv "timezone_offset" db/table/timezone_offset_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/timezone_offset.csv "timezone_offset" db/table/timezone_offset_h3
+	touch $@
 
 deploy_indicators/test/uploads/building_start_year_upload: data/out/csv/building_start_year.csv | deploy_indicators/test/uploads ## upload building_start_year to insight-api
-bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_start_year.csv "building_start_year" db/table/building_start_year_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_start_year.csv "building_start_year" db/table/building_start_year_h3
+	touch $@
 
 deploy_indicators/test/uploads/railway_length_upload: data/out/csv/railway_length.csv | deploy_indicators/test/uploads ## upload railway_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh test data/out/csv/railway_length.csv "railway_length" db/table/railway_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/railway_length.csv "railway_length" db/table/railway_length_h3
+	touch $@
 
 deploy_indicators/test/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/test/uploads ## upload safety_index to insight-api
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
@@ -6192,36 +6192,36 @@ deploy_indicators/prod/uploads/residential_upload: data/out/csv/residential.csv 
 	touch $@
 
 deploy_indicators/prod/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/prod/uploads ## upload solar_power_plants to insight-api
-bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
+	touch $@
 
 deploy_indicators/prod/uploads/wind_farms_upload: data/out/csv/wind_farms.csv | deploy_indicators/prod/uploads ## upload wind_farms to insight-api
-bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wind_farms.csv "wind_farms" db/table/wind_farms_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wind_farms.csv "wind_farms" db/table/wind_farms_h3
+	touch $@
 
 deploy_indicators/prod/uploads/pipeline_length_upload: data/out/csv/pipeline_length.csv | deploy_indicators/prod/uploads ## upload pipeline_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pipeline_length.csv "pipeline_length" db/table/pipeline_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pipeline_length.csv "pipeline_length" db/table/pipeline_length_h3
+	touch $@
 
 deploy_indicators/prod/uploads/communication_line_length_upload: data/out/csv/communication_line_length.csv | deploy_indicators/prod/uploads ## upload communication_line_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/communication_line_length.csv "communication_line_length" db/table/communication_line_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/communication_line_length.csv "communication_line_length" db/table/communication_line_length_h3
+	touch $@
 
 deploy_indicators/prod/uploads/motor_vehicle_road_length_upload: data/out/csv/motor_vehicle_road_length.csv | deploy_indicators/prod/uploads ## upload motor_vehicle_road_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/motor_vehicle_road_length.csv "motor_vehicle_road_length" db/table/motor_vehicle_road_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/motor_vehicle_road_length.csv "motor_vehicle_road_length" db/table/motor_vehicle_road_length_h3
+	touch $@
 
 deploy_indicators/prod/uploads/timezone_offset_upload: data/out/csv/timezone_offset.csv | deploy_indicators/prod/uploads ## upload timezone_offset to insight-api
-bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/timezone_offset.csv "timezone_offset" db/table/timezone_offset_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/timezone_offset.csv "timezone_offset" db/table/timezone_offset_h3
+	touch $@
 
 deploy_indicators/prod/uploads/building_start_year_upload: data/out/csv/building_start_year.csv | deploy_indicators/prod/uploads ## upload building_start_year to insight-api
-bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_start_year.csv "building_start_year" db/table/building_start_year_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_start_year.csv "building_start_year" db/table/building_start_year_h3
+	touch $@
 
 deploy_indicators/prod/uploads/railway_length_upload: data/out/csv/railway_length.csv | deploy_indicators/prod/uploads ## upload railway_length to insight-api
-bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/railway_length.csv "railway_length" db/table/railway_length_h3
-touch $@
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/railway_length.csv "railway_length" db/table/railway_length_h3
+	touch $@
 
 deploy_indicators/prod/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/prod/uploads ## upload safety_index to insight-api
 	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3

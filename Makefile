@@ -556,7 +556,7 @@ db/table/hrsl_population_raster: data/in/raster/hrsl_cogs/download | db/table ##
 	touch $@
 
 db/table/hrsl_population_grid_h3_r11: db/table/hrsl_population_raster db/function/h3_raster_agg_to_h3 ## Sum of HRSL raster values into h3 hexagons equaled to 11 resolution.
-	psql -f tables/population_raster_grid_h3_r11.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r11=hrsl_population_grid_h3_r11
+	psql -f tables/population_raster_grid_h3.sql -v population_raster=hrsl_population_raster -v population_raster_grid_h3_r11=hrsl_population_grid_h3_r11 -v res=11
 	touch $@
 
 db/table/hrsl_population_boundary: db/table/gadm_countries_boundary db/table/hrsl_population_raster | db/table ## Boundaries where HRSL data is available.
@@ -582,7 +582,7 @@ db/table/ghs_globe_population_raster: data/mid/GHS_POP_E2020_GLOBE_R2023A_54009_
 	touch $@
 
 db/table/ghs_globe_population_grid_h3_r11: db/table/ghs_globe_population_raster | db/function/h3_raster_agg_to_h3 db/procedure/insert_projection_54009 db/table ## Sum of GHS (Global Human Settlement) raster population values into h3 hexagons equaled to 11 resolution.
-	psql -f tables/population_raster_grid_h3_r11.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r11=ghs_globe_population_grid_h3_r11
+	psql -f tables/population_raster_grid_h3.sql -v population_raster=ghs_globe_population_raster -v population_raster_grid_h3_r11=ghs_globe_population_grid_h3_r11 -v res=11
 	psql -c "delete from ghs_globe_population_grid_h3_r11 where population = 0;"
 	touch $@
 
@@ -2198,10 +2198,10 @@ db/table/isodist_bomb_shelters_h3: db/table/update_isochrone_destinations db/tab
 ## Isochrones calculation block end
 
 db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manager
-       psql -f tables/global_rva_indexes.sql
-       cat static_data/pdc_bivariate_manager/global_rva_hasc.csv | psql -c "copy global_rva_indexes from stdin with csv header;"
-       psql -c "create index on global_rva_indexes using btree(hasc);"
-       touch $@
+	psql -f tables/global_rva_indexes.sql
+	cat static_data/pdc_bivariate_manager/global_rva_hasc.csv | psql -c "copy global_rva_indexes from stdin with csv header;"
+	psql -c "create index on global_rva_indexes using btree(hasc);"
+	touch $@
 
 db/table/global_rva_h3: db/table/global_rva_indexes | db/table/kontur_boundaries_v4 db/procedure/generate_overviews db/procedure/transform_hasc_to_h3 ## Generation overviews of global rva indexes
 	psql -f tables/global_rva_h3.sql

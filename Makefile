@@ -174,6 +174,12 @@ db/table/all_datasets: \
     db/table/osm_heritage_sites_h3 \
     db/table/foursquare_os_places_h3 \
     db/table/kontur_population_h3 \
+    db/table/wind_farms_h3 \
+    db/table/pipeline_length_h3 \
+    db/table/communication_line_length_h3 \
+    db/table/motor_vehicle_road_length_h3 \
+    db/table/building_start_year_h3 \
+    db/table/railway_length_h3 \
     | db/table ## service target to build all datasets without deployment
 	touch $@
 

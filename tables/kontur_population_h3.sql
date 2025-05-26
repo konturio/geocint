@@ -7,7 +7,6 @@ create table kontur_population_in as (
            false                            as probably_unpopulated,
            coalesce(max(building_count), 0) as building_count,
            coalesce(max(population), 0)     as population
-
     from (
              select h3,
                     building_count as building_count,
@@ -20,7 +19,6 @@ create table kontur_population_in as (
                     population  as population
              from population_grid_h3_r11
              where population > 0
-             order by 1
          ) z
     group by 1
 );

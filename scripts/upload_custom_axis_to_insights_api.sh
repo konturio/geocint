@@ -21,7 +21,11 @@ dev)
 esac
 
 # Prepare inputs
-token=$(bash scripts/get_auth_token.sh $1)
+token=$(bash scripts/get_auth_token.sh $1) || {
+  echo "Error. Impossible to get auth token"
+  exit 1
+}
+
 numerator_id="$2"
 denominator_id="$3"
 

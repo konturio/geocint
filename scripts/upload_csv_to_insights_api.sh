@@ -25,7 +25,10 @@ case $1 in
 esac
 
 # Retrieve authentication token
-token=$(bash scripts/get_auth_token.sh "$1")
+token=$(bash scripts/get_auth_token.sh $1) || {
+  echo "Error. Impossible to get auth token"
+  exit 1
+}
 
 # Fetch multiple parameters in one query, excluding copyrights
 params=$(psql -Xqtc "
@@ -63,12 +66,10 @@ layer_copyrights=$(psql -Xqtc "SELECT copyrights::text FROM bivariate_indicators
 layer_last_updated="\"$(date -r "$4" +'%Y-%m-%dT%H:%M:%SZ')\""
 
 # Check if UUID for the layer exists
-indicators_list=$(bash scripts/update_indicators_list.sh "$1")
-
-if [[ -z "$indicators_list" ]]; then
-  echo "Error: Failed to retrieve a valid indicators list."
+indicators_list=$(bash scripts/update_indicators_list.sh "$1") || {
+  echo "Error. Impossible to get indicators list"
   exit 1
-fi
+}
 
 existing_uuid=$(echo "$indicators_list" | jq -c '.[]' | jq -c 'select(.id == "'"$3"'")' | jq -s '.' | jq 'sort_by(.date)' | jq -r '.[].uuid' | tail -1)
 

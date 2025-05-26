@@ -19,12 +19,15 @@ dev)
 esac
 
 # Prepare inputs
-token=$(bash scripts/get_auth_token.sh $1)
-
-curl_request="curl -s -k -X 'GET' '${indicators_endpoint}' -H 'accept: */*' --header 'Authorization: Bearer ${token}'"
+token=$(bash scripts/get_auth_token.sh $1) || {
+  echo "Error. Impossible to get auth token"
+  exit 1
+}
 
 # GET the list of indicators
-request_result=$(eval $curl_request)
+request_result=$(curl -f -s -k -X GET "${indicators_endpoint}" \
+  -H 'accept: */*' \
+  -H "Authorization: Bearer ${token}")
 
 if [[ -z $request_result ]]; then
   echo "Error. Failed to get the list of indicators."

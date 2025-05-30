@@ -9,6 +9,6 @@ create table osm_road_segments_h3  as (
     where seg_geom is not null
     group by h3);
 
-call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 8);
+call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 11);
 
 create index on osm_road_segments_h3 (h3);

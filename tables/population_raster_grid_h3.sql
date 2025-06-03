@@ -1,5 +1,5 @@
-drop table if exists :population_raster_grid_h3_r11;
-create table :population_raster_grid_h3_r11 as (
+drop table if exists :population_raster_grid_h3;
+create table :population_raster_grid_h3 as (
     select h3,
            sum(value) as population,
            :res       as resolution           

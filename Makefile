@@ -126,12 +126,8 @@ db/table/all_datasets: \
     db/table/global_fires_stat_h3 \
     db/table/building_count_grid_h3 \
     db/table/copernicus_landcover_h3 \
-<<<<<<< HEAD
     db/table/gebco_h3 \
-=======
-    db/table/gebco_2022_h3 \
     db/table/relative_elevation_h3  \
->>>>>>> 5c0ebdb (Add relative elevation model)
     db/table/ndvi_2019_06_10_h3 \
     db/table/kontur_population_v5_h3 \
     db/table/osm_landuse_industrial_h3 \
@@ -818,6 +814,7 @@ db/table/gebco_h3: db/table/gebco_slopes_h3 db/table/gebco_elevation_h3 | db/pro
 	psql -c "call generate_overviews('gebco_h3', '{avg_slope_gebco, avg_elevation_gebco}'::text[], '{avg, avg}'::text[], 8);"
 	psql -c "create index on gebco_h3 (h3);"
 	touch $@
+
 db/table/water_bodies_h3: db/table/osm_water_polygons_in_subdivided db/table/osm_water_lines_buffers_subdivided | db/table ## Inland water bodies in h3
 	psql -f tables/water_bodies_h3.sql
 	touch $@

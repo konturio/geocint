@@ -516,9 +516,11 @@ db/table/osm_road_segments: db/table/osm_road_segments_new db/index/osm_road_seg
 	psql -c "alter index if exists osm_road_segments_new_seg_id_node_from_node_to_seg_geom_idx rename to osm_road_segments_seg_id_node_from_node_to_seg_geom_idx;"
 	touch $@
 
-db/table/osm_road_segments_h3: db/table/osm_road_segments | db/procedure/generate_overviews db/table ## osm road segments aggregated to h3
-	psql -f tables/osm_road_segments_h3.sql
-	touch $@
+db/table/osm_road_segments_h3: db/table/osm_road_segments | db/procedure/generate_overviews db/procedure/linear_segments_length_to_h3 db/table ## osm road segments aggregated to h3
+    psql -c "call linear_segments_length_to_h3('osm_road_segments', 'osm_road_segments_h3', 'split_and_dump', 'highway_length', 11, 25, 'seg_geom');"
+    psql -c "call generate_overviews('osm_road_segments_h3', '{highway_length}'::text[], '{sum}'::text[], 11);"
+    psql -c "create index on osm_road_segments_h3 (h3);"
+    touch $@
 
 db/table/osm_road_segments_6_months: db/table/osm_roads db/table/osm_meta | db/table ## osm road segments for 6 months
 	psql -f tables/osm_road_segments_6_months.sql

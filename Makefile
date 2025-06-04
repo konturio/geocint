@@ -2764,7 +2764,7 @@ db/table/building_start_year_h3: db/table/osm db/index/osm_tags_idx db/function/
 
 db/table/railway_length_h3: db/table/osm db/index/osm_tags_idx | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Railway length per hexagon
 	psql -f tables/railway_length_h3.sql
-	psql -c "call generate_overviews('railway_length_h3', '{railway_length}'::text[], '{sum}'::text[], 8);"
+	psql -c "call generate_overviews('railway_length_h3', '{railway_length}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 ### Safety index layer - Global Peace Index 2022 ###

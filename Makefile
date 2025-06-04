@@ -2728,21 +2728,21 @@ db/table/wind_farms_h3: db/table/osm db/index/osm_tags_idx | db/procedure/genera
 
 db/table/pipeline_length_h3: db/table/osm db/index/osm_tags_idx | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Pipeline length per hexagon
 	psql -f tables/pipeline_length_h3.sql
-	psql -c "call generate_overviews('pipeline_length_h3', '{pipeline_length}'::text[], '{sum}'::text[], 8);"
+	psql -c "call generate_overviews('pipeline_length_h3', '{pipeline_length}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 ### Communication line length layer ###
 
 db/table/communication_line_length_h3: db/table/osm db/index/osm_tags_idx | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Communication lines length per hexagon
 	psql -f tables/communication_line_length_h3.sql
-	psql -c "call generate_overviews('communication_line_length_h3', '{communication_length}'::text[], '{sum}'::text[], 8);"
+	psql -c "call generate_overviews('communication_line_length_h3', '{communication_length}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 ### Motor vehicle road length layer ###
 
 db/table/motor_vehicle_road_length_h3: db/table/osm_road_segments | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Drivable road length per hexagon
 	psql -f tables/motor_vehicle_road_length_h3.sql
-	psql -c "call generate_overviews('motor_vehicle_road_length_h3', '{road_length}'::text[], '{sum}'::text[], 8);"
+	psql -c "call generate_overviews('motor_vehicle_road_length_h3', '{road_length}'::text[], '{sum}'::text[], 11);"
 	psql -c "create index on motor_vehicle_road_length_h3 (h3);"
 	touch $@
 

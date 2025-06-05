@@ -1604,6 +1604,60 @@ db/table/global_fires_stat_h3: deploy/s3/global_fires ## Aggregate active fire d
 
 ### END Global Fires block ###
 
+
+### Global Fishing Watch block ###
+
+data/in/gfw: | data/in ## Directory for Global Fishing Watch events data.
+	mkdir -p $@
+
+data/in/gfw/events_202505.jsonl.gz: | data/in/gfw ## Download GFW vessel events for May 2025.
+	bash scripts/fetch_gfw_events.sh 2025-05-01 2025-05-31 $@.tmp
+	mv $@.tmp.gz $@
+
+db/table/gfw_events_raw: data/in/gfw/events_202505.jsonl.gz | db/table ## Load raw GFW events JSON into DB.
+	psql -c "drop table if exists gfw_events_raw;"
+	psql -c "create table gfw_events_raw(json jsonb);"
+	gunzip -c $< | psql -c "copy gfw_events_raw(json) from stdin;"
+	touch $@
+
+db/table/gfw_events: db/table/gfw_events_raw | db/table ## Parsed GFW events table.
+	psql -f tables/gfw_events.sql
+	touch $@
+
+db/table/gfw_vessel_flags_raw: | db/table ## Raw vessel identity info.
+	psql -c "drop table if exists gfw_vessel_flags_raw; create table gfw_vessel_flags_raw(json jsonb);"
+	touch $@
+
+db/table/gfw_vessel_flags: db/table/gfw_vessel_flags_raw | db/table ## Vessel flags table.
+	psql -f tables/gfw_vessel_flags.sql
+	touch $@
+
+db/table/gfw_ports_actual: db/table/gfw_events | db/table ## Actual port centroids derived from events.
+	psql -f tables/gfw_ports_actual.sql
+	touch $@
+
+db/table/gfw_flag_popular_h3: db/table/gfw_events db/table/gfw_vessel_flags | db/procedure/generate_overviews db/table ## Popular vessel flags per H3 cell.
+	psql -f tables/gfw_flag_popular_h3.sql
+	psql -c "call generate_overviews('gfw_flag_popular_h3', '{n_evts}'::text[], '{sum}'::text[], 11);"
+	touch $@
+
+data/out/csv/gfw_popular_flag.csv: db/table/gfw_flag_popular_h3 | data/out/csv ## Extract GFW popular flags to CSV.
+	psql -q -X -c "copy (select h3, top_flag, n_evts from gfw_flag_popular_h3 where h3 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+
+deploy_indicators/dev/uploads/gfw_popular_flag_upload: data/out/csv/gfw_popular_flag.csv | deploy_indicators/dev/uploads ## upload gfw_popular_flag to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gfw_popular_flag.csv "gfw_popular_flag" db/table/gfw_flag_popular_h3
+	touch $@
+
+deploy_indicators/test/uploads/gfw_popular_flag_upload: data/out/csv/gfw_popular_flag.csv | deploy_indicators/test/uploads ## upload gfw_popular_flag to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gfw_popular_flag.csv "gfw_popular_flag" db/table/gfw_flag_popular_h3
+	touch $@
+
+deploy_indicators/prod/uploads/gfw_popular_flag_upload: data/out/csv/gfw_popular_flag.csv | deploy_indicators/prod/uploads ## upload gfw_popular_flag to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gfw_popular_flag.csv "gfw_popular_flag" db/table/gfw_flag_popular_h3
+	touch $@
+
+### END Global Fishing Watch block ###
+
 data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset (input).
 	mkdir -p $@
 

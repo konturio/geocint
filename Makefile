@@ -126,7 +126,7 @@ db/table/all_datasets: \
     db/table/global_fires_stat_h3 \
     db/table/building_count_grid_h3 \
     db/table/copernicus_landcover_h3 \
-    db/table/gebco_2022_h3 \
+    db/table/gebco_2024_h3 \
     db/table/ndvi_2019_06_10_h3 \
     db/table/kontur_population_v5_h3 \
     db/table/osm_landuse_industrial_h3 \
@@ -269,7 +269,7 @@ data/in/raster/VNL_v21_npp_2021_global: | data/in/raster ## Directory for Night 
 data/mid/VNL_v21_npp_2021_global/VNL_v21_npp_2021_global_vcmslcfg_c202205302300.median_masked: | data/mid ## Directory for storing unzipped Night Lights data.
 	mkdir -p $@
 
-data/in/raster/gebco_2022_geotiff: | data/in/raster ## Directory for GEBCO 2022 (General Bathymetric Chart of the Oceans) dataset.
+data/in/raster/gebco_2024_geotiff: | data/in/raster ## Directory for GEBCO 2024 (General Bathymetric Chart of the Oceans) dataset.
 	mkdir -p $@
 
 data/in/raster/meta_forest_canopy_height: | data/in/raster ## Directory for High Resolution Forest Canopy Layer dataset.
@@ -740,62 +740,62 @@ db/table/night_lights_h3: db/table/night_lights_raster | db/table ## Count inten
 	psql -c "call generate_overviews('night_lights_h3', '{intensity}'::text[], '{avg}'::text[], 8);"
 	touch $@
 
-data/in/raster/gebco_2022_geotiff/gebco_2022_geotiff.zip: | data/in/raster/gebco_2022_geotiff ## Download GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry zipped raster dataset.
-	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/gebco_2022_geotiff/gebco_2022_geotiff.zip $@ --profile geocint_pipeline_sender
+data/in/raster/gebco_2024_geotiff/gebco_2024_geotiff.zip: | data/in/raster/gebco_2024_geotiff ## Download GEBCO 2024 (General Bathymetric Chart of the Oceans) bathymetry zipped raster dataset.
+	aws s3 cp s3://geodata-eu-central-1-kontur/private/geocint/in/gebco_2024_geotiff/gebco_2024_geotiff.zip $@ --profile geocint_pipeline_sender
 	touch $@
 
-data/mid/gebco_2022_geotiff: | data/mid ## Create folder for unzipping GEBCO 2022 rasters
+data/mid/gebco_2024_geotiff: | data/mid ## Create folder for unzipping GEBCO 2024 rasters
 	mkdir -p $@
 
-data/mid/gebco_2022_geotiff/gebco_2022_geotiffs_unzip: data/in/raster/gebco_2022_geotiff/gebco_2022_geotiff.zip | data/mid/gebco_2022_geotiff ## Unzip GEBCO 2022 (General Bathymetric Chart of the Oceans) rasters.
-	rm -f data/mid/gebco_2022_geotiff/*.tif
-	unzip -o data/in/raster/gebco_2022_geotiff/gebco_2022_geotiff.zip -d data/mid/gebco_2022_geotiff/
-	rm -f data/mid/gebco_2022_geotiff/*.pdf
+data/mid/gebco_2024_geotiff/gebco_2024_geotiffs_unzip: data/in/raster/gebco_2024_geotiff/gebco_2024_geotiff.zip | data/mid/gebco_2024_geotiff ## Unzip GEBCO 2024 (General Bathymetric Chart of the Oceans) rasters.
+	rm -f data/mid/gebco_2024_geotiff/*.tif
+	unzip -o data/in/raster/gebco_2024_geotiff/gebco_2024_geotiff.zip -d data/mid/gebco_2024_geotiff/
+	rm -f data/mid/gebco_2024_geotiff/*.pdf
 	touch $@
 
-data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt: data/mid/gebco_2022_geotiff/gebco_2022_geotiffs_unzip | data/mid/gebco_2022_geotiff ## Virtual raster from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset.
-	rm -f data/mid/gebco_2022_geotiff/*.vrt
-	gdalbuildvrt $@ data/mid/gebco_2022_geotiff/gebco_2022_n*.tif
+data/mid/gebco_2024_geotiff/gebco_2024_merged.vrt: data/mid/gebco_2024_geotiff/gebco_2024_geotiffs_unzip | data/mid/gebco_2024_geotiff ## Virtual raster from GEBCO 2024 (General Bathymetric Chart of the Oceans) bathymetry dataset.
+	rm -f data/mid/gebco_2024_geotiff/*.vrt
+	gdalbuildvrt $@ data/mid/gebco_2024_geotiff/gebco_2024_n*.tif
 
-data/mid/gebco_2022_geotiff/gebco_2022_merged.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt | data/mid/gebco_2022_geotiff ## GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry raster (2022) converted from virtual raster (EPSG-4087).
+data/mid/gebco_2024_geotiff/gebco_2024_merged.tif: data/mid/gebco_2024_geotiff/gebco_2024_merged.vrt | data/mid/gebco_2024_geotiff ## GEBCO 2024 (General Bathymetric Chart of the Oceans) bathymetry raster (2024) converted from virtual raster (EPSG-4087).
 	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -t_srs epsg:4087 -co "BIGTIFF=YES" -r bilinear -of COG data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -multi -t_srs epsg:4087 -co "BIGTIFF=YES" -r bilinear -of COG data/mid/gebco_2024_geotiff/gebco_2024_merged.vrt $@
 
-data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.tif | data/mid/gebco_2022_geotiff ## Slope raster calculated from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4087).
+data/mid/gebco_2024_geotiff/gebco_2024_merged_slope.tif: data/mid/gebco_2024_geotiff/gebco_2024_merged.tif | data/mid/gebco_2024_geotiff ## Slope raster calculated from GEBCO 2024 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4087).
 	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdaldem slope -of COG -co "BIGTIFF=YES" data/mid/gebco_2022_geotiff/gebco_2022_merged.tif $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdaldem slope -of COG -co "BIGTIFF=YES" data/mid/gebco_2024_geotiff/gebco_2024_merged.tif $@
 
-data/mid/gebco_2022_geotiff/gebco_2022_merged_4326_slope.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif | data/mid/gebco_2022_geotiff ## Slope raster calculated from GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4326).
+data/mid/gebco_2024_geotiff/gebco_2024_merged_4326_slope.tif: data/mid/gebco_2024_geotiff/gebco_2024_merged_slope.tif | data/mid/gebco_2024_geotiff ## Slope raster calculated from GEBCO 2024 (General Bathymetric Chart of the Oceans) bathymetry dataset (EPSG-4326).
 	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -t_srs EPSG:4326 -of COG -co "BIGTIFF=YES" -multi data/mid/gebco_2022_geotiff/gebco_2022_merged_slope.tif $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdalwarp -t_srs EPSG:4326 -of COG -co "BIGTIFF=YES" -multi data/mid/gebco_2024_geotiff/gebco_2024_merged_slope.tif $@
 
-db/table/gebco_2022_slopes: data/mid/gebco_2022_geotiff/gebco_2022_merged_4326_slope.tif | db/table ## GEBCO 2022 (General Bathymetric Chart of the Oceans) slope raster data imported into database.
-	psql -c "drop table if exists gebco_2022_slopes;"
-	raster2pgsql -M -Y -s 4326 data/mid/gebco_2022_geotiff/gebco_2022_merged_4326_slope.tif -t auto gebco_2022_slopes | psql -q
+db/table/gebco_2024_slopes: data/mid/gebco_2024_geotiff/gebco_2024_merged_4326_slope.tif | db/table ## GEBCO 2024 (General Bathymetric Chart of the Oceans) slope raster data imported into database.
+	psql -c "drop table if exists gebco_2024_slopes;"
+	raster2pgsql -M -Y -s 4326 data/mid/gebco_2024_geotiff/gebco_2024_merged_4326_slope.tif -t auto gebco_2024_slopes | psql -q
 	touch $@
 
-db/table/gebco_2022_slopes_h3: db/table/gebco_2022_slopes | db/table ## GEBCO 2022 (General Bathymetric Chart of the Oceans) slope data in h3.
-	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2022_slopes -v table_name_h3=gebco_2022_slopes_h3 -v aggr_func=avg -v item_name=avg_slope_gebco_2022
-	psql -c "create index on gebco_2022_slopes_h3 (h3);"
+db/table/gebco_2024_slopes_h3: db/table/gebco_2024_slopes | db/table ## GEBCO 2024 (General Bathymetric Chart of the Oceans) slope data in h3.
+	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2024_slopes -v table_name_h3=gebco_2024_slopes_h3 -v aggr_func=avg -v item_name=avg_slope_gebco_2024
+	psql -c "create index on gebco_2024_slopes_h3 (h3);"
 	touch $@
 
-data/mid/gebco_2022_geotiff/gebco_2022_merged_4326.tif: data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt | data/mid/gebco_2022_geotiff ## GEBCO 2022 (General Bathymetric Chart of the Oceans) bathymetry raster converted from virtual raster (EPSG-4326).
+data/mid/gebco_2024_geotiff/gebco_2024_merged_4326.tif: data/mid/gebco_2024_geotiff/gebco_2024_merged.vrt | data/mid/gebco_2024_geotiff ## GEBCO 2024 (General Bathymetric Chart of the Oceans) bathymetry raster converted from virtual raster (EPSG-4326).
 	rm -f $@
-	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdal_translate -r bilinear -of COG -co "BIGTIFF=YES" data/mid/gebco_2022_geotiff/gebco_2022_merged.vrt $@
+	GDAL_CACHEMAX=10000 GDAL_NUM_THREADS=16 gdal_translate -r bilinear -of COG -co "BIGTIFF=YES" data/mid/gebco_2024_geotiff/gebco_2024_merged.vrt $@
 
-db/table/gebco_2022_elevation: data/mid/gebco_2022_geotiff/gebco_2022_merged_4326.tif | db/table ## GEBCO 2022 (General Bathymetric Chart of the Oceans) elevation raster data imported into database.
-	psql -c "drop table if exists gebco_2022_elevation;"
-	raster2pgsql -M -Y -s 4326 data/mid/gebco_2022_geotiff/gebco_2022_merged_4326.tif -t auto gebco_2022_elevation | psql -q
+db/table/gebco_2024_elevation: data/mid/gebco_2024_geotiff/gebco_2024_merged_4326.tif | db/table ## GEBCO 2024 (General Bathymetric Chart of the Oceans) elevation raster data imported into database.
+	psql -c "drop table if exists gebco_2024_elevation;"
+	raster2pgsql -M -Y -s 4326 data/mid/gebco_2024_geotiff/gebco_2024_merged_4326.tif -t auto gebco_2024_elevation | psql -q
 	touch $@
 
-db/table/gebco_2022_elevation_h3: db/table/gebco_2022_elevation | db/table ## GEBCO 2022 (General Bathymetric Chart of the Oceans) elevation data in h3.
-	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2022_elevation -v table_name_h3=gebco_2022_elevation_h3 -v aggr_func=avg -v item_name=avg_elevation_gebco_2022
+db/table/gebco_2024_elevation_h3: db/table/gebco_2024_elevation | db/table ## GEBCO 2024 (General Bathymetric Chart of the Oceans) elevation data in h3.
+	psql -f scripts/raster_values_into_h3.sql -v table_name=gebco_2024_elevation -v table_name_h3=gebco_2024_elevation_h3 -v aggr_func=avg -v item_name=avg_elevation_gebco_2024
 	touch $@
 
-db/table/gebco_2022_h3: db/table/gebco_2022_slopes_h3 db/table/gebco_2022_elevation_h3 | db/procedure/generate_overviews db/table ## GEBCO 2022 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
-	psql -f tables/gebco_2022_h3.sql
-	psql -c "call generate_overviews('gebco_2022_h3', '{avg_slope_gebco_2022, avg_elevation_gebco_2022}'::text[], '{avg, avg}'::text[], 8);"
-	psql -c "create index on gebco_2022_h3 (h3);"
+db/table/gebco_2024_h3: db/table/gebco_2024_slopes_h3 db/table/gebco_2024_elevation_h3 | db/procedure/generate_overviews db/table ## GEBCO 2024 - H3 hexagons table with average slope and elevation values from 1 to 8 resolution
+	psql -f tables/gebco_2024_h3.sql
+	psql -c "call generate_overviews('gebco_2024_h3', '{avg_slope_gebco_2024, avg_elevation_gebco_2024}'::text[], '{avg, avg}'::text[], 8);"
+	psql -c "create index on gebco_2024_h3 (h3);"
 	touch $@
 
 data/mid/ndvi_2019_06_10/generate_ndvi_tifs: | data/mid/ndvi_2019_06_10 ## NDVI rasters generated from Sentinel 2 data.
@@ -2700,7 +2700,7 @@ db/table/proximities_h3: db/table/power_substations_proximity_h3_r8 db/table/pop
 
 ### Synthetic solar farms placement layer ###
 
-db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2022_h3 db/table/kontur_population_h3 | db/procedure/generate_overviews db/table ## create a table with synthetic solar farms placement suitability (MCDA)
+db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3 db/table/worldclim_temperatures_h3 db/table/global_solar_atlas_h3 db/table/gebco_2024_h3 db/table/kontur_population_h3 | db/procedure/generate_overviews db/table ## create a table with synthetic solar farms placement suitability (MCDA)
 	psql -f tables/solar_farms_placement_suitability_synthetic_h3.sql
 	psql -c "call generate_overviews('solar_farms_placement_suitability_synthetic_h3', '{solar_farms_placement_suitability}'::text[], '{avg}'::text[], 8);"
 	psql -c "create index on solar_farms_placement_suitability_synthetic_h3 (h3);"
@@ -3116,11 +3116,11 @@ data/out/csv/solar_farms_placement_suitability.csv: db/table/solar_farms_placeme
 data/out/csv/mapswipe_area_km2.csv: db/table/mapswipe_hot_tasking_data_h3 | data/out/csv ## extract mapswipe_area_km2 to csv file 
 	psql -q -X -c "copy (select h3, mapswipe_area as mapswipe_area_km2 from mapswipe_hot_tasking_data_h3 where h3 is not null and mapswipe_area is not null and mapswipe_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/mapswipe_area_km2.csv
 
-data/out/csv/avg_slope_gebco_2022.csv: db/table/gebco_2022_h3 | data/out/csv ## extract avg_slope_gebco_2022 to csv file 
-	psql -q -X -c "copy (select h3, avg_slope_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_slope_gebco_2022 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_slope_gebco_2022.csv
+data/out/csv/avg_slope_gebco_2024.csv: db/table/gebco_2024_h3 | data/out/csv ## extract avg_slope_gebco_2024 to csv file 
+	psql -q -X -c "copy (select h3, avg_slope_gebco_2024 from gebco_2024_h3 where h3 is not null and avg_slope_gebco_2024 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_slope_gebco_2024.csv
 
-data/out/csv/avg_elevation_gebco_2022.csv: db/table/gebco_2022_h3 | data/out/csv ## extract avg_elevation_gebco_2022 to csv file 
-	psql -q -X -c "copy (select h3, avg_elevation_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_elevation_gebco_2022 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_elevation_gebco_2022.csv
+data/out/csv/avg_elevation_gebco_2024.csv: db/table/gebco_2024_h3 | data/out/csv ## extract avg_elevation_gebco_2024 to csv file 
+	psql -q -X -c "copy (select h3, avg_elevation_gebco_2024 from gebco_2024_h3 where h3 is not null and avg_elevation_gebco_2024 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_elevation_gebco_2024.csv
 
 data/out/csv/forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract forest to csv file 
 	psql -q -X -c "copy (select h3, forest_area as forest from copernicus_landcover_h3 where h3 is not null and forest_area is not null and forest_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/forest.csv
@@ -3685,12 +3685,12 @@ deploy_indicators/dev/uploads/flood_days_count_upload: data/out/csv/flood_days_c
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/dev/uploads ## upload avg_slope_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/dev/uploads/avg_slope_gebco_2024_upload: data/out/csv/avg_slope_gebco_2024.csv | deploy_indicators/dev/uploads ## upload avg_slope_gebco_2024 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_slope_gebco_2024.csv "avg_slope_gebco_2024" db/table/gebco_2024_h3
 	touch $@
 
-deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/dev/uploads ## upload avg_elevation_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/dev/uploads/avg_elevation_gebco_2024_upload: data/out/csv/avg_elevation_gebco_2024.csv | deploy_indicators/dev/uploads ## upload avg_elevation_gebco_2024 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_elevation_gebco_2024.csv "avg_elevation_gebco_2024" db/table/gebco_2024_h3
 	touch $@
 
 deploy_indicators/dev/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/dev/uploads ## upload industrial_area to insight-api
@@ -4246,8 +4246,8 @@ deploy_indicators/dev/uploads/upload_dev: \
     deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload \
     deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload \
     deploy_indicators/dev/uploads/mapswipe_area_km2_upload \
-    deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload \
-    deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload \
+    deploy_indicators/dev/uploads/avg_slope_gebco_2024_upload \
+    deploy_indicators/dev/uploads/avg_elevation_gebco_2024_upload \
     deploy_indicators/dev/uploads/forest_upload \
     deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload \
     deploy_indicators/dev/uploads/shrubs_upload \
@@ -4883,12 +4883,12 @@ deploy_indicators/test/uploads/flood_days_count_upload: data/out/csv/flood_days_
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/test/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/test/uploads ## upload avg_slope_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/test/uploads/avg_slope_gebco_2024_upload: data/out/csv/avg_slope_gebco_2024.csv | deploy_indicators/test/uploads ## upload avg_slope_gebco_2024 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_slope_gebco_2024.csv "avg_slope_gebco_2024" db/table/gebco_2024_h3
 	touch $@
 
-deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/test/uploads ## upload avg_elevation_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/test/uploads/avg_elevation_gebco_2024_upload: data/out/csv/avg_elevation_gebco_2024.csv | deploy_indicators/test/uploads ## upload avg_elevation_gebco_2024 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_elevation_gebco_2024.csv "avg_elevation_gebco_2024" db/table/gebco_2024_h3
 	touch $@
 
 deploy_indicators/test/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/test/uploads ## upload industrial_area to insight-api
@@ -5445,8 +5445,8 @@ deploy_indicators/test/uploads/upload_test: \
     deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload \
     deploy_indicators/test/uploads/solar_farms_placement_suitability_upload \
     deploy_indicators/test/uploads/mapswipe_area_km2_upload \
-    deploy_indicators/test/uploads/avg_slope_gebco_2022_upload \
-    deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload \
+    deploy_indicators/test/uploads/avg_slope_gebco_2024_upload \
+    deploy_indicators/test/uploads/avg_elevation_gebco_2024_upload \
     deploy_indicators/test/uploads/forest_upload \
     deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload \
     deploy_indicators/test/uploads/shrubs_upload \
@@ -6083,12 +6083,12 @@ deploy_indicators/prod/uploads/flood_days_count_upload: data/out/csv/flood_days_
 	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/prod/uploads ## upload avg_slope_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/prod/uploads/avg_slope_gebco_2024_upload: data/out/csv/avg_slope_gebco_2024.csv | deploy_indicators/prod/uploads ## upload avg_slope_gebco_2024 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_slope_gebco_2024.csv "avg_slope_gebco_2024" db/table/gebco_2024_h3
 	touch $@
 
-deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/prod/uploads ## upload avg_elevation_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/prod/uploads/avg_elevation_gebco_2024_upload: data/out/csv/avg_elevation_gebco_2024.csv | deploy_indicators/prod/uploads ## upload avg_elevation_gebco_2024 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_elevation_gebco_2024.csv "avg_elevation_gebco_2024" db/table/gebco_2024_h3
 	touch $@
 
 deploy_indicators/prod/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/prod/uploads ## upload industrial_area to insight-api
@@ -6652,8 +6652,8 @@ deploy_indicators/prod/uploads/upload_prod: \
     deploy_indicators/prod/uploads/avg_osm_building_construction_year_upload \
     deploy_indicators/prod/uploads/railway_length_upload \
     deploy_indicators/prod/uploads/mapswipe_area_km2_upload \
-    deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload \
-    deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload \
+    deploy_indicators/prod/uploads/avg_slope_gebco_2024_upload \
+    deploy_indicators/prod/uploads/avg_elevation_gebco_2024_upload \
     deploy_indicators/prod/uploads/forest_upload \
     deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload \
     deploy_indicators/prod/uploads/shrubs_upload \

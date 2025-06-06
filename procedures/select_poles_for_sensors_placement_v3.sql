@@ -18,13 +18,13 @@ create table gatlinburg_stat_h3_r10 as (
            ST_Transform(h3_cell_to_boundary_geometry(s.h3), 3857) as geom
     from (select h3_cell_to_children(s.h3, 10) as h3, 
                  t.total_road_length,
-                 o.avg_slope_gebco_2022, 
+                 o.avg_slope_gebco_2024, 
                  c.forest_area,
                  c.builtup,
                  r.gsa_ghi,
                  null::float as population
           from gatlinburg_geom g left join land_polygons_h3_r8 s on ST_Intersects(s.geom, ST_Transform(g.geom,3857))
-         left join gebco_2022_h3 o on (s.h3 = o.h3)
+         left join gebco_2024_h3 o on (s.h3 = o.h3)
          left join total_road_length_h3 t on (s.h3 = t.h3)
          left join global_solar_atlas_h3 r on (s.h3 = r.h3)
          left join copernicus_landcover_h3 c on (s.h3 = c.h3)) s
@@ -93,7 +93,7 @@ create table gatlinburg_cost as (
            coalesce((nareas - min(nareas) OVER ()) / (max(nareas) OVER () - min(nareas) OVER ()), 0) +
            coalesce((total_road_length - min(total_road_length) OVER ()) / (max(total_road_length) OVER () - min(total_road_length) OVER ()), 0) +
            (1-coalesce((population - min(population) OVER ()) / (max(population) OVER () - min(population) OVER ()), 0)) +
-           coalesce((avg_slope_gebco_2022 - min(avg_slope_gebco_2022) OVER ()) / (max(avg_slope_gebco_2022) OVER () - min(avg_slope_gebco_2022) OVER ()), 0) +
+           coalesce((avg_slope_gebco_2024 - min(avg_slope_gebco_2024) OVER ()) / (max(avg_slope_gebco_2024) OVER () - min(avg_slope_gebco_2024) OVER ()), 0) +
            coalesce((gsa_ghi - min(gsa_ghi) OVER ()) / (max(gsa_ghi) OVER () - min(gsa_ghi) OVER ()), 0)
            as cost
     from gatlinburg_stat_h3_r10

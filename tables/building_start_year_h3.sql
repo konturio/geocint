@@ -9,13 +9,13 @@ create table building_year_points_in as (
 );
 
 drop table if exists building_year_points;
-create table building_year_points_in as (
+create table building_year_points as (
     select start_year,
            geom           
     from building_year_points_in
     where start_year is not null 
           or start_year >= 1000 
-          or start_year <= extract(start_year from current_date)
+          or start_year <= extract(year from current_date)
 );
 
 drop table if exists building_start_year_h3;
@@ -31,3 +31,5 @@ create index on building_start_year_h3(h3);
 
 drop table if exists building_year_points_in;
 drop table if exists building_year_points;
+
+call generate_overviews('building_start_year_h3', '{start_year}'::text[], '{avg}'::text[], 8);

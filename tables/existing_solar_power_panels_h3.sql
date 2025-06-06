@@ -17,3 +17,7 @@ create table existing_solar_power_panels_h3 as (
 );
 
 drop table if exists existing_solar_power_panels_in;
+
+call generate_overviews('existing_solar_power_panels_h3', '{solar_power_plants}'::text[], '{sum}'::text[], 8);
+
+create index on existing_solar_power_panels_h3 (h3);

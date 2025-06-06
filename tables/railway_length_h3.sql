@@ -10,6 +10,8 @@ create table railway_lines as (
 
 call linear_segments_length_to_h3('railway_lines', 'railway_length_h3', 'split_and_dump', 'railway_length', 11, 25);
 
+call generate_overviews('railway_length_h3', '{railway_length}'::text[], '{sum}'::text[], 11);
+
 create index on railway_length_h3(h3);
 
 drop table if exists railway_lines;

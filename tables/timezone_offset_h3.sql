@@ -30,3 +30,5 @@ group by 1;
 create index on timezone_offset_h3(h3);
 
 drop table if exists timezone_points;
+
+call generate_overviews('timezone_offset_h3', '{utc_offset}'::text[], '{avg}'::text[], 8);

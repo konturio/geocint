@@ -2710,8 +2710,6 @@ db/table/solar_farms_placement_suitability_synthetic_h3: db/table/proximities_h3
 
 db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## Get existing solar power panels layer
 	psql -f tables/existing_solar_power_panels_h3.sql
-	psql -c "call generate_overviews('existing_solar_power_panels_h3', '{solar_power_plants}'::text[], '{sum}'::text[], 8);"
-	psql -c "create index on existing_solar_power_panels_h3 (h3);"
 	touch $@
 
 ### End existing Solar power panels layer ###
@@ -2720,44 +2718,36 @@ db/table/existing_solar_power_panels_h3: db/table/osm db/index/osm_tags_idx | db
 
 db/table/wind_farms_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## Count of wind farms
 	psql -f tables/wind_farms_h3.sql
-	psql -c "call generate_overviews('wind_farms_h3', '{wind_farms}'::text[], '{sum}'::text[], 8);"
-	psql -c "create index on wind_farms_h3 (h3);"
 	touch $@
 
 ### Pipeline length layer ###
 
 db/table/pipeline_length_h3: db/table/osm db/index/osm_tags_idx | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Pipeline length per hexagon
 	psql -f tables/pipeline_length_h3.sql
-	psql -c "call generate_overviews('pipeline_length_h3', '{pipeline_length}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 ### Communication line length layer ###
 
 db/table/communication_line_length_h3: db/table/osm db/index/osm_tags_idx | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Communication lines length per hexagon
 	psql -f tables/communication_line_length_h3.sql
-	psql -c "call generate_overviews('communication_line_length_h3', '{communication_length}'::text[], '{sum}'::text[], 11);"
 	touch $@
 
 ### Motor vehicle road length layer ###
 
 db/table/motor_vehicle_road_length_h3: db/table/osm_road_segments | db/procedure/linear_segments_length_to_h3 db/procedure/generate_overviews db/table ## Drivable road length per hexagon
 	psql -f tables/motor_vehicle_road_length_h3.sql
-	psql -c "call generate_overviews('motor_vehicle_road_length_h3', '{road_length}'::text[], '{sum}'::text[], 11);"
-	psql -c "create index on motor_vehicle_road_length_h3 (h3);"
 	touch $@
 
 ### Timezone offset layer ###
 
 db/table/timezone_offset_h3: db/table/osm db/index/osm_tags_idx | db/procedure/generate_overviews db/table ## Timezone UTC offset
 	psql -f tables/timezone_offset_h3.sql
-	psql -c "call generate_overviews('timezone_offset_h3', '{utc_offset}'::text[], '{avg}'::text[], 8);"
 	touch $@
 
 ### Building start year layer ###
 
 db/table/building_start_year_h3: db/table/osm db/index/osm_tags_idx db/function/parse_integer | db/procedure/generate_overviews db/table ## Average building start year per hexagon
 	psql -f tables/building_start_year_h3.sql
-	psql -c "call generate_overviews('building_start_year_h3', '{start_year}'::text[], '{avg}'::text[], 8);"
 	touch $@
 
 ### Railway length layer ###

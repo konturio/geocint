@@ -10,3 +10,5 @@ create table motor_vehicle_road_length_h3 as (
     group by h3);
 
 call generate_overviews('motor_vehicle_road_length_h3', '{motor_vehicle_road_length}'::text[], '{sum}'::text[], 11);
+
+create index on motor_vehicle_road_length_h3 (h3);

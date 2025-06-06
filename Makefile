@@ -2942,493 +2942,493 @@ data/out/produce_set_of_data_for_wildfire_sensors_placement: data/out/v3_output 
 
 ### Deploy through API
 
-data/out/csv/view_count.csv: db/table/tile_logs_h3 | data/out/csv ## extract view_count to csv file 
-	psql -q -X -c "copy (select h3, view_count from tile_logs_h3 where h3 is not null and view_count is not null and view_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/view_count.csv
+data/out/csv/view_count.csv.gz: db/table/tile_logs_h3 | data/out/csv ## extract view_count to csv file 
+	psql -q -X -c "copy (select h3, view_count from tile_logs_h3 where h3 is not null and view_count is not null and view_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/count.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count to csv file 
-	psql -q -X -c "copy (select h3, count from osm_object_count_grid_h3 where h3 is not null and count is not null and count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/count.csv
+data/out/csv/count.csv.gz: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count to csv file 
+	psql -q -X -c "copy (select h3, count from osm_object_count_grid_h3 where h3 is not null and count is not null and count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/population_next_gen.csv: db/table/kontur_population_h3 | data/out/csv ## extract population_next_gen to csv file 
-	psql -q -X -c "copy (select h3, population as population_next_gen from kontur_population_h3 where h3 is not null and population is not null and population > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/population_next_gen.csv
+data/out/csv/population_next_gen.csv.gz: db/table/kontur_population_h3 | data/out/csv ## extract population_next_gen to csv file 
+	psql -q -X -c "copy (select h3, population as population_next_gen from kontur_population_h3 where h3 is not null and population is not null and population > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/populated_area_km2_next_gen.csv: db/table/kontur_population_h3 | data/out/csv ## extract populated_area_km2_next_gen to csv file 
-	psql -q -X -c "copy (select h3, populated_area / 1000000.0 as populated_area_km2_next_gen from kontur_population_h3 where h3 is not null and populated_area is not null and populated_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/populated_area_km2_next_gen.csv
+data/out/csv/populated_area_km2_next_gen.csv.gz: db/table/kontur_population_h3 | data/out/csv ## extract populated_area_km2_next_gen to csv file 
+	psql -q -X -c "copy (select h3, populated_area / 1000000.0 as populated_area_km2_next_gen from kontur_population_h3 where h3 is not null and populated_area is not null and populated_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/population.csv: db/table/kontur_population_v5_h3 | data/out/csv ## extract population to csv file 
-	psql -q -X -c "copy (select h3, population from kontur_population_v5_h3 where h3 is not null and population is not null and population > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/population.csv
+data/out/csv/population.csv.gz: db/table/kontur_population_v5_h3 | data/out/csv ## extract population to csv file 
+	psql -q -X -c "copy (select h3, population from kontur_population_v5_h3 where h3 is not null and population is not null and population > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/populated_area_km2.csv: db/table/kontur_population_v5_h3 | data/out/csv ## extract populated_area_km2 to csv file 
-	psql -q -X -c "copy (select h3, populated_area_km2 from kontur_population_v5_h3 where h3 is not null and populated_area_km2 is not null and populated_area_km2 > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/populated_area_km2.csv
+data/out/csv/populated_area_km2.csv.gz: db/table/kontur_population_v5_h3 | data/out/csv ## extract populated_area_km2 to csv file 
+	psql -q -X -c "copy (select h3, populated_area_km2 from kontur_population_v5_h3 where h3 is not null and populated_area_km2 is not null and populated_area_km2 > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/building_count.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract building_count to csv file 
-	psql -q -X -c "copy (select h3, building_count from osm_object_count_grid_h3 where h3 is not null and building_count is not null and building_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/building_count.csv
+data/out/csv/building_count.csv.gz: db/table/osm_object_count_grid_h3 | data/out/csv ## extract building_count to csv file 
+	psql -q -X -c "copy (select h3, building_count from osm_object_count_grid_h3 where h3 is not null and building_count is not null and building_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/highway_length.csv: db/table/osm_road_segments_h3 | data/out/csv ## extract highway_length to csv file 
-	psql -q -X -c "copy (select h3, highway_length::float / 1000.0::float from osm_road_segments_h3 where h3 is not null and highway_length is not null and highway_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/highway_length.csv
+data/out/csv/highway_length.csv.gz: db/table/osm_road_segments_h3 | data/out/csv ## extract highway_length to csv file 
+	psql -q -X -c "copy (select h3, highway_length::float / 1000.0::float from osm_road_segments_h3 where h3 is not null and highway_length is not null and highway_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/total_road_length.csv: db/table/total_road_length_h3 | data/out/csv ## extract total_road_length to csv file 
-	psql -q -X -c "copy (select h3, total_road_length::float / 1000.0::float from total_road_length_h3 where h3 is not null and total_road_length is not null and total_road_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/total_road_length.csv
+data/out/csv/total_road_length.csv.gz: db/table/total_road_length_h3 | data/out/csv ## extract total_road_length to csv file 
+	psql -q -X -c "copy (select h3, total_road_length::float / 1000.0::float from total_road_length_h3 where h3 is not null and total_road_length is not null and total_road_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/local_hours.csv: db/table/user_hours_h3 | data/out/csv ## extract local_hours to csv file 
-	psql -q -X -c "copy (select h3, local_hours from user_hours_h3 where h3 is not null and local_hours is not null and local_hours > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/local_hours.csv
+data/out/csv/local_hours.csv.gz: db/table/user_hours_h3 | data/out/csv ## extract local_hours to csv file 
+	psql -q -X -c "copy (select h3, local_hours from user_hours_h3 where h3 is not null and local_hours is not null and local_hours > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/total_hours.csv: db/table/user_hours_h3 | data/out/csv ## extract total_hours to csv file 
-	psql -q -X -c "copy (select h3, total_hours from user_hours_h3 where h3 is not null and total_hours is not null and total_hours > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/total_hours.csv
+data/out/csv/total_hours.csv.gz: db/table/user_hours_h3 | data/out/csv ## extract total_hours to csv file 
+	psql -q -X -c "copy (select h3, total_hours from user_hours_h3 where h3 is not null and total_hours is not null and total_hours > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/avgmax_ts.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract avgmax_ts to csv file 
-	psql -q -X -c "copy (select h3, avgmax_ts from osm_object_count_grid_h3 where h3 is not null and avgmax_ts is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/avgmax_ts.csv
+data/out/csv/avgmax_ts.csv.gz: db/table/osm_object_count_grid_h3 | data/out/csv ## extract avgmax_ts to csv file 
+	psql -q -X -c "copy (select h3, avgmax_ts from osm_object_count_grid_h3 where h3 is not null and avgmax_ts is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/man_distance_to_fire_brigade.csv: db/table/isodist_fire_stations_h3 | data/out/csv ## extract man_distance_to_fire_brigade to csv file 
-	psql -q -X -c "copy (select h3, man_distance as man_distance_to_fire_brigade from isodist_fire_stations_h3 where h3 is not null and man_distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_fire_brigade.csv
+data/out/csv/man_distance_to_fire_brigade.csv.gz: db/table/isodist_fire_stations_h3 | data/out/csv ## extract man_distance_to_fire_brigade to csv file 
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_fire_brigade from isodist_fire_stations_h3 where h3 is not null and man_distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/view_count_bf2402.csv: db/table/tile_logs_bf2402_h3 | data/out/csv ## extract view_count_bf2402 to csv file 
-	psql -q -X -c "copy (select h3, view_count_bf2402 from tile_logs_bf2402_h3 where h3 is not null and view_count_bf2402 is not null and view_count_bf2402 > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/view_count_bf2402.csv
+data/out/csv/view_count_bf2402.csv.gz: db/table/tile_logs_bf2402_h3 | data/out/csv ## extract view_count_bf2402 to csv file 
+	psql -q -X -c "copy (select h3, view_count_bf2402 from tile_logs_bf2402_h3 where h3 is not null and view_count_bf2402 is not null and view_count_bf2402 > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/days_mintemp_above_25c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_mintemp_above_25c_1c to csv file 
-	psql -q -X -c "copy (select h3, days_mintemp_above_25c_1c from pf_maxtemp_h3 where h3 is not null and days_mintemp_above_25c_1c is not null and days_mintemp_above_25c_1c > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/days_mintemp_above_25c_1c.csv
+data/out/csv/days_mintemp_above_25c_1c.csv.gz: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_mintemp_above_25c_1c to csv file 
+	psql -q -X -c "copy (select h3, days_mintemp_above_25c_1c from pf_maxtemp_h3 where h3 is not null and days_mintemp_above_25c_1c is not null and days_mintemp_above_25c_1c > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/total_building_count.csv: db/table/building_count_grid_h3 | data/out/csv ## extract total_building_count to csv file 
-	psql -q -X -c "copy (select h3, building_count as total_building_count from building_count_grid_h3 where h3 is not null and building_count is not null and building_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/total_building_count.csv
+data/out/csv/total_building_count.csv.gz: db/table/building_count_grid_h3 | data/out/csv ## extract total_building_count to csv file 
+	psql -q -X -c "copy (select h3, building_count as total_building_count from building_count_grid_h3 where h3 is not null and building_count is not null and building_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/count_6_months.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count_6_months to csv file 
-	psql -q -X -c "copy (select h3, count_6_months from osm_object_count_grid_h3 where h3 is not null and count_6_months is not null and count_6_months > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/count_6_months.csv
+data/out/csv/count_6_months.csv.gz: db/table/osm_object_count_grid_h3 | data/out/csv ## extract count_6_months to csv file 
+	psql -q -X -c "copy (select h3, count_6_months from osm_object_count_grid_h3 where h3 is not null and count_6_months is not null and count_6_months > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/building_count_6_months.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract building_count_6_months to csv file 
-	psql -q -X -c "copy (select h3, building_count_6_months from osm_object_count_grid_h3 where h3 is not null and building_count_6_months is not null and building_count_6_months > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/building_count_6_months.csv
+data/out/csv/building_count_6_months.csv.gz: db/table/osm_object_count_grid_h3 | data/out/csv ## extract building_count_6_months to csv file 
+	psql -q -X -c "copy (select h3, building_count_6_months from osm_object_count_grid_h3 where h3 is not null and building_count_6_months is not null and building_count_6_months > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/highway_length_6_months.csv: db/table/osm_road_segments_6_months_h3 | data/out/csv ## extract highway_length_6_months to csv file 
-	psql -q -X -c "copy (select h3, highway_length_6_months::float / 1000.0::float from osm_road_segments_6_months_h3 where h3 is not null and highway_length_6_months is not null and highway_length_6_months > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/highway_length_6_months.csv
+data/out/csv/highway_length_6_months.csv.gz: db/table/osm_road_segments_6_months_h3 | data/out/csv ## extract highway_length_6_months to csv file 
+	psql -q -X -c "copy (select h3, highway_length_6_months::float / 1000.0::float from osm_road_segments_6_months_h3 where h3 is not null and highway_length_6_months is not null and highway_length_6_months > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/osm_users.csv: db/table/osm_user_count_grid_h3 | data/out/csv ## extract osm_users to csv file 
-	psql -q -X -c "copy (select h3, osm_users from osm_user_count_grid_h3 where h3 is not null and osm_users is not null and osm_users > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/osm_users.csv
+data/out/csv/osm_users.csv.gz: db/table/osm_user_count_grid_h3 | data/out/csv ## extract osm_users to csv file 
+	psql -q -X -c "copy (select h3, osm_users from osm_user_count_grid_h3 where h3 is not null and osm_users is not null and osm_users > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/residential.csv: db/table/residential_pop_h3 | data/out/csv ## extract residential to csv file 
-	psql -q -X -c "copy (select h3, residential from residential_pop_h3 where h3 is not null and residential is not null and residential > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/residential.csv
+data/out/csv/residential.csv.gz: db/table/residential_pop_h3 | data/out/csv ## extract residential to csv file 
+	psql -q -X -c "copy (select h3, residential from residential_pop_h3 where h3 is not null and residential is not null and residential > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/gdp.csv: db/table/gdp_h3 | data/out/csv ## extract gdp to csv file 
-	psql -q -X -c "copy (select h3, gdp from gdp_h3 where h3 is not null and gdp is not null and gdp > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/gdp.csv
+data/out/csv/gdp.csv.gz: db/table/gdp_h3 | data/out/csv ## extract gdp to csv file 
+	psql -q -X -c "copy (select h3, gdp from gdp_h3 where h3 is not null and gdp is not null and gdp > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/min_ts.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract min_ts to csv file 
-	psql -q -X -c "copy (select h3, min_ts from osm_object_count_grid_h3 where h3 is not null and min_ts is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/min_ts.csv
+data/out/csv/min_ts.csv.gz: db/table/osm_object_count_grid_h3 | data/out/csv ## extract min_ts to csv file 
+	psql -q -X -c "copy (select h3, min_ts from osm_object_count_grid_h3 where h3 is not null and min_ts is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/max_ts.csv: db/table/osm_object_count_grid_h3 | data/out/csv ## extract max_ts to csv file 
-	psql -q -X -c "copy (select h3, max_ts from osm_object_count_grid_h3 where h3 is not null and max_ts is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/max_ts.csv
+data/out/csv/max_ts.csv.gz: db/table/osm_object_count_grid_h3 | data/out/csv ## extract max_ts to csv file 
+	psql -q -X -c "copy (select h3, max_ts from osm_object_count_grid_h3 where h3 is not null and max_ts is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/wildfires.csv: db/table/global_fires_stat_h3 | data/out/csv ## extract wildfires to csv file 
-	psql -q -X -c "copy (select h3, wildfires from global_fires_stat_h3 where h3 is not null and wildfires is not null and wildfires > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/wildfires.csv
+data/out/csv/wildfires.csv.gz: db/table/global_fires_stat_h3 | data/out/csv ## extract wildfires to csv file 
+	psql -q -X -c "copy (select h3, wildfires from global_fires_stat_h3 where h3 is not null and wildfires is not null and wildfires > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/industrial_area.csv: db/table/osm_landuse_industrial_h3 | data/out/csv ## extract industrial_area to csv file 
-	psql -q -X -c "copy (select h3, industrial_area from osm_landuse_industrial_h3 where h3 is not null and industrial_area is not null and industrial_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/industrial_area.csv
+data/out/csv/industrial_area.csv.gz: db/table/osm_landuse_industrial_h3 | data/out/csv ## extract industrial_area to csv file 
+	psql -q -X -c "copy (select h3, industrial_area from osm_landuse_industrial_h3 where h3 is not null and industrial_area is not null and industrial_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/volcanos_count.csv: db/table/osm_volcanos_h3 | data/out/csv ## extract volcanos_count to csv file 
-	psql -q -X -c "copy (select h3, volcanos_count from osm_volcanos_h3 where h3 is not null and volcanos_count is not null and volcanos_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/volcanos_count.csv
+data/out/csv/volcanos_count.csv.gz: db/table/osm_volcanos_h3 | data/out/csv ## extract volcanos_count to csv file 
+	psql -q -X -c "copy (select h3, volcanos_count from osm_volcanos_h3 where h3 is not null and volcanos_count is not null and volcanos_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/pop_under_5_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_under_5_total to csv file 
-	psql -q -X -c "copy (select h3, pop_under_5_total from us_census_tracts_stats_h3 where h3 is not null and pop_under_5_total is not null and pop_under_5_total > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/pop_under_5_total.csv
+data/out/csv/pop_under_5_total.csv.gz: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_under_5_total to csv file 
+	psql -q -X -c "copy (select h3, pop_under_5_total from us_census_tracts_stats_h3 where h3 is not null and pop_under_5_total is not null and pop_under_5_total > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/pop_over_65_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_over_65_total to csv file 
-	psql -q -X -c "copy (select h3, pop_over_65_total from us_census_tracts_stats_h3 where h3 is not null and pop_over_65_total is not null and pop_over_65_total > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/pop_over_65_total.csv
+data/out/csv/pop_over_65_total.csv.gz: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_over_65_total to csv file 
+	psql -q -X -c "copy (select h3, pop_over_65_total from us_census_tracts_stats_h3 where h3 is not null and pop_over_65_total is not null and pop_over_65_total > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/poverty_families_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract poverty_families_total to csv file 
-	psql -q -X -c "copy (select h3, poverty_families_total from us_census_tracts_stats_h3 where h3 is not null and poverty_families_total is not null and poverty_families_total > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/poverty_families_total.csv
+data/out/csv/poverty_families_total.csv.gz: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract poverty_families_total to csv file 
+	psql -q -X -c "copy (select h3, poverty_families_total from us_census_tracts_stats_h3 where h3 is not null and poverty_families_total is not null and poverty_families_total > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/pop_disability_total.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_disability_total to csv file 
-	psql -q -X -c "copy (select h3, pop_disability_total from us_census_tracts_stats_h3 where h3 is not null and pop_disability_total is not null and pop_disability_total > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/pop_disability_total.csv
+data/out/csv/pop_disability_total.csv.gz: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_disability_total to csv file 
+	psql -q -X -c "copy (select h3, pop_disability_total from us_census_tracts_stats_h3 where h3 is not null and pop_disability_total is not null and pop_disability_total > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/pop_not_well_eng_speak.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_not_well_eng_speak to csv file 
-	psql -q -X -c "copy (select h3, pop_not_well_eng_speak from us_census_tracts_stats_h3 where h3 is not null and pop_not_well_eng_speak is not null and pop_not_well_eng_speak > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/pop_not_well_eng_speak.csv
+data/out/csv/pop_not_well_eng_speak.csv.gz: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_not_well_eng_speak to csv file 
+	psql -q -X -c "copy (select h3, pop_not_well_eng_speak from us_census_tracts_stats_h3 where h3 is not null and pop_not_well_eng_speak is not null and pop_not_well_eng_speak > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/pop_without_car.csv: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_without_car to csv file 
-	psql -q -X -c "copy (select h3, pop_without_car from us_census_tracts_stats_h3 where h3 is not null and pop_without_car is not null and pop_without_car > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/pop_without_car.csv
+data/out/csv/pop_without_car.csv.gz: db/table/us_census_tracts_stats_h3 | data/out/csv ## extract pop_without_car to csv file 
+	psql -q -X -c "copy (select h3, pop_without_car from us_census_tracts_stats_h3 where h3 is not null and pop_without_car is not null and pop_without_car > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/man_distance_to_hospital.csv: db/table/isodist_hospitals_h3 | data/out/csv ## extract man_distance_to_hospital to csv file 
-	psql -q -X -c "copy (select h3, man_distance as man_distance_to_hospital from isodist_hospitals_h3 where h3 is not null and man_distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_hospital.csv
+data/out/csv/man_distance_to_hospital.csv.gz: db/table/isodist_hospitals_h3 | data/out/csv ## extract man_distance_to_hospital to csv file 
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_hospital from isodist_hospitals_h3 where h3 is not null and man_distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/man_distance_to_bomb_shelters.csv: db/table/isodist_bomb_shelters_h3 | data/out/csv ## extract man_distance_to_bomb_shelters to csv file 
-	psql -q -X -c "copy (select h3, man_distance as man_distance_to_bomb_shelters from isodist_bomb_shelters_h3 where h3 is not null and man_distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_bomb_shelters.csv
+data/out/csv/man_distance_to_bomb_shelters.csv.gz: db/table/isodist_bomb_shelters_h3 | data/out/csv ## extract man_distance_to_bomb_shelters to csv file 
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_bomb_shelters from isodist_bomb_shelters_h3 where h3 is not null and man_distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/man_distance_to_charging_stations.csv: db/table/isodist_charging_stations_h3 | data/out/csv ## extract man_distance_to_charging_stations to csv file 
-	psql -q -X -c "copy (select h3, man_distance as man_distance_to_charging_stations from isodist_charging_stations_h3 where h3 is not null and man_distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_charging_stations.csv
+data/out/csv/man_distance_to_charging_stations.csv.gz: db/table/isodist_charging_stations_h3 | data/out/csv ## extract man_distance_to_charging_stations to csv file 
+	psql -q -X -c "copy (select h3, man_distance as man_distance_to_charging_stations from isodist_charging_stations_h3 where h3 is not null and man_distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/eatery_count.csv: db/table/osm_places_eatery_h3 | data/out/csv ## extract eatery_count to csv file 
-	psql -q -X -c "copy (select h3, eatery_count from osm_places_eatery_h3 where h3 is not null and eatery_count is not null and eatery_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/eatery_count.csv
+data/out/csv/eatery_count.csv.gz: db/table/osm_places_eatery_h3 | data/out/csv ## extract eatery_count to csv file 
+	psql -q -X -c "copy (select h3, eatery_count from osm_places_eatery_h3 where h3 is not null and eatery_count is not null and eatery_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/food_shops_count.csv: db/table/osm_places_food_shops_h3 | data/out/csv ## extract food_shops_count to csv file 
-	psql -q -X -c "copy (select h3, food_shops_count from osm_places_food_shops_h3 where h3 is not null and food_shops_count is not null and food_shops_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/food_shops_count.csv
+data/out/csv/food_shops_count.csv.gz: db/table/osm_places_food_shops_h3 | data/out/csv ## extract food_shops_count to csv file 
+	psql -q -X -c "copy (select h3, food_shops_count from osm_places_food_shops_h3 where h3 is not null and food_shops_count is not null and food_shops_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/waste_basket_coverage_area_km2.csv: db/table/waste_basket_coverage_h3 | data/out/csv ## extract waste_basket_coverage_area_km2 to csv file 
-	psql -q -X -c "copy (select h3, waste_basket_coverage_area_km2 from waste_basket_coverage_h3 where h3 is not null and waste_basket_coverage_area_km2 is not null and waste_basket_coverage_area_km2 > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/waste_basket_coverage_area_km2.csv
+data/out/csv/waste_basket_coverage_area_km2.csv.gz: db/table/waste_basket_coverage_h3 | data/out/csv ## extract waste_basket_coverage_area_km2 to csv file 
+	psql -q -X -c "copy (select h3, waste_basket_coverage_area_km2 from waste_basket_coverage_h3 where h3 is not null and waste_basket_coverage_area_km2 is not null and waste_basket_coverage_area_km2 > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/solar_farms_placement_suitability.csv: db/table/solar_farms_placement_suitability_synthetic_h3 | data/out/csv ## extract solar_farms_placement_suitability to csv file 
-	psql -q -X -c "copy (select h3, solar_farms_placement_suitability from solar_farms_placement_suitability_synthetic_h3 where h3 is not null and solar_farms_placement_suitability is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/solar_farms_placement_suitability.csv
+data/out/csv/solar_farms_placement_suitability.csv.gz: db/table/solar_farms_placement_suitability_synthetic_h3 | data/out/csv ## extract solar_farms_placement_suitability to csv file 
+	psql -q -X -c "copy (select h3, solar_farms_placement_suitability from solar_farms_placement_suitability_synthetic_h3 where h3 is not null and solar_farms_placement_suitability is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/mapswipe_area_km2.csv: db/table/mapswipe_hot_tasking_data_h3 | data/out/csv ## extract mapswipe_area_km2 to csv file 
-	psql -q -X -c "copy (select h3, mapswipe_area as mapswipe_area_km2 from mapswipe_hot_tasking_data_h3 where h3 is not null and mapswipe_area is not null and mapswipe_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/mapswipe_area_km2.csv
+data/out/csv/mapswipe_area_km2.csv.gz: db/table/mapswipe_hot_tasking_data_h3 | data/out/csv ## extract mapswipe_area_km2 to csv file 
+	psql -q -X -c "copy (select h3, mapswipe_area as mapswipe_area_km2 from mapswipe_hot_tasking_data_h3 where h3 is not null and mapswipe_area is not null and mapswipe_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/avg_slope_gebco_2022.csv: db/table/gebco_2022_h3 | data/out/csv ## extract avg_slope_gebco_2022 to csv file 
-	psql -q -X -c "copy (select h3, avg_slope_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_slope_gebco_2022 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_slope_gebco_2022.csv
+data/out/csv/avg_slope_gebco_2022.csv.gz: db/table/gebco_2022_h3 | data/out/csv ## extract avg_slope_gebco_2022 to csv file 
+	psql -q -X -c "copy (select h3, avg_slope_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_slope_gebco_2022 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/avg_elevation_gebco_2022.csv: db/table/gebco_2022_h3 | data/out/csv ## extract avg_elevation_gebco_2022 to csv file 
-	psql -q -X -c "copy (select h3, avg_elevation_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_elevation_gebco_2022 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_elevation_gebco_2022.csv
+data/out/csv/avg_elevation_gebco_2022.csv.gz: db/table/gebco_2022_h3 | data/out/csv ## extract avg_elevation_gebco_2022 to csv file 
+	psql -q -X -c "copy (select h3, avg_elevation_gebco_2022 from gebco_2022_h3 where h3 is not null and avg_elevation_gebco_2022 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract forest to csv file 
-	psql -q -X -c "copy (select h3, forest_area as forest from copernicus_landcover_h3 where h3 is not null and forest_area is not null and forest_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/forest.csv
+data/out/csv/forest.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract forest to csv file 
+	psql -q -X -c "copy (select h3, forest_area as forest from copernicus_landcover_h3 where h3 is not null and forest_area is not null and forest_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/evergreen_needle_leaved_forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract evergreen_needle_leaved_forest to csv file 
-	psql -q -X -c "copy (select h3, evergreen_needle_leaved_forest from copernicus_landcover_h3 where h3 is not null and evergreen_needle_leaved_forest is not null and evergreen_needle_leaved_forest > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/evergreen_needle_leaved_forest.csv
+data/out/csv/evergreen_needle_leaved_forest.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract evergreen_needle_leaved_forest to csv file 
+	psql -q -X -c "copy (select h3, evergreen_needle_leaved_forest from copernicus_landcover_h3 where h3 is not null and evergreen_needle_leaved_forest is not null and evergreen_needle_leaved_forest > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/shrubs.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract shrubs to csv file 
-	psql -q -X -c "copy (select h3, shrubs from copernicus_landcover_h3 where h3 is not null and shrubs is not null and shrubs > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/shrubs.csv
+data/out/csv/shrubs.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract shrubs to csv file 
+	psql -q -X -c "copy (select h3, shrubs from copernicus_landcover_h3 where h3 is not null and shrubs is not null and shrubs > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/herbage.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract herbage to csv file 
-	psql -q -X -c "copy (select h3, herbage from copernicus_landcover_h3 where h3 is not null and herbage is not null and herbage > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/herbage.csv
+data/out/csv/herbage.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract herbage to csv file 
+	psql -q -X -c "copy (select h3, herbage from copernicus_landcover_h3 where h3 is not null and herbage is not null and herbage > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/unknown_forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract unknown_forest to csv file 
-	psql -q -X -c "copy (select h3, unknown_forest from copernicus_landcover_h3 where h3 is not null and unknown_forest is not null and unknown_forest > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/unknown_forest.csv
+data/out/csv/unknown_forest.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract unknown_forest to csv file 
+	psql -q -X -c "copy (select h3, unknown_forest from copernicus_landcover_h3 where h3 is not null and unknown_forest is not null and unknown_forest > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/cropland.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract cropland to csv file 
+data/out/csv/cropland.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract cropland to csv file 
 	psql -q -X -c "copy (select h3, cropland from copernicus_landcover_h3 where h3 is not null and cropland is not null and cropland > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/wetland.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract wetland to csv file 
+data/out/csv/wetland.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract wetland to csv file 
 	psql -q -X -c "copy (select h3, wetland from copernicus_landcover_h3 where h3 is not null and wetland is not null and wetland > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/moss_lichen.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract moss_lichen to csv file 
+data/out/csv/moss_lichen.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract moss_lichen to csv file 
 	psql -q -X -c "copy (select h3, moss_lichen from copernicus_landcover_h3 where h3 is not null and moss_lichen is not null and moss_lichen > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/bare_vegetation.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract bare_vegetation to csv file 
+data/out/csv/bare_vegetation.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract bare_vegetation to csv file 
 	psql -q -X -c "copy (select h3, bare_vegetation from copernicus_landcover_h3 where h3 is not null and bare_vegetation is not null and bare_vegetation > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/builtup.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract builtup to csv file 
+data/out/csv/builtup.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract builtup to csv file 
 	psql -q -X -c "copy (select h3, builtup from copernicus_landcover_h3 where h3 is not null and builtup is not null and builtup > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/snow_ice.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract snow_ice to csv file 
+data/out/csv/snow_ice.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract snow_ice to csv file 
 	psql -q -X -c "copy (select h3, snow_ice from copernicus_landcover_h3 where h3 is not null and snow_ice is not null and snow_ice > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/permanent_water.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract permanent_water to csv file 
+data/out/csv/permanent_water.csv.gz: db/table/copernicus_landcover_h3 | data/out/csv ## extract permanent_water to csv file 
 	psql -q -X -c "copy (select h3, permanent_water from copernicus_landcover_h3 where h3 is not null and permanent_water is not null and permanent_water > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/avg_ndvi.csv: db/table/ndvi_2019_06_10_h3 | data/out/csv ## extract avg_ndvi to csv file 
-	psql -q -X -c "copy (select h3, avg_ndvi from ndvi_2019_06_10_h3 where h3 is not null and avg_ndvi is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_ndvi.csv
+data/out/csv/avg_ndvi.csv.gz: db/table/ndvi_2019_06_10_h3 | data/out/csv ## extract avg_ndvi to csv file 
+	psql -q -X -c "copy (select h3, avg_ndvi from ndvi_2019_06_10_h3 where h3 is not null and avg_ndvi is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/days_maxtemp_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxtemp_over_32c_1c to csv file 
-	psql -q -X -c "copy (select h3, days_maxtemp_over_32c_1c from pf_maxtemp_h3 where h3 is not null and days_maxtemp_over_32c_1c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/days_maxtemp_over_32c_1c.csv
+data/out/csv/days_maxtemp_over_32c_1c.csv.gz: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxtemp_over_32c_1c to csv file 
+	psql -q -X -c "copy (select h3, days_maxtemp_over_32c_1c from pf_maxtemp_h3 where h3 is not null and days_maxtemp_over_32c_1c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/days_maxtemp_over_32c_2c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxtemp_over_32c_2c to csv file 
-	psql -q -X -c "copy (select h3, days_maxtemp_over_32c_2c from pf_maxtemp_h3 where h3 is not null and days_maxtemp_over_32c_2c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/days_maxtemp_over_32c_2c.csv
+data/out/csv/days_maxtemp_over_32c_2c.csv.gz: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxtemp_over_32c_2c to csv file 
+	psql -q -X -c "copy (select h3, days_maxtemp_over_32c_2c from pf_maxtemp_h3 where h3 is not null and days_maxtemp_over_32c_2c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/days_mintemp_above_25c_2c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_mintemp_above_25c_2c to csv file 
-	psql -q -X -c "copy (select h3, days_mintemp_above_25c_2c from pf_maxtemp_h3 where h3 is not null and days_mintemp_above_25c_2c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/days_mintemp_above_25c_2c.csv
+data/out/csv/days_mintemp_above_25c_2c.csv.gz: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_mintemp_above_25c_2c to csv file 
+	psql -q -X -c "copy (select h3, days_mintemp_above_25c_2c from pf_maxtemp_h3 where h3 is not null and days_mintemp_above_25c_2c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/days_maxwetbulb_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxwetbulb_over_32c_1c to csv file 
-	psql -q -X -c "copy (select h3, days_maxwetbulb_over_32c_1c from pf_maxtemp_h3 where h3 is not null and days_maxwetbulb_over_32c_1c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/days_maxwetbulb_over_32c_1c.csv
+data/out/csv/days_maxwetbulb_over_32c_1c.csv.gz: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxwetbulb_over_32c_1c to csv file 
+	psql -q -X -c "copy (select h3, days_maxwetbulb_over_32c_1c from pf_maxtemp_h3 where h3 is not null and days_maxwetbulb_over_32c_1c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/days_maxwetbulb_over_32c_2c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxwetbulb_over_32c_2c to csv file 
-	psql -q -X -c "copy (select h3, days_maxwetbulb_over_32c_2c from pf_maxtemp_h3 where h3 is not null and days_maxwetbulb_over_32c_2c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/days_maxwetbulb_over_32c_2c.csv
+data/out/csv/days_maxwetbulb_over_32c_2c.csv.gz: db/table/pf_maxtemp_h3 | data/out/csv ## extract days_maxwetbulb_over_32c_2c to csv file 
+	psql -q -X -c "copy (select h3, days_maxwetbulb_over_32c_2c from pf_maxtemp_h3 where h3 is not null and days_maxwetbulb_over_32c_2c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/mandays_maxtemp_over_32c_1c.csv: db/table/pf_maxtemp_h3 | data/out/csv ## extract mandays_maxtemp_over_32c_1c to csv file 
-	psql -q -X -c "copy (select h3, mandays_maxtemp_over_32c_1c from pf_maxtemp_h3 where h3 is not null and mandays_maxtemp_over_32c_1c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/mandays_maxtemp_over_32c_1c.csv
+data/out/csv/mandays_maxtemp_over_32c_1c.csv.gz: db/table/pf_maxtemp_h3 | data/out/csv ## extract mandays_maxtemp_over_32c_1c to csv file 
+	psql -q -X -c "copy (select h3, mandays_maxtemp_over_32c_1c from pf_maxtemp_h3 where h3 is not null and mandays_maxtemp_over_32c_1c is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/hazardous_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract hazardous_days_count to csv file 
-	psql -q -X -c "copy (select h3, hazardous_days_count from disaster_event_episodes_h3 where h3 is not null and hazardous_days_count is not null and hazardous_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/hazardous_days_count.csv
+data/out/csv/hazardous_days_count.csv.gz: db/table/disaster_event_episodes_h3 | data/out/csv ## extract hazardous_days_count to csv file 
+	psql -q -X -c "copy (select h3, hazardous_days_count from disaster_event_episodes_h3 where h3 is not null and hazardous_days_count is not null and hazardous_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/earthquake_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract earthquake_days_count to csv file 
-	psql -q -X -c "copy (select h3, earthquake_days_count from disaster_event_episodes_h3 where h3 is not null and earthquake_days_count is not null and earthquake_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/earthquake_days_count.csv
+data/out/csv/earthquake_days_count.csv.gz: db/table/disaster_event_episodes_h3 | data/out/csv ## extract earthquake_days_count to csv file 
+	psql -q -X -c "copy (select h3, earthquake_days_count from disaster_event_episodes_h3 where h3 is not null and earthquake_days_count is not null and earthquake_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/wildfire_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract wildfire_days_count to csv file 
-	psql -q -X -c "copy (select h3, wildfire_days_count from disaster_event_episodes_h3 where h3 is not null and wildfire_days_count is not null and wildfire_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/wildfire_days_count.csv
+data/out/csv/wildfire_days_count.csv.gz: db/table/disaster_event_episodes_h3 | data/out/csv ## extract wildfire_days_count to csv file 
+	psql -q -X -c "copy (select h3, wildfire_days_count from disaster_event_episodes_h3 where h3 is not null and wildfire_days_count is not null and wildfire_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/drought_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract drought_days_count to csv file 
-	psql -q -X -c "copy (select h3, drought_days_count from disaster_event_episodes_h3 where h3 is not null and drought_days_count is not null and drought_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/drought_days_count.csv
+data/out/csv/drought_days_count.csv.gz: db/table/disaster_event_episodes_h3 | data/out/csv ## extract drought_days_count to csv file 
+	psql -q -X -c "copy (select h3, drought_days_count from disaster_event_episodes_h3 where h3 is not null and drought_days_count is not null and drought_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/cyclone_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract cyclone_days_count to csv file 
-	psql -q -X -c "copy (select h3, cyclone_days_count from disaster_event_episodes_h3 where h3 is not null and cyclone_days_count is not null and cyclone_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/cyclone_days_count.csv
+data/out/csv/cyclone_days_count.csv.gz: db/table/disaster_event_episodes_h3 | data/out/csv ## extract cyclone_days_count to csv file 
+	psql -q -X -c "copy (select h3, cyclone_days_count from disaster_event_episodes_h3 where h3 is not null and cyclone_days_count is not null and cyclone_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/volcano_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract volcano_days_count to csv file 
-	psql -q -X -c "copy (select h3, volcano_days_count from disaster_event_episodes_h3 where h3 is not null and volcano_days_count is not null and volcano_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/volcano_days_count.csv
+data/out/csv/volcano_days_count.csv.gz: db/table/disaster_event_episodes_h3 | data/out/csv ## extract volcano_days_count to csv file 
+	psql -q -X -c "copy (select h3, volcano_days_count from disaster_event_episodes_h3 where h3 is not null and volcano_days_count is not null and volcano_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/flood_days_count.csv: db/table/disaster_event_episodes_h3 | data/out/csv ## extract flood_days_count to csv file 
-	psql -q -X -c "copy (select h3, flood_days_count from disaster_event_episodes_h3 where h3 is not null and flood_days_count is not null and flood_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/flood_days_count.csv
+data/out/csv/flood_days_count.csv.gz: db/table/disaster_event_episodes_h3 | data/out/csv ## extract flood_days_count to csv file 
+	psql -q -X -c "copy (select h3, flood_days_count from disaster_event_episodes_h3 where h3 is not null and flood_days_count is not null and flood_days_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/powerlines.csv: db/table/facebook_medium_voltage_distribution_h3 | data/out/csv ## extract powerlines to csv file 
-	psql -q -X -c "copy (select h3, powerlines from facebook_medium_voltage_distribution_h3 where h3 is not null and powerlines is not null and powerlines > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/powerlines.csv
+data/out/csv/powerlines.csv.gz: db/table/facebook_medium_voltage_distribution_h3 | data/out/csv ## extract powerlines to csv file 
+	psql -q -X -c "copy (select h3, powerlines from facebook_medium_voltage_distribution_h3 where h3 is not null and powerlines is not null and powerlines > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/night_lights_intensity.csv: db/table/night_lights_h3 | data/out/csv ## extract night_lights_intensity to csv file 
-	psql -q -X -c "copy (select h3, intensity as night_lights_intensity from night_lights_h3 where h3 is not null and intensity is not null and intensity > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/night_lights_intensity.csv
+data/out/csv/night_lights_intensity.csv.gz: db/table/night_lights_h3 | data/out/csv ## extract night_lights_intensity to csv file 
+	psql -q -X -c "copy (select h3, intensity as night_lights_intensity from night_lights_h3 where h3 is not null and intensity is not null and intensity > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/gsa_ghi.csv: db/table/global_solar_atlas_h3 | data/out/csv ## extract gsa_ghi to csv file 
-	psql -q -X -c "copy (select h3, gsa_ghi from global_solar_atlas_h3 where h3 is not null and gsa_ghi is not null and gsa_ghi > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/gsa_ghi.csv
+data/out/csv/gsa_ghi.csv.gz: db/table/global_solar_atlas_h3 | data/out/csv ## extract gsa_ghi to csv file 
+	psql -q -X -c "copy (select h3, gsa_ghi from global_solar_atlas_h3 where h3 is not null and gsa_ghi is not null and gsa_ghi > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/worldclim_avg_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_avg_temperature to csv file 
-	psql -q -X -c "copy (select h3, worldclim_avg_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_avg_temperature is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_avg_temperature.csv
+data/out/csv/worldclim_avg_temperature.csv.gz: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_avg_temperature to csv file 
+	psql -q -X -c "copy (select h3, worldclim_avg_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_avg_temperature is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/worldclim_min_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_min_temperature to csv file 
-	psql -q -X -c "copy (select h3, worldclim_min_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_min_temperature is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_min_temperature.csv
+data/out/csv/worldclim_min_temperature.csv.gz: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_min_temperature to csv file 
+	psql -q -X -c "copy (select h3, worldclim_min_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_min_temperature is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/worldclim_max_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_max_temperature to csv file 
-	psql -q -X -c "copy (select h3, worldclim_max_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_max_temperature is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_max_temperature.csv
+data/out/csv/worldclim_max_temperature.csv.gz: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_max_temperature to csv file 
+	psql -q -X -c "copy (select h3, worldclim_max_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_max_temperature is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/worldclim_amp_temperature.csv: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_amp_temperature to csv file 
-	psql -q -X -c "copy (select h3, worldclim_amp_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_amp_temperature is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/worldclim_amp_temperature.csv
+data/out/csv/worldclim_amp_temperature.csv.gz: db/table/worldclim_temperatures_h3 | data/out/csv ## extract worldclim_amp_temperature to csv file 
+	psql -q -X -c "copy (select h3, worldclim_amp_temperature from worldclim_temperatures_h3 where h3 is not null and worldclim_amp_temperature is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/powerlines_proximity_m.csv: db/table/proximities_h3 | data/out/csv ## extract powerlines_proximity_m to csv file 
-	psql -q -X -c "copy (select h3, powerlines_proximity_m from proximities_h3 where h3 is not null and powerlines_proximity_m is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/powerlines_proximity_m.csv
+data/out/csv/powerlines_proximity_m.csv.gz: db/table/proximities_h3 | data/out/csv ## extract powerlines_proximity_m to csv file 
+	psql -q -X -c "copy (select h3, powerlines_proximity_m from proximities_h3 where h3 is not null and powerlines_proximity_m is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/populated_areas_proximity_m.csv: db/table/proximities_h3 | data/out/csv ## extract populated_areas_proximity_m to csv file 
-	psql -q -X -c "copy (select h3, populated_areas_proximity_m from proximities_h3 where h3 is not null and populated_areas_proximity_m is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/populated_areas_proximity_m.csv
+data/out/csv/populated_areas_proximity_m.csv.gz: db/table/proximities_h3 | data/out/csv ## extract populated_areas_proximity_m to csv file 
+	psql -q -X -c "copy (select h3, populated_areas_proximity_m from proximities_h3 where h3 is not null and populated_areas_proximity_m is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/power_substations_proximity_m.csv: db/table/proximities_h3 | data/out/csv ## extract power_substations_proximity_m to csv file 
-	psql -q -X -c "copy (select h3, power_substations_proximity_m from proximities_h3 where h3 is not null and power_substations_proximity_m is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/power_substations_proximity_m.csv
+data/out/csv/power_substations_proximity_m.csv.gz: db/table/proximities_h3 | data/out/csv ## extract power_substations_proximity_m to csv file 
+	psql -q -X -c "copy (select h3, power_substations_proximity_m from proximities_h3 where h3 is not null and power_substations_proximity_m is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/solar_power_plants.csv: db/table/existing_solar_power_panels_h3 | data/out/csv ## extract solar_power_plants to csv file 
-	psql -q -X -c "copy (select h3, solar_power_plants from existing_solar_power_panels_h3 where h3 is not null and solar_power_plants is not null and solar_power_plants > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/solar_power_plants.csv
+data/out/csv/solar_power_plants.csv.gz: db/table/existing_solar_power_panels_h3 | data/out/csv ## extract solar_power_plants to csv file 
+	psql -q -X -c "copy (select h3, solar_power_plants from existing_solar_power_panels_h3 where h3 is not null and solar_power_plants is not null and solar_power_plants > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/safety_index.csv: db/table/safety_index_h3 | data/out/csv ## extract safety_index to csv file 
-	psql -q -X -c "copy (select h3, safety_index from safety_index_h3 where h3 is not null and safety_index is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/safety_index.csv
+data/out/csv/safety_index.csv.gz: db/table/safety_index_h3 | data/out/csv ## extract safety_index to csv file 
+	psql -q -X -c "copy (select h3, safety_index from safety_index_h3 where h3 is not null and safety_index is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" | pigz -9 > $@
 
-data/out/csv/avg_forest_canopy_height.csv: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract avg_forest_canopy_height to csv file 
+data/out/csv/avg_forest_canopy_height.csv.gz: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract avg_forest_canopy_height to csv file 
 	psql -q -X -c "copy (select h3, avg_forest_canopy_height as avg_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and avg_forest_canopy_height is not null and avg_forest_canopy_height > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/max_forest_canopy_height.csv: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract max_forest_canopy_height to csv file 
+data/out/csv/max_forest_canopy_height.csv.gz: db/table/meta_forest_canopy_height_h3 | data/out/csv ## extract max_forest_canopy_height to csv file 
 	psql -q -X -c "copy (select h3, max_forest_canopy_height as max_forest_canopy_height from meta_forest_canopy_height_h3 where h3 is not null and max_forest_canopy_height is not null and max_forest_canopy_height > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/worldbank_tax_rate.csv: db/table/worldbank_tax_rate_h3 | data/out/csv ## extract worldbank_tax_rate to csv file 
+data/out/csv/worldbank_tax_rate.csv.gz: db/table/worldbank_tax_rate_h3 | data/out/csv ## extract worldbank_tax_rate to csv file 
 	psql -q -X -c "copy (select h3, t2019 as worldbank_total_tax_2019 from worldbank_tax_rate_h3 where h3 is not null and t2019 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/years_to_naturalisation.csv: db/table/wikidata_naturalization_gap_h3 | data/out/csv ## extract years_to_naturalisation to csv file 
+data/out/csv/years_to_naturalisation.csv.gz: db/table/wikidata_naturalization_gap_h3 | data/out/csv ## extract years_to_naturalisation to csv file 
 	psql -q -X -c "copy (select h3, years_to_naturalisation from wikidata_naturalization_gap_h3 where h3 is not null and years_to_naturalisation is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/multiple_citizenship.csv: db/table/wikidata_naturalization_gap_h3 | data/out/csv ## extract multiple_citizenship to csv file 
+data/out/csv/multiple_citizenship.csv.gz: db/table/wikidata_naturalization_gap_h3 | data/out/csv ## extract multiple_citizenship to csv file 
 	psql -q -X -c "copy (select h3, multiple_citizenship from wikidata_naturalization_gap_h3 where h3 is not null and multiple_citizenship is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/ghs_max_building_height.csv: db/table/ghs_building_height_grid_h3 | data/out/csv ## extract ghs_max_building_height to csv file 
+data/out/csv/ghs_max_building_height.csv.gz: db/table/ghs_building_height_grid_h3 | data/out/csv ## extract ghs_max_building_height to csv file 
 	psql -q -X -c "copy (select h3, max_height as ghs_max_building_height from ghs_building_height_grid_h3 where h3 is not null and max_height is not null and max_height > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/ghs_avg_building_height.csv: db/table/ghs_building_height_grid_h3 | data/out/csv ## extract ghs_avg_building_height to csv file 
+data/out/csv/ghs_avg_building_height.csv.gz: db/table/ghs_building_height_grid_h3 | data/out/csv ## extract ghs_avg_building_height to csv file 
 	psql -q -X -c "copy (select h3, avg_height as ghs_avg_building_height from ghs_building_height_grid_h3 where h3 is not null and avg_height is not null and avg_height > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/max_osm_building_levels.csv: db/table/osm_building_levels_h3 | data/out/csv ## extract max_osm_building_levels to csv file 
+data/out/csv/max_osm_building_levels.csv.gz: db/table/osm_building_levels_h3 | data/out/csv ## extract max_osm_building_levels to csv file 
 	psql -q -X -c "copy (select h3, max_levels as max_osm_building_levels from osm_building_levels_h3 where h3 is not null and max_levels is not null and max_levels > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/avg_osm_building_levels.csv: db/table/osm_building_levels_h3 | data/out/csv ## extract avg_osm_building_levels to csv file 
+data/out/csv/avg_osm_building_levels.csv.gz: db/table/osm_building_levels_h3 | data/out/csv ## extract avg_osm_building_levels to csv file 
 	psql -q -X -c "copy (select h3, avg_levels as avg_osm_building_levels from osm_building_levels_h3 where h3 is not null and avg_levels is not null and avg_levels > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_hotels_count.csv: db/table/osm_hotels_h3 | data/out/csv ## extract osm_hotels_count to csv file 
+data/out/csv/osm_hotels_count.csv.gz: db/table/osm_hotels_h3 | data/out/csv ## extract osm_hotels_count to csv file 
 	psql -q -X -c "copy (select h3, osm_hotels_count from osm_hotels_h3 where h3 is not null and osm_hotels_count is not null and osm_hotels_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/max_osm_hotels_assesment.csv: db/table/osm_hotels_h3 | data/out/csv ## extract max_osm_hotels_assesment to csv file 
+data/out/csv/max_osm_hotels_assesment.csv.gz: db/table/osm_hotels_h3 | data/out/csv ## extract max_osm_hotels_assesment to csv file 
 	psql -q -X -c "copy (select h3, max_osm_hotels_assesment from osm_hotels_h3 where h3 is not null and max_osm_hotels_assesment is not null and max_osm_hotels_assesment > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/avg_osm_hotels_assesment.csv: db/table/osm_hotels_h3 | data/out/csv ## extract avg_osm_hotels_assesment to csv file 
+data/out/csv/avg_osm_hotels_assesment.csv.gz: db/table/osm_hotels_h3 | data/out/csv ## extract avg_osm_hotels_assesment to csv file 
 	psql -q -X -c "copy (select h3, avg_osm_hotels_assesment from osm_hotels_h3 where h3 is not null and avg_osm_hotels_assesment is not null and avg_osm_hotels_assesment > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_historical_sites_and_museums_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_historical_sites_and_museums_count to csv file 
+data/out/csv/osm_historical_sites_and_museums_count.csv.gz: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_historical_sites_and_museums_count to csv file 
 	psql -q -X -c "copy (select h3, osm_historical_sites_and_museums_count from osm_culture_venues_h3 where h3 is not null and osm_historical_sites_and_museums_count is not null and osm_historical_sites_and_museums_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_art_venues_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_art_venues_count to csv file 
+data/out/csv/osm_art_venues_count.csv.gz: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_art_venues_count to csv file 
 	psql -q -X -c "copy (select h3, osm_art_venues_count from osm_culture_venues_h3 where h3 is not null and osm_art_venues_count is not null and osm_art_venues_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_entertainment_venues_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_entertainment_venues_count to csv file 
+data/out/csv/osm_entertainment_venues_count.csv.gz: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_entertainment_venues_count to csv file 
 	psql -q -X -c "copy (select h3, osm_entertainment_venues_count from osm_culture_venues_h3 where h3 is not null and osm_entertainment_venues_count is not null and osm_entertainment_venues_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_cultural_and_comunity_centers_count.csv: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_cultural_and_comunity_centers_count to csv file 
+data/out/csv/osm_cultural_and_comunity_centers_count.csv.gz: db/table/osm_culture_venues_h3 | data/out/csv ## extract osm_cultural_and_comunity_centers_count to csv file 
 	psql -q -X -c "copy (select h3, osm_cultural_and_comunity_centers_count from osm_culture_venues_h3 where h3 is not null and osm_cultural_and_comunity_centers_count is not null and osm_cultural_and_comunity_centers_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/worldbank_inflation.csv: db/table/worldbank_inflation_h3 | data/out/csv ## extract worldbank_inflation to csv file 
+data/out/csv/worldbank_inflation.csv.gz: db/table/worldbank_inflation_h3 | data/out/csv ## extract worldbank_inflation to csv file 
 	psql -q -X -c "copy (select h3, inflation as worldbank_inflation from worldbank_inflation_h3 where h3 is not null and inflation is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_pharmacy_count.csv: db/table/osm_pharmacy_h3 | data/out/csv ## extract osm_pharmacy_count to csv file 
+data/out/csv/osm_pharmacy_count.csv.gz: db/table/osm_pharmacy_h3 | data/out/csv ## extract osm_pharmacy_count to csv file 
 	psql -q -X -c "copy (select h3, osm_pharmacy_count from osm_pharmacy_h3 where h3 is not null and osm_pharmacy_count is not null and osm_pharmacy_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/conflict_stock_displacement.csv: db/table/idmc_country_2023_h3 | data/out/csv ## extract conflict_stock_displacement to csv file
+data/out/csv/conflict_stock_displacement.csv.gz: db/table/idmc_country_2023_h3 | data/out/csv ## extract conflict_stock_displacement to csv file
 	psql -q -X -c "copy (select h3, conflict_stock_displacement from idmc_country_2023_h3 where h3 is not null and conflict_stock_displacement is not null and conflict_stock_displacement > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/disaster_stock_displacement.csv: db/table/idmc_country_2023_h3 | data/out/csv ## extract disaster_stock_displacement to csv file
+data/out/csv/disaster_stock_displacement.csv.gz: db/table/idmc_country_2023_h3 | data/out/csv ## extract disaster_stock_displacement to csv file
 	psql -q -X -c "copy (select h3, disaster_stock_displacement from idmc_country_2023_h3 where h3 is not null and disaster_stock_displacement is not null and disaster_stock_displacement > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/conflict_internal_displacements.csv: db/table/idmc_country_2023_h3 | data/out/csv ## extract conflict_internal_displacements to csv file
+data/out/csv/conflict_internal_displacements.csv.gz: db/table/idmc_country_2023_h3 | data/out/csv ## extract conflict_internal_displacements to csv file
 	psql -q -X -c "copy (select h3, conflict_internal_displacements from idmc_country_2023_h3 where h3 is not null and conflict_internal_displacements is not null and conflict_internal_displacements > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/disaster_internal_displacements.csv: db/table/idmc_country_2023_h3 | data/out/csv ## extract disaster_internal_displacements to csv file
+data/out/csv/disaster_internal_displacements.csv.gz: db/table/idmc_country_2023_h3 | data/out/csv ## extract disaster_internal_displacements to csv file
 	psql -q -X -c "copy (select h3, disaster_internal_displacements from idmc_country_2023_h3 where h3 is not null and disaster_internal_displacements is not null and disaster_internal_displacements > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/hdi_2022.csv: db/table/humanitarian_dev_index_2022_h3 | data/out/csv ## extract hdi_2022 to csv file 
+data/out/csv/hdi_2022.csv.gz: db/table/humanitarian_dev_index_2022_h3 | data/out/csv ## extract hdi_2022 to csv file 
 	psql -q -X -c "copy (select h3, hdi_2022 from humanitarian_dev_index_2022_h3 where h3 is not null and hdi_2022 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/inform_risk.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract inform_risk to csv file
+data/out/csv/inform_risk.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract inform_risk to csv file
 	psql -q -X -c "copy (select h3, inform_risk from inform_risk_profile_2025_h3 where h3 is not null and inform_risk is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/hazard_and_exposure.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract hazard_and_exposure to csv file
+data/out/csv/hazard_and_exposure.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract hazard_and_exposure to csv file
 	psql -q -X -c "copy (select h3, hazard_and_exposure from inform_risk_profile_2025_h3 where h3 is not null and hazard_and_exposure is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/natural_0_to_10.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract natural_0_to_10 to csv file
+data/out/csv/natural_0_to_10.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract natural_0_to_10 to csv file
 	psql -q -X -c "copy (select h3, natural_0_to_10 from inform_risk_profile_2025_h3 where h3 is not null and natural_0_to_10 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/earthquake.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract earthquake to csv file
+data/out/csv/earthquake.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract earthquake to csv file
 	psql -q -X -c "copy (select h3, earthquake from inform_risk_profile_2025_h3 where h3 is not null and earthquake is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/river_flood.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract river_flood to csv file
+data/out/csv/river_flood.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract river_flood to csv file
 	psql -q -X -c "copy (select h3, river_flood from inform_risk_profile_2025_h3 where h3 is not null and river_flood is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/tsunami.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract tsunami to csv file
+data/out/csv/tsunami.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract tsunami to csv file
 	psql -q -X -c "copy (select h3, tsunami from inform_risk_profile_2025_h3 where h3 is not null and tsunami is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/tropical_cyclone.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract tropical_cyclone to csv file
+data/out/csv/tropical_cyclone.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract tropical_cyclone to csv file
 	psql -q -X -c "copy (select h3, tropical_cyclone from inform_risk_profile_2025_h3 where h3 is not null and tropical_cyclone is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/coastal_flood.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract coastal_flood to csv file
+data/out/csv/coastal_flood.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract coastal_flood to csv file
 	psql -q -X -c "copy (select h3, coastal_flood from inform_risk_profile_2025_h3 where h3 is not null and coastal_flood is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/drought.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract drought to csv file
+data/out/csv/drought.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract drought to csv file
 	psql -q -X -c "copy (select h3, drought from inform_risk_profile_2025_h3 where h3 is not null and drought is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/epidemic.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract epidemic to csv file
+data/out/csv/epidemic.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract epidemic to csv file
 	psql -q -X -c "copy (select h3, epidemic from inform_risk_profile_2025_h3 where h3 is not null and epidemic is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/human.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract human to csv file
+data/out/csv/human.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract human to csv file
 	psql -q -X -c "copy (select h3, human from inform_risk_profile_2025_h3 where h3 is not null and human is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/projected_conflict_probability.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract projected_conflict_probability to csv file
+data/out/csv/projected_conflict_probability.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract projected_conflict_probability to csv file
 	psql -q -X -c "copy (select h3, projected_conflict_probability from inform_risk_profile_2025_h3 where h3 is not null and projected_conflict_probability is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/current_conflict_intensity.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract current_conflict_intensity to csv file
+data/out/csv/current_conflict_intensity.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract current_conflict_intensity to csv file
 	psql -q -X -c "copy (select h3, current_conflict_intensity from inform_risk_profile_2025_h3 where h3 is not null and current_conflict_intensity is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/vulnerability.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract vulnerability to csv file
+data/out/csv/vulnerability.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract vulnerability to csv file
 	psql -q -X -c "copy (select h3, vulnerability from inform_risk_profile_2025_h3 where h3 is not null and vulnerability is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/socio_economic_vulnerability.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract socio_economic_vulnerability to csv file
+data/out/csv/socio_economic_vulnerability.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract socio_economic_vulnerability to csv file
 	psql -q -X -c "copy (select h3, socio_economic_vulnerability from inform_risk_profile_2025_h3 where h3 is not null and socio_economic_vulnerability is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/development_and_deprivation.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract development_and_deprivation to csv file
+data/out/csv/development_and_deprivation.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract development_and_deprivation to csv file
 	psql -q -X -c "copy (select h3, development_and_deprivation from inform_risk_profile_2025_h3 where h3 is not null and development_and_deprivation is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/inequality.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract inequality to csv file
+data/out/csv/inequality.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract inequality to csv file
 	psql -q -X -c "copy (select h3, inequality from inform_risk_profile_2025_h3 where h3 is not null and inequality is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/economic_dependency.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract economic_dependency to csv file
+data/out/csv/economic_dependency.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract economic_dependency to csv file
 	psql -q -X -c "copy (select h3, economic_dependency from inform_risk_profile_2025_h3 where h3 is not null and economic_dependency is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/vulnerable_groups.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract vulnerable_groups to csv file
+data/out/csv/vulnerable_groups.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract vulnerable_groups to csv file
 	psql -q -X -c "copy (select h3, vulnerable_groups from inform_risk_profile_2025_h3 where h3 is not null and vulnerable_groups is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/uprooted_people.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract uprooted_people to csv file
+data/out/csv/uprooted_people.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract uprooted_people to csv file
 	psql -q -X -c "copy (select h3, uprooted_people from inform_risk_profile_2025_h3 where h3 is not null and uprooted_people is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/health_conditions.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract health_conditions to csv file
+data/out/csv/health_conditions.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract health_conditions to csv file
 	psql -q -X -c "copy (select h3, health_conditions from inform_risk_profile_2025_h3 where h3 is not null and health_conditions is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/children_u5.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract children_u5 to csv file
+data/out/csv/children_u5.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract children_u5 to csv file
 	psql -q -X -c "copy (select h3, children_u5 from inform_risk_profile_2025_h3 where h3 is not null and children_u5 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/recent_shocks.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract recent_shocks to csv file
+data/out/csv/recent_shocks.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract recent_shocks to csv file
 	psql -q -X -c "copy (select h3, recent_shocks from inform_risk_profile_2025_h3 where h3 is not null and recent_shocks is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/food_security.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract food_security to csv file
+data/out/csv/food_security.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract food_security to csv file
 	psql -q -X -c "copy (select h3, food_security from inform_risk_profile_2025_h3 where h3 is not null and food_security is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/other_vulnerable_groups.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract other_vulnerable_groups to csv file
+data/out/csv/other_vulnerable_groups.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract other_vulnerable_groups to csv file
 	psql -q -X -c "copy (select h3, other_vulnerable_groups from inform_risk_profile_2025_h3 where h3 is not null and other_vulnerable_groups is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/lack_of_coping_capacity.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract lack_of_coping_capacity to csv file
+data/out/csv/lack_of_coping_capacity.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract lack_of_coping_capacity to csv file
 	psql -q -X -c "copy (select h3, lack_of_coping_capacity from inform_risk_profile_2025_h3 where h3 is not null and lack_of_coping_capacity is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/institutional.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract institutional to csv file
+data/out/csv/institutional.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract institutional to csv file
 	psql -q -X -c "copy (select h3, institutional from inform_risk_profile_2025_h3 where h3 is not null and institutional is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/drr.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract drr to csv file
+data/out/csv/drr.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract drr to csv file
 	psql -q -X -c "copy (select h3, drr from inform_risk_profile_2025_h3 where h3 is not null and drr is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/governance.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract governance to csv file
+data/out/csv/governance.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract governance to csv file
 	psql -q -X -c "copy (select h3, governance from inform_risk_profile_2025_h3 where h3 is not null and governance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/infrastructure.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract infrastructure to csv file
+data/out/csv/infrastructure.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract infrastructure to csv file
 	psql -q -X -c "copy (select h3, infrastructure from inform_risk_profile_2025_h3 where h3 is not null and infrastructure is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/communication.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract communication to csv file
+data/out/csv/communication.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract communication to csv file
 	psql -q -X -c "copy (select h3, communication from inform_risk_profile_2025_h3 where h3 is not null and communication is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/physical_infrastructure.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract physical_infrastructure to csv file
+data/out/csv/physical_infrastructure.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract physical_infrastructure to csv file
 	psql -q -X -c "copy (select h3, physical_infrastructure from inform_risk_profile_2025_h3 where h3 is not null and physical_infrastructure is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/access_to_health_care.csv: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract access_to_health_care to csv file
+data/out/csv/access_to_health_care.csv.gz: db/table/inform_risk_profile_2025_h3 | data/out/csv ## extract access_to_health_care to csv file
 	psql -q -X -c "copy (select h3, access_to_health_care from inform_risk_profile_2025_h3 where h3 is not null and access_to_health_care is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_banks_count.csv: db/table/osm_financial_venues_h3 | data/out/csv ## extract osm_banks_count to csv file
+data/out/csv/osm_banks_count.csv.gz: db/table/osm_financial_venues_h3 | data/out/csv ## extract osm_banks_count to csv file
 	psql -q -X -c "copy (select h3, osm_banks_count from osm_financial_venues_h3 where h3 is not null and osm_banks_count is not null and osm_banks_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_atms_count.csv: db/table/osm_financial_venues_h3 | data/out/csv ## extract osm_atms_count to csv file
+data/out/csv/osm_atms_count.csv.gz: db/table/osm_financial_venues_h3 | data/out/csv ## extract osm_atms_count to csv file
 	psql -q -X -c "copy (select h3, osm_atms_count from osm_financial_venues_h3 where h3 is not null and osm_atms_count is not null and osm_atms_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_kindergartens_count.csv: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_kindergartens_count to csv file
+data/out/csv/osm_kindergartens_count.csv.gz: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_kindergartens_count to csv file
 	psql -q -X -c "copy (select h3, osm_kindergartens_count from osm_education_venues_h3 where h3 is not null and osm_kindergartens_count is not null and osm_kindergartens_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_schools_count.csv: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_kindergartens_count to csv file
+data/out/csv/osm_schools_count.csv.gz: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_kindergartens_count to csv file
 	psql -q -X -c "copy (select h3, osm_schools_count from osm_education_venues_h3 where h3 is not null and osm_schools_count is not null and osm_schools_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_colleges_count.csv: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_colleges_count to csv file
+data/out/csv/osm_colleges_count.csv.gz: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_colleges_count to csv file
 	psql -q -X -c "copy (select h3, osm_colleges_count from osm_education_venues_h3 where h3 is not null and osm_colleges_count is not null and osm_colleges_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_universities_count.csv: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_universities_count to csv file
+data/out/csv/osm_universities_count.csv.gz: db/table/osm_education_venues_h3 | data/out/csv ## extract osm_universities_count to csv file
 	psql -q -X -c "copy (select h3, osm_universities_count from osm_education_venues_h3 where h3 is not null and osm_universities_count is not null and osm_universities_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_defibrillators_count.csv: db/table/osm_emergency_facilities_h3 | data/out/csv ## extract osm_universities_count to csv file
+data/out/csv/osm_defibrillators_count.csv.gz: db/table/osm_emergency_facilities_h3 | data/out/csv ## extract osm_universities_count to csv file
 	psql -q -X -c "copy (select h3, osm_defibrillators_count from osm_emergency_facilities_h3 where h3 is not null and osm_defibrillators_count is not null and osm_defibrillators_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_airports_count.csv: db/table/osm_transport_facilities_h3 | data/out/csv ## extract osm_airports_count to csv file
+data/out/csv/osm_airports_count.csv.gz: db/table/osm_transport_facilities_h3 | data/out/csv ## extract osm_airports_count to csv file
 	psql -q -X -c "copy (select h3, osm_airports_count from osm_transport_facilities_h3 where h3 is not null and osm_airports_count is not null and osm_airports_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_railway_stations_count.csv: db/table/osm_transport_facilities_h3 | data/out/csv ## extract osm_railway_stations_count to csv file
+data/out/csv/osm_railway_stations_count.csv.gz: db/table/osm_transport_facilities_h3 | data/out/csv ## extract osm_railway_stations_count to csv file
 	psql -q -X -c "copy (select h3, osm_railway_stations_count from osm_transport_facilities_h3 where h3 is not null and osm_railway_stations_count is not null and osm_railway_stations_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_public_transport_stops_count.csv: db/table/osm_transport_facilities_h3 | data/out/csv ## extract osm_public_transport_stops_count to csv file
+data/out/csv/osm_public_transport_stops_count.csv.gz: db/table/osm_transport_facilities_h3 | data/out/csv ## extract osm_public_transport_stops_count to csv file
 	psql -q -X -c "copy (select h3, osm_public_transport_stops_count from osm_transport_facilities_h3 where h3 is not null and osm_public_transport_stops_count is not null and osm_public_transport_stops_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_car_parkings_capacity.csv: db/table/osm_car_parkings_capacity_h3 | data/out/csv ## extract osm_car_parkings_capacity to csv file
+data/out/csv/osm_car_parkings_capacity.csv.gz: db/table/osm_car_parkings_capacity_h3 | data/out/csv ## extract osm_car_parkings_capacity to csv file
 	psql -q -X -c "copy (select h3, osm_car_parkings_capacity from osm_car_parkings_capacity_h3 where h3 is not null and osm_car_parkings_capacity is not null and osm_car_parkings_capacity > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/osm_heritage_sites_count.csv: db/table/osm_heritage_sites_h3 | data/out/csv ## extract osm_heritage_sites_count to csv file
+data/out/csv/osm_heritage_sites_count.csv.gz: db/table/osm_heritage_sites_h3 | data/out/csv ## extract osm_heritage_sites_count to csv file
 	psql -q -X -c "copy (select h3, osm_heritage_sites_count from osm_heritage_sites_h3 where h3 is not null and osm_heritage_sites_count is not null and osm_heritage_sites_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/min_osm_heritage_admin_level.csv: db/table/osm_heritage_sites_h3 | data/out/csv ## extract min_osm_heritage_admin_level to csv file
+data/out/csv/min_osm_heritage_admin_level.csv.gz: db/table/osm_heritage_sites_h3 | data/out/csv ## extract min_osm_heritage_admin_level to csv file
 	psql -q -X -c "copy (select h3, min_osm_heritage_admin_level from osm_heritage_sites_h3 where h3 is not null and min_osm_heritage_admin_level is not null and min_osm_heritage_admin_level > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/foursquare_os_places_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract foursquare_os_places_count to csv file
+data/out/csv/foursquare_os_places_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract foursquare_os_places_count to csv file
 	psql -q -X -c "copy (select h3, foursquare_os_places_count from foursquare_os_places_h3 where h3 is not null and foursquare_os_places_count is not null and foursquare_os_places_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/coffee_shops_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract coffee_shops_fsq_count to csv file
+data/out/csv/coffee_shops_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract coffee_shops_fsq_count to csv file
 	psql -q -X -c "copy (select h3, coffee_shops_fsq_count from foursquare_os_places_h3 where h3 is not null and coffee_shops_fsq_count is not null and coffee_shops_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/kebab_restaurants_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract kebab_restaurants_fsq_count to csv file
+data/out/csv/kebab_restaurants_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract kebab_restaurants_fsq_count to csv file
 	psql -q -X -c "copy (select h3, kebab_restaurants_fsq_count from foursquare_os_places_h3 where h3 is not null and kebab_restaurants_fsq_count is not null and kebab_restaurants_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/business_and_professional_services_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract business_and_professional_services_fsq_count to csv file
+data/out/csv/business_and_professional_services_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract business_and_professional_services_fsq_count to csv file
 	psql -q -X -c "copy (select h3, business_and_professional_services_fsq_count from foursquare_os_places_h3 where h3 is not null and business_and_professional_services_fsq_count is not null and business_and_professional_services_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/dining_and_drinking_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract dining_and_drinking_fsq_count to csv file
+data/out/csv/dining_and_drinking_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract dining_and_drinking_fsq_count to csv file
 	psql -q -X -c "copy (select h3, dining_and_drinking_fsq_count from foursquare_os_places_h3 where h3 is not null and dining_and_drinking_fsq_count is not null and dining_and_drinking_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/retail_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract retail_fsq_count to csv file
+data/out/csv/retail_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract retail_fsq_count to csv file
 	psql -q -X -c "copy (select h3, retail_fsq_count from foursquare_os_places_h3 where h3 is not null and retail_fsq_count is not null and retail_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/community_and_government_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract community_and_government_fsq_count to csv file
+data/out/csv/community_and_government_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract community_and_government_fsq_count to csv file
 	psql -q -X -c "copy (select h3, community_and_government_fsq_count from foursquare_os_places_h3 where h3 is not null and community_and_government_fsq_count is not null and community_and_government_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/travel_and_transportation_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract travel_and_transportation_fsq_count to csv file
+data/out/csv/travel_and_transportation_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract travel_and_transportation_fsq_count to csv file
 	psql -q -X -c "copy (select h3, travel_and_transportation_fsq_count from foursquare_os_places_h3 where h3 is not null and travel_and_transportation_fsq_count is not null and travel_and_transportation_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/landmarks_and_outdoors_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract landmarks_and_outdoors_fsq_count to csv file
+data/out/csv/landmarks_and_outdoors_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract landmarks_and_outdoors_fsq_count to csv file
 	psql -q -X -c "copy (select h3, landmarks_and_outdoors_fsq_count from foursquare_os_places_h3 where h3 is not null and landmarks_and_outdoors_fsq_count is not null and landmarks_and_outdoors_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/health_and_medicine_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract health_and_medicine_fsq_count to csv file
+data/out/csv/health_and_medicine_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract health_and_medicine_fsq_count to csv file
 	psql -q -X -c "copy (select h3, health_and_medicine_fsq_count from foursquare_os_places_h3 where h3 is not null and health_and_medicine_fsq_count is not null and health_and_medicine_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/arts_and_entertainment_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract arts_and_entertainment_fsq_count to csv file
+data/out/csv/arts_and_entertainment_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract arts_and_entertainment_fsq_count to csv file
 	psql -q -X -c "copy (select h3, arts_and_entertainment_fsq_count from foursquare_os_places_h3 where h3 is not null and arts_and_entertainment_fsq_count is not null and arts_and_entertainment_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/sports_and_recreation_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract sports_and_recreation_fsq_count to csv file
+data/out/csv/sports_and_recreation_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract sports_and_recreation_fsq_count to csv file
 	psql -q -X -c "copy (select h3, sports_and_recreation_fsq_count from foursquare_os_places_h3 where h3 is not null and sports_and_recreation_fsq_count is not null and sports_and_recreation_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/events_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract events_fsq_count to csv file
+data/out/csv/events_fsq_count.csv.gz: db/table/foursquare_os_places_h3 | data/out/csv ## extract events_fsq_count to csv file
 	psql -q -X -c "copy (select h3, events_fsq_count from foursquare_os_places_h3 where h3 is not null and events_fsq_count is not null and events_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 ### Deploy block ###
@@ -3439,655 +3439,655 @@ db/table/insights_api_indicators_list_dev: | db/table ## Refresh insights_api_in
 	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
 	touch $@
 
-deploy_indicators/dev/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/dev/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count.csv "count" db/table/osm_object_count_grid_h3
+deploy_indicators/dev/uploads/count_upload: data/out/csv/count.csv.gz | deploy_indicators/dev/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count.csv.gz "count" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/population_next_gen_upload: data/out/csv/population_next_gen.csv | deploy_indicators/dev/uploads ## upload population_next_gen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population_next_gen.csv "population_next_gen" db/table/kontur_population_h3
+deploy_indicators/dev/uploads/population_next_gen_upload: data/out/csv/population_next_gen.csv.gz | deploy_indicators/dev/uploads ## upload population_next_gen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population_next_gen.csv.gz "population_next_gen" db/table/kontur_population_h3
 	touch $@
 
-deploy_indicators/dev/uploads/populated_area_km2_next_gen_upload: data/out/csv/populated_area_km2_next_gen.csv | deploy_indicators/dev/uploads ## upload populated_area_km2_next_gen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_area_km2_next_gen.csv "populated_area_km2_next_gen" db/table/kontur_population_h3
+deploy_indicators/dev/uploads/populated_area_km2_next_gen_upload: data/out/csv/populated_area_km2_next_gen.csv.gz | deploy_indicators/dev/uploads ## upload populated_area_km2_next_gen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_area_km2_next_gen.csv.gz "populated_area_km2_next_gen" db/table/kontur_population_h3
 	touch $@
 
-deploy_indicators/dev/uploads/population_upload: data/out/csv/population.csv | deploy_indicators/dev/uploads ## upload population to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population.csv "population" db/table/kontur_population_v5_h3
+deploy_indicators/dev/uploads/population_upload: data/out/csv/population.csv.gz | deploy_indicators/dev/uploads ## upload population to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/population.csv.gz "population" db/table/kontur_population_v5_h3
 	touch $@
 
-deploy_indicators/dev/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv | deploy_indicators/dev/uploads ## upload populated_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_area_km2.csv "populated_area_km2" db/table/kontur_population_v5_h3
+deploy_indicators/dev/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv.gz | deploy_indicators/dev/uploads ## upload populated_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_area_km2.csv.gz "populated_area_km2" db/table/kontur_population_v5_h3
 	touch $@
 
-deploy_indicators/dev/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/dev/uploads ## upload hazardous_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hazardous_days_count.csv "hazardous_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/dev/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv.gz | deploy_indicators/dev/uploads ## upload hazardous_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hazardous_days_count.csv.gz "hazardous_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/dev/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/dev/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv.gz | deploy_indicators/dev/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mandays_maxtemp_over_32c_1c.csv.gz "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/dev/uploads ## upload man_distance_to_fire_brigade to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
+deploy_indicators/dev/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv.gz | deploy_indicators/dev/uploads ## upload man_distance_to_fire_brigade to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_fire_brigade.csv.gz "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
 	touch $@
 
-deploy_indicators/dev/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/dev/uploads ## upload food_shops_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/food_shops_count.csv "food_shops_count" db/table/osm_places_food_shops_h3
+deploy_indicators/dev/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv.gz | deploy_indicators/dev/uploads ## upload food_shops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/food_shops_count.csv.gz "food_shops_count" db/table/osm_places_food_shops_h3
 	touch $@
 
-deploy_indicators/dev/uploads/count_6_months_upload: data/out/csv/count_6_months.csv | deploy_indicators/dev/uploads ## upload count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count_6_months.csv "count_6_months" db/table/osm_object_count_grid_h3
+deploy_indicators/dev/uploads/count_6_months_upload: data/out/csv/count_6_months.csv.gz | deploy_indicators/dev/uploads ## upload count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/count_6_months.csv.gz "count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/dev/uploads ## upload view_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count.csv "view_count" db/table/tile_logs_h3
+deploy_indicators/dev/uploads/view_count_upload: data/out/csv/view_count.csv.gz | deploy_indicators/dev/uploads ## upload view_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count.csv.gz "view_count" db/table/tile_logs_h3
 	touch $@
 
-deploy_indicators/dev/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/dev/uploads ## upload avgmax_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avgmax_ts.csv "avgmax_ts" db/table/osm_object_count_grid_h3
+deploy_indicators/dev/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv.gz | deploy_indicators/dev/uploads ## upload avgmax_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avgmax_ts.csv.gz "avgmax_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/max_ts_upload: data/out/csv/max_ts.csv | deploy_indicators/dev/uploads ## upload max_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_ts.csv "max_ts" db/table/osm_object_count_grid_h3
+deploy_indicators/dev/uploads/max_ts_upload: data/out/csv/max_ts.csv.gz | deploy_indicators/dev/uploads ## upload max_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_ts.csv.gz "max_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_indicators/dev/uploads ## upload min_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_ts.csv "min_ts" db/table/osm_object_count_grid_h3
+deploy_indicators/dev/uploads/min_ts_upload: data/out/csv/min_ts.csv.gz | deploy_indicators/dev/uploads ## upload min_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_ts.csv.gz "min_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/dev/uploads ## upload osm_users to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_users.csv "osm_users" db/table/osm_user_count_grid_h3
+deploy_indicators/dev/uploads/osm_users_upload: data/out/csv/osm_users.csv.gz | deploy_indicators/dev/uploads ## upload osm_users to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_users.csv.gz "osm_users" db/table/osm_user_count_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/dev/uploads ## upload building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_count.csv "building_count" db/table/osm_object_count_grid_h3
+deploy_indicators/dev/uploads/building_count_upload: data/out/csv/building_count.csv.gz | deploy_indicators/dev/uploads ## upload building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_count.csv.gz "building_count" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv | deploy_indicators/dev/uploads ## upload building_count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_count_6_months.csv "building_count_6_months" db/table/osm_object_count_grid_h3
+deploy_indicators/dev/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv.gz | deploy_indicators/dev/uploads ## upload building_count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_count_6_months.csv.gz "building_count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/highway_length_upload: data/out/csv/highway_length.csv | deploy_indicators/dev/uploads ## upload highway_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length.csv "highway_length" db/table/osm_road_segments_h3
+deploy_indicators/dev/uploads/highway_length_upload: data/out/csv/highway_length.csv.gz | deploy_indicators/dev/uploads ## upload highway_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length.csv.gz "highway_length" db/table/osm_road_segments_h3
 	touch $@
 
-deploy_indicators/dev/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv | deploy_indicators/dev/uploads ## upload highway_length_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_6_months.csv "highway_length_6_months" db/table/osm_road_segments_6_months_h3
+deploy_indicators/dev/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv.gz | deploy_indicators/dev/uploads ## upload highway_length_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/highway_length_6_months.csv.gz "highway_length_6_months" db/table/osm_road_segments_6_months_h3
 	touch $@
 
-deploy_indicators/dev/uploads/total_hours_upload: data/out/csv/total_hours.csv | deploy_indicators/dev/uploads ## upload total_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_hours.csv "total_hours" db/table/user_hours_h3
+deploy_indicators/dev/uploads/total_hours_upload: data/out/csv/total_hours.csv.gz | deploy_indicators/dev/uploads ## upload total_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_hours.csv.gz "total_hours" db/table/user_hours_h3
 	touch $@
 
-deploy_indicators/dev/uploads/local_hours_upload: data/out/csv/local_hours.csv | deploy_indicators/dev/uploads ## upload local_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/local_hours.csv "local_hours" db/table/user_hours_h3
+deploy_indicators/dev/uploads/local_hours_upload: data/out/csv/local_hours.csv.gz | deploy_indicators/dev/uploads ## upload local_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/local_hours.csv.gz "local_hours" db/table/user_hours_h3
 	touch $@
 
-deploy_indicators/dev/uploads/forest_upload: data/out/csv/forest.csv | deploy_indicators/dev/uploads ## upload forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/forest.csv "forest" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/forest_upload: data/out/csv/forest.csv.gz | deploy_indicators/dev/uploads ## upload forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/forest.csv.gz "forest" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv | deploy_indicators/dev/uploads ## upload evergreen_needle_leaved_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv.gz | deploy_indicators/dev/uploads ## upload evergreen_needle_leaved_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/evergreen_needle_leaved_forest.csv.gz "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/shrubs_upload: data/out/csv/shrubs.csv | deploy_indicators/dev/uploads ## upload shrubs to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/shrubs.csv "shrubs" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/shrubs_upload: data/out/csv/shrubs.csv.gz | deploy_indicators/dev/uploads ## upload shrubs to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/shrubs.csv.gz "shrubs" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/herbage_upload: data/out/csv/herbage.csv | deploy_indicators/dev/uploads ## upload herbage to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/herbage.csv "herbage" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/herbage_upload: data/out/csv/herbage.csv.gz | deploy_indicators/dev/uploads ## upload herbage to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/herbage.csv.gz "herbage" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv | deploy_indicators/dev/uploads ## upload unknown_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/unknown_forest.csv "unknown_forest" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv.gz | deploy_indicators/dev/uploads ## upload unknown_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/unknown_forest.csv.gz "unknown_forest" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/cropland_upload: data/out/csv/cropland.csv | deploy_indicators/dev/uploads ## upload cropland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/cropland.csv "cropland" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/cropland_upload: data/out/csv/cropland.csv.gz | deploy_indicators/dev/uploads ## upload cropland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/cropland.csv.gz "cropland" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/wetland_upload: data/out/csv/wetland.csv | deploy_indicators/dev/uploads ## upload wetland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wetland.csv "wetland" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/wetland_upload: data/out/csv/wetland.csv.gz | deploy_indicators/dev/uploads ## upload wetland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wetland.csv.gz "wetland" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv | deploy_indicators/dev/uploads ## upload moss_lichen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/moss_lichen.csv "moss_lichen" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv.gz | deploy_indicators/dev/uploads ## upload moss_lichen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/moss_lichen.csv.gz "moss_lichen" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv | deploy_indicators/dev/uploads ## upload bare_vegetation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/bare_vegetation.csv "bare_vegetation" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv.gz | deploy_indicators/dev/uploads ## upload bare_vegetation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/bare_vegetation.csv.gz "bare_vegetation" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/builtup_upload: data/out/csv/builtup.csv | deploy_indicators/dev/uploads ## upload builtup to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/builtup.csv "builtup" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/builtup_upload: data/out/csv/builtup.csv.gz | deploy_indicators/dev/uploads ## upload builtup to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/builtup.csv.gz "builtup" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/snow_ice_upload: data/out/csv/snow_ice.csv | deploy_indicators/dev/uploads ## upload snow_ice to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/snow_ice.csv "snow_ice" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/snow_ice_upload: data/out/csv/snow_ice.csv.gz | deploy_indicators/dev/uploads ## upload snow_ice to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/snow_ice.csv.gz "snow_ice" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/permanent_water_upload: data/out/csv/permanent_water.csv | deploy_indicators/dev/uploads ## upload permanent_water to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/permanent_water.csv "permanent_water" db/table/copernicus_landcover_h3
+deploy_indicators/dev/uploads/permanent_water_upload: data/out/csv/permanent_water.csv.gz | deploy_indicators/dev/uploads ## upload permanent_water to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/permanent_water.csv.gz "permanent_water" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/dev/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicators/dev/uploads ## upload gdp to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gdp.csv "gdp" db/table/gdp_h3
+deploy_indicators/dev/uploads/gdp_upload: data/out/csv/gdp.csv.gz | deploy_indicators/dev/uploads ## upload gdp to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gdp.csv.gz "gdp" db/table/gdp_h3
 	touch $@
 
-deploy_indicators/dev/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/dev/uploads ## upload total_building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_building_count.csv "total_building_count" db/table/building_count_grid_h3
+deploy_indicators/dev/uploads/total_building_count_upload: data/out/csv/total_building_count.csv.gz | deploy_indicators/dev/uploads ## upload total_building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_building_count.csv.gz "total_building_count" db/table/building_count_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/dev/uploads ## upload wildfires to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfires.csv "wildfires" db/table/global_fires_stat_h3
+deploy_indicators/dev/uploads/wildfires_upload: data/out/csv/wildfires.csv.gz | deploy_indicators/dev/uploads ## upload wildfires to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfires.csv.gz "wildfires" db/table/global_fires_stat_h3
 	touch $@
 
-deploy_indicators/dev/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/dev/uploads ## upload earthquake_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/earthquake_days_count.csv "earthquake_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/dev/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv.gz | deploy_indicators/dev/uploads ## upload earthquake_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/earthquake_days_count.csv.gz "earthquake_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/dev/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv | deploy_indicators/dev/uploads ## upload drought_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drought_days_count.csv "drought_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/dev/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv.gz | deploy_indicators/dev/uploads ## upload drought_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drought_days_count.csv.gz "drought_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/dev/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv | deploy_indicators/dev/uploads ## upload cyclone_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/cyclone_days_count.csv "cyclone_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/dev/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv.gz | deploy_indicators/dev/uploads ## upload cyclone_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/cyclone_days_count.csv.gz "cyclone_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/dev/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv | deploy_indicators/dev/uploads ## upload wildfire_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfire_days_count.csv "wildfire_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/dev/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv.gz | deploy_indicators/dev/uploads ## upload wildfire_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/wildfire_days_count.csv.gz "wildfire_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/dev/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv | deploy_indicators/dev/uploads ## upload volcano_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/volcano_days_count.csv "volcano_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/dev/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv.gz | deploy_indicators/dev/uploads ## upload volcano_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/volcano_days_count.csv.gz "volcano_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/dev/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv | deploy_indicators/dev/uploads ## upload flood_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/dev/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv.gz | deploy_indicators/dev/uploads ## upload flood_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/flood_days_count.csv.gz "flood_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/dev/uploads ## upload avg_slope_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/dev/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv.gz | deploy_indicators/dev/uploads ## upload avg_slope_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_slope_gebco_2022.csv.gz "avg_slope_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
-deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/dev/uploads ## upload avg_elevation_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/dev/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv.gz | deploy_indicators/dev/uploads ## upload avg_elevation_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_elevation_gebco_2022.csv.gz "avg_elevation_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
-deploy_indicators/dev/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/dev/uploads ## upload industrial_area to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/industrial_area.csv "industrial_area" db/table/osm_landuse_industrial_h3
+deploy_indicators/dev/uploads/industrial_area_upload: data/out/csv/industrial_area.csv.gz | deploy_indicators/dev/uploads ## upload industrial_area to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/industrial_area.csv.gz "industrial_area" db/table/osm_landuse_industrial_h3
 	touch $@
 
-deploy_indicators/dev/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv | deploy_indicators/dev/uploads ## upload avg_ndvi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_ndvi.csv "avg_ndvi" db/table/ndvi_2019_06_10_h3
+deploy_indicators/dev/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv.gz | deploy_indicators/dev/uploads ## upload avg_ndvi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_ndvi.csv.gz "avg_ndvi" db/table/ndvi_2019_06_10_h3
 	touch $@
 
-deploy_indicators/dev/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv | deploy_indicators/dev/uploads ## upload volcanos_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/volcanos_count.csv "volcanos_count" db/table/osm_volcanos_h3
+deploy_indicators/dev/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv.gz | deploy_indicators/dev/uploads ## upload volcanos_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/volcanos_count.csv.gz "volcanos_count" db/table/osm_volcanos_h3
 	touch $@
 
-deploy_indicators/dev/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv | deploy_indicators/dev/uploads ## upload pop_under_5_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_under_5_total.csv "pop_under_5_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/dev/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv.gz | deploy_indicators/dev/uploads ## upload pop_under_5_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_under_5_total.csv.gz "pop_under_5_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/dev/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv | deploy_indicators/dev/uploads ## upload pop_over_65_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_over_65_total.csv "pop_over_65_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/dev/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv.gz | deploy_indicators/dev/uploads ## upload pop_over_65_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_over_65_total.csv.gz "pop_over_65_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/dev/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv | deploy_indicators/dev/uploads ## upload poverty_families_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/poverty_families_total.csv "poverty_families_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/dev/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv.gz | deploy_indicators/dev/uploads ## upload poverty_families_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/poverty_families_total.csv.gz "poverty_families_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/dev/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv | deploy_indicators/dev/uploads ## upload pop_disability_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_disability_total.csv "pop_disability_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/dev/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv.gz | deploy_indicators/dev/uploads ## upload pop_disability_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_disability_total.csv.gz "pop_disability_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/dev/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv | deploy_indicators/dev/uploads ## upload pop_not_well_eng_speak to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
+deploy_indicators/dev/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv.gz | deploy_indicators/dev/uploads ## upload pop_not_well_eng_speak to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_not_well_eng_speak.csv.gz "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/dev/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv | deploy_indicators/dev/uploads ## upload pop_without_car to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_without_car.csv "pop_without_car" db/table/us_census_tracts_stats_h3
+deploy_indicators/dev/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv.gz | deploy_indicators/dev/uploads ## upload pop_without_car to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/pop_without_car.csv.gz "pop_without_car" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv | deploy_indicators/dev/uploads ## upload days_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/dev/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv.gz | deploy_indicators/dev/uploads ## upload days_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxtemp_over_32c_1c.csv.gz "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/dev/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv | deploy_indicators/dev/uploads ## upload days_maxtemp_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
+deploy_indicators/dev/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv.gz | deploy_indicators/dev/uploads ## upload days_maxtemp_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxtemp_over_32c_2c.csv.gz "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv | deploy_indicators/dev/uploads ## upload days_mintemp_above_25c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/dev/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv.gz | deploy_indicators/dev/uploads ## upload days_mintemp_above_25c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_mintemp_above_25c_1c.csv.gz "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/dev/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv | deploy_indicators/dev/uploads ## upload days_mintemp_above_25c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
+deploy_indicators/dev/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv.gz | deploy_indicators/dev/uploads ## upload days_mintemp_above_25c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_mintemp_above_25c_2c.csv.gz "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv | deploy_indicators/dev/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv.gz | deploy_indicators/dev/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxwetbulb_over_32c_1c.csv.gz "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv | deploy_indicators/dev/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
+deploy_indicators/dev/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv.gz | deploy_indicators/dev/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/days_maxwetbulb_over_32c_2c.csv.gz "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/dev/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/dev/uploads ## upload man_distance_to_hospital to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" db/table/isodist_hospitals_h3
+deploy_indicators/dev/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv.gz | deploy_indicators/dev/uploads ## upload man_distance_to_hospital to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_hospital.csv.gz "man_distance_to_hospital" db/table/isodist_hospitals_h3
 	touch $@
 
-deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/dev/uploads ## upload man_distance_to_bomb_shelters to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
+deploy_indicators/dev/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv.gz | deploy_indicators/dev/uploads ## upload man_distance_to_bomb_shelters to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_bomb_shelters.csv.gz "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
 	touch $@
 
-deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/dev/uploads ## upload man_distance_to_charging_stations to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
+deploy_indicators/dev/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv.gz | deploy_indicators/dev/uploads ## upload man_distance_to_charging_stations to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/man_distance_to_charging_stations.csv.gz "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
 	touch $@
 
-deploy_indicators/dev/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/dev/uploads ## upload total_road_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_road_length.csv "total_road_length" db/table/total_road_length_h3
+deploy_indicators/dev/uploads/total_road_length_upload: data/out/csv/total_road_length.csv.gz | deploy_indicators/dev/uploads ## upload total_road_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/total_road_length.csv.gz "total_road_length" db/table/total_road_length_h3
 	touch $@
 
-deploy_indicators/dev/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/dev/uploads ## upload view_count_bf2402 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402_h3
+deploy_indicators/dev/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv.gz | deploy_indicators/dev/uploads ## upload view_count_bf2402 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/view_count_bf2402.csv.gz "view_count_bf2402" db/table/tile_logs_bf2402_h3
 	touch $@
 
-deploy_indicators/dev/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/dev/uploads ## upload powerlines to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines.csv "powerlines" db/table/facebook_medium_voltage_distribution_h3
+deploy_indicators/dev/uploads/powerlines_upload: data/out/csv/powerlines.csv.gz | deploy_indicators/dev/uploads ## upload powerlines to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines.csv.gz "powerlines" db/table/facebook_medium_voltage_distribution_h3
 	touch $@
 
-deploy_indicators/dev/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/dev/uploads ## upload eatery_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/eatery_count.csv "eatery_count" db/table/osm_places_eatery_h3
+deploy_indicators/dev/uploads/eatery_count_upload: data/out/csv/eatery_count.csv.gz | deploy_indicators/dev/uploads ## upload eatery_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/eatery_count.csv.gz "eatery_count" db/table/osm_places_eatery_h3
 	touch $@
 
-deploy_indicators/dev/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv | deploy_indicators/dev/uploads ## upload night_lights_intensity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/night_lights_intensity.csv "night_lights_intensity" db/table/night_lights_h3
+deploy_indicators/dev/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv.gz | deploy_indicators/dev/uploads ## upload night_lights_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/night_lights_intensity.csv.gz "night_lights_intensity" db/table/night_lights_h3
 	touch $@
 
-deploy_indicators/dev/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv | deploy_indicators/dev/uploads ## upload mapswipe_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
+deploy_indicators/dev/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv.gz | deploy_indicators/dev/uploads ## upload mapswipe_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/mapswipe_area_km2.csv.gz "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
 	touch $@
 
-deploy_indicators/dev/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv | deploy_indicators/dev/uploads ## upload gsa_ghi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gsa_ghi.csv "gsa_ghi" db/table/global_solar_atlas_h3
+deploy_indicators/dev/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv.gz | deploy_indicators/dev/uploads ## upload gsa_ghi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gsa_ghi.csv.gz "gsa_ghi" db/table/global_solar_atlas_h3
 	touch $@
 
-deploy_indicators/dev/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_avg_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/dev/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv.gz | deploy_indicators/dev/uploads ## upload worldclim_avg_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_avg_temperature.csv.gz "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/dev/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_min_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/dev/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv.gz | deploy_indicators/dev/uploads ## upload worldclim_min_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_min_temperature.csv.gz "worldclim_min_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/dev/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_max_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/dev/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv.gz | deploy_indicators/dev/uploads ## upload worldclim_max_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_max_temperature.csv.gz "worldclim_max_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/dev/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv | deploy_indicators/dev/uploads ## upload worldclim_amp_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/dev/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv.gz | deploy_indicators/dev/uploads ## upload worldclim_amp_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldclim_amp_temperature.csv.gz "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/dev/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv | deploy_indicators/dev/uploads ## upload powerlines_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" db/table/proximities_h3
+deploy_indicators/dev/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv.gz | deploy_indicators/dev/uploads ## upload powerlines_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/powerlines_proximity_m.csv.gz "powerlines_proximity_m" db/table/proximities_h3
 	touch $@
 
-deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/dev/uploads ## upload waste_basket_coverage_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_basket_coverage_h3
+deploy_indicators/dev/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv.gz | deploy_indicators/dev/uploads ## upload waste_basket_coverage_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/waste_basket_coverage_area_km2.csv.gz "waste_basket_coverage_area_km2" db/table/waste_basket_coverage_h3
 	touch $@
 
-deploy_indicators/dev/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/dev/uploads ## upload populated_areas_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" db/table/proximities_h3
+deploy_indicators/dev/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv.gz | deploy_indicators/dev/uploads ## upload populated_areas_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/populated_areas_proximity_m.csv.gz "populated_areas_proximity_m" db/table/proximities_h3
 	touch $@
 
-deploy_indicators/dev/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv | deploy_indicators/dev/uploads ## upload power_substations_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" db/table/proximities_h3
+deploy_indicators/dev/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv.gz | deploy_indicators/dev/uploads ## upload power_substations_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/power_substations_proximity_m.csv.gz "power_substations_proximity_m" db/table/proximities_h3
 	touch $@
 
-deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | deploy_indicators/dev/uploads ## upload solar_farms_placement_suitability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
+deploy_indicators/dev/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv.gz | deploy_indicators/dev/uploads ## upload solar_farms_placement_suitability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_farms_placement_suitability.csv.gz "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
 	touch $@
 
-deploy_indicators/dev/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/dev/uploads ## upload residential to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/residential.csv "residential" db/table/residential_pop_h3
+deploy_indicators/dev/uploads/residential_upload: data/out/csv/residential.csv.gz | deploy_indicators/dev/uploads ## upload residential to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/residential.csv.gz "residential" db/table/residential_pop_h3
 	touch $@
 
-deploy_indicators/dev/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/dev/uploads ## upload solar_power_plants to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
+deploy_indicators/dev/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv.gz | deploy_indicators/dev/uploads ## upload solar_power_plants to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/solar_power_plants.csv.gz "solar_power_plants" db/table/existing_solar_power_panels_h3
 	touch $@
 
-deploy_indicators/dev/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/dev/uploads ## upload safety_index to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
+deploy_indicators/dev/uploads/safety_index_upload: data/out/csv/safety_index.csv.gz | deploy_indicators/dev/uploads ## upload safety_index to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/safety_index.csv.gz "safety_index" db/table/safety_index_h3
 	touch $@
 
-deploy_indicators/dev/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv | deploy_indicators/dev/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+deploy_indicators/dev/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv.gz | deploy_indicators/dev/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_forest_canopy_height.csv.gz "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
-deploy_indicators/dev/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv | deploy_indicators/dev/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+deploy_indicators/dev/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv.gz | deploy_indicators/dev/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_forest_canopy_height.csv.gz "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
-deploy_indicators/dev/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv | deploy_indicators/dev/uploads ## upload worldbank_tax_rate to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
+deploy_indicators/dev/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv.gz | deploy_indicators/dev/uploads ## upload worldbank_tax_rate to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldbank_tax_rate.csv.gz "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
 	touch $@
 
-deploy_indicators/dev/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv | deploy_indicators/dev/uploads ## upload years_to_naturalisation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
+deploy_indicators/dev/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv.gz | deploy_indicators/dev/uploads ## upload years_to_naturalisation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/years_to_naturalisation.csv.gz "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
-deploy_indicators/dev/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv | deploy_indicators/dev/uploads ## upload multiple_citizenship to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/multiple_citizenship.csv "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
+deploy_indicators/dev/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv.gz | deploy_indicators/dev/uploads ## upload multiple_citizenship to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/multiple_citizenship.csv.gz "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
-deploy_indicators/dev/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv | deploy_indicators/dev/uploads ## upload ghs_max_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" db/table/ghs_building_height_grid_h3
+deploy_indicators/dev/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv.gz | deploy_indicators/dev/uploads ## upload ghs_max_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ghs_max_building_height.csv.gz "ghs_max_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv | deploy_indicators/dev/uploads ## upload ghs_avg_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
+deploy_indicators/dev/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv.gz | deploy_indicators/dev/uploads ## upload ghs_avg_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/ghs_avg_building_height.csv.gz "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
-deploy_indicators/dev/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv | deploy_indicators/dev/uploads ## upload max_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" db/table/osm_building_levels_h3
+deploy_indicators/dev/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv.gz | deploy_indicators/dev/uploads ## upload max_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_building_levels.csv.gz "max_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
-deploy_indicators/dev/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv | deploy_indicators/dev/uploads ## upload avg_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" db/table/osm_building_levels_h3
+deploy_indicators/dev/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv.gz | deploy_indicators/dev/uploads ## upload avg_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_building_levels.csv.gz "avg_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv | deploy_indicators/dev/uploads ## upload osm_hotels_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_hotels_count.csv "osm_hotels_count" db/table/osm_hotels_h3
+deploy_indicators/dev/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_hotels_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_hotels_count.csv.gz "osm_hotels_count" db/table/osm_hotels_h3
 	touch $@
 
-deploy_indicators/dev/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv | deploy_indicators/dev/uploads ## upload max_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" db/table/osm_hotels_h3
+deploy_indicators/dev/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv.gz | deploy_indicators/dev/uploads ## upload max_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_hotels_assesment.csv.gz "max_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
-deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv | deploy_indicators/dev/uploads ## upload avg_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" db/table/osm_hotels_h3
+deploy_indicators/dev/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv.gz | deploy_indicators/dev/uploads ## upload avg_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_hotels_assesment.csv.gz "avg_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/dev/uploads ## upload osm_historical_sites_and_museums_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
+deploy_indicators/dev/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_historical_sites_and_museums_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_historical_sites_and_museums_count.csv.gz "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/dev/uploads ## upload osm_art_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" db/table/osm_culture_venues_h3
+deploy_indicators/dev/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_art_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_art_venues_count.csv.gz "osm_art_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv | deploy_indicators/dev/uploads ## upload osm_entertainment_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
+deploy_indicators/dev/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_entertainment_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_entertainment_venues_count.csv.gz "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv | deploy_indicators/dev/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
+deploy_indicators/dev/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_cultural_and_comunity_centers_count.csv.gz "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/dev/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv | deploy_indicators/dev/uploads ## upload worldbank_inflation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldbank_inflation.csv "worldbank_inflation" db/table/worldbank_inflation_h3
+deploy_indicators/dev/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv.gz | deploy_indicators/dev/uploads ## upload worldbank_inflation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/worldbank_inflation.csv.gz "worldbank_inflation" db/table/worldbank_inflation_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv | deploy_indicators/dev/uploads ## upload osm_pharmacy_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" db/table/osm_pharmacy_h3
+deploy_indicators/dev/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_pharmacy_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_pharmacy_count.csv.gz "osm_pharmacy_count" db/table/osm_pharmacy_h3
 	touch $@
 
-deploy_indicators/dev/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv | deploy_indicators/dev/uploads ## upload conflict_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" db/table/idmc_country_2023_h3
+deploy_indicators/dev/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv.gz | deploy_indicators/dev/uploads ## upload conflict_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/conflict_stock_displacement.csv.gz "conflict_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/dev/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv | deploy_indicators/dev/uploads ## upload disaster_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" db/table/idmc_country_2023_h3
+deploy_indicators/dev/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv.gz | deploy_indicators/dev/uploads ## upload disaster_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/disaster_stock_displacement.csv.gz "disaster_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/dev/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv | deploy_indicators/dev/uploads ## upload conflict_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" db/table/idmc_country_2023_h3
+deploy_indicators/dev/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv.gz | deploy_indicators/dev/uploads ## upload conflict_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/conflict_internal_displacements.csv.gz "conflict_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/dev/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv | deploy_indicators/dev/uploads ## upload disaster_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" db/table/idmc_country_2023_h3
+deploy_indicators/dev/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv.gz | deploy_indicators/dev/uploads ## upload disaster_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/disaster_internal_displacements.csv.gz "disaster_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/dev/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv | deploy_indicators/dev/uploads ## upload hdi_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hdi_2022.csv "hdi_2022" db/table/humanitarian_dev_index_2022_h3
+deploy_indicators/dev/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv.gz | deploy_indicators/dev/uploads ## upload hdi_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hdi_2022.csv.gz "hdi_2022" db/table/humanitarian_dev_index_2022_h3
 	touch $@
 
-deploy_indicators/dev/uploads/inform_risk_upload: data/out/csv/inform_risk.csv | deploy_indicators/dev/uploads ## upload inform_risk to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/inform_risk.csv "inform_risk" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/inform_risk_upload: data/out/csv/inform_risk.csv.gz | deploy_indicators/dev/uploads ## upload inform_risk to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/inform_risk.csv.gz "inform_risk" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv | deploy_indicators/dev/uploads ## upload hazard_and_exposure to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hazard_and_exposure.csv "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv.gz | deploy_indicators/dev/uploads ## upload hazard_and_exposure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/hazard_and_exposure.csv.gz "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv | deploy_indicators/dev/uploads ## upload natural_0_to_10 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/natural_0_to_10.csv "natural_0_to_10" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv.gz | deploy_indicators/dev/uploads ## upload natural_0_to_10 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/natural_0_to_10.csv.gz "natural_0_to_10" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/earthquake_upload: data/out/csv/earthquake.csv | deploy_indicators/dev/uploads ## upload earthquake to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/earthquake.csv "earthquake" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/earthquake_upload: data/out/csv/earthquake.csv.gz | deploy_indicators/dev/uploads ## upload earthquake to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/earthquake.csv.gz "earthquake" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/river_flood_upload: data/out/csv/river_flood.csv | deploy_indicators/dev/uploads ## upload river_flood to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/river_flood.csv "river_flood" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/river_flood_upload: data/out/csv/river_flood.csv.gz | deploy_indicators/dev/uploads ## upload river_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/river_flood.csv.gz "river_flood" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/tsunami_upload: data/out/csv/tsunami.csv | deploy_indicators/dev/uploads ## upload tsunami to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/tsunami.csv "tsunami" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/tsunami_upload: data/out/csv/tsunami.csv.gz | deploy_indicators/dev/uploads ## upload tsunami to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/tsunami.csv.gz "tsunami" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv | deploy_indicators/dev/uploads ## upload tropical_cyclone to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/tropical_cyclone.csv "tropical_cyclone" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv.gz | deploy_indicators/dev/uploads ## upload tropical_cyclone to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/tropical_cyclone.csv.gz "tropical_cyclone" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv | deploy_indicators/dev/uploads ## upload coastal_flood to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/coastal_flood.csv "coastal_flood" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv.gz | deploy_indicators/dev/uploads ## upload coastal_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/coastal_flood.csv.gz "coastal_flood" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/drought_upload: data/out/csv/drought.csv | deploy_indicators/dev/uploads ## upload drought to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drought.csv "drought" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/drought_upload: data/out/csv/drought.csv.gz | deploy_indicators/dev/uploads ## upload drought to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drought.csv.gz "drought" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/epidemic_upload: data/out/csv/epidemic.csv | deploy_indicators/dev/uploads ## upload epidemic to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/epidemic.csv "epidemic" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/epidemic_upload: data/out/csv/epidemic.csv.gz | deploy_indicators/dev/uploads ## upload epidemic to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/epidemic.csv.gz "epidemic" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/human_upload: data/out/csv/human.csv | deploy_indicators/dev/uploads ## upload human to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/human.csv "human" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/human_upload: data/out/csv/human.csv.gz | deploy_indicators/dev/uploads ## upload human to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/human.csv.gz "human" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv | deploy_indicators/dev/uploads ## upload projected_conflict_probability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/projected_conflict_probability.csv "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv.gz | deploy_indicators/dev/uploads ## upload projected_conflict_probability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/projected_conflict_probability.csv.gz "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv | deploy_indicators/dev/uploads ## upload current_conflict_intensity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/current_conflict_intensity.csv "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv.gz | deploy_indicators/dev/uploads ## upload current_conflict_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/current_conflict_intensity.csv.gz "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/vulnerability_upload: data/out/csv/vulnerability.csv | deploy_indicators/dev/uploads ## upload vulnerability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerability.csv "vulnerability" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/vulnerability_upload: data/out/csv/vulnerability.csv.gz | deploy_indicators/dev/uploads ## upload vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerability.csv.gz "vulnerability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv | deploy_indicators/dev/uploads ## upload socio_economic_vulnerability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/socio_economic_vulnerability.csv "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv.gz | deploy_indicators/dev/uploads ## upload socio_economic_vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/socio_economic_vulnerability.csv.gz "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv | deploy_indicators/dev/uploads ## upload development_and_deprivation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/development_and_deprivation.csv "development_and_deprivation" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv.gz | deploy_indicators/dev/uploads ## upload development_and_deprivation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/development_and_deprivation.csv.gz "development_and_deprivation" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/inequality_upload: data/out/csv/inequality.csv | deploy_indicators/dev/uploads ## upload inequality to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/inequality.csv "inequality" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/inequality_upload: data/out/csv/inequality.csv.gz | deploy_indicators/dev/uploads ## upload inequality to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/inequality.csv.gz "inequality" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv | deploy_indicators/dev/uploads ## upload economic_dependency to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/economic_dependency.csv "economic_dependency" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv.gz | deploy_indicators/dev/uploads ## upload economic_dependency to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/economic_dependency.csv.gz "economic_dependency" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv | deploy_indicators/dev/uploads ## upload vulnerable_groups to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerable_groups.csv "vulnerable_groups" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv.gz | deploy_indicators/dev/uploads ## upload vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/vulnerable_groups.csv.gz "vulnerable_groups" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv | deploy_indicators/dev/uploads ## upload uprooted_people to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/uprooted_people.csv "uprooted_people" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv.gz | deploy_indicators/dev/uploads ## upload uprooted_people to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/uprooted_people.csv.gz "uprooted_people" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/health_conditions_upload: data/out/csv/health_conditions.csv | deploy_indicators/dev/uploads ## upload health_conditions to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/health_conditions.csv "health_conditions" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/health_conditions_upload: data/out/csv/health_conditions.csv.gz | deploy_indicators/dev/uploads ## upload health_conditions to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/health_conditions.csv.gz "health_conditions" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/children_u5_upload: data/out/csv/children_u5.csv | deploy_indicators/dev/uploads ## upload children_u5 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/children_u5.csv "children_u5" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/children_u5_upload: data/out/csv/children_u5.csv.gz | deploy_indicators/dev/uploads ## upload children_u5 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/children_u5.csv.gz "children_u5" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv | deploy_indicators/dev/uploads ## upload recent_shocks to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/recent_shocks.csv "recent_shocks" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv.gz | deploy_indicators/dev/uploads ## upload recent_shocks to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/recent_shocks.csv.gz "recent_shocks" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/food_security_upload: data/out/csv/food_security.csv | deploy_indicators/dev/uploads ## upload food_security to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/food_security.csv "food_security" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/food_security_upload: data/out/csv/food_security.csv.gz | deploy_indicators/dev/uploads ## upload food_security to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/food_security.csv.gz "food_security" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv | deploy_indicators/dev/uploads ## upload other_vulnerable_groups to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/other_vulnerable_groups.csv "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv.gz | deploy_indicators/dev/uploads ## upload other_vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/other_vulnerable_groups.csv.gz "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv | deploy_indicators/dev/uploads ## upload lack_of_coping_capacity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/lack_of_coping_capacity.csv "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv.gz | deploy_indicators/dev/uploads ## upload lack_of_coping_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/lack_of_coping_capacity.csv.gz "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/institutional_upload: data/out/csv/institutional.csv | deploy_indicators/dev/uploads ## upload institutional to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/institutional.csv "institutional" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/institutional_upload: data/out/csv/institutional.csv.gz | deploy_indicators/dev/uploads ## upload institutional to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/institutional.csv.gz "institutional" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/drr_upload: data/out/csv/drr.csv | deploy_indicators/dev/uploads ## upload drr to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drr.csv "drr" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/drr_upload: data/out/csv/drr.csv.gz | deploy_indicators/dev/uploads ## upload drr to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/drr.csv.gz "drr" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/governance_upload: data/out/csv/governance.csv | deploy_indicators/dev/uploads ## upload governance to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/governance.csv "governance" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/governance_upload: data/out/csv/governance.csv.gz | deploy_indicators/dev/uploads ## upload governance to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/governance.csv.gz "governance" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/infrastructure_upload: data/out/csv/infrastructure.csv | deploy_indicators/dev/uploads ## upload infrastructure to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/infrastructure.csv "infrastructure" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/infrastructure_upload: data/out/csv/infrastructure.csv.gz | deploy_indicators/dev/uploads ## upload infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/infrastructure.csv.gz "infrastructure" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/communication_upload: data/out/csv/communication.csv | deploy_indicators/dev/uploads ## upload communication to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/communication.csv "communication" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/communication_upload: data/out/csv/communication.csv.gz | deploy_indicators/dev/uploads ## upload communication to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/communication.csv.gz "communication" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv | deploy_indicators/dev/uploads ## upload physical_infrastructure to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/physical_infrastructure.csv "physical_infrastructure" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv.gz | deploy_indicators/dev/uploads ## upload physical_infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/physical_infrastructure.csv.gz "physical_infrastructure" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv | deploy_indicators/dev/uploads ## upload access_to_health_care to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/access_to_health_care.csv "access_to_health_care" db/table/inform_risk_profile_2025_h3
+deploy_indicators/dev/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv.gz | deploy_indicators/dev/uploads ## upload access_to_health_care to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/access_to_health_care.csv.gz "access_to_health_care" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_banks_count_upload: data/out/csv/osm_banks_count.csv | deploy_indicators/dev/uploads ## upload osm_banks_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_banks_count.csv "osm_banks_count" db/table/osm_financial_venues_h3
+deploy_indicators/dev/uploads/osm_banks_count_upload: data/out/csv/osm_banks_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_banks_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_banks_count.csv.gz "osm_banks_count" db/table/osm_financial_venues_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_atms_count_upload: data/out/csv/osm_atms_count.csv | deploy_indicators/dev/uploads ## upload osm_atms_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_atms_count.csv "osm_atms_count" db/table/osm_financial_venues_h3
+deploy_indicators/dev/uploads/osm_atms_count_upload: data/out/csv/osm_atms_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_atms_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_atms_count.csv.gz "osm_atms_count" db/table/osm_financial_venues_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_kindergartens_count_upload: data/out/csv/osm_kindergartens_count.csv | deploy_indicators/dev/uploads ## upload osm_kindergartens_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_kindergartens_count.csv "osm_kindergartens_count" db/table/osm_education_venues_h3
+deploy_indicators/dev/uploads/osm_kindergartens_count_upload: data/out/csv/osm_kindergartens_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_kindergartens_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_kindergartens_count.csv.gz "osm_kindergartens_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_schools_count_upload: data/out/csv/osm_schools_count.csv | deploy_indicators/dev/uploads ## upload osm_schools_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_schools_count.csv "osm_schools_count" db/table/osm_education_venues_h3
+deploy_indicators/dev/uploads/osm_schools_count_upload: data/out/csv/osm_schools_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_schools_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_schools_count.csv.gz "osm_schools_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_colleges_count_upload: data/out/csv/osm_colleges_count.csv | deploy_indicators/dev/uploads ## upload osm_colleges_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_colleges_count.csv "osm_colleges_count" db/table/osm_education_venues_h3
+deploy_indicators/dev/uploads/osm_colleges_count_upload: data/out/csv/osm_colleges_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_colleges_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_colleges_count.csv.gz "osm_colleges_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_universities_count_upload: data/out/csv/osm_universities_count.csv | deploy_indicators/dev/uploads ## upload osm_universities_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_universities_count.csv "osm_universities_count" db/table/osm_education_venues_h3
+deploy_indicators/dev/uploads/osm_universities_count_upload: data/out/csv/osm_universities_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_universities_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_universities_count.csv.gz "osm_universities_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_defibrillators_count_upload: data/out/csv/osm_defibrillators_count.csv | deploy_indicators/dev/uploads ## upload osm_defibrillators_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_defibrillators_count.csv "osm_defibrillators_count" db/table/osm_emergency_facilities_h3
+deploy_indicators/dev/uploads/osm_defibrillators_count_upload: data/out/csv/osm_defibrillators_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_defibrillators_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_defibrillators_count.csv.gz "osm_defibrillators_count" db/table/osm_emergency_facilities_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_airports_count_upload: data/out/csv/osm_airports_count.csv | deploy_indicators/dev/uploads ## upload osm_airports_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_airports_count.csv "osm_airports_count" db/table/osm_transport_facilities_h3
+deploy_indicators/dev/uploads/osm_airports_count_upload: data/out/csv/osm_airports_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_airports_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_airports_count.csv.gz "osm_airports_count" db/table/osm_transport_facilities_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_railway_stations_count_upload: data/out/csv/osm_railway_stations_count.csv | deploy_indicators/dev/uploads ## upload osm_railway_stations_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_railway_stations_count.csv "osm_railway_stations_count" db/table/osm_transport_facilities_h3
+deploy_indicators/dev/uploads/osm_railway_stations_count_upload: data/out/csv/osm_railway_stations_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_railway_stations_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_railway_stations_count.csv.gz "osm_railway_stations_count" db/table/osm_transport_facilities_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_public_transport_stops_count_upload: data/out/csv/osm_public_transport_stops_count.csv | deploy_indicators/dev/uploads ## upload osm_public_transport_stops_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_public_transport_stops_count.csv "osm_public_transport_stops_count" db/table/osm_transport_facilities_h3
+deploy_indicators/dev/uploads/osm_public_transport_stops_count_upload: data/out/csv/osm_public_transport_stops_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_public_transport_stops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_public_transport_stops_count.csv.gz "osm_public_transport_stops_count" db/table/osm_transport_facilities_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_car_parkings_capacity_upload: data/out/csv/osm_car_parkings_capacity.csv | deploy_indicators/dev/uploads ## upload osm_car_parkings_capacity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_car_parkings_capacity.csv "osm_car_parkings_capacity" db/table/osm_car_parkings_capacity_h3
+deploy_indicators/dev/uploads/osm_car_parkings_capacity_upload: data/out/csv/osm_car_parkings_capacity.csv.gz | deploy_indicators/dev/uploads ## upload osm_car_parkings_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_car_parkings_capacity.csv.gz "osm_car_parkings_capacity" db/table/osm_car_parkings_capacity_h3
 	touch $@
 
-deploy_indicators/dev/uploads/osm_heritage_sites_count_upload: data/out/csv/osm_heritage_sites_count.csv | deploy_indicators/dev/uploads ## upload osm_heritage_sites_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_heritage_sites_count.csv "osm_heritage_sites_count" db/table/osm_heritage_sites_h3
+deploy_indicators/dev/uploads/osm_heritage_sites_count_upload: data/out/csv/osm_heritage_sites_count.csv.gz | deploy_indicators/dev/uploads ## upload osm_heritage_sites_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_heritage_sites_count.csv.gz "osm_heritage_sites_count" db/table/osm_heritage_sites_h3
 	touch $@
 
-deploy_indicators/dev/uploads/min_osm_heritage_admin_level_upload: data/out/csv/min_osm_heritage_admin_level.csv | deploy_indicators/dev/uploads ## upload min_osm_heritage_admin_level to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_osm_heritage_admin_level.csv "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
+deploy_indicators/dev/uploads/min_osm_heritage_admin_level_upload: data/out/csv/min_osm_heritage_admin_level.csv.gz | deploy_indicators/dev/uploads ## upload min_osm_heritage_admin_level to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_osm_heritage_admin_level.csv.gz "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
 	touch $@
-deploy_indicators/dev/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv | deploy_indicators/dev/uploads ## upload foursquare_os_places_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/foursquare_os_places_count.csv "foursquare_os_places_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv.gz | deploy_indicators/dev/uploads ## upload foursquare_os_places_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/foursquare_os_places_count.csv.gz "foursquare_os_places_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/coffee_shops_fsq_count_upload: data/out/csv/coffee_shops_fsq_count.csv | deploy_indicators/dev/uploads ## upload coffee_shops_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/coffee_shops_fsq_count.csv "coffee_shops_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/coffee_shops_fsq_count_upload: data/out/csv/coffee_shops_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload coffee_shops_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/coffee_shops_fsq_count.csv.gz "coffee_shops_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/kebab_restaurants_fsq_count_upload: data/out/csv/kebab_restaurants_fsq_count.csv | deploy_indicators/dev/uploads ## upload kebab_restaurants_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/kebab_restaurants_fsq_count.csv "kebab_restaurants_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/kebab_restaurants_fsq_count_upload: data/out/csv/kebab_restaurants_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload kebab_restaurants_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/kebab_restaurants_fsq_count.csv.gz "kebab_restaurants_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/business_and_professional_services_fsq_count_upload: data/out/csv/business_and_professional_services_fsq_count.csv | deploy_indicators/dev/uploads ## upload business_and_professional_services_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/business_and_professional_services_fsq_count.csv "business_and_professional_services_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/business_and_professional_services_fsq_count_upload: data/out/csv/business_and_professional_services_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload business_and_professional_services_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/business_and_professional_services_fsq_count.csv.gz "business_and_professional_services_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/dining_and_drinking_fsq_count_upload: data/out/csv/dining_and_drinking_fsq_count.csv | deploy_indicators/dev/uploads ## upload dining_and_drinking_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/dining_and_drinking_fsq_count.csv "dining_and_drinking_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/dining_and_drinking_fsq_count_upload: data/out/csv/dining_and_drinking_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload dining_and_drinking_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/dining_and_drinking_fsq_count.csv.gz "dining_and_drinking_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/retail_fsq_count_upload: data/out/csv/retail_fsq_count.csv | deploy_indicators/dev/uploads ## upload retail_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/retail_fsq_count.csv "retail_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/retail_fsq_count_upload: data/out/csv/retail_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload retail_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/retail_fsq_count.csv.gz "retail_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/community_and_government_fsq_count_upload: data/out/csv/community_and_government_fsq_count.csv | deploy_indicators/dev/uploads ## upload community_and_government_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/community_and_government_fsq_count.csv "community_and_government_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/community_and_government_fsq_count_upload: data/out/csv/community_and_government_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload community_and_government_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/community_and_government_fsq_count.csv.gz "community_and_government_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/travel_and_transportation_fsq_count_upload: data/out/csv/travel_and_transportation_fsq_count.csv | deploy_indicators/dev/uploads ## upload travel_and_transportation_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/travel_and_transportation_fsq_count.csv "travel_and_transportation_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/travel_and_transportation_fsq_count_upload: data/out/csv/travel_and_transportation_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload travel_and_transportation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/travel_and_transportation_fsq_count.csv.gz "travel_and_transportation_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/landmarks_and_outdoors_fsq_count_upload: data/out/csv/landmarks_and_outdoors_fsq_count.csv | deploy_indicators/dev/uploads ## upload landmarks_and_outdoors_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/landmarks_and_outdoors_fsq_count.csv "landmarks_and_outdoors_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/landmarks_and_outdoors_fsq_count_upload: data/out/csv/landmarks_and_outdoors_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload landmarks_and_outdoors_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/landmarks_and_outdoors_fsq_count.csv.gz "landmarks_and_outdoors_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/health_and_medicine_fsq_count_upload: data/out/csv/health_and_medicine_fsq_count.csv | deploy_indicators/dev/uploads ## upload health_and_medicine_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/health_and_medicine_fsq_count.csv "health_and_medicine_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/health_and_medicine_fsq_count_upload: data/out/csv/health_and_medicine_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload health_and_medicine_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/health_and_medicine_fsq_count.csv.gz "health_and_medicine_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/arts_and_entertainment_fsq_count_upload: data/out/csv/arts_and_entertainment_fsq_count.csv | deploy_indicators/dev/uploads ## upload arts_and_entertainment_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/arts_and_entertainment_fsq_count.csv "arts_and_entertainment_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/arts_and_entertainment_fsq_count_upload: data/out/csv/arts_and_entertainment_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload arts_and_entertainment_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/arts_and_entertainment_fsq_count.csv.gz "arts_and_entertainment_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/sports_and_recreation_fsq_count_upload: data/out/csv/sports_and_recreation_fsq_count.csv | deploy_indicators/dev/uploads ## upload sports_and_recreation_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/sports_and_recreation_fsq_count.csv "sports_and_recreation_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/sports_and_recreation_fsq_count_upload: data/out/csv/sports_and_recreation_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload sports_and_recreation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/sports_and_recreation_fsq_count.csv.gz "sports_and_recreation_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/dev/uploads/events_fsq_count_upload: data/out/csv/events_fsq_count.csv | deploy_indicators/dev/uploads ## upload events_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/dev/uploads/events_fsq_count_upload: data/out/csv/events_fsq_count.csv.gz | deploy_indicators/dev/uploads ## upload events_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/events_fsq_count.csv.gz "events_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
 deploy_indicators/dev/uploads/upload_dev: \
@@ -4592,656 +4592,656 @@ db/table/insights_api_indicators_list_test: | db/table ## Refresh insights_api_i
 	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
 	touch $@
 
-deploy_indicators/test/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/test/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count.csv "count" db/table/osm_object_count_grid_h3
+deploy_indicators/test/uploads/count_upload: data/out/csv/count.csv.gz | deploy_indicators/test/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count.csv.gz "count" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/population_next_gen_upload: data/out/csv/population_next_gen.csv | deploy_indicators/test/uploads ## upload population_next_gen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population_next_gen.csv "population_next_gen" db/table/kontur_population_h3
+deploy_indicators/test/uploads/population_next_gen_upload: data/out/csv/population_next_gen.csv.gz | deploy_indicators/test/uploads ## upload population_next_gen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population_next_gen.csv.gz "population_next_gen" db/table/kontur_population_h3
 	touch $@
 
-deploy_indicators/test/uploads/populated_area_km2_next_gen_upload: data/out/csv/populated_area_km2_next_gen.csv | deploy_indicators/test/uploads ## upload populated_area_km2_next_gen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_area_km2_next_gen.csv "populated_area_km2_next_gen" db/table/kontur_population_h3
+deploy_indicators/test/uploads/populated_area_km2_next_gen_upload: data/out/csv/populated_area_km2_next_gen.csv.gz | deploy_indicators/test/uploads ## upload populated_area_km2_next_gen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_area_km2_next_gen.csv.gz "populated_area_km2_next_gen" db/table/kontur_population_h3
 	touch $@
 
-deploy_indicators/test/uploads/population_upload: data/out/csv/population.csv | deploy_indicators/test/uploads ## upload population to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population.csv "population" db/table/kontur_population_v5_h3
+deploy_indicators/test/uploads/population_upload: data/out/csv/population.csv.gz | deploy_indicators/test/uploads ## upload population to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/population.csv.gz "population" db/table/kontur_population_v5_h3
 	touch $@
 
-deploy_indicators/test/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv | deploy_indicators/test/uploads ## upload populated_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_area_km2.csv "populated_area_km2" db/table/kontur_population_v5_h3
+deploy_indicators/test/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv.gz | deploy_indicators/test/uploads ## upload populated_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_area_km2.csv.gz "populated_area_km2" db/table/kontur_population_v5_h3
 	touch $@
 
-deploy_indicators/test/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/test/uploads ## upload hazardous_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hazardous_days_count.csv "hazardous_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/test/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv.gz | deploy_indicators/test/uploads ## upload hazardous_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hazardous_days_count.csv.gz "hazardous_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/test/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/test/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv.gz | deploy_indicators/test/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mandays_maxtemp_over_32c_1c.csv.gz "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/test/uploads ## upload man_distance_to_fire_brigade to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
+deploy_indicators/test/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv.gz | deploy_indicators/test/uploads ## upload man_distance_to_fire_brigade to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_fire_brigade.csv.gz "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
 	touch $@
 
-deploy_indicators/test/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/test/uploads ## upload food_shops_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/food_shops_count.csv "food_shops_count" db/table/osm_places_food_shops_h3
+deploy_indicators/test/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv.gz | deploy_indicators/test/uploads ## upload food_shops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/food_shops_count.csv.gz "food_shops_count" db/table/osm_places_food_shops_h3
 	touch $@
 
-deploy_indicators/test/uploads/count_6_months_upload: data/out/csv/count_6_months.csv | deploy_indicators/test/uploads ## upload count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count_6_months.csv "count_6_months" db/table/osm_object_count_grid_h3
+deploy_indicators/test/uploads/count_6_months_upload: data/out/csv/count_6_months.csv.gz | deploy_indicators/test/uploads ## upload count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/count_6_months.csv.gz "count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/test/uploads ## upload view_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count.csv "view_count" db/table/tile_logs_h3
+deploy_indicators/test/uploads/view_count_upload: data/out/csv/view_count.csv.gz | deploy_indicators/test/uploads ## upload view_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count.csv.gz "view_count" db/table/tile_logs_h3
 	touch $@
 
-deploy_indicators/test/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/test/uploads ## upload avgmax_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avgmax_ts.csv "avgmax_ts" db/table/osm_object_count_grid_h3
+deploy_indicators/test/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv.gz | deploy_indicators/test/uploads ## upload avgmax_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avgmax_ts.csv.gz "avgmax_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/max_ts_upload: data/out/csv/max_ts.csv | deploy_indicators/test/uploads ## upload max_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_ts.csv "max_ts" db/table/osm_object_count_grid_h3
+deploy_indicators/test/uploads/max_ts_upload: data/out/csv/max_ts.csv.gz | deploy_indicators/test/uploads ## upload max_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_ts.csv.gz "max_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_indicators/test/uploads ## upload min_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_ts.csv "min_ts" db/table/osm_object_count_grid_h3
+deploy_indicators/test/uploads/min_ts_upload: data/out/csv/min_ts.csv.gz | deploy_indicators/test/uploads ## upload min_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_ts.csv.gz "min_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/test/uploads ## upload osm_users to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_users.csv "osm_users" db/table/osm_user_count_grid_h3
+deploy_indicators/test/uploads/osm_users_upload: data/out/csv/osm_users.csv.gz | deploy_indicators/test/uploads ## upload osm_users to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_users.csv.gz "osm_users" db/table/osm_user_count_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/test/uploads ## upload building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_count.csv "building_count" db/table/osm_object_count_grid_h3
+deploy_indicators/test/uploads/building_count_upload: data/out/csv/building_count.csv.gz | deploy_indicators/test/uploads ## upload building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_count.csv.gz "building_count" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv | deploy_indicators/test/uploads ## upload building_count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_count_6_months.csv "building_count_6_months" db/table/osm_object_count_grid_h3
+deploy_indicators/test/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv.gz | deploy_indicators/test/uploads ## upload building_count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_count_6_months.csv.gz "building_count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/highway_length_upload: data/out/csv/highway_length.csv | deploy_indicators/test/uploads ## upload highway_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/highway_length.csv "highway_length" db/table/osm_road_segments_h3
+deploy_indicators/test/uploads/highway_length_upload: data/out/csv/highway_length.csv.gz | deploy_indicators/test/uploads ## upload highway_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/highway_length.csv.gz "highway_length" db/table/osm_road_segments_h3
 	touch $@
 
-deploy_indicators/test/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv | deploy_indicators/test/uploads ## upload highway_length_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/highway_length_6_months.csv "highway_length_6_months" db/table/osm_road_segments_6_months_h3
+deploy_indicators/test/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv.gz | deploy_indicators/test/uploads ## upload highway_length_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/highway_length_6_months.csv.gz "highway_length_6_months" db/table/osm_road_segments_6_months_h3
 	touch $@
 
-deploy_indicators/test/uploads/total_hours_upload: data/out/csv/total_hours.csv | deploy_indicators/test/uploads ## upload total_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_hours.csv "total_hours" db/table/user_hours_h3
+deploy_indicators/test/uploads/total_hours_upload: data/out/csv/total_hours.csv.gz | deploy_indicators/test/uploads ## upload total_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_hours.csv.gz "total_hours" db/table/user_hours_h3
 	touch $@
 
-deploy_indicators/test/uploads/local_hours_upload: data/out/csv/local_hours.csv | deploy_indicators/test/uploads ## upload local_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/local_hours.csv "local_hours" db/table/user_hours_h3
+deploy_indicators/test/uploads/local_hours_upload: data/out/csv/local_hours.csv.gz | deploy_indicators/test/uploads ## upload local_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/local_hours.csv.gz "local_hours" db/table/user_hours_h3
 	touch $@
 
-deploy_indicators/test/uploads/forest_upload: data/out/csv/forest.csv | deploy_indicators/test/uploads ## upload forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/forest.csv "forest" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/forest_upload: data/out/csv/forest.csv.gz | deploy_indicators/test/uploads ## upload forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/forest.csv.gz "forest" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv | deploy_indicators/test/uploads ## upload evergreen_needle_leaved_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv.gz | deploy_indicators/test/uploads ## upload evergreen_needle_leaved_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/evergreen_needle_leaved_forest.csv.gz "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/shrubs_upload: data/out/csv/shrubs.csv | deploy_indicators/test/uploads ## upload shrubs to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/shrubs.csv "shrubs" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/shrubs_upload: data/out/csv/shrubs.csv.gz | deploy_indicators/test/uploads ## upload shrubs to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/shrubs.csv.gz "shrubs" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/herbage_upload: data/out/csv/herbage.csv | deploy_indicators/test/uploads ## upload herbage to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/herbage.csv "herbage" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/herbage_upload: data/out/csv/herbage.csv.gz | deploy_indicators/test/uploads ## upload herbage to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/herbage.csv.gz "herbage" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv | deploy_indicators/test/uploads ## upload unknown_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/unknown_forest.csv "unknown_forest" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv.gz | deploy_indicators/test/uploads ## upload unknown_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/unknown_forest.csv.gz "unknown_forest" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/cropland_upload: data/out/csv/cropland.csv | deploy_indicators/test/uploads ## upload cropland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/cropland.csv "cropland" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/cropland_upload: data/out/csv/cropland.csv.gz | deploy_indicators/test/uploads ## upload cropland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/cropland.csv.gz "cropland" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/wetland_upload: data/out/csv/wetland.csv | deploy_indicators/test/uploads ## upload wetland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wetland.csv "wetland" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/wetland_upload: data/out/csv/wetland.csv.gz | deploy_indicators/test/uploads ## upload wetland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wetland.csv.gz "wetland" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv | deploy_indicators/test/uploads ## upload moss_lichen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/moss_lichen.csv "moss_lichen" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv.gz | deploy_indicators/test/uploads ## upload moss_lichen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/moss_lichen.csv.gz "moss_lichen" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv | deploy_indicators/test/uploads ## upload bare_vegetation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/bare_vegetation.csv "bare_vegetation" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv.gz | deploy_indicators/test/uploads ## upload bare_vegetation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/bare_vegetation.csv.gz "bare_vegetation" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/builtup_upload: data/out/csv/builtup.csv | deploy_indicators/test/uploads ## upload builtup to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/builtup.csv "builtup" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/builtup_upload: data/out/csv/builtup.csv.gz | deploy_indicators/test/uploads ## upload builtup to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/builtup.csv.gz "builtup" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/snow_ice_upload: data/out/csv/snow_ice.csv | deploy_indicators/test/uploads ## upload snow_ice to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/snow_ice.csv "snow_ice" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/snow_ice_upload: data/out/csv/snow_ice.csv.gz | deploy_indicators/test/uploads ## upload snow_ice to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/snow_ice.csv.gz "snow_ice" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/permanent_water_upload: data/out/csv/permanent_water.csv | deploy_indicators/test/uploads ## upload permanent_water to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/permanent_water.csv "permanent_water" db/table/copernicus_landcover_h3
+deploy_indicators/test/uploads/permanent_water_upload: data/out/csv/permanent_water.csv.gz | deploy_indicators/test/uploads ## upload permanent_water to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/permanent_water.csv.gz "permanent_water" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/test/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicators/test/uploads ## upload gdp to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gdp.csv "gdp" db/table/gdp_h3
+deploy_indicators/test/uploads/gdp_upload: data/out/csv/gdp.csv.gz | deploy_indicators/test/uploads ## upload gdp to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gdp.csv.gz "gdp" db/table/gdp_h3
 	touch $@
 
-deploy_indicators/test/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/test/uploads ## upload total_building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_building_count.csv "total_building_count" db/table/building_count_grid_h3
+deploy_indicators/test/uploads/total_building_count_upload: data/out/csv/total_building_count.csv.gz | deploy_indicators/test/uploads ## upload total_building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_building_count.csv.gz "total_building_count" db/table/building_count_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/test/uploads ## upload wildfires to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfires.csv "wildfires" db/table/global_fires_stat_h3
+deploy_indicators/test/uploads/wildfires_upload: data/out/csv/wildfires.csv.gz | deploy_indicators/test/uploads ## upload wildfires to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfires.csv.gz "wildfires" db/table/global_fires_stat_h3
 	touch $@
 
-deploy_indicators/test/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/test/uploads ## upload earthquake_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/earthquake_days_count.csv "earthquake_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/test/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv.gz | deploy_indicators/test/uploads ## upload earthquake_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/earthquake_days_count.csv.gz "earthquake_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/test/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv | deploy_indicators/test/uploads ## upload drought_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drought_days_count.csv "drought_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/test/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv.gz | deploy_indicators/test/uploads ## upload drought_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drought_days_count.csv.gz "drought_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/test/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv | deploy_indicators/test/uploads ## upload cyclone_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/cyclone_days_count.csv "cyclone_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/test/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv.gz | deploy_indicators/test/uploads ## upload cyclone_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/cyclone_days_count.csv.gz "cyclone_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/test/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv | deploy_indicators/test/uploads ## upload wildfire_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfire_days_count.csv "wildfire_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/test/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv.gz | deploy_indicators/test/uploads ## upload wildfire_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/wildfire_days_count.csv.gz "wildfire_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/test/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv | deploy_indicators/test/uploads ## upload volcano_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/volcano_days_count.csv "volcano_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/test/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv.gz | deploy_indicators/test/uploads ## upload volcano_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/volcano_days_count.csv.gz "volcano_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/test/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv | deploy_indicators/test/uploads ## upload flood_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/test/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv.gz | deploy_indicators/test/uploads ## upload flood_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/flood_days_count.csv.gz "flood_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/test/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/test/uploads ## upload avg_slope_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/test/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv.gz | deploy_indicators/test/uploads ## upload avg_slope_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_slope_gebco_2022.csv.gz "avg_slope_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
-deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/test/uploads ## upload avg_elevation_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/test/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv.gz | deploy_indicators/test/uploads ## upload avg_elevation_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_elevation_gebco_2022.csv.gz "avg_elevation_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
-deploy_indicators/test/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/test/uploads ## upload industrial_area to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/industrial_area.csv "industrial_area" db/table/osm_landuse_industrial_h3
+deploy_indicators/test/uploads/industrial_area_upload: data/out/csv/industrial_area.csv.gz | deploy_indicators/test/uploads ## upload industrial_area to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/industrial_area.csv.gz "industrial_area" db/table/osm_landuse_industrial_h3
 	touch $@
 
-deploy_indicators/test/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv | deploy_indicators/test/uploads ## upload avg_ndvi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_ndvi.csv "avg_ndvi" db/table/ndvi_2019_06_10_h3
+deploy_indicators/test/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv.gz | deploy_indicators/test/uploads ## upload avg_ndvi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_ndvi.csv.gz "avg_ndvi" db/table/ndvi_2019_06_10_h3
 	touch $@
 
-deploy_indicators/test/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv | deploy_indicators/test/uploads ## upload volcanos_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/volcanos_count.csv "volcanos_count" db/table/osm_volcanos_h3
+deploy_indicators/test/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv.gz | deploy_indicators/test/uploads ## upload volcanos_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/volcanos_count.csv.gz "volcanos_count" db/table/osm_volcanos_h3
 	touch $@
 
-deploy_indicators/test/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv | deploy_indicators/test/uploads ## upload pop_under_5_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_under_5_total.csv "pop_under_5_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/test/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv.gz | deploy_indicators/test/uploads ## upload pop_under_5_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_under_5_total.csv.gz "pop_under_5_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/test/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv | deploy_indicators/test/uploads ## upload pop_over_65_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_over_65_total.csv "pop_over_65_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/test/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv.gz | deploy_indicators/test/uploads ## upload pop_over_65_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_over_65_total.csv.gz "pop_over_65_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/test/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv | deploy_indicators/test/uploads ## upload poverty_families_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/poverty_families_total.csv "poverty_families_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/test/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv.gz | deploy_indicators/test/uploads ## upload poverty_families_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/poverty_families_total.csv.gz "poverty_families_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/test/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv | deploy_indicators/test/uploads ## upload pop_disability_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_disability_total.csv "pop_disability_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/test/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv.gz | deploy_indicators/test/uploads ## upload pop_disability_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_disability_total.csv.gz "pop_disability_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/test/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv | deploy_indicators/test/uploads ## upload pop_not_well_eng_speak to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
+deploy_indicators/test/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv.gz | deploy_indicators/test/uploads ## upload pop_not_well_eng_speak to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_not_well_eng_speak.csv.gz "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/test/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv | deploy_indicators/test/uploads ## upload pop_without_car to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_without_car.csv "pop_without_car" db/table/us_census_tracts_stats_h3
+deploy_indicators/test/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv.gz | deploy_indicators/test/uploads ## upload pop_without_car to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/pop_without_car.csv.gz "pop_without_car" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv | deploy_indicators/test/uploads ## upload days_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/test/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv.gz | deploy_indicators/test/uploads ## upload days_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxtemp_over_32c_1c.csv.gz "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv | deploy_indicators/test/uploads ## upload days_maxtemp_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
+deploy_indicators/test/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv.gz | deploy_indicators/test/uploads ## upload days_maxtemp_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxtemp_over_32c_2c.csv.gz "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv | deploy_indicators/test/uploads ## upload days_mintemp_above_25c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/test/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv.gz | deploy_indicators/test/uploads ## upload days_mintemp_above_25c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_mintemp_above_25c_1c.csv.gz "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv | deploy_indicators/test/uploads ## upload days_mintemp_above_25c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
+deploy_indicators/test/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv.gz | deploy_indicators/test/uploads ## upload days_mintemp_above_25c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_mintemp_above_25c_2c.csv.gz "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv | deploy_indicators/test/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/test/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv.gz | deploy_indicators/test/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxwetbulb_over_32c_1c.csv.gz "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv | deploy_indicators/test/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
+deploy_indicators/test/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv.gz | deploy_indicators/test/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/days_maxwetbulb_over_32c_2c.csv.gz "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/test/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/test/uploads ## upload man_distance_to_hospital to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" db/table/isodist_hospitals_h3
+deploy_indicators/test/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv.gz | deploy_indicators/test/uploads ## upload man_distance_to_hospital to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_hospital.csv.gz "man_distance_to_hospital" db/table/isodist_hospitals_h3
 	touch $@
 
-deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/test/uploads ## upload man_distance_to_bomb_shelters to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
+deploy_indicators/test/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv.gz | deploy_indicators/test/uploads ## upload man_distance_to_bomb_shelters to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_bomb_shelters.csv.gz "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
 	touch $@
 
-deploy_indicators/test/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/test/uploads ## upload man_distance_to_charging_stations to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
+deploy_indicators/test/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv.gz | deploy_indicators/test/uploads ## upload man_distance_to_charging_stations to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/man_distance_to_charging_stations.csv.gz "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
 	touch $@
 
-deploy_indicators/test/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/test/uploads ## upload total_road_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_road_length.csv "total_road_length" db/table/total_road_length_h3
+deploy_indicators/test/uploads/total_road_length_upload: data/out/csv/total_road_length.csv.gz | deploy_indicators/test/uploads ## upload total_road_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/total_road_length.csv.gz "total_road_length" db/table/total_road_length_h3
 	touch $@
 
-deploy_indicators/test/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/test/uploads ## upload view_count_bf2402 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402_h3
+deploy_indicators/test/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv.gz | deploy_indicators/test/uploads ## upload view_count_bf2402 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/view_count_bf2402.csv.gz "view_count_bf2402" db/table/tile_logs_bf2402_h3
 	touch $@
 
-deploy_indicators/test/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/test/uploads ## upload powerlines to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines.csv "powerlines" db/table/facebook_medium_voltage_distribution_h3
+deploy_indicators/test/uploads/powerlines_upload: data/out/csv/powerlines.csv.gz | deploy_indicators/test/uploads ## upload powerlines to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines.csv.gz "powerlines" db/table/facebook_medium_voltage_distribution_h3
 	touch $@
 
-deploy_indicators/test/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/test/uploads ## upload eatery_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/eatery_count.csv "eatery_count" db/table/osm_places_eatery_h3
+deploy_indicators/test/uploads/eatery_count_upload: data/out/csv/eatery_count.csv.gz | deploy_indicators/test/uploads ## upload eatery_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/eatery_count.csv.gz "eatery_count" db/table/osm_places_eatery_h3
 	touch $@
 
-deploy_indicators/test/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv | deploy_indicators/test/uploads ## upload night_lights_intensity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/night_lights_intensity.csv "night_lights_intensity" db/table/night_lights_h3
+deploy_indicators/test/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv.gz | deploy_indicators/test/uploads ## upload night_lights_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/night_lights_intensity.csv.gz "night_lights_intensity" db/table/night_lights_h3
 	touch $@
 
-deploy_indicators/test/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv | deploy_indicators/test/uploads ## upload mapswipe_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
+deploy_indicators/test/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv.gz | deploy_indicators/test/uploads ## upload mapswipe_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/mapswipe_area_km2.csv.gz "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
 	touch $@
 
-deploy_indicators/test/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv | deploy_indicators/test/uploads ## upload gsa_ghi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gsa_ghi.csv "gsa_ghi" db/table/global_solar_atlas_h3
+deploy_indicators/test/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv.gz | deploy_indicators/test/uploads ## upload gsa_ghi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gsa_ghi.csv.gz "gsa_ghi" db/table/global_solar_atlas_h3
 	touch $@
 
-deploy_indicators/test/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_avg_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/test/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv.gz | deploy_indicators/test/uploads ## upload worldclim_avg_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_avg_temperature.csv.gz "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/test/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_min_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/test/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv.gz | deploy_indicators/test/uploads ## upload worldclim_min_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_min_temperature.csv.gz "worldclim_min_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/test/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_max_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/test/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv.gz | deploy_indicators/test/uploads ## upload worldclim_max_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_max_temperature.csv.gz "worldclim_max_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/test/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv | deploy_indicators/test/uploads ## upload worldclim_amp_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/test/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv.gz | deploy_indicators/test/uploads ## upload worldclim_amp_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldclim_amp_temperature.csv.gz "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/test/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv | deploy_indicators/test/uploads ## upload powerlines_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" db/table/proximities_h3
+deploy_indicators/test/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv.gz | deploy_indicators/test/uploads ## upload powerlines_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/powerlines_proximity_m.csv.gz "powerlines_proximity_m" db/table/proximities_h3
 	touch $@
 
-deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/test/uploads ## upload waste_basket_coverage_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_basket_coverage_h3
+deploy_indicators/test/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv.gz | deploy_indicators/test/uploads ## upload waste_basket_coverage_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/waste_basket_coverage_area_km2.csv.gz "waste_basket_coverage_area_km2" db/table/waste_basket_coverage_h3
 	touch $@
 
-deploy_indicators/test/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/test/uploads ## upload populated_areas_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" db/table/proximities_h3
+deploy_indicators/test/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv.gz | deploy_indicators/test/uploads ## upload populated_areas_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/populated_areas_proximity_m.csv.gz "populated_areas_proximity_m" db/table/proximities_h3
 	touch $@
 
-deploy_indicators/test/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv | deploy_indicators/test/uploads ## upload power_substations_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" db/table/proximities_h3
+deploy_indicators/test/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv.gz | deploy_indicators/test/uploads ## upload power_substations_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/power_substations_proximity_m.csv.gz "power_substations_proximity_m" db/table/proximities_h3
 	touch $@
 
-deploy_indicators/test/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | deploy_indicators/test/uploads ## upload solar_farms_placement_suitability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
+deploy_indicators/test/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv.gz | deploy_indicators/test/uploads ## upload solar_farms_placement_suitability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_farms_placement_suitability.csv.gz "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
 	touch $@
 
-deploy_indicators/test/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/test/uploads ## upload residential to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/residential.csv "residential" db/table/residential_pop_h3
+deploy_indicators/test/uploads/residential_upload: data/out/csv/residential.csv.gz | deploy_indicators/test/uploads ## upload residential to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/residential.csv.gz "residential" db/table/residential_pop_h3
 	touch $@
 
-deploy_indicators/test/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/test/uploads ## upload solar_power_plants to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
+deploy_indicators/test/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv.gz | deploy_indicators/test/uploads ## upload solar_power_plants to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/solar_power_plants.csv.gz "solar_power_plants" db/table/existing_solar_power_panels_h3
 	touch $@
 
-deploy_indicators/test/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/test/uploads ## upload safety_index to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
+deploy_indicators/test/uploads/safety_index_upload: data/out/csv/safety_index.csv.gz | deploy_indicators/test/uploads ## upload safety_index to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/safety_index.csv.gz "safety_index" db/table/safety_index_h3
 	touch $@
 
-deploy_indicators/test/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv | deploy_indicators/test/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+deploy_indicators/test/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv.gz | deploy_indicators/test/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_forest_canopy_height.csv.gz "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
-deploy_indicators/test/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv | deploy_indicators/test/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+deploy_indicators/test/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv.gz | deploy_indicators/test/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_forest_canopy_height.csv.gz "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
-deploy_indicators/test/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv | deploy_indicators/test/uploads ## upload worldbank_tax_rate to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
+deploy_indicators/test/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv.gz | deploy_indicators/test/uploads ## upload worldbank_tax_rate to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldbank_tax_rate.csv.gz "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
 	touch $@
 
-deploy_indicators/test/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv | deploy_indicators/test/uploads ## upload years_to_naturalisation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
+deploy_indicators/test/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv.gz | deploy_indicators/test/uploads ## upload years_to_naturalisation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/years_to_naturalisation.csv.gz "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
-deploy_indicators/test/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv | deploy_indicators/test/uploads ## upload multiple_citizenship to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/multiple_citizenship.csv "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
+deploy_indicators/test/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv.gz | deploy_indicators/test/uploads ## upload multiple_citizenship to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/multiple_citizenship.csv.gz "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
-deploy_indicators/test/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv | deploy_indicators/test/uploads ## upload ghs_max_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" db/table/ghs_building_height_grid_h3
+deploy_indicators/test/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv.gz | deploy_indicators/test/uploads ## upload ghs_max_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/ghs_max_building_height.csv.gz "ghs_max_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv | deploy_indicators/test/uploads ## upload ghs_avg_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
+deploy_indicators/test/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv.gz | deploy_indicators/test/uploads ## upload ghs_avg_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/ghs_avg_building_height.csv.gz "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
-deploy_indicators/test/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv | deploy_indicators/test/uploads ## upload max_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" db/table/osm_building_levels_h3
+deploy_indicators/test/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv.gz | deploy_indicators/test/uploads ## upload max_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_building_levels.csv.gz "max_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
-deploy_indicators/test/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv | deploy_indicators/test/uploads ## upload avg_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" db/table/osm_building_levels_h3
+deploy_indicators/test/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv.gz | deploy_indicators/test/uploads ## upload avg_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_building_levels.csv.gz "avg_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv | deploy_indicators/test/uploads ## upload osm_hotels_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_hotels_count.csv "osm_hotels_count" db/table/osm_hotels_h3
+deploy_indicators/test/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv.gz | deploy_indicators/test/uploads ## upload osm_hotels_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_hotels_count.csv.gz "osm_hotels_count" db/table/osm_hotels_h3
 	touch $@
 
-deploy_indicators/test/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv | deploy_indicators/test/uploads ## upload max_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" db/table/osm_hotels_h3
+deploy_indicators/test/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv.gz | deploy_indicators/test/uploads ## upload max_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_hotels_assesment.csv.gz "max_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
-deploy_indicators/test/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv | deploy_indicators/test/uploads ## upload avg_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" db/table/osm_hotels_h3
+deploy_indicators/test/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv.gz | deploy_indicators/test/uploads ## upload avg_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_hotels_assesment.csv.gz "avg_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/test/uploads ## upload osm_historical_sites_and_museums_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
+deploy_indicators/test/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv.gz | deploy_indicators/test/uploads ## upload osm_historical_sites_and_museums_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_historical_sites_and_museums_count.csv.gz "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/test/uploads ## upload osm_art_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" db/table/osm_culture_venues_h3
+deploy_indicators/test/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv.gz | deploy_indicators/test/uploads ## upload osm_art_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_art_venues_count.csv.gz "osm_art_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv | deploy_indicators/test/uploads ## upload osm_entertainment_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
+deploy_indicators/test/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv.gz | deploy_indicators/test/uploads ## upload osm_entertainment_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_entertainment_venues_count.csv.gz "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv | deploy_indicators/test/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
+deploy_indicators/test/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv.gz | deploy_indicators/test/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_cultural_and_comunity_centers_count.csv.gz "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/test/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv | deploy_indicators/test/uploads ## upload worldbank_inflation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldbank_inflation.csv "worldbank_inflation" db/table/worldbank_inflation_h3
+deploy_indicators/test/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv.gz | deploy_indicators/test/uploads ## upload worldbank_inflation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/worldbank_inflation.csv.gz "worldbank_inflation" db/table/worldbank_inflation_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv | deploy_indicators/test/uploads ## upload osm_pharmacy_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" db/table/osm_pharmacy_h3
+deploy_indicators/test/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv.gz | deploy_indicators/test/uploads ## upload osm_pharmacy_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_pharmacy_count.csv.gz "osm_pharmacy_count" db/table/osm_pharmacy_h3
 	touch $@
 
-deploy_indicators/test/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv | deploy_indicators/test/uploads ## upload conflict_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" db/table/idmc_country_2023_h3
+deploy_indicators/test/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv.gz | deploy_indicators/test/uploads ## upload conflict_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/conflict_stock_displacement.csv.gz "conflict_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/test/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv | deploy_indicators/test/uploads ## upload disaster_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" db/table/idmc_country_2023_h3
+deploy_indicators/test/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv.gz | deploy_indicators/test/uploads ## upload disaster_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/disaster_stock_displacement.csv.gz "disaster_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/test/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv | deploy_indicators/test/uploads ## upload conflict_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" db/table/idmc_country_2023_h3
+deploy_indicators/test/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv.gz | deploy_indicators/test/uploads ## upload conflict_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/conflict_internal_displacements.csv.gz "conflict_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/test/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv | deploy_indicators/test/uploads ## upload disaster_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" db/table/idmc_country_2023_h3
+deploy_indicators/test/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv.gz | deploy_indicators/test/uploads ## upload disaster_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/disaster_internal_displacements.csv.gz "disaster_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/test/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv | deploy_indicators/test/uploads ## upload hdi_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hdi_2022.csv "hdi_2022" db/table/humanitarian_dev_index_2022_h3
+deploy_indicators/test/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv.gz | deploy_indicators/test/uploads ## upload hdi_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hdi_2022.csv.gz "hdi_2022" db/table/humanitarian_dev_index_2022_h3
 	touch $@
 
-deploy_indicators/test/uploads/inform_risk_upload: data/out/csv/inform_risk.csv | deploy_indicators/test/uploads ## upload inform_risk to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/inform_risk.csv "inform_risk" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/inform_risk_upload: data/out/csv/inform_risk.csv.gz | deploy_indicators/test/uploads ## upload inform_risk to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/inform_risk.csv.gz "inform_risk" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv | deploy_indicators/test/uploads ## upload hazard_and_exposure to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hazard_and_exposure.csv "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv.gz | deploy_indicators/test/uploads ## upload hazard_and_exposure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/hazard_and_exposure.csv.gz "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv | deploy_indicators/test/uploads ## upload natural_0_to_10 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/natural_0_to_10.csv "natural_0_to_10" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv.gz | deploy_indicators/test/uploads ## upload natural_0_to_10 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/natural_0_to_10.csv.gz "natural_0_to_10" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/earthquake_upload: data/out/csv/earthquake.csv | deploy_indicators/test/uploads ## upload earthquake to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/earthquake.csv "earthquake" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/earthquake_upload: data/out/csv/earthquake.csv.gz | deploy_indicators/test/uploads ## upload earthquake to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/earthquake.csv.gz "earthquake" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/river_flood_upload: data/out/csv/river_flood.csv | deploy_indicators/test/uploads ## upload river_flood to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/river_flood.csv "river_flood" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/river_flood_upload: data/out/csv/river_flood.csv.gz | deploy_indicators/test/uploads ## upload river_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/river_flood.csv.gz "river_flood" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/tsunami_upload: data/out/csv/tsunami.csv | deploy_indicators/test/uploads ## upload tsunami to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/tsunami.csv "tsunami" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/tsunami_upload: data/out/csv/tsunami.csv.gz | deploy_indicators/test/uploads ## upload tsunami to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/tsunami.csv.gz "tsunami" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv | deploy_indicators/test/uploads ## upload tropical_cyclone to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/tropical_cyclone.csv "tropical_cyclone" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv.gz | deploy_indicators/test/uploads ## upload tropical_cyclone to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/tropical_cyclone.csv.gz "tropical_cyclone" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv | deploy_indicators/test/uploads ## upload coastal_flood to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/coastal_flood.csv "coastal_flood" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv.gz | deploy_indicators/test/uploads ## upload coastal_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/coastal_flood.csv.gz "coastal_flood" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/drought_upload: data/out/csv/drought.csv | deploy_indicators/test/uploads ## upload drought to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drought.csv "drought" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/drought_upload: data/out/csv/drought.csv.gz | deploy_indicators/test/uploads ## upload drought to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drought.csv.gz "drought" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/epidemic_upload: data/out/csv/epidemic.csv | deploy_indicators/test/uploads ## upload epidemic to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/epidemic.csv "epidemic" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/epidemic_upload: data/out/csv/epidemic.csv.gz | deploy_indicators/test/uploads ## upload epidemic to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/epidemic.csv.gz "epidemic" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/human_upload: data/out/csv/human.csv | deploy_indicators/test/uploads ## upload human to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/human.csv "human" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/human_upload: data/out/csv/human.csv.gz | deploy_indicators/test/uploads ## upload human to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/human.csv.gz "human" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv | deploy_indicators/test/uploads ## upload projected_conflict_probability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/projected_conflict_probability.csv "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv.gz | deploy_indicators/test/uploads ## upload projected_conflict_probability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/projected_conflict_probability.csv.gz "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv | deploy_indicators/test/uploads ## upload current_conflict_intensity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/current_conflict_intensity.csv "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv.gz | deploy_indicators/test/uploads ## upload current_conflict_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/current_conflict_intensity.csv.gz "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/vulnerability_upload: data/out/csv/vulnerability.csv | deploy_indicators/test/uploads ## upload vulnerability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/vulnerability.csv "vulnerability" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/vulnerability_upload: data/out/csv/vulnerability.csv.gz | deploy_indicators/test/uploads ## upload vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/vulnerability.csv.gz "vulnerability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv | deploy_indicators/test/uploads ## upload socio_economic_vulnerability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/socio_economic_vulnerability.csv "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv.gz | deploy_indicators/test/uploads ## upload socio_economic_vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/socio_economic_vulnerability.csv.gz "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv | deploy_indicators/test/uploads ## upload development_and_deprivation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/development_and_deprivation.csv "development_and_deprivation" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv.gz | deploy_indicators/test/uploads ## upload development_and_deprivation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/development_and_deprivation.csv.gz "development_and_deprivation" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/inequality_upload: data/out/csv/inequality.csv | deploy_indicators/test/uploads ## upload inequality to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/inequality.csv "inequality" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/inequality_upload: data/out/csv/inequality.csv.gz | deploy_indicators/test/uploads ## upload inequality to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/inequality.csv.gz "inequality" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv | deploy_indicators/test/uploads ## upload economic_dependency to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/economic_dependency.csv "economic_dependency" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv.gz | deploy_indicators/test/uploads ## upload economic_dependency to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/economic_dependency.csv.gz "economic_dependency" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv | deploy_indicators/test/uploads ## upload vulnerable_groups to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/vulnerable_groups.csv "vulnerable_groups" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv.gz | deploy_indicators/test/uploads ## upload vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/vulnerable_groups.csv.gz "vulnerable_groups" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv | deploy_indicators/test/uploads ## upload uprooted_people to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/uprooted_people.csv "uprooted_people" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv.gz | deploy_indicators/test/uploads ## upload uprooted_people to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/uprooted_people.csv.gz "uprooted_people" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/health_conditions_upload: data/out/csv/health_conditions.csv | deploy_indicators/test/uploads ## upload health_conditions to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/health_conditions.csv "health_conditions" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/health_conditions_upload: data/out/csv/health_conditions.csv.gz | deploy_indicators/test/uploads ## upload health_conditions to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/health_conditions.csv.gz "health_conditions" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/children_u5_upload: data/out/csv/children_u5.csv | deploy_indicators/test/uploads ## upload children_u5 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/children_u5.csv "children_u5" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/children_u5_upload: data/out/csv/children_u5.csv.gz | deploy_indicators/test/uploads ## upload children_u5 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/children_u5.csv.gz "children_u5" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv | deploy_indicators/test/uploads ## upload recent_shocks to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/recent_shocks.csv "recent_shocks" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv.gz | deploy_indicators/test/uploads ## upload recent_shocks to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/recent_shocks.csv.gz "recent_shocks" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/food_security_upload: data/out/csv/food_security.csv | deploy_indicators/test/uploads ## upload food_security to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/food_security.csv "food_security" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/food_security_upload: data/out/csv/food_security.csv.gz | deploy_indicators/test/uploads ## upload food_security to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/food_security.csv.gz "food_security" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv | deploy_indicators/test/uploads ## upload other_vulnerable_groups to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/other_vulnerable_groups.csv "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv.gz | deploy_indicators/test/uploads ## upload other_vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/other_vulnerable_groups.csv.gz "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv | deploy_indicators/test/uploads ## upload lack_of_coping_capacity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/lack_of_coping_capacity.csv "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv.gz | deploy_indicators/test/uploads ## upload lack_of_coping_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/lack_of_coping_capacity.csv.gz "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/institutional_upload: data/out/csv/institutional.csv | deploy_indicators/test/uploads ## upload institutional to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/institutional.csv "institutional" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/institutional_upload: data/out/csv/institutional.csv.gz | deploy_indicators/test/uploads ## upload institutional to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/institutional.csv.gz "institutional" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/drr_upload: data/out/csv/drr.csv | deploy_indicators/test/uploads ## upload drr to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drr.csv "drr" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/drr_upload: data/out/csv/drr.csv.gz | deploy_indicators/test/uploads ## upload drr to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/drr.csv.gz "drr" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/governance_upload: data/out/csv/governance.csv | deploy_indicators/test/uploads ## upload governance to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/governance.csv "governance" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/governance_upload: data/out/csv/governance.csv.gz | deploy_indicators/test/uploads ## upload governance to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/governance.csv.gz "governance" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/infrastructure_upload: data/out/csv/infrastructure.csv | deploy_indicators/test/uploads ## upload infrastructure to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/infrastructure.csv "infrastructure" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/infrastructure_upload: data/out/csv/infrastructure.csv.gz | deploy_indicators/test/uploads ## upload infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/infrastructure.csv.gz "infrastructure" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/communication_upload: data/out/csv/communication.csv | deploy_indicators/test/uploads ## upload communication to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/communication.csv "communication" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/communication_upload: data/out/csv/communication.csv.gz | deploy_indicators/test/uploads ## upload communication to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/communication.csv.gz "communication" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv | deploy_indicators/test/uploads ## upload physical_infrastructure to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/physical_infrastructure.csv "physical_infrastructure" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv.gz | deploy_indicators/test/uploads ## upload physical_infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/physical_infrastructure.csv.gz "physical_infrastructure" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv | deploy_indicators/test/uploads ## upload access_to_health_care to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/access_to_health_care.csv "access_to_health_care" db/table/inform_risk_profile_2025_h3
+deploy_indicators/test/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv.gz | deploy_indicators/test/uploads ## upload access_to_health_care to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/access_to_health_care.csv.gz "access_to_health_care" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_banks_count_upload: data/out/csv/osm_banks_count.csv | deploy_indicators/test/uploads ## upload osm_banks_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_banks_count.csv "osm_banks_count" db/table/osm_financial_venues_h3
+deploy_indicators/test/uploads/osm_banks_count_upload: data/out/csv/osm_banks_count.csv.gz | deploy_indicators/test/uploads ## upload osm_banks_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_banks_count.csv.gz "osm_banks_count" db/table/osm_financial_venues_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_atms_count_upload: data/out/csv/osm_atms_count.csv | deploy_indicators/test/uploads ## upload osm_atms_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_atms_count.csv "osm_atms_count" db/table/osm_financial_venues_h3
+deploy_indicators/test/uploads/osm_atms_count_upload: data/out/csv/osm_atms_count.csv.gz | deploy_indicators/test/uploads ## upload osm_atms_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_atms_count.csv.gz "osm_atms_count" db/table/osm_financial_venues_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_kindergartens_count_upload: data/out/csv/osm_kindergartens_count.csv | deploy_indicators/test/uploads ## upload osm_kindergartens_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_kindergartens_count.csv "osm_kindergartens_count" db/table/osm_education_venues_h3
+deploy_indicators/test/uploads/osm_kindergartens_count_upload: data/out/csv/osm_kindergartens_count.csv.gz | deploy_indicators/test/uploads ## upload osm_kindergartens_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_kindergartens_count.csv.gz "osm_kindergartens_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_schools_count_upload: data/out/csv/osm_schools_count.csv | deploy_indicators/test/uploads ## upload osm_schools_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_schools_count.csv "osm_schools_count" db/table/osm_education_venues_h3
+deploy_indicators/test/uploads/osm_schools_count_upload: data/out/csv/osm_schools_count.csv.gz | deploy_indicators/test/uploads ## upload osm_schools_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_schools_count.csv.gz "osm_schools_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_colleges_count_upload: data/out/csv/osm_colleges_count.csv | deploy_indicators/test/uploads ## upload osm_colleges_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_colleges_count.csv "osm_colleges_count" db/table/osm_education_venues_h3
+deploy_indicators/test/uploads/osm_colleges_count_upload: data/out/csv/osm_colleges_count.csv.gz | deploy_indicators/test/uploads ## upload osm_colleges_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_colleges_count.csv.gz "osm_colleges_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_universities_count_upload: data/out/csv/osm_universities_count.csv | deploy_indicators/test/uploads ## upload osm_universities_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_universities_count.csv "osm_universities_count" db/table/osm_education_venues_h3
+deploy_indicators/test/uploads/osm_universities_count_upload: data/out/csv/osm_universities_count.csv.gz | deploy_indicators/test/uploads ## upload osm_universities_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_universities_count.csv.gz "osm_universities_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_defibrillators_count_upload: data/out/csv/osm_defibrillators_count.csv | deploy_indicators/test/uploads ## upload osm_defibrillators_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_defibrillators_count.csv "osm_defibrillators_count" db/table/osm_emergency_facilities_h3
+deploy_indicators/test/uploads/osm_defibrillators_count_upload: data/out/csv/osm_defibrillators_count.csv.gz | deploy_indicators/test/uploads ## upload osm_defibrillators_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_defibrillators_count.csv.gz "osm_defibrillators_count" db/table/osm_emergency_facilities_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_airports_count_upload: data/out/csv/osm_airports_count.csv | deploy_indicators/test/uploads ## upload osm_airports_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_airports_count.csv "osm_airports_count" db/table/osm_transport_facilities_h3
+deploy_indicators/test/uploads/osm_airports_count_upload: data/out/csv/osm_airports_count.csv.gz | deploy_indicators/test/uploads ## upload osm_airports_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_airports_count.csv.gz "osm_airports_count" db/table/osm_transport_facilities_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_railway_stations_count_upload: data/out/csv/osm_railway_stations_count.csv | deploy_indicators/test/uploads ## upload osm_railway_stations_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_railway_stations_count.csv "osm_railway_stations_count" db/table/osm_transport_facilities_h3
+deploy_indicators/test/uploads/osm_railway_stations_count_upload: data/out/csv/osm_railway_stations_count.csv.gz | deploy_indicators/test/uploads ## upload osm_railway_stations_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_railway_stations_count.csv.gz "osm_railway_stations_count" db/table/osm_transport_facilities_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_public_transport_stops_count_upload: data/out/csv/osm_public_transport_stops_count.csv | deploy_indicators/test/uploads ## upload osm_public_transport_stops_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_public_transport_stops_count.csv "osm_public_transport_stops_count" db/table/osm_transport_facilities_h3
+deploy_indicators/test/uploads/osm_public_transport_stops_count_upload: data/out/csv/osm_public_transport_stops_count.csv.gz | deploy_indicators/test/uploads ## upload osm_public_transport_stops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_public_transport_stops_count.csv.gz "osm_public_transport_stops_count" db/table/osm_transport_facilities_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_car_parkings_capacity_upload: data/out/csv/osm_car_parkings_capacity.csv | deploy_indicators/test/uploads ## upload osm_car_parkings_capacity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_car_parkings_capacity.csv "osm_car_parkings_capacity" db/table/osm_car_parkings_capacity_h3
+deploy_indicators/test/uploads/osm_car_parkings_capacity_upload: data/out/csv/osm_car_parkings_capacity.csv.gz | deploy_indicators/test/uploads ## upload osm_car_parkings_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_car_parkings_capacity.csv.gz "osm_car_parkings_capacity" db/table/osm_car_parkings_capacity_h3
 	touch $@
 
-deploy_indicators/test/uploads/osm_heritage_sites_count_upload: data/out/csv/osm_heritage_sites_count.csv | deploy_indicators/test/uploads ## upload osm_heritage_sites_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_heritage_sites_count.csv "osm_heritage_sites_count" db/table/osm_heritage_sites_h3
+deploy_indicators/test/uploads/osm_heritage_sites_count_upload: data/out/csv/osm_heritage_sites_count.csv.gz | deploy_indicators/test/uploads ## upload osm_heritage_sites_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_heritage_sites_count.csv.gz "osm_heritage_sites_count" db/table/osm_heritage_sites_h3
 	touch $@
 
-deploy_indicators/test/uploads/min_osm_heritage_admin_level_upload: data/out/csv/min_osm_heritage_admin_level.csv | deploy_indicators/test/uploads ## upload min_osm_heritage_admin_level to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_osm_heritage_admin_level.csv "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
+deploy_indicators/test/uploads/min_osm_heritage_admin_level_upload: data/out/csv/min_osm_heritage_admin_level.csv.gz | deploy_indicators/test/uploads ## upload min_osm_heritage_admin_level to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_osm_heritage_admin_level.csv.gz "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
 	touch $@
 
-deploy_indicators/test/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv | deploy_indicators/test/uploads ## upload foursquare_os_places_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/foursquare_os_places_count.csv "foursquare_os_places_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv.gz | deploy_indicators/test/uploads ## upload foursquare_os_places_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/foursquare_os_places_count.csv.gz "foursquare_os_places_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/coffee_shops_fsq_count_upload: data/out/csv/coffee_shops_fsq_count.csv | deploy_indicators/test/uploads ## upload coffee_shops_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/coffee_shops_fsq_count.csv "coffee_shops_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/coffee_shops_fsq_count_upload: data/out/csv/coffee_shops_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload coffee_shops_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/coffee_shops_fsq_count.csv.gz "coffee_shops_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/kebab_restaurants_fsq_count_upload: data/out/csv/kebab_restaurants_fsq_count.csv | deploy_indicators/test/uploads ## upload kebab_restaurants_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/kebab_restaurants_fsq_count.csv "kebab_restaurants_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/kebab_restaurants_fsq_count_upload: data/out/csv/kebab_restaurants_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload kebab_restaurants_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/kebab_restaurants_fsq_count.csv.gz "kebab_restaurants_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/business_and_professional_services_fsq_count_upload: data/out/csv/business_and_professional_services_fsq_count.csv | deploy_indicators/test/uploads ## upload business_and_professional_services_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/business_and_professional_services_fsq_count.csv "business_and_professional_services_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/business_and_professional_services_fsq_count_upload: data/out/csv/business_and_professional_services_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload business_and_professional_services_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/business_and_professional_services_fsq_count.csv.gz "business_and_professional_services_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/dining_and_drinking_fsq_count_upload: data/out/csv/dining_and_drinking_fsq_count.csv | deploy_indicators/test/uploads ## upload dining_and_drinking_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/dining_and_drinking_fsq_count.csv "dining_and_drinking_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/dining_and_drinking_fsq_count_upload: data/out/csv/dining_and_drinking_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload dining_and_drinking_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/dining_and_drinking_fsq_count.csv.gz "dining_and_drinking_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/retail_fsq_count_upload: data/out/csv/retail_fsq_count.csv | deploy_indicators/test/uploads ## upload retail_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/retail_fsq_count.csv "retail_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/retail_fsq_count_upload: data/out/csv/retail_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload retail_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/retail_fsq_count.csv.gz "retail_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/community_and_government_fsq_count_upload: data/out/csv/community_and_government_fsq_count.csv | deploy_indicators/test/uploads ## upload community_and_government_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/community_and_government_fsq_count.csv "community_and_government_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/community_and_government_fsq_count_upload: data/out/csv/community_and_government_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload community_and_government_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/community_and_government_fsq_count.csv.gz "community_and_government_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/travel_and_transportation_fsq_count_upload: data/out/csv/travel_and_transportation_fsq_count.csv | deploy_indicators/test/uploads ## upload travel_and_transportation_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/travel_and_transportation_fsq_count.csv "travel_and_transportation_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/travel_and_transportation_fsq_count_upload: data/out/csv/travel_and_transportation_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload travel_and_transportation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/travel_and_transportation_fsq_count.csv.gz "travel_and_transportation_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/landmarks_and_outdoors_fsq_count_upload: data/out/csv/landmarks_and_outdoors_fsq_count.csv | deploy_indicators/test/uploads ## upload landmarks_and_outdoors_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/landmarks_and_outdoors_fsq_count.csv "landmarks_and_outdoors_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/landmarks_and_outdoors_fsq_count_upload: data/out/csv/landmarks_and_outdoors_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload landmarks_and_outdoors_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/landmarks_and_outdoors_fsq_count.csv.gz "landmarks_and_outdoors_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/health_and_medicine_fsq_count_upload: data/out/csv/health_and_medicine_fsq_count.csv | deploy_indicators/test/uploads ## upload health_and_medicine_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/health_and_medicine_fsq_count.csv "health_and_medicine_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/health_and_medicine_fsq_count_upload: data/out/csv/health_and_medicine_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload health_and_medicine_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/health_and_medicine_fsq_count.csv.gz "health_and_medicine_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/arts_and_entertainment_fsq_count_upload: data/out/csv/arts_and_entertainment_fsq_count.csv | deploy_indicators/test/uploads ## upload arts_and_entertainment_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/arts_and_entertainment_fsq_count.csv "arts_and_entertainment_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/arts_and_entertainment_fsq_count_upload: data/out/csv/arts_and_entertainment_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload arts_and_entertainment_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/arts_and_entertainment_fsq_count.csv.gz "arts_and_entertainment_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/sports_and_recreation_fsq_count_upload: data/out/csv/sports_and_recreation_fsq_count.csv | deploy_indicators/test/uploads ## upload sports_and_recreation_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/sports_and_recreation_fsq_count.csv "sports_and_recreation_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/sports_and_recreation_fsq_count_upload: data/out/csv/sports_and_recreation_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload sports_and_recreation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/sports_and_recreation_fsq_count.csv.gz "sports_and_recreation_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/test/uploads/events_fsq_count_upload: data/out/csv/events_fsq_count.csv | deploy_indicators/test/uploads ## upload events_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/test/uploads/events_fsq_count_upload: data/out/csv/events_fsq_count.csv.gz | deploy_indicators/test/uploads ## upload events_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/events_fsq_count.csv.gz "events_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
 deploy_indicators/test/uploads/upload_test: \
@@ -5747,656 +5747,656 @@ db/table/insights_api_indicators_list_prod: | db/table ## Refresh insights_api_i
 	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
 	touch $@
 
-deploy_indicators/prod/uploads/count_upload: data/out/csv/count.csv | deploy_indicators/prod/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count.csv "count" db/table/osm_object_count_grid_h3
+deploy_indicators/prod/uploads/count_upload: data/out/csv/count.csv.gz | deploy_indicators/prod/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count.csv.gz "count" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/population_next_gen_upload: data/out/csv/population_next_gen.csv | deploy_indicators/prod/uploads ## upload population_next_gen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population_next_gen.csv "population_next_gen" db/table/kontur_population_h3
+deploy_indicators/prod/uploads/population_next_gen_upload: data/out/csv/population_next_gen.csv.gz | deploy_indicators/prod/uploads ## upload population_next_gen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population_next_gen.csv.gz "population_next_gen" db/table/kontur_population_h3
 	touch $@
 
-deploy_indicators/prod/uploads/populated_area_km2_next_gen_upload: data/out/csv/populated_area_km2_next_gen.csv | deploy_indicators/prod/uploads ## upload populated_area_km2_next_gen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_area_km2_next_gen.csv "populated_area_km2_next_gen" db/table/kontur_population_h3
+deploy_indicators/prod/uploads/populated_area_km2_next_gen_upload: data/out/csv/populated_area_km2_next_gen.csv.gz | deploy_indicators/prod/uploads ## upload populated_area_km2_next_gen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_area_km2_next_gen.csv.gz "populated_area_km2_next_gen" db/table/kontur_population_h3
 	touch $@
 
-deploy_indicators/prod/uploads/population_upload: data/out/csv/population.csv | deploy_indicators/prod/uploads ## upload population to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population.csv "population" db/table/kontur_population_v5_h3
+deploy_indicators/prod/uploads/population_upload: data/out/csv/population.csv.gz | deploy_indicators/prod/uploads ## upload population to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/population.csv.gz "population" db/table/kontur_population_v5_h3
 	touch $@
 
-deploy_indicators/prod/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv | deploy_indicators/prod/uploads ## upload populated_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_area_km2.csv "populated_area_km2" db/table/kontur_population_v5_h3
+deploy_indicators/prod/uploads/populated_area_km2_upload: data/out/csv/populated_area_km2.csv.gz | deploy_indicators/prod/uploads ## upload populated_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_area_km2.csv.gz "populated_area_km2" db/table/kontur_population_v5_h3
 	touch $@
 
-deploy_indicators/prod/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv | deploy_indicators/prod/uploads ## upload hazardous_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hazardous_days_count.csv "hazardous_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/prod/uploads/hazardous_days_count_upload: data/out/csv/hazardous_days_count.csv.gz | deploy_indicators/prod/uploads ## upload hazardous_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hazardous_days_count.csv.gz "hazardous_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mandays_maxtemp_over_32c_1c.csv "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/prod/uploads/mandays_maxtemp_over_32c_1c_upload: data/out/csv/mandays_maxtemp_over_32c_1c.csv.gz | deploy_indicators/prod/uploads ## upload mandays_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mandays_maxtemp_over_32c_1c.csv.gz "mandays_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv | deploy_indicators/prod/uploads ## upload man_distance_to_fire_brigade to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_fire_brigade.csv "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
+deploy_indicators/prod/uploads/man_distance_to_fire_brigade_upload: data/out/csv/man_distance_to_fire_brigade.csv.gz | deploy_indicators/prod/uploads ## upload man_distance_to_fire_brigade to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_fire_brigade.csv.gz "man_distance_to_fire_brigade" db/table/isodist_fire_stations_h3
 	touch $@
 
-deploy_indicators/prod/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv | deploy_indicators/prod/uploads ## upload food_shops_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/food_shops_count.csv "food_shops_count" db/table/osm_places_food_shops_h3
+deploy_indicators/prod/uploads/food_shops_count_upload: data/out/csv/food_shops_count.csv.gz | deploy_indicators/prod/uploads ## upload food_shops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/food_shops_count.csv.gz "food_shops_count" db/table/osm_places_food_shops_h3
 	touch $@
 
-deploy_indicators/prod/uploads/count_6_months_upload: data/out/csv/count_6_months.csv | deploy_indicators/prod/uploads ## upload count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count_6_months.csv "count_6_months" db/table/osm_object_count_grid_h3
+deploy_indicators/prod/uploads/count_6_months_upload: data/out/csv/count_6_months.csv.gz | deploy_indicators/prod/uploads ## upload count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/count_6_months.csv.gz "count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/view_count_upload: data/out/csv/view_count.csv | deploy_indicators/prod/uploads ## upload view_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count.csv "view_count" db/table/tile_logs_h3
+deploy_indicators/prod/uploads/view_count_upload: data/out/csv/view_count.csv.gz | deploy_indicators/prod/uploads ## upload view_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count.csv.gz "view_count" db/table/tile_logs_h3
 	touch $@
 
-deploy_indicators/prod/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv | deploy_indicators/prod/uploads ## upload avgmax_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avgmax_ts.csv "avgmax_ts" db/table/osm_object_count_grid_h3
+deploy_indicators/prod/uploads/avgmax_ts_upload: data/out/csv/avgmax_ts.csv.gz | deploy_indicators/prod/uploads ## upload avgmax_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avgmax_ts.csv.gz "avgmax_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/max_ts_upload: data/out/csv/max_ts.csv | deploy_indicators/prod/uploads ## upload max_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_ts.csv "max_ts" db/table/osm_object_count_grid_h3
+deploy_indicators/prod/uploads/max_ts_upload: data/out/csv/max_ts.csv.gz | deploy_indicators/prod/uploads ## upload max_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_ts.csv.gz "max_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/min_ts_upload: data/out/csv/min_ts.csv | deploy_indicators/prod/uploads ## upload min_ts to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_ts.csv "min_ts" db/table/osm_object_count_grid_h3
+deploy_indicators/prod/uploads/min_ts_upload: data/out/csv/min_ts.csv.gz | deploy_indicators/prod/uploads ## upload min_ts to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_ts.csv.gz "min_ts" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_users_upload: data/out/csv/osm_users.csv | deploy_indicators/prod/uploads ## upload osm_users to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_users.csv "osm_users" db/table/osm_user_count_grid_h3
+deploy_indicators/prod/uploads/osm_users_upload: data/out/csv/osm_users.csv.gz | deploy_indicators/prod/uploads ## upload osm_users to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_users.csv.gz "osm_users" db/table/osm_user_count_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/building_count_upload: data/out/csv/building_count.csv | deploy_indicators/prod/uploads ## upload building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count.csv "building_count" db/table/osm_object_count_grid_h3
+deploy_indicators/prod/uploads/building_count_upload: data/out/csv/building_count.csv.gz | deploy_indicators/prod/uploads ## upload building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count.csv.gz "building_count" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv | deploy_indicators/prod/uploads ## upload building_count_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count_6_months.csv "building_count_6_months" db/table/osm_object_count_grid_h3
+deploy_indicators/prod/uploads/building_count_6_months_upload: data/out/csv/building_count_6_months.csv.gz | deploy_indicators/prod/uploads ## upload building_count_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_count_6_months.csv.gz "building_count_6_months" db/table/osm_object_count_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/highway_length_upload: data/out/csv/highway_length.csv | deploy_indicators/prod/uploads ## upload highway_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length.csv "highway_length" db/table/osm_road_segments_h3
+deploy_indicators/prod/uploads/highway_length_upload: data/out/csv/highway_length.csv.gz | deploy_indicators/prod/uploads ## upload highway_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length.csv.gz "highway_length" db/table/osm_road_segments_h3
 	touch $@
 
-deploy_indicators/prod/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv | deploy_indicators/prod/uploads ## upload highway_length_6_months to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length_6_months.csv "highway_length_6_months" db/table/osm_road_segments_6_months_h3
+deploy_indicators/prod/uploads/highway_length_6_months_upload: data/out/csv/highway_length_6_months.csv.gz | deploy_indicators/prod/uploads ## upload highway_length_6_months to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/highway_length_6_months.csv.gz "highway_length_6_months" db/table/osm_road_segments_6_months_h3
 	touch $@
 
-deploy_indicators/prod/uploads/total_hours_upload: data/out/csv/total_hours.csv | deploy_indicators/prod/uploads ## upload total_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_hours.csv "total_hours" db/table/user_hours_h3
+deploy_indicators/prod/uploads/total_hours_upload: data/out/csv/total_hours.csv.gz | deploy_indicators/prod/uploads ## upload total_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_hours.csv.gz "total_hours" db/table/user_hours_h3
 	touch $@
 
-deploy_indicators/prod/uploads/local_hours_upload: data/out/csv/local_hours.csv | deploy_indicators/prod/uploads ## upload local_hours to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/local_hours.csv "local_hours" db/table/user_hours_h3
+deploy_indicators/prod/uploads/local_hours_upload: data/out/csv/local_hours.csv.gz | deploy_indicators/prod/uploads ## upload local_hours to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/local_hours.csv.gz "local_hours" db/table/user_hours_h3
 	touch $@
 
-deploy_indicators/prod/uploads/forest_upload: data/out/csv/forest.csv | deploy_indicators/prod/uploads ## upload forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/forest.csv "forest" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/forest_upload: data/out/csv/forest.csv.gz | deploy_indicators/prod/uploads ## upload forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/forest.csv.gz "forest" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv | deploy_indicators/prod/uploads ## upload evergreen_needle_leaved_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/evergreen_needle_leaved_forest.csv "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/evergreen_needle_leaved_forest_upload: data/out/csv/evergreen_needle_leaved_forest.csv.gz | deploy_indicators/prod/uploads ## upload evergreen_needle_leaved_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/evergreen_needle_leaved_forest.csv.gz "evergreen_needle_leaved_forest" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/shrubs_upload: data/out/csv/shrubs.csv | deploy_indicators/prod/uploads ## upload shrubs to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/shrubs.csv "shrubs" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/shrubs_upload: data/out/csv/shrubs.csv.gz | deploy_indicators/prod/uploads ## upload shrubs to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/shrubs.csv.gz "shrubs" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/herbage_upload: data/out/csv/herbage.csv | deploy_indicators/prod/uploads ## upload herbage to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/herbage.csv "herbage" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/herbage_upload: data/out/csv/herbage.csv.gz | deploy_indicators/prod/uploads ## upload herbage to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/herbage.csv.gz "herbage" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv | deploy_indicators/prod/uploads ## upload unknown_forest to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/unknown_forest.csv "unknown_forest" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/unknown_forest_upload: data/out/csv/unknown_forest.csv.gz | deploy_indicators/prod/uploads ## upload unknown_forest to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/unknown_forest.csv.gz "unknown_forest" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/cropland_upload: data/out/csv/cropland.csv | deploy_indicators/prod/uploads ## upload cropland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cropland.csv "cropland" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/cropland_upload: data/out/csv/cropland.csv.gz | deploy_indicators/prod/uploads ## upload cropland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cropland.csv.gz "cropland" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/wetland_upload: data/out/csv/wetland.csv | deploy_indicators/prod/uploads ## upload wetland to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wetland.csv "wetland" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/wetland_upload: data/out/csv/wetland.csv.gz | deploy_indicators/prod/uploads ## upload wetland to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wetland.csv.gz "wetland" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv | deploy_indicators/prod/uploads ## upload moss_lichen to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/moss_lichen.csv "moss_lichen" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/moss_lichen_upload: data/out/csv/moss_lichen.csv.gz | deploy_indicators/prod/uploads ## upload moss_lichen to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/moss_lichen.csv.gz "moss_lichen" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv | deploy_indicators/prod/uploads ## upload bare_vegetation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/bare_vegetation.csv "bare_vegetation" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/bare_vegetation_upload: data/out/csv/bare_vegetation.csv.gz | deploy_indicators/prod/uploads ## upload bare_vegetation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/bare_vegetation.csv.gz "bare_vegetation" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/builtup_upload: data/out/csv/builtup.csv | deploy_indicators/prod/uploads ## upload builtup to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/builtup.csv "builtup" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/builtup_upload: data/out/csv/builtup.csv.gz | deploy_indicators/prod/uploads ## upload builtup to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/builtup.csv.gz "builtup" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/snow_ice_upload: data/out/csv/snow_ice.csv | deploy_indicators/prod/uploads ## upload snow_ice to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/snow_ice.csv "snow_ice" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/snow_ice_upload: data/out/csv/snow_ice.csv.gz | deploy_indicators/prod/uploads ## upload snow_ice to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/snow_ice.csv.gz "snow_ice" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/permanent_water_upload: data/out/csv/permanent_water.csv | deploy_indicators/prod/uploads ## upload permanent_water to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/permanent_water.csv "permanent_water" db/table/copernicus_landcover_h3
+deploy_indicators/prod/uploads/permanent_water_upload: data/out/csv/permanent_water.csv.gz | deploy_indicators/prod/uploads ## upload permanent_water to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/permanent_water.csv.gz "permanent_water" db/table/copernicus_landcover_h3
 	touch $@
 
-deploy_indicators/prod/uploads/gdp_upload: data/out/csv/gdp.csv | deploy_indicators/prod/uploads ## upload gdp to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gdp.csv "gdp" db/table/gdp_h3
+deploy_indicators/prod/uploads/gdp_upload: data/out/csv/gdp.csv.gz | deploy_indicators/prod/uploads ## upload gdp to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gdp.csv.gz "gdp" db/table/gdp_h3
 	touch $@
 
-deploy_indicators/prod/uploads/total_building_count_upload: data/out/csv/total_building_count.csv | deploy_indicators/prod/uploads ## upload total_building_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_building_count.csv "total_building_count" db/table/building_count_grid_h3
+deploy_indicators/prod/uploads/total_building_count_upload: data/out/csv/total_building_count.csv.gz | deploy_indicators/prod/uploads ## upload total_building_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_building_count.csv.gz "total_building_count" db/table/building_count_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/wildfires_upload: data/out/csv/wildfires.csv | deploy_indicators/prod/uploads ## upload wildfires to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfires.csv "wildfires" db/table/global_fires_stat_h3
+deploy_indicators/prod/uploads/wildfires_upload: data/out/csv/wildfires.csv.gz | deploy_indicators/prod/uploads ## upload wildfires to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfires.csv.gz "wildfires" db/table/global_fires_stat_h3
 	touch $@
 
-deploy_indicators/prod/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv | deploy_indicators/prod/uploads ## upload earthquake_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/earthquake_days_count.csv "earthquake_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/prod/uploads/earthquake_days_count_upload: data/out/csv/earthquake_days_count.csv.gz | deploy_indicators/prod/uploads ## upload earthquake_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/earthquake_days_count.csv.gz "earthquake_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/prod/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv | deploy_indicators/prod/uploads ## upload drought_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drought_days_count.csv "drought_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/prod/uploads/drought_days_count_upload: data/out/csv/drought_days_count.csv.gz | deploy_indicators/prod/uploads ## upload drought_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drought_days_count.csv.gz "drought_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/prod/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv | deploy_indicators/prod/uploads ## upload cyclone_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cyclone_days_count.csv "cyclone_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/prod/uploads/cyclone_days_count_upload: data/out/csv/cyclone_days_count.csv.gz | deploy_indicators/prod/uploads ## upload cyclone_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/cyclone_days_count.csv.gz "cyclone_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/prod/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv | deploy_indicators/prod/uploads ## upload wildfire_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfire_days_count.csv "wildfire_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/prod/uploads/wildfire_days_count_upload: data/out/csv/wildfire_days_count.csv.gz | deploy_indicators/prod/uploads ## upload wildfire_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/wildfire_days_count.csv.gz "wildfire_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/prod/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv | deploy_indicators/prod/uploads ## upload volcano_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcano_days_count.csv "volcano_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/prod/uploads/volcano_days_count_upload: data/out/csv/volcano_days_count.csv.gz | deploy_indicators/prod/uploads ## upload volcano_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcano_days_count.csv.gz "volcano_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/prod/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv | deploy_indicators/prod/uploads ## upload flood_days_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/flood_days_count.csv "flood_days_count" db/table/disaster_event_episodes_h3
+deploy_indicators/prod/uploads/flood_days_count_upload: data/out/csv/flood_days_count.csv.gz | deploy_indicators/prod/uploads ## upload flood_days_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/flood_days_count.csv.gz "flood_days_count" db/table/disaster_event_episodes_h3
 	touch $@
 
-deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv | deploy_indicators/prod/uploads ## upload avg_slope_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_slope_gebco_2022.csv "avg_slope_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload: data/out/csv/avg_slope_gebco_2022.csv.gz | deploy_indicators/prod/uploads ## upload avg_slope_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_slope_gebco_2022.csv.gz "avg_slope_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
-deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv | deploy_indicators/prod/uploads ## upload avg_elevation_gebco_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_elevation_gebco_2022.csv "avg_elevation_gebco_2022" db/table/gebco_2022_h3
+deploy_indicators/prod/uploads/avg_elevation_gebco_2022_upload: data/out/csv/avg_elevation_gebco_2022.csv.gz | deploy_indicators/prod/uploads ## upload avg_elevation_gebco_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_elevation_gebco_2022.csv.gz "avg_elevation_gebco_2022" db/table/gebco_2022_h3
 	touch $@
 
-deploy_indicators/prod/uploads/industrial_area_upload: data/out/csv/industrial_area.csv | deploy_indicators/prod/uploads ## upload industrial_area to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/industrial_area.csv "industrial_area" db/table/osm_landuse_industrial_h3
+deploy_indicators/prod/uploads/industrial_area_upload: data/out/csv/industrial_area.csv.gz | deploy_indicators/prod/uploads ## upload industrial_area to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/industrial_area.csv.gz "industrial_area" db/table/osm_landuse_industrial_h3
 	touch $@
 
-deploy_indicators/prod/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv | deploy_indicators/prod/uploads ## upload avg_ndvi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_ndvi.csv "avg_ndvi" db/table/ndvi_2019_06_10_h3
+deploy_indicators/prod/uploads/avg_ndvi_upload: data/out/csv/avg_ndvi.csv.gz | deploy_indicators/prod/uploads ## upload avg_ndvi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_ndvi.csv.gz "avg_ndvi" db/table/ndvi_2019_06_10_h3
 	touch $@
 
-deploy_indicators/prod/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv | deploy_indicators/prod/uploads ## upload volcanos_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcanos_count.csv "volcanos_count" db/table/osm_volcanos_h3
+deploy_indicators/prod/uploads/volcanos_count_upload: data/out/csv/volcanos_count.csv.gz | deploy_indicators/prod/uploads ## upload volcanos_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/volcanos_count.csv.gz "volcanos_count" db/table/osm_volcanos_h3
 	touch $@
 
-deploy_indicators/prod/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv | deploy_indicators/prod/uploads ## upload pop_under_5_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_under_5_total.csv "pop_under_5_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/prod/uploads/pop_under_5_total_upload: data/out/csv/pop_under_5_total.csv.gz | deploy_indicators/prod/uploads ## upload pop_under_5_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_under_5_total.csv.gz "pop_under_5_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/prod/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv | deploy_indicators/prod/uploads ## upload pop_over_65_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_over_65_total.csv "pop_over_65_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/prod/uploads/pop_over_65_total_upload: data/out/csv/pop_over_65_total.csv.gz | deploy_indicators/prod/uploads ## upload pop_over_65_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_over_65_total.csv.gz "pop_over_65_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/prod/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv | deploy_indicators/prod/uploads ## upload poverty_families_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/poverty_families_total.csv "poverty_families_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/prod/uploads/poverty_families_total_upload: data/out/csv/poverty_families_total.csv.gz | deploy_indicators/prod/uploads ## upload poverty_families_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/poverty_families_total.csv.gz "poverty_families_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/prod/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv | deploy_indicators/prod/uploads ## upload pop_disability_total to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_disability_total.csv "pop_disability_total" db/table/us_census_tracts_stats_h3
+deploy_indicators/prod/uploads/pop_disability_total_upload: data/out/csv/pop_disability_total.csv.gz | deploy_indicators/prod/uploads ## upload pop_disability_total to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_disability_total.csv.gz "pop_disability_total" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv | deploy_indicators/prod/uploads ## upload pop_not_well_eng_speak to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_not_well_eng_speak.csv "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
+deploy_indicators/prod/uploads/pop_not_well_eng_speak_upload: data/out/csv/pop_not_well_eng_speak.csv.gz | deploy_indicators/prod/uploads ## upload pop_not_well_eng_speak to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_not_well_eng_speak.csv.gz "pop_not_well_eng_speak" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/prod/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv | deploy_indicators/prod/uploads ## upload pop_without_car to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_without_car.csv "pop_without_car" db/table/us_census_tracts_stats_h3
+deploy_indicators/prod/uploads/pop_without_car_upload: data/out/csv/pop_without_car.csv.gz | deploy_indicators/prod/uploads ## upload pop_without_car to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/pop_without_car.csv.gz "pop_without_car" db/table/us_census_tracts_stats_h3
 	touch $@
 
-deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload days_maxtemp_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_1c.csv "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/prod/uploads/days_maxtemp_over_32c_1c_upload: data/out/csv/days_maxtemp_over_32c_1c.csv.gz | deploy_indicators/prod/uploads ## upload days_maxtemp_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_1c.csv.gz "days_maxtemp_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv | deploy_indicators/prod/uploads ## upload days_maxtemp_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_2c.csv "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
+deploy_indicators/prod/uploads/days_maxtemp_over_32c_2c_upload: data/out/csv/days_maxtemp_over_32c_2c.csv.gz | deploy_indicators/prod/uploads ## upload days_maxtemp_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxtemp_over_32c_2c.csv.gz "days_maxtemp_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv | deploy_indicators/prod/uploads ## upload days_mintemp_above_25c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_1c.csv "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/prod/uploads/days_mintemp_above_25c_1c_upload: data/out/csv/days_mintemp_above_25c_1c.csv.gz | deploy_indicators/prod/uploads ## upload days_mintemp_above_25c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_1c.csv.gz "days_mintemp_above_25c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv | deploy_indicators/prod/uploads ## upload days_mintemp_above_25c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_2c.csv "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
+deploy_indicators/prod/uploads/days_mintemp_above_25c_2c_upload: data/out/csv/days_mintemp_above_25c_2c.csv.gz | deploy_indicators/prod/uploads ## upload days_mintemp_above_25c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_mintemp_above_25c_2c.csv.gz "days_mintemp_above_25c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv | deploy_indicators/prod/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_1c.csv "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
+deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_1c_upload: data/out/csv/days_maxwetbulb_over_32c_1c.csv.gz | deploy_indicators/prod/uploads ## upload days_maxwetbulb_over_32c_1c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_1c.csv.gz "days_maxwetbulb_over_32c_1c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv | deploy_indicators/prod/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_2c.csv "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
+deploy_indicators/prod/uploads/days_maxwetbulb_over_32c_2c_upload: data/out/csv/days_maxwetbulb_over_32c_2c.csv.gz | deploy_indicators/prod/uploads ## upload days_maxwetbulb_over_32c_2c to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/days_maxwetbulb_over_32c_2c.csv.gz "days_maxwetbulb_over_32c_2c" db/table/pf_maxtemp_h3
 	touch $@
 
-deploy_indicators/prod/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv | deploy_indicators/prod/uploads ## upload man_distance_to_hospital to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_hospital.csv "man_distance_to_hospital" db/table/isodist_hospitals_h3
+deploy_indicators/prod/uploads/man_distance_to_hospital_upload: data/out/csv/man_distance_to_hospital.csv.gz | deploy_indicators/prod/uploads ## upload man_distance_to_hospital to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_hospital.csv.gz "man_distance_to_hospital" db/table/isodist_hospitals_h3
 	touch $@
 
-deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv | deploy_indicators/prod/uploads ## upload man_distance_to_bomb_shelters to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_bomb_shelters.csv "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
+deploy_indicators/prod/uploads/man_distance_to_bomb_shelters_upload: data/out/csv/man_distance_to_bomb_shelters.csv.gz | deploy_indicators/prod/uploads ## upload man_distance_to_bomb_shelters to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_bomb_shelters.csv.gz "man_distance_to_bomb_shelters" db/table/isodist_bomb_shelters_h3
 	touch $@
 
-deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv | deploy_indicators/prod/uploads ## upload man_distance_to_charging_stations to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_charging_stations.csv "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
+deploy_indicators/prod/uploads/man_distance_to_charging_stations_upload: data/out/csv/man_distance_to_charging_stations.csv.gz | deploy_indicators/prod/uploads ## upload man_distance_to_charging_stations to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/man_distance_to_charging_stations.csv.gz "man_distance_to_charging_stations" db/table/isodist_charging_stations_h3
 	touch $@
 
-deploy_indicators/prod/uploads/total_road_length_upload: data/out/csv/total_road_length.csv | deploy_indicators/prod/uploads ## upload total_road_length to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_road_length.csv "total_road_length" db/table/total_road_length_h3
+deploy_indicators/prod/uploads/total_road_length_upload: data/out/csv/total_road_length.csv.gz | deploy_indicators/prod/uploads ## upload total_road_length to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/total_road_length.csv.gz "total_road_length" db/table/total_road_length_h3
 	touch $@
 
-deploy_indicators/prod/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv | deploy_indicators/prod/uploads ## upload view_count_bf2402 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count_bf2402.csv "view_count_bf2402" db/table/tile_logs_bf2402_h3
+deploy_indicators/prod/uploads/view_count_bf2402_upload: data/out/csv/view_count_bf2402.csv.gz | deploy_indicators/prod/uploads ## upload view_count_bf2402 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/view_count_bf2402.csv.gz "view_count_bf2402" db/table/tile_logs_bf2402_h3
 	touch $@
 
-deploy_indicators/prod/uploads/powerlines_upload: data/out/csv/powerlines.csv | deploy_indicators/prod/uploads ## upload powerlines to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines.csv "powerlines" db/table/facebook_medium_voltage_distribution_h3
+deploy_indicators/prod/uploads/powerlines_upload: data/out/csv/powerlines.csv.gz | deploy_indicators/prod/uploads ## upload powerlines to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines.csv.gz "powerlines" db/table/facebook_medium_voltage_distribution_h3
 	touch $@
 
-deploy_indicators/prod/uploads/eatery_count_upload: data/out/csv/eatery_count.csv | deploy_indicators/prod/uploads ## upload eatery_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/eatery_count.csv "eatery_count" db/table/osm_places_eatery_h3
+deploy_indicators/prod/uploads/eatery_count_upload: data/out/csv/eatery_count.csv.gz | deploy_indicators/prod/uploads ## upload eatery_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/eatery_count.csv.gz "eatery_count" db/table/osm_places_eatery_h3
 	touch $@
 
-deploy_indicators/prod/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv | deploy_indicators/prod/uploads ## upload night_lights_intensity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/night_lights_intensity.csv "night_lights_intensity" db/table/night_lights_h3
+deploy_indicators/prod/uploads/night_lights_intensity_upload: data/out/csv/night_lights_intensity.csv.gz | deploy_indicators/prod/uploads ## upload night_lights_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/night_lights_intensity.csv.gz "night_lights_intensity" db/table/night_lights_h3
 	touch $@
 
-deploy_indicators/prod/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv | deploy_indicators/prod/uploads ## upload mapswipe_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mapswipe_area_km2.csv "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
+deploy_indicators/prod/uploads/mapswipe_area_km2_upload: data/out/csv/mapswipe_area_km2.csv.gz | deploy_indicators/prod/uploads ## upload mapswipe_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/mapswipe_area_km2.csv.gz "mapswipe_area_km2" db/table/mapswipe_hot_tasking_data_h3
 	touch $@
 
-deploy_indicators/prod/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv | deploy_indicators/prod/uploads ## upload gsa_ghi to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gsa_ghi.csv "gsa_ghi" db/table/global_solar_atlas_h3
+deploy_indicators/prod/uploads/gsa_ghi_upload: data/out/csv/gsa_ghi.csv.gz | deploy_indicators/prod/uploads ## upload gsa_ghi to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gsa_ghi.csv.gz "gsa_ghi" db/table/global_solar_atlas_h3
 	touch $@
 
-deploy_indicators/prod/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_avg_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_avg_temperature.csv "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/prod/uploads/worldclim_avg_temperature_upload: data/out/csv/worldclim_avg_temperature.csv.gz | deploy_indicators/prod/uploads ## upload worldclim_avg_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_avg_temperature.csv.gz "worldclim_avg_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/prod/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_min_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_min_temperature.csv "worldclim_min_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/prod/uploads/worldclim_min_temperature_upload: data/out/csv/worldclim_min_temperature.csv.gz | deploy_indicators/prod/uploads ## upload worldclim_min_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_min_temperature.csv.gz "worldclim_min_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/prod/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_max_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_max_temperature.csv "worldclim_max_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/prod/uploads/worldclim_max_temperature_upload: data/out/csv/worldclim_max_temperature.csv.gz | deploy_indicators/prod/uploads ## upload worldclim_max_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_max_temperature.csv.gz "worldclim_max_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/prod/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv | deploy_indicators/prod/uploads ## upload worldclim_amp_temperature to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_amp_temperature.csv "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
+deploy_indicators/prod/uploads/worldclim_amp_temperature_upload: data/out/csv/worldclim_amp_temperature.csv.gz | deploy_indicators/prod/uploads ## upload worldclim_amp_temperature to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldclim_amp_temperature.csv.gz "worldclim_amp_temperature" db/table/worldclim_temperatures_h3
 	touch $@
 
-deploy_indicators/prod/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv | deploy_indicators/prod/uploads ## upload powerlines_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines_proximity_m.csv "powerlines_proximity_m" db/table/proximities_h3
+deploy_indicators/prod/uploads/powerlines_proximity_m_upload: data/out/csv/powerlines_proximity_m.csv.gz | deploy_indicators/prod/uploads ## upload powerlines_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/powerlines_proximity_m.csv.gz "powerlines_proximity_m" db/table/proximities_h3
 	touch $@
 
-deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv | deploy_indicators/prod/uploads ## upload waste_basket_coverage_area_km2 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/waste_basket_coverage_area_km2.csv "waste_basket_coverage_area_km2" db/table/waste_basket_coverage_h3
+deploy_indicators/prod/uploads/waste_basket_coverage_area_km2_upload: data/out/csv/waste_basket_coverage_area_km2.csv.gz | deploy_indicators/prod/uploads ## upload waste_basket_coverage_area_km2 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/waste_basket_coverage_area_km2.csv.gz "waste_basket_coverage_area_km2" db/table/waste_basket_coverage_h3
 	touch $@
 
-deploy_indicators/prod/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv | deploy_indicators/prod/uploads ## upload populated_areas_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_areas_proximity_m.csv "populated_areas_proximity_m" db/table/proximities_h3
+deploy_indicators/prod/uploads/populated_areas_proximity_m_upload: data/out/csv/populated_areas_proximity_m.csv.gz | deploy_indicators/prod/uploads ## upload populated_areas_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/populated_areas_proximity_m.csv.gz "populated_areas_proximity_m" db/table/proximities_h3
 	touch $@
 
-deploy_indicators/prod/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv | deploy_indicators/prod/uploads ## upload power_substations_proximity_m to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/power_substations_proximity_m.csv "power_substations_proximity_m" db/table/proximities_h3
+deploy_indicators/prod/uploads/power_substations_proximity_m_upload: data/out/csv/power_substations_proximity_m.csv.gz | deploy_indicators/prod/uploads ## upload power_substations_proximity_m to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/power_substations_proximity_m.csv.gz "power_substations_proximity_m" db/table/proximities_h3
 	touch $@
 
-deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv | deploy_indicators/prod/uploads ## upload solar_farms_placement_suitability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_farms_placement_suitability.csv "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
+deploy_indicators/prod/uploads/solar_farms_placement_suitability_upload: data/out/csv/solar_farms_placement_suitability.csv.gz | deploy_indicators/prod/uploads ## upload solar_farms_placement_suitability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_farms_placement_suitability.csv.gz "solar_farms_placement_suitability" db/table/solar_farms_placement_suitability_synthetic_h3
 	touch $@
 
-deploy_indicators/prod/uploads/residential_upload: data/out/csv/residential.csv | deploy_indicators/prod/uploads ## upload residential to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/residential.csv "residential" db/table/residential_pop_h3
+deploy_indicators/prod/uploads/residential_upload: data/out/csv/residential.csv.gz | deploy_indicators/prod/uploads ## upload residential to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/residential.csv.gz "residential" db/table/residential_pop_h3
 	touch $@
 
-deploy_indicators/prod/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv | deploy_indicators/prod/uploads ## upload solar_power_plants to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_power_plants.csv "solar_power_plants" db/table/existing_solar_power_panels_h3
+deploy_indicators/prod/uploads/solar_power_plants_upload: data/out/csv/solar_power_plants.csv.gz | deploy_indicators/prod/uploads ## upload solar_power_plants to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/solar_power_plants.csv.gz "solar_power_plants" db/table/existing_solar_power_panels_h3
 	touch $@
 
-deploy_indicators/prod/uploads/safety_index_upload: data/out/csv/safety_index.csv | deploy_indicators/prod/uploads ## upload safety_index to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/safety_index.csv "safety_index" db/table/safety_index_h3
+deploy_indicators/prod/uploads/safety_index_upload: data/out/csv/safety_index.csv.gz | deploy_indicators/prod/uploads ## upload safety_index to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/safety_index.csv.gz "safety_index" db/table/safety_index_h3
 	touch $@
 
-deploy_indicators/prod/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv | deploy_indicators/prod/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_forest_canopy_height.csv "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+deploy_indicators/prod/uploads/avg_forest_canopy_height_upload: data/out/csv/avg_forest_canopy_height.csv.gz | deploy_indicators/prod/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_forest_canopy_height.csv.gz "avg_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
-deploy_indicators/prod/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv | deploy_indicators/prod/uploads ## upload count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_forest_canopy_height.csv "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
+deploy_indicators/prod/uploads/max_forest_canopy_height_upload: data/out/csv/max_forest_canopy_height.csv.gz | deploy_indicators/prod/uploads ## upload count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_forest_canopy_height.csv.gz "max_forest_canopy_height" db/table/meta_forest_canopy_height_h3
 	touch $@
 
-deploy_indicators/prod/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv | deploy_indicators/prod/uploads ## upload worldbank_tax_rate to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldbank_tax_rate.csv "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
+deploy_indicators/prod/uploads/worldbank_tax_rate_upload: data/out/csv/worldbank_tax_rate.csv.gz | deploy_indicators/prod/uploads ## upload worldbank_tax_rate to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldbank_tax_rate.csv.gz "worldbank_tax_rate" db/table/worldbank_tax_rate_h3
 	touch $@
 
-deploy_indicators/prod/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv | deploy_indicators/prod/uploads ## upload years_to_naturalisation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/years_to_naturalisation.csv "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
+deploy_indicators/prod/uploads/years_to_naturalisation_upload: data/out/csv/years_to_naturalisation.csv.gz | deploy_indicators/prod/uploads ## upload years_to_naturalisation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/years_to_naturalisation.csv.gz "years_to_naturalisation" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
-deploy_indicators/prod/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv | deploy_indicators/prod/uploads ## upload multiple_citizenship to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/multiple_citizenship.csv "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
+deploy_indicators/prod/uploads/multiple_citizenship_upload: data/out/csv/multiple_citizenship.csv.gz | deploy_indicators/prod/uploads ## upload multiple_citizenship to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/multiple_citizenship.csv.gz "multiple_citizenship" db/table/wikidata_naturalization_gap_h3
 	touch $@
 
-deploy_indicators/prod/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv | deploy_indicators/prod/uploads ## upload ghs_max_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/ghs_max_building_height.csv "ghs_max_building_height" db/table/ghs_building_height_grid_h3
+deploy_indicators/prod/uploads/ghs_max_building_height_upload: data/out/csv/ghs_max_building_height.csv.gz | deploy_indicators/prod/uploads ## upload ghs_max_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/ghs_max_building_height.csv.gz "ghs_max_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv | deploy_indicators/prod/uploads ## upload ghs_avg_building_height to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/ghs_avg_building_height.csv "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
+deploy_indicators/prod/uploads/ghs_avg_building_height_upload: data/out/csv/ghs_avg_building_height.csv.gz | deploy_indicators/prod/uploads ## upload ghs_avg_building_height to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/ghs_avg_building_height.csv.gz "ghs_avg_building_height" db/table/ghs_building_height_grid_h3
 	touch $@
 
-deploy_indicators/prod/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv | deploy_indicators/prod/uploads ## upload max_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_building_levels.csv "max_osm_building_levels" db/table/osm_building_levels_h3
+deploy_indicators/prod/uploads/max_osm_building_levels_upload: data/out/csv/max_osm_building_levels.csv.gz | deploy_indicators/prod/uploads ## upload max_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_building_levels.csv.gz "max_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
-deploy_indicators/prod/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv | deploy_indicators/prod/uploads ## upload avg_osm_building_levels to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_building_levels.csv "avg_osm_building_levels" db/table/osm_building_levels_h3
+deploy_indicators/prod/uploads/avg_osm_building_levels_upload: data/out/csv/avg_osm_building_levels.csv.gz | deploy_indicators/prod/uploads ## upload avg_osm_building_levels to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_building_levels.csv.gz "avg_osm_building_levels" db/table/osm_building_levels_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv | deploy_indicators/prod/uploads ## upload osm_hotels_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_hotels_count.csv "osm_hotels_count" db/table/osm_hotels_h3
+deploy_indicators/prod/uploads/osm_hotels_count_upload: data/out/csv/osm_hotels_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_hotels_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_hotels_count.csv.gz "osm_hotels_count" db/table/osm_hotels_h3
 	touch $@
 
-deploy_indicators/prod/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv | deploy_indicators/prod/uploads ## upload max_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_hotels_assesment.csv "max_osm_hotels_assesment" db/table/osm_hotels_h3
+deploy_indicators/prod/uploads/max_osm_hotels_assesment_upload: data/out/csv/max_osm_hotels_assesment.csv.gz | deploy_indicators/prod/uploads ## upload max_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_hotels_assesment.csv.gz "max_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
-deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv | deploy_indicators/prod/uploads ## upload avg_osm_hotels_assesment to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_hotels_assesment.csv "avg_osm_hotels_assesment" db/table/osm_hotels_h3
+deploy_indicators/prod/uploads/avg_osm_hotels_assesment_upload: data/out/csv/avg_osm_hotels_assesment.csv.gz | deploy_indicators/prod/uploads ## upload avg_osm_hotels_assesment to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_hotels_assesment.csv.gz "avg_osm_hotels_assesment" db/table/osm_hotels_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv | deploy_indicators/prod/uploads ## upload osm_historical_sites_and_museums_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_historical_sites_and_museums_count.csv "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
+deploy_indicators/prod/uploads/osm_historical_sites_and_museums_count_upload: data/out/csv/osm_historical_sites_and_museums_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_historical_sites_and_museums_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_historical_sites_and_museums_count.csv.gz "osm_historical_sites_and_museums_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv | deploy_indicators/prod/uploads ## upload osm_art_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_art_venues_count.csv "osm_art_venues_count" db/table/osm_culture_venues_h3
+deploy_indicators/prod/uploads/osm_art_venues_count_upload: data/out/csv/osm_art_venues_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_art_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_art_venues_count.csv.gz "osm_art_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv | deploy_indicators/prod/uploads ## upload osm_entertainment_venues_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_entertainment_venues_count.csv "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
+deploy_indicators/prod/uploads/osm_entertainment_venues_count_upload: data/out/csv/osm_entertainment_venues_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_entertainment_venues_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_entertainment_venues_count.csv.gz "osm_entertainment_venues_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv | deploy_indicators/prod/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_cultural_and_comunity_centers_count.csv "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
+deploy_indicators/prod/uploads/osm_cultural_and_comunity_centers_count_upload: data/out/csv/osm_cultural_and_comunity_centers_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_cultural_and_comunity_centers_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_cultural_and_comunity_centers_count.csv.gz "osm_cultural_and_comunity_centers_count" db/table/osm_culture_venues_h3
 	touch $@
 
-deploy_indicators/prod/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv | deploy_indicators/prod/uploads ## upload worldbank_inflation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldbank_inflation.csv "worldbank_inflation" db/table/worldbank_inflation_h3
+deploy_indicators/prod/uploads/worldbank_inflation_upload: data/out/csv/worldbank_inflation.csv.gz | deploy_indicators/prod/uploads ## upload worldbank_inflation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/worldbank_inflation.csv.gz "worldbank_inflation" db/table/worldbank_inflation_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv | deploy_indicators/prod/uploads ## upload osm_pharmacy_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_pharmacy_count.csv "osm_pharmacy_count" db/table/osm_pharmacy_h3
+deploy_indicators/prod/uploads/osm_pharmacy_count_upload: data/out/csv/osm_pharmacy_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_pharmacy_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_pharmacy_count.csv.gz "osm_pharmacy_count" db/table/osm_pharmacy_h3
 	touch $@
 
-deploy_indicators/prod/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv | deploy_indicators/prod/uploads ## upload conflict_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/conflict_stock_displacement.csv "conflict_stock_displacement" db/table/idmc_country_2023_h3
+deploy_indicators/prod/uploads/conflict_stock_displacement_upload: data/out/csv/conflict_stock_displacement.csv.gz | deploy_indicators/prod/uploads ## upload conflict_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/conflict_stock_displacement.csv.gz "conflict_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/prod/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv | deploy_indicators/prod/uploads ## upload disaster_stock_displacement to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/disaster_stock_displacement.csv "disaster_stock_displacement" db/table/idmc_country_2023_h3
+deploy_indicators/prod/uploads/disaster_stock_displacement_upload: data/out/csv/disaster_stock_displacement.csv.gz | deploy_indicators/prod/uploads ## upload disaster_stock_displacement to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/disaster_stock_displacement.csv.gz "disaster_stock_displacement" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/prod/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv | deploy_indicators/prod/uploads ## upload conflict_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/conflict_internal_displacements.csv "conflict_internal_displacements" db/table/idmc_country_2023_h3
+deploy_indicators/prod/uploads/conflict_internal_displacements_upload: data/out/csv/conflict_internal_displacements.csv.gz | deploy_indicators/prod/uploads ## upload conflict_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/conflict_internal_displacements.csv.gz "conflict_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/prod/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv | deploy_indicators/prod/uploads ## upload disaster_internal_displacements to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/disaster_internal_displacements.csv "disaster_internal_displacements" db/table/idmc_country_2023_h3
+deploy_indicators/prod/uploads/disaster_internal_displacements_upload: data/out/csv/disaster_internal_displacements.csv.gz | deploy_indicators/prod/uploads ## upload disaster_internal_displacements to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/disaster_internal_displacements.csv.gz "disaster_internal_displacements" db/table/idmc_country_2023_h3
 	touch $@
 
-deploy_indicators/prod/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv | deploy_indicators/prod/uploads ## upload hdi_2022 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hdi_2022.csv "hdi_2022" db/table/humanitarian_dev_index_2022_h3
+deploy_indicators/prod/uploads/hdi_2022_upload: data/out/csv/hdi_2022.csv.gz | deploy_indicators/prod/uploads ## upload hdi_2022 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hdi_2022.csv.gz "hdi_2022" db/table/humanitarian_dev_index_2022_h3
 	touch $@
 
-deploy_indicators/prod/uploads/inform_risk_upload: data/out/csv/inform_risk.csv | deploy_indicators/prod/uploads ## upload inform_risk to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/inform_risk.csv "inform_risk" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/inform_risk_upload: data/out/csv/inform_risk.csv.gz | deploy_indicators/prod/uploads ## upload inform_risk to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/inform_risk.csv.gz "inform_risk" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv | deploy_indicators/prod/uploads ## upload hazard_and_exposure to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hazard_and_exposure.csv "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/hazard_and_exposure_upload: data/out/csv/hazard_and_exposure.csv.gz | deploy_indicators/prod/uploads ## upload hazard_and_exposure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/hazard_and_exposure.csv.gz "hazard_and_exposure" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv | deploy_indicators/prod/uploads ## upload natural_0_to_10 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/natural_0_to_10.csv "natural_0_to_10" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/natural_0_to_10_upload: data/out/csv/natural_0_to_10.csv.gz | deploy_indicators/prod/uploads ## upload natural_0_to_10 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/natural_0_to_10.csv.gz "natural_0_to_10" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/earthquake_upload: data/out/csv/earthquake.csv | deploy_indicators/prod/uploads ## upload earthquake to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/earthquake.csv "earthquake" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/earthquake_upload: data/out/csv/earthquake.csv.gz | deploy_indicators/prod/uploads ## upload earthquake to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/earthquake.csv.gz "earthquake" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/river_flood_upload: data/out/csv/river_flood.csv | deploy_indicators/prod/uploads ## upload river_flood to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/river_flood.csv "river_flood" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/river_flood_upload: data/out/csv/river_flood.csv.gz | deploy_indicators/prod/uploads ## upload river_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/river_flood.csv.gz "river_flood" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/tsunami_upload: data/out/csv/tsunami.csv | deploy_indicators/prod/uploads ## upload tsunami to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/tsunami.csv "tsunami" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/tsunami_upload: data/out/csv/tsunami.csv.gz | deploy_indicators/prod/uploads ## upload tsunami to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/tsunami.csv.gz "tsunami" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv | deploy_indicators/prod/uploads ## upload tropical_cyclone to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/tropical_cyclone.csv "tropical_cyclone" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/tropical_cyclone_upload: data/out/csv/tropical_cyclone.csv.gz | deploy_indicators/prod/uploads ## upload tropical_cyclone to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/tropical_cyclone.csv.gz "tropical_cyclone" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv | deploy_indicators/prod/uploads ## upload coastal_flood to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/coastal_flood.csv "coastal_flood" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/coastal_flood_upload: data/out/csv/coastal_flood.csv.gz | deploy_indicators/prod/uploads ## upload coastal_flood to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/coastal_flood.csv.gz "coastal_flood" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/drought_upload: data/out/csv/drought.csv | deploy_indicators/prod/uploads ## upload drought to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drought.csv "drought" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/drought_upload: data/out/csv/drought.csv.gz | deploy_indicators/prod/uploads ## upload drought to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drought.csv.gz "drought" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/epidemic_upload: data/out/csv/epidemic.csv | deploy_indicators/prod/uploads ## upload epidemic to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/epidemic.csv "epidemic" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/epidemic_upload: data/out/csv/epidemic.csv.gz | deploy_indicators/prod/uploads ## upload epidemic to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/epidemic.csv.gz "epidemic" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/human_upload: data/out/csv/human.csv | deploy_indicators/prod/uploads ## upload human to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/human.csv "human" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/human_upload: data/out/csv/human.csv.gz | deploy_indicators/prod/uploads ## upload human to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/human.csv.gz "human" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv | deploy_indicators/prod/uploads ## upload projected_conflict_probability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/projected_conflict_probability.csv "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/projected_conflict_probability_upload: data/out/csv/projected_conflict_probability.csv.gz | deploy_indicators/prod/uploads ## upload projected_conflict_probability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/projected_conflict_probability.csv.gz "projected_conflict_probability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv | deploy_indicators/prod/uploads ## upload current_conflict_intensity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/current_conflict_intensity.csv "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/current_conflict_intensity_upload: data/out/csv/current_conflict_intensity.csv.gz | deploy_indicators/prod/uploads ## upload current_conflict_intensity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/current_conflict_intensity.csv.gz "current_conflict_intensity" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/vulnerability_upload: data/out/csv/vulnerability.csv | deploy_indicators/prod/uploads ## upload vulnerability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/vulnerability.csv "vulnerability" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/vulnerability_upload: data/out/csv/vulnerability.csv.gz | deploy_indicators/prod/uploads ## upload vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/vulnerability.csv.gz "vulnerability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv | deploy_indicators/prod/uploads ## upload socio_economic_vulnerability to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/socio_economic_vulnerability.csv "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/socio_economic_vulnerability_upload: data/out/csv/socio_economic_vulnerability.csv.gz | deploy_indicators/prod/uploads ## upload socio_economic_vulnerability to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/socio_economic_vulnerability.csv.gz "socio_economic_vulnerability" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv | deploy_indicators/prod/uploads ## upload development_and_deprivation to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/development_and_deprivation.csv "development_and_deprivation" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/development_and_deprivation_upload: data/out/csv/development_and_deprivation.csv.gz | deploy_indicators/prod/uploads ## upload development_and_deprivation to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/development_and_deprivation.csv.gz "development_and_deprivation" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/inequality_upload: data/out/csv/inequality.csv | deploy_indicators/prod/uploads ## upload inequality to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/inequality.csv "inequality" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/inequality_upload: data/out/csv/inequality.csv.gz | deploy_indicators/prod/uploads ## upload inequality to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/inequality.csv.gz "inequality" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv | deploy_indicators/prod/uploads ## upload economic_dependency to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/economic_dependency.csv "economic_dependency" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/economic_dependency_upload: data/out/csv/economic_dependency.csv.gz | deploy_indicators/prod/uploads ## upload economic_dependency to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/economic_dependency.csv.gz "economic_dependency" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv | deploy_indicators/prod/uploads ## upload vulnerable_groups to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/vulnerable_groups.csv "vulnerable_groups" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/vulnerable_groups_upload: data/out/csv/vulnerable_groups.csv.gz | deploy_indicators/prod/uploads ## upload vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/vulnerable_groups.csv.gz "vulnerable_groups" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv | deploy_indicators/prod/uploads ## upload uprooted_people to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/uprooted_people.csv "uprooted_people" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/uprooted_people_upload: data/out/csv/uprooted_people.csv.gz | deploy_indicators/prod/uploads ## upload uprooted_people to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/uprooted_people.csv.gz "uprooted_people" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/health_conditions_upload: data/out/csv/health_conditions.csv | deploy_indicators/prod/uploads ## upload health_conditions to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/health_conditions.csv "health_conditions" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/health_conditions_upload: data/out/csv/health_conditions.csv.gz | deploy_indicators/prod/uploads ## upload health_conditions to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/health_conditions.csv.gz "health_conditions" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/children_u5_upload: data/out/csv/children_u5.csv | deploy_indicators/prod/uploads ## upload children_u5 to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/children_u5.csv "children_u5" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/children_u5_upload: data/out/csv/children_u5.csv.gz | deploy_indicators/prod/uploads ## upload children_u5 to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/children_u5.csv.gz "children_u5" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv | deploy_indicators/prod/uploads ## upload recent_shocks to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/recent_shocks.csv "recent_shocks" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/recent_shocks_upload: data/out/csv/recent_shocks.csv.gz | deploy_indicators/prod/uploads ## upload recent_shocks to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/recent_shocks.csv.gz "recent_shocks" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/food_security_upload: data/out/csv/food_security.csv | deploy_indicators/prod/uploads ## upload food_security to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/food_security.csv "food_security" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/food_security_upload: data/out/csv/food_security.csv.gz | deploy_indicators/prod/uploads ## upload food_security to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/food_security.csv.gz "food_security" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv | deploy_indicators/prod/uploads ## upload other_vulnerable_groups to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/other_vulnerable_groups.csv "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/other_vulnerable_groups_upload: data/out/csv/other_vulnerable_groups.csv.gz | deploy_indicators/prod/uploads ## upload other_vulnerable_groups to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/other_vulnerable_groups.csv.gz "other_vulnerable_groups" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv | deploy_indicators/prod/uploads ## upload lack_of_coping_capacity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/lack_of_coping_capacity.csv "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/lack_of_coping_capacity_upload: data/out/csv/lack_of_coping_capacity.csv.gz | deploy_indicators/prod/uploads ## upload lack_of_coping_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/lack_of_coping_capacity.csv.gz "lack_of_coping_capacity" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/institutional_upload: data/out/csv/institutional.csv | deploy_indicators/prod/uploads ## upload institutional to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/institutional.csv "institutional" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/institutional_upload: data/out/csv/institutional.csv.gz | deploy_indicators/prod/uploads ## upload institutional to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/institutional.csv.gz "institutional" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/drr_upload: data/out/csv/drr.csv | deploy_indicators/prod/uploads ## upload drr to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drr.csv "drr" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/drr_upload: data/out/csv/drr.csv.gz | deploy_indicators/prod/uploads ## upload drr to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/drr.csv.gz "drr" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/governance_upload: data/out/csv/governance.csv | deploy_indicators/prod/uploads ## upload governance to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/governance.csv "governance" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/governance_upload: data/out/csv/governance.csv.gz | deploy_indicators/prod/uploads ## upload governance to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/governance.csv.gz "governance" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/infrastructure_upload: data/out/csv/infrastructure.csv | deploy_indicators/prod/uploads ## upload infrastructure to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/infrastructure.csv "infrastructure" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/infrastructure_upload: data/out/csv/infrastructure.csv.gz | deploy_indicators/prod/uploads ## upload infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/infrastructure.csv.gz "infrastructure" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/communication_upload: data/out/csv/communication.csv | deploy_indicators/prod/uploads ## upload communication to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/communication.csv "communication" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/communication_upload: data/out/csv/communication.csv.gz | deploy_indicators/prod/uploads ## upload communication to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/communication.csv.gz "communication" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv | deploy_indicators/prod/uploads ## upload physical_infrastructure to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/physical_infrastructure.csv "physical_infrastructure" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/physical_infrastructure_upload: data/out/csv/physical_infrastructure.csv.gz | deploy_indicators/prod/uploads ## upload physical_infrastructure to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/physical_infrastructure.csv.gz "physical_infrastructure" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv | deploy_indicators/prod/uploads ## upload access_to_health_care to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/access_to_health_care.csv "access_to_health_care" db/table/inform_risk_profile_2025_h3
+deploy_indicators/prod/uploads/access_to_health_care_upload: data/out/csv/access_to_health_care.csv.gz | deploy_indicators/prod/uploads ## upload access_to_health_care to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/access_to_health_care.csv.gz "access_to_health_care" db/table/inform_risk_profile_2025_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_banks_count_upload: data/out/csv/osm_banks_count.csv | deploy_indicators/prod/uploads ## upload osm_banks_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_banks_count.csv "osm_banks_count" db/table/osm_financial_venues_h3
+deploy_indicators/prod/uploads/osm_banks_count_upload: data/out/csv/osm_banks_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_banks_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_banks_count.csv.gz "osm_banks_count" db/table/osm_financial_venues_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_atms_count_upload: data/out/csv/osm_atms_count.csv | deploy_indicators/prod/uploads ## upload osm_atms_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_atms_count.csv "osm_atms_count" db/table/osm_financial_venues_h3
+deploy_indicators/prod/uploads/osm_atms_count_upload: data/out/csv/osm_atms_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_atms_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_atms_count.csv.gz "osm_atms_count" db/table/osm_financial_venues_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_kindergartens_count_upload: data/out/csv/osm_kindergartens_count.csv | deploy_indicators/prod/uploads ## upload osm_kindergartens_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_kindergartens_count.csv "osm_kindergartens_count" db/table/osm_education_venues_h3
+deploy_indicators/prod/uploads/osm_kindergartens_count_upload: data/out/csv/osm_kindergartens_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_kindergartens_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_kindergartens_count.csv.gz "osm_kindergartens_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_schools_count_upload: data/out/csv/osm_schools_count.csv | deploy_indicators/prod/uploads ## upload osm_schools_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_schools_count.csv "osm_schools_count" db/table/osm_education_venues_h3
+deploy_indicators/prod/uploads/osm_schools_count_upload: data/out/csv/osm_schools_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_schools_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_schools_count.csv.gz "osm_schools_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_colleges_count_upload: data/out/csv/osm_colleges_count.csv | deploy_indicators/prod/uploads ## upload osm_colleges_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_colleges_count.csv "osm_colleges_count" db/table/osm_education_venues_h3
+deploy_indicators/prod/uploads/osm_colleges_count_upload: data/out/csv/osm_colleges_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_colleges_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_colleges_count.csv.gz "osm_colleges_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_universities_count_upload: data/out/csv/osm_universities_count.csv | deploy_indicators/prod/uploads ## upload osm_universities_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_universities_count.csv "osm_universities_count" db/table/osm_education_venues_h3
+deploy_indicators/prod/uploads/osm_universities_count_upload: data/out/csv/osm_universities_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_universities_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_universities_count.csv.gz "osm_universities_count" db/table/osm_education_venues_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_defibrillators_count_upload: data/out/csv/osm_defibrillators_count.csv | deploy_indicators/prod/uploads ## upload osm_defibrillators_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_defibrillators_count.csv "osm_defibrillators_count" db/table/osm_emergency_facilities_h3
+deploy_indicators/prod/uploads/osm_defibrillators_count_upload: data/out/csv/osm_defibrillators_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_defibrillators_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_defibrillators_count.csv.gz "osm_defibrillators_count" db/table/osm_emergency_facilities_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_airports_count_upload: data/out/csv/osm_airports_count.csv | deploy_indicators/prod/uploads ## upload osm_airports_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_airports_count.csv "osm_airports_count" db/table/osm_transport_facilities_h3
+deploy_indicators/prod/uploads/osm_airports_count_upload: data/out/csv/osm_airports_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_airports_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_airports_count.csv.gz "osm_airports_count" db/table/osm_transport_facilities_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_railway_stations_count_upload: data/out/csv/osm_railway_stations_count.csv | deploy_indicators/prod/uploads ## upload osm_railway_stations_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_railway_stations_count.csv "osm_railway_stations_count" db/table/osm_transport_facilities_h3
+deploy_indicators/prod/uploads/osm_railway_stations_count_upload: data/out/csv/osm_railway_stations_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_railway_stations_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_railway_stations_count.csv.gz "osm_railway_stations_count" db/table/osm_transport_facilities_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_public_transport_stops_count_upload: data/out/csv/osm_public_transport_stops_count.csv | deploy_indicators/prod/uploads ## upload osm_public_transport_stops_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_public_transport_stops_count.csv "osm_public_transport_stops_count" db/table/osm_transport_facilities_h3
+deploy_indicators/prod/uploads/osm_public_transport_stops_count_upload: data/out/csv/osm_public_transport_stops_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_public_transport_stops_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_public_transport_stops_count.csv.gz "osm_public_transport_stops_count" db/table/osm_transport_facilities_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_car_parkings_capacity_upload: data/out/csv/osm_car_parkings_capacity.csv | deploy_indicators/prod/uploads ## upload osm_car_parkings_capacity to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_car_parkings_capacity.csv "osm_car_parkings_capacity" db/table/osm_car_parkings_capacity_h3
+deploy_indicators/prod/uploads/osm_car_parkings_capacity_upload: data/out/csv/osm_car_parkings_capacity.csv.gz | deploy_indicators/prod/uploads ## upload osm_car_parkings_capacity to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_car_parkings_capacity.csv.gz "osm_car_parkings_capacity" db/table/osm_car_parkings_capacity_h3
 	touch $@
 
-deploy_indicators/prod/uploads/osm_heritage_sites_count_upload: data/out/csv/osm_heritage_sites_count.csv | deploy_indicators/prod/uploads ## upload osm_heritage_sites_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_heritage_sites_count.csv "osm_heritage_sites_count" db/table/osm_heritage_sites_h3
+deploy_indicators/prod/uploads/osm_heritage_sites_count_upload: data/out/csv/osm_heritage_sites_count.csv.gz | deploy_indicators/prod/uploads ## upload osm_heritage_sites_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_heritage_sites_count.csv.gz "osm_heritage_sites_count" db/table/osm_heritage_sites_h3
 	touch $@
 
-deploy_indicators/prod/uploads/min_osm_heritage_admin_level_upload: data/out/csv/min_osm_heritage_admin_level.csv | deploy_indicators/prod/uploads ## upload min_osm_heritage_admin_level to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_osm_heritage_admin_level.csv "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
+deploy_indicators/prod/uploads/min_osm_heritage_admin_level_upload: data/out/csv/min_osm_heritage_admin_level.csv.gz | deploy_indicators/prod/uploads ## upload min_osm_heritage_admin_level to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_osm_heritage_admin_level.csv.gz "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
 	touch $@
 
-deploy_indicators/prod/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv | deploy_indicators/prod/uploads ## upload foursquare_os_places_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/foursquare_os_places_count.csv "foursquare_os_places_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv.gz | deploy_indicators/prod/uploads ## upload foursquare_os_places_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/foursquare_os_places_count.csv.gz "foursquare_os_places_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/coffee_shops_fsq_count_upload: data/out/csv/coffee_shops_fsq_count.csv | deploy_indicators/prod/uploads ## upload coffee_shops_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/coffee_shops_fsq_count.csv "coffee_shops_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/coffee_shops_fsq_count_upload: data/out/csv/coffee_shops_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload coffee_shops_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/coffee_shops_fsq_count.csv.gz "coffee_shops_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/kebab_restaurants_fsq_count_upload: data/out/csv/kebab_restaurants_fsq_count.csv | deploy_indicators/prod/uploads ## upload kebab_restaurants_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/kebab_restaurants_fsq_count.csv "kebab_restaurants_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/kebab_restaurants_fsq_count_upload: data/out/csv/kebab_restaurants_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload kebab_restaurants_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/kebab_restaurants_fsq_count.csv.gz "kebab_restaurants_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/business_and_professional_services_fsq_count_upload: data/out/csv/business_and_professional_services_fsq_count.csv | deploy_indicators/prod/uploads ## upload business_and_professional_services_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/business_and_professional_services_fsq_count.csv "business_and_professional_services_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/business_and_professional_services_fsq_count_upload: data/out/csv/business_and_professional_services_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload business_and_professional_services_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/business_and_professional_services_fsq_count.csv.gz "business_and_professional_services_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/dining_and_drinking_fsq_count_upload: data/out/csv/dining_and_drinking_fsq_count.csv | deploy_indicators/prod/uploads ## upload dining_and_drinking_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/dining_and_drinking_fsq_count.csv "dining_and_drinking_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/dining_and_drinking_fsq_count_upload: data/out/csv/dining_and_drinking_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload dining_and_drinking_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/dining_and_drinking_fsq_count.csv.gz "dining_and_drinking_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/retail_fsq_count_upload: data/out/csv/retail_fsq_count.csv | deploy_indicators/prod/uploads ## upload retail_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/retail_fsq_count.csv "retail_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/retail_fsq_count_upload: data/out/csv/retail_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload retail_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/retail_fsq_count.csv.gz "retail_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/community_and_government_fsq_count_upload: data/out/csv/community_and_government_fsq_count.csv | deploy_indicators/prod/uploads ## upload community_and_government_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/community_and_government_fsq_count.csv "community_and_government_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/community_and_government_fsq_count_upload: data/out/csv/community_and_government_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload community_and_government_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/community_and_government_fsq_count.csv.gz "community_and_government_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/travel_and_transportation_fsq_count_upload: data/out/csv/travel_and_transportation_fsq_count.csv | deploy_indicators/prod/uploads ## upload travel_and_transportation_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/travel_and_transportation_fsq_count.csv "travel_and_transportation_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/travel_and_transportation_fsq_count_upload: data/out/csv/travel_and_transportation_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload travel_and_transportation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/travel_and_transportation_fsq_count.csv.gz "travel_and_transportation_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/landmarks_and_outdoors_fsq_count_upload: data/out/csv/landmarks_and_outdoors_fsq_count.csv | deploy_indicators/prod/uploads ## upload landmarks_and_outdoors_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/landmarks_and_outdoors_fsq_count.csv "landmarks_and_outdoors_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/landmarks_and_outdoors_fsq_count_upload: data/out/csv/landmarks_and_outdoors_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload landmarks_and_outdoors_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/landmarks_and_outdoors_fsq_count.csv.gz "landmarks_and_outdoors_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/health_and_medicine_fsq_count_upload: data/out/csv/health_and_medicine_fsq_count.csv | deploy_indicators/prod/uploads ## upload health_and_medicine_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/health_and_medicine_fsq_count.csv "health_and_medicine_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/health_and_medicine_fsq_count_upload: data/out/csv/health_and_medicine_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload health_and_medicine_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/health_and_medicine_fsq_count.csv.gz "health_and_medicine_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/arts_and_entertainment_fsq_count_upload: data/out/csv/arts_and_entertainment_fsq_count.csv | deploy_indicators/prod/uploads ## upload arts_and_entertainment_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/arts_and_entertainment_fsq_count.csv "arts_and_entertainment_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/arts_and_entertainment_fsq_count_upload: data/out/csv/arts_and_entertainment_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload arts_and_entertainment_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/arts_and_entertainment_fsq_count.csv.gz "arts_and_entertainment_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/sports_and_recreation_fsq_count_upload: data/out/csv/sports_and_recreation_fsq_count.csv | deploy_indicators/prod/uploads ## upload sports_and_recreation_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/sports_and_recreation_fsq_count.csv "sports_and_recreation_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/sports_and_recreation_fsq_count_upload: data/out/csv/sports_and_recreation_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload sports_and_recreation_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/sports_and_recreation_fsq_count.csv.gz "sports_and_recreation_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
-deploy_indicators/prod/uploads/events_fsq_count_upload: data/out/csv/events_fsq_count.csv | deploy_indicators/prod/uploads ## upload events_fsq_count to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
+deploy_indicators/prod/uploads/events_fsq_count_upload: data/out/csv/events_fsq_count.csv.gz | deploy_indicators/prod/uploads ## upload events_fsq_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/events_fsq_count.csv.gz "events_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
 deploy_indicators/prod/uploads/upload_prod: \

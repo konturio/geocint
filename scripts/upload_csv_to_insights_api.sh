@@ -94,29 +94,29 @@ else
 fi
 
 # Execute the curl request to upload the file
-curl_request="curl -k -w ':::%{http_code}' --location --request ${method} ${upload_endpoint} --header 'Authorization: Bearer ${token}' --form 'parameters=${parameters_json}' --form 'file=@\"$2\"'"
+curl_request="curl -k -w ':::%{http_code}' --location --request ${method} ${upload_endpoint} --header 'Authorization: Bearer ${token}' --header 'Content-Encoding: gzip' --form 'parameters=${parameters_json}' --form 'file=@\"$2\"'"
 
 # Output the formed request for execution
 echo ""
 echo "$curl_request"
 
 # Upload file
-request_result=$(eval $curl_request)
+request_result=$(eval "$curl_request")
 
 if [[ -z $request_result ]]; then
   echo "Error. Failed to $action layer"
   exit 1
 fi
 
-response_status=$(sed 's/.*:::\(.*\)/\1/' <<< $request_result)
+response_status=$(sed 's/.*:::\(.*\)/\1/' <<< "$request_result")
 response_status_length=${#response_status}
 
-if [ $response_status_length != 3 ]; then
+if [ "$response_status_length" != 3 ]; then
   echo "$(date '+%F %H:%M:%S') Error. Failed to $action layer. $layer_label $layer_id Message: $response_status"
   exit 1
 fi
 
-if [ $response_status != 200 ]; then
+if [ "$response_status" != 200 ]; then
   echo "$(date '+%F %H:%M:%S') Error. Failed to $action layer. $layer_label $layer_id Status code: $response_status"
   exit 1
 fi
@@ -128,19 +128,19 @@ echo "$(date '+%F %H:%M:%S') got upload id $upload_id"
 # wait 5 sec to let upload process start
 sleep 5
 
-curl_request="curl -s -w "\":::\"%{http_code}" --location '$upload_check/$upload_id'   -H 'Authorization: Bearer $token'"
+curl_request="curl -s -w ':::%{http_code}' --location "$upload_check/$upload_id" -H "Authorization: Bearer $token""
 
 echo "$curl_request"
 
 while true; do
-    request_result=$(eval $curl_request)
-    rc=$(sed 's/.*:::\(.*\)/\1/' <<< $request_result)
+    request_result=$(eval "$curl_request")
+    rc=$(sed 's/.*:::\(.*\)/\1/' <<< "$request_result")
     [[ "$rc" != 202 ]] && break
     echo "$(date '+%F %H:%M:%S') $request_result"
     sleep 300
 done
 
-echo $request_result
+echo "$request_result"
 
 if [ "$rc" != 200 ]; then
   echo "$(date '+%F %H:%M:%S') Error. Failed to $action layer. Upload check failed. $layer_label $layer_id Status code: $rc"

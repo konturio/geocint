@@ -2744,10 +2744,10 @@ db/table/timezone_offset_h3: db/table/osm db/index/osm_tags_idx | db/procedure/g
 	psql -f tables/timezone_offset_h3.sql
 	touch $@
 
-### Building start year layer ###
+### Building construction year layer ###
 
-db/table/building_start_year_h3: db/table/osm db/index/osm_tags_idx db/function/parse_integer | db/procedure/generate_overviews db/table ## Average building start year per hexagon
-	psql -f tables/building_start_year_h3.sql
+db/table/building_construction_year_h3: db/table/osm db/index/osm_tags_idx db/function/parse_integer | db/procedure/generate_overviews db/table ## Aggregated OSM building construction year stats (min, max, avg) per hexagon
+	psql -f tables/building_construction_year_h3.sql
 	touch $@
 
 ### Railway length layer ###
@@ -3246,8 +3246,14 @@ data/out/csv/motor_vehicle_road_length.csv: db/table/motor_vehicle_road_length_h
 data/out/csv/timezone_offset.csv: db/table/timezone_offset_h3 | data/out/csv ## extract timezone_offset to csv file
 	psql -q -X -c "copy (select h3, utc_offset from timezone_offset_h3 where h3 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
-data/out/csv/building_start_year.csv: db/table/building_start_year_h3 | data/out/csv ## extract building_start_year to csv file
-	psql -q -X -c "copy (select h3, start_year from building_start_year_h3 where h3 is not null and start_year is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+data/out/csv/min_osm_building_construction_year.csv: db/table/building_construction_year_h3 | data/out/csv ## extract min_osm_building_construction_year to csv file
+	psql -q -X -c "copy (select h3, min_osm_building_construction_year from building_construction_year_h3 where h3 is not null and min_osm_building_construction_year is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/max_osm_building_construction_year.csv: db/table/building_construction_year_h3 | data/out/csv ## extract max_osm_building_construction_year to csv file
+	psql -q -X -c "copy (select h3, max_osm_building_construction_year from building_construction_year_h3 where h3 is not null and max_osm_building_construction_year is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/avg_osm_building_construction_year.csv: db/table/building_construction_year_h3 | data/out/csv ## extract avg_osm_building_construction_year to csv file
+	psql -q -X -c "copy (select h3, avg_osm_building_construction_year from building_construction_year_h3 where h3 is not null and avg_osm_building_construction_year is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/railway_length.csv: db/table/railway_length_h3 | data/out/csv ## extract railway_length to csv file
 	psql -q -X -c "copy (select h3, railway_length::float/1000.0 from railway_length_h3 where h3 is not null and railway_length is not null and railway_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
@@ -3849,8 +3855,16 @@ deploy_indicators/dev/uploads/timezone_offset_upload: data/out/csv/timezone_offs
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/timezone_offset.csv "timezone_offset" db/table/timezone_offset_h3
 	touch $@
 
-deploy_indicators/dev/uploads/building_start_year_upload: data/out/csv/building_start_year.csv | deploy_indicators/dev/uploads ## upload building_start_year to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/building_start_year.csv "building_start_year" db/table/building_start_year_h3
+deploy_indicators/dev/uploads/min_osm_building_construction_year_upload: data/out/csv/min_osm_building_construction_year.csv | deploy_indicators/dev/uploads ## upload min_osm_building_construction_year to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_osm_building_construction_year.csv "min_osm_building_construction_year" db/table/building_construction_year_h3
+	touch $@
+
+deploy_indicators/dev/uploads/max_osm_building_construction_year_upload: data/out/csv/max_osm_building_construction_year.csv | deploy_indicators/dev/uploads
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_building_construction_year.csv "max_osm_building_construction_year" db/table/building_construction_year_h3
+	touch $@
+
+deploy_indicators/dev/uploads/avg_osm_building_construction_year_upload: data/out/csv/avg_osm_building_construction_year.csv | deploy_indicators/dev/uploads
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_building_construction_year.csv "avg_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
 deploy_indicators/dev/uploads/railway_length_upload: data/out/csv/railway_length.csv | deploy_indicators/dev/uploads ## upload railway_length to insight-api
@@ -4267,7 +4281,9 @@ deploy_indicators/dev/uploads/upload_dev: \
     deploy_indicators/dev/uploads/communication_line_length_upload \
     deploy_indicators/dev/uploads/motor_vehicle_road_length_upload \
     deploy_indicators/dev/uploads/timezone_offset_upload \
-    deploy_indicators/dev/uploads/building_start_year_upload \
+    deploy_indicators/dev/uploads/min_osm_building_construction_year_upload \
+    deploy_indicators/dev/uploads/max_osm_building_construction_year_upload \
+    deploy_indicators/dev/uploads/avg_osm_building_construction_year_upload \
     deploy_indicators/dev/uploads/railway_length_upload \
     deploy_indicators/dev/uploads/safety_index_upload \
     deploy_indicators/dev/uploads/avg_forest_canopy_height_upload \
@@ -5037,8 +5053,16 @@ deploy_indicators/test/uploads/timezone_offset_upload: data/out/csv/timezone_off
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/timezone_offset.csv "timezone_offset" db/table/timezone_offset_h3
 	touch $@
 
-deploy_indicators/test/uploads/building_start_year_upload: data/out/csv/building_start_year.csv | deploy_indicators/test/uploads ## upload building_start_year to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/building_start_year.csv "building_start_year" db/table/building_start_year_h3
+deploy_indicators/test/uploads/min_osm_building_construction_year_upload: data/out/csv/min_osm_building_construction_year.csv | deploy_indicators/test/uploads ## upload min_osm_building_construction_year to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_osm_building_construction_year.csv "min_osm_building_construction_year" db/table/building_construction_year_h3
+	touch $@
+
+deploy_indicators/test/uploads/max_osm_building_construction_year_upload: data/out/csv/max_osm_building_construction_year.csv | deploy_indicators/test/uploads
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_building_construction_year.csv "max_osm_building_construction_year" db/table/building_construction_year_h3
+	touch $@
+
+deploy_indicators/test/uploads/avg_osm_building_construction_year_upload: data/out/csv/avg_osm_building_construction_year.csv | deploy_indicators/test/uploads
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_building_construction_year.csv "avg_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
 deploy_indicators/test/uploads/railway_length_upload: data/out/csv/railway_length.csv | deploy_indicators/test/uploads ## upload railway_length to insight-api
@@ -5456,7 +5480,9 @@ deploy_indicators/test/uploads/upload_test: \
     deploy_indicators/test/uploads/communication_line_length_upload \
     deploy_indicators/test/uploads/motor_vehicle_road_length_upload \
     deploy_indicators/test/uploads/timezone_offset_upload \
-    deploy_indicators/test/uploads/building_start_year_upload \
+    deploy_indicators/test/uploads/min_osm_building_construction_year_upload \
+    deploy_indicators/test/uploads/max_osm_building_construction_year_upload \
+    deploy_indicators/test/uploads/avg_osm_building_construction_year_upload \
     deploy_indicators/test/uploads/railway_length_upload \
     deploy_indicators/test/uploads/safety_index_upload \
     deploy_indicators/test/uploads/avg_forest_canopy_height_upload \
@@ -6227,8 +6253,16 @@ deploy_indicators/prod/uploads/timezone_offset_upload: data/out/csv/timezone_off
 	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/timezone_offset.csv "timezone_offset" db/table/timezone_offset_h3
 	touch $@
 
-deploy_indicators/prod/uploads/building_start_year_upload: data/out/csv/building_start_year.csv | deploy_indicators/prod/uploads ## upload building_start_year to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/building_start_year.csv "building_start_year" db/table/building_start_year_h3
+deploy_indicators/prod/uploads/min_osm_building_construction_year_upload: data/out/csv/min_osm_building_construction_year.csv | deploy_indicators/prod/uploads ## upload min_osm_building_construction_year to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_osm_building_construction_year.csv "min_osm_building_construction_year" db/table/building_construction_year_h3
+	touch $@
+
+deploy_indicators/prod/uploads/max_osm_building_construction_year_upload: data/out/csv/max_osm_building_construction_year.csv | deploy_indicators/prod/uploads
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_building_construction_year.csv "max_osm_building_construction_year" db/table/building_construction_year_h3
+	touch $@
+
+deploy_indicators/prod/uploads/avg_osm_building_construction_year_upload: data/out/csv/avg_osm_building_construction_year.csv | deploy_indicators/prod/uploads
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_building_construction_year.csv "avg_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
 deploy_indicators/prod/uploads/railway_length_upload: data/out/csv/railway_length.csv | deploy_indicators/prod/uploads ## upload railway_length to insight-api
@@ -6611,7 +6645,9 @@ deploy_indicators/prod/uploads/upload_prod: \
     deploy_indicators/prod/uploads/communication_line_length_upload \
     deploy_indicators/prod/uploads/motor_vehicle_road_length_upload \
     deploy_indicators/prod/uploads/timezone_offset_upload \
-    deploy_indicators/prod/uploads/building_start_year_upload \
+    deploy_indicators/prod/uploads/min_osm_building_construction_year_upload \
+    deploy_indicators/prod/uploads/max_osm_building_construction_year_upload \
+    deploy_indicators/prod/uploads/avg_osm_building_construction_year_upload \
     deploy_indicators/prod/uploads/railway_length_upload \
     deploy_indicators/prod/uploads/mapswipe_area_km2_upload \
     deploy_indicators/prod/uploads/avg_slope_gebco_2022_upload \

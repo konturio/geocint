@@ -13,23 +13,22 @@ create table building_year_points as (
     select start_year,
            geom           
     from building_year_points_in
-    where start_year is not null 
-          or start_year >= 1000 
-          or start_year <= extract(year from current_date)
+    where start_year is not null
+          and start_year <= extract(year from current_date)
 );
 
-drop table if exists building_start_year_h3;
+drop table if exists building_construction_year_h3;
 create table building_start_year_h3 as (
     select h3_lat_lng_to_cell(geom::point, 8) as h3,
-           avg(start_year)::float             as start_year,
+           min(start_year)::float             as min_osm_building_construction_year,
+           max(start_year)::float             as max_osm_building_construction_year,
+           avg(start_year)::float             as avg_osm_building_construction_year,
            8                                  as resolution
     from building_year_points
     group by 1
 );
 
-create index on building_start_year_h3(h3);
-
 drop table if exists building_year_points_in;
 drop table if exists building_year_points;
 
-call generate_overviews('building_start_year_h3', '{start_year}'::text[], '{avg}'::text[], 8);
+call generate_overviews('building_construction_year_h3', '{min_osm_building_construction_year,max_osm_building_construction_year,avg_osm_building_construction_year}'::text[], '{min,max,avg}'::text[], 8);

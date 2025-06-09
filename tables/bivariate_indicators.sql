@@ -746,7 +746,13 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('timezone_offset', 'Timezone UTC offset', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["neutral"], ["neutral"]]'::jsonb, 'Average timezone offset from UTC according to timezone tag.', 'World', 'daily', 'h', TRUE, '🕓','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('building_start_year', 'Building construction year', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["old"], ["new"]]'::jsonb, 'Average construction year of buildings from start_date tag.', 'World', 'daily', 'years', TRUE, '🏠📅','equal');
+values ('min_osm_building_construction_year', 'Earliest building construction year', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["old"], ["new"]]'::jsonb, 'Earliest construction year of buildings in OSM from start_date tag.', 'World', 'daily', 'years', TRUE, '🏰📅','equal');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
+values ('max_osm_building_construction_year', 'Latest building construction year', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["old"], ["new"]]'::jsonb, 'Latest construction year of buildings in OSM from start_date tag.', 'World', 'daily', 'years', TRUE, '🏠📅','equal');
+
+insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
+values ('avg_osm_building_construction_year', 'Average building construction year', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["old"], ["new"]]'::jsonb, 'Average construction year of buildings in OSM from start_date tag.', 'World', 'daily', 'years', TRUE, '🏘️📅','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('railway_length', 'Railway length', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["unimportant"], ["important"]]'::jsonb, 'Total length of railways in OpenStreetMap.', 'World', 'daily', 'km', TRUE, '🚆','proportional');

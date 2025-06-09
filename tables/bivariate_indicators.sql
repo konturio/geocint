@@ -418,7 +418,7 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('powerlines_proximity_m', 'Powerlines proximity', jsonb_build_array(
         'Copyright © OpenStreetMap contributors https://www.openstreetmap.org/copyright',
         '© 2020 The World Bank Group, CC-BY 4.0'),
-        '[["important"], ["unimportant"]]'::jsonb, 'Distance to closest powerline', 'World', 'static', 'm', TRUE, '⚡👫','equal');
+        '[["important"], ["unimportant"]]'::jsonb, 'Distance to the closest powerline', 'World', 'static', 'm', TRUE, '⚡👫','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('waste_basket_coverage_area_km2', 'Waste containers coverage', jsonb_build_array(
@@ -428,19 +428,19 @@ values ('waste_basket_coverage_area_km2', 'Waste containers coverage', jsonb_bui
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('populated_areas_proximity_m', 'Densely populated area proximity', jsonb_build_array(
         'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, 'Distance to closest Kontur Population cell with population > 80 ppl. This indicator is valid for non-populated areas between cities.', 'World', 'daily', 'm', TRUE, '🏡👫','equal');
+        '[["good"], ["bad"]]'::jsonb, 'Distance to the closest Kontur Population cell with population > 80 people. This indicator is valid for unpopulated areas between cities.', 'World', 'daily', 'm', TRUE, '🏡👫','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('power_substations_proximity_m', 'Power substations proximity', jsonb_build_array(
         '© OpenStreetMap contributors https://www.openstreetmap.org/copyright'),
-        '[["good"], ["bad"]]'::jsonb, 'Distance to closest power substation', 'World', 'daily', 'm', TRUE, '🏭👫','equal');
+        '[["good"], ["bad"]]'::jsonb, 'Distance to the closest power substation', 'World', 'daily', 'm', TRUE, '🏭👫','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('solar_farms_placement_suitability', 'Suitability estimation for solar farms placement', jsonb_build_array(
         'Copyright © Kontur https://kontur.io/', '© OpenStreetMap contributors https://www.openstreetmap.org/copyright',
         'Copyright © 2022 WorldClim https://www.worldclim.org/data/index.html', 
         'Copyright © 2022 The World Bank https://globalsolaratlas.info/support/terms-of-use'),
-        '[["bad"], ["good"]]'::jsonb, 'Multi-criteria analysis based layer dedicated to estimation of suitability of solar farms placement. 0 means absolutely unsuitable, 1 means perfectly suitable. Analysis is based on solar irradiace, powerlines grid proximity, power substations proximity, elevation slope, minimal and maximal temperatures, populated areas proximity', 'World (-60:60 latitudes)', 'daily', 'index', TRUE, '☀️💡','equal');
+        '[["bad"], ["good"]]'::jsonb, 'Multi-criteria layer estimating suitability for solar farm placement. 0 means absolutely unsuitable; 1 is perfectly suitable. The score considers solar irradiance, proximity to powerlines and substations, elevation slope, minimum and maximum temperatures, and proximity to populated areas', 'World (-60:60 latitudes)', 'daily', 'index', TRUE, '☀️💡','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('residential', 'Percentage of permanent population', jsonb_build_array(
@@ -460,16 +460,16 @@ values ('safety_index', 'Safety (Global Peace Index 2022)', jsonb_build_array(
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('stddev_accel', 'Road Quality', jsonb_build_array(
         '© Kontur https://kontur.io/'),
-        '[["good"], ["bad"]]'::jsonb, 'Road quality is measured by volunteers using mobile application that records phone accelerometer while driving. The areas that have highest typical standard deviation of acceleration are considered uncomfortable for driving.', 'World', 'daily', 'm_s2', TRUE, '🚙📊','equal');
+        '[["good"], ["bad"]]'::jsonb, 'Road quality is measured by volunteers using a mobile application that records phone accelerometer while driving. Areas with the highest standard deviation of acceleration are considered uncomfortable for driving.', 'World', 'daily', 'm_s2', TRUE, '🚙📊','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('avg_forest_canopy_height', 'Forest canopy average height', jsonb_build_array(
-        'High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.'),
+        'High Resolution Canopy Height Maps by WRI and Meta were accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institute (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed May 20, 2024.'),
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb, 'Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery.', 'World', 'static', 'm', TRUE, '🌲📐','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('max_forest_canopy_height', 'Forest canopy maximal height', jsonb_build_array(
-        'High Resolution Canopy Height Maps by WRI and Meta was accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institude (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed 20 may 2024.'),
+values ('max_forest_canopy_height', 'Forest canopy maximum height', jsonb_build_array(
+        'High Resolution Canopy Height Maps by WRI and Meta were accessed on 20.05.2024 from https://registry.opendata.aws/dataforgood-fb-forests. Meta and World Resources Institute (WRI) - 2024. High Resolution Canopy Height Maps (CHM). Source imagery for CHM © 2016 Maxar. Accessed May 20, 2024.'),
         '[["bad", "unimportant"], ["good", "important"]]'::jsonb, 'Global and regional Canopy Height Maps (CHM). Created using machine learning models on high-resolution worldwide Maxar satellite imagery.', 'World', 'static', 'm', TRUE, '🌲⬆️','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
@@ -507,16 +507,16 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('osm_hotels_count', 'Hotels', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of hotels in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏨','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('max_osm_hotels_assesment', 'Hotel stars rating maximum', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Max hotel level assesment from OSM.', 'World', 'daily', 'n', TRUE, '🏨🌟','equal');
+values ('max_osm_hotels_assesment', 'Hotel star rating maximum', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Max hotel level assessment from OSM.', 'World', 'daily', 'n', TRUE, '🏨🌟','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('avg_osm_hotels_assesment', 'Hotel stars rating average', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Average hotel level assesment from OSM.', 'World', 'daily', 'n', TRUE, '🏨⭐','equal');
+values ('avg_osm_hotels_assesment', 'Hotel star rating average', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Average hotel level assessment from OSM.', 'World', 'daily', 'n', TRUE, '🏨⭐','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('oam_coverage_area', 'OpenAerialMap coverage area', jsonb_build_array('© Kontur https://kontur.io','All imagery is publicly licensed and made available through the Humanitarian OpenStreetMap Team‘s Open Imagery Network (OIN) Node. All imagery contained in OIN is licensed CC-BY 4.0, with attribution as contributors of Open Imagery Network. All imagery is available to be traced in OpenStreetMap. © OpenAerialMap'), '[["bad"], ["good"]]'::jsonb, 'Area covered by OpenAerialMap images.', 'World', 'every_30min', 'km2', TRUE, '🗺️🛰️','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('oam_number_of_pixels', 'OpenAerialMap coverage pixels number', jsonb_build_array('© Kontur https://kontur.io','All imagery is publicly licensed and made available through the Humanitarian OpenStreetMap Team‘s Open Imagery Network (OIN) Node. All imagery contained in OIN is licensed CC-BY 4.0, with attribution as contributors of Open Imagery Network. All imagery is available to be traced in OpenStreetMap. © OpenAerialMap'), '[["bad"], ["good"]]'::jsonb, 'Number of pixels of OpenAerialMap images.', 'World', 'every_30min', 'n', TRUE, '🗺️🔍','proportional');
+values ('oam_number_of_pixels', 'OpenAerialMap coverage pixels number', jsonb_build_array('© Kontur https://kontur.io','All imagery is publicly licensed and made available through the Humanitarian OpenStreetMap Team‘s Open Imagery Network (OIN) Node. All imagery contained in OIN is licensed CC-BY 4.0, with attribution as contributors of Open Imagery Network. All imagery is available to be traced in OpenStreetMap. © OpenAerialMap'), '[["bad"], ["good"]]'::jsonb, 'Number of pixels in OpenAerialMap imagery.', 'World', 'every_30min', 'n', TRUE, '🗺️🔍','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('osm_historical_sites_and_museums_count', 'Historical sites and museums', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of historical sites and museums in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🏰','proportional');
@@ -525,7 +525,7 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('osm_art_venues_count', 'Art venues', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of art venues in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🖼️🖌️','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('osm_entertainment_venues_count', 'Entertainment venues', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of entertainment venues OpenStreetMap.', 'World', 'daily', 'n', TRUE, '📽️','proportional');
+values ('osm_entertainment_venues_count', 'Entertainment venues', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of entertainment venues in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '📽️','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('osm_cultural_and_comunity_centers_count', 'Cultural and community centers', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of cultural and community centers in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '🫂','proportional');
@@ -536,7 +536,7 @@ values ('worldbank_inflation', 'Price inflation rate', jsonb_build_array(
         '[["good"], ["bad"]]'::jsonb, 'Inflation, measured by the Consumer Price Index (CPI), is the annual change in prices of a typical basket of goods and services purchased by households. Data are drawn from multiple databases: OECD.Stat, the IMF World Economic Outlook database and International Financial Statistics, ILOSTAT, UNdata and country-specific sources including central banks and statistical offices.', 'World', 'static', 'perc', TRUE, '💸','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('osm_pharmacy_count', 'Pharmacies', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of pharmacy in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '⚕️💊','proportional');
+values ('osm_pharmacy_count', 'Pharmacies', jsonb_build_array('© OpenStreetMap contributors https://www.openstreetmap.org/copyright'), '[["bad"], ["good"]]'::jsonb, 'Number of pharmacies in OpenStreetMap.', 'World', 'daily', 'n', TRUE, '⚕️💊','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('conflict_stock_displacement', 'Conflict stock displacement', jsonb_build_array('© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries', '© 2012-2024 Internal Displacement Monitoring Centre (IDMC)'), '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Percent of total population of IDPs (rounded figures at the national level), as a result of conflicts and violence as of the end of the reporting year.', 'World', 'static', 'perc', TRUE, '🆘🧑🏻‍🤝‍🧑🏿','equal');
@@ -545,10 +545,10 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('disaster_stock_displacement', 'Disaster stock displacement', jsonb_build_array('© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries', '© 2012-2024 Internal Displacement Monitoring Centre (IDMC)'), '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Percent of total population of IDPs (rounded figures at the national level), as a result of disasters as of the end of the reporting year.', 'World', 'static', 'perc', TRUE, '⚠️🧑🏻‍🤝‍🧑🏿','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('conflict_internal_displacements', 'Conflict internal displacements', jsonb_build_array('© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries', '© 2012-2024 Internal Displacement Monitoring Centre (IDMC)'), '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Percent of total population of internal displacements reported (rounded figures at national level), as a result of conflict and violence over the 2023.', 'World', 'static', 'perc', TRUE, '💣🧑🏻‍🤝‍🧑🏿','equal');
+values ('conflict_internal_displacements', 'Conflict internal displacements', jsonb_build_array('© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries', '© 2012-2024 Internal Displacement Monitoring Centre (IDMC)'), '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Percent of total population of internal displacements reported (rounded figures at national level), as a result of conflict and violence in 2023.', 'World', 'static', 'perc', TRUE, '💣🧑🏻‍🤝‍🧑🏿','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('disaster_internal_displacements', 'Disaster internal displacements', jsonb_build_array('© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries', '© 2012-2024 Internal Displacement Monitoring Centre (IDMC)'), '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Percent of total population of internal displacements reported (rounded figures at national level), as a result of disasters over the 2023.', 'World', 'static', 'perc', TRUE, '🌋🧑🏻‍🤝‍🧑🏿','equal');
+values ('disaster_internal_displacements', 'Disaster internal displacements', jsonb_build_array('© Kontur Boundaries https://data.humdata.org/dataset/kontur-boundaries', '© 2012-2024 Internal Displacement Monitoring Centre (IDMC)'), '[["good", "unimportant"], ["bad", "important"]]'::jsonb, 'Percent of total population of internal displacements reported (rounded figures at national level), as a result of disasters in 2023.', 'World', 'static', 'perc', TRUE, '🌋🧑🏻‍🤝‍🧑🏿','equal');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
 values ('hdi_2022', 'The Human Development Index', jsonb_build_array('© 2024 United Nations Development Programme https://hdr.undp.org/data-center/human-development-index'), '[["bad"], ["good"]]'::jsonb, 'The Human Development Index (HDI) is a summary measure of average achievement in key dimensions of human development: a long and healthy life, being knowledgeable and having a decent standard of living. The HDI is the geometric mean of normalized indices for each of the three dimensions. The health dimension is assessed by life expectancy at birth, the education dimension is measured by mean of years of schooling for adults aged 25 years and more and expected years of schooling for children of school entering age. The standard of living dimension is measured by gross national income per capita. The HDI uses the logarithm of income, to reflect the diminishing importance of income with increasing GNI. The scores for the three HDI dimension indices are then aggregated into a composite index using geometric mean. The entire series of Human Development Index (HDI) values and rankings are recalculated every year using the same the most recent (revised) data and functional forms. The HDI rankings and values in the 2014 Human Development Report cannot therefore be compared directly to indices published in previous Reports. Please see hdr.undp.org for more information. The HDI was created to emphasize that people and their capabilities should be the ultimate criteria for assessing the development of a country, not economic growth alone. The HDI can also be used to question national policy choices, asking how two countries with the same level of GNI per capita can end up with different human development outcomes. These contrasts can stimulate debate about government policy priorities.', 'World', 'static', 'index', TRUE, '🧑🏻‍🤝‍🧑🏿','equal');
@@ -728,7 +728,7 @@ insert into bivariate_indicators (param_id, param_label, copyrights, direction, 
 values ('sports_and_recreation_fsq_count', 'Sports and recreation', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of sports and recreation POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '⚽','proportional');
 
 insert into bivariate_indicators (param_id, param_label, copyrights, direction, description, coverage, update_frequency, unit_id, is_public, emoji, downscale)
-values ('events_fsq_count', 'Events', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of events POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🎉','proportional');
+values ('events_fsq_count', 'Events', jsonb_build_array('Copyright 2024 Foursquare Labs, Inc. All rights reserved.'), '[["bad"], ["good"]]'::jsonb, 'Number of event POIs in Foursquare’s Open Source Places.', 'World', 'static', 'n', TRUE, '🎉','proportional');
 
 -- set indicator is_base to become denominators
 update bivariate_indicators

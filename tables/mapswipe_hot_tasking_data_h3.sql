@@ -1,35 +1,29 @@
 drop table if exists mapswipe_hot_tasking_data_subdivide;
 create table mapswipe_hot_tasking_data_subdivide as (
 	select id, 
-	       ST_Subdivide(geom, 5) geom
-	from mapswipe_hot_tasking_data
+	       ST_Area(s::geography) / 1000000.0 as area,
+	       ST_Transform(s, 3857)             as geom
+	from mapswipe_hot_tasking_data m,
+	     lateral ST_Subdivide(m.geom, 5) as s
 );
 
 create index on mapswipe_hot_tasking_data_subdivide using gist(geom);
 
-drop table if exists land_polygons_h3_r8_4326;
-create table land_polygons_h3_r8_4326 as (
-	select h3,
-	       ST_Transform(geom, 4326) as geom,
-	       area
-	from land_polygons_h3_r8
-);
-
 drop table if exists mapswipe_hot_tasking_data_h3_in;
 create table mapswipe_hot_tasking_data_h3_in as (
 	select l.h3               as h3, 
-	       sum(ST_Area(s.geom::geography)) / 1000000.0 as mapswipe_area,
+	       sum(s.area)        as mapswipe_area,
 	       l.area / 1000000.0 as area_km2, 
 	       8                  as resolution
 	from mapswipe_hot_tasking_data_subdivide s, 
-	     land_polygons_h3_r8_4326 l 
-	where ST_Intersects(s.geom, l.geom) 
+	     land_polygons_h3_r8 l 
+	where s.geom && l.geom 
+	      and ST_Intersects(s.geom, l.geom) 
 	group by 1, 3
 );
 
 -- Remove temporary table
 drop table if exists mapswipe_hot_tasking_data_subdivide;
-drop table if exists land_polygons_h3_r8_4326;
 
 -- generate overviews and dithering from copernicus_landover_h3.sql
 

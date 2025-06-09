@@ -2207,12 +2207,6 @@ db/table/isodist_bomb_shelters_h3: db/table/update_isochrone_destinations db/tab
 	touch $@
 ## Isochrones calculation block end
 
-db/table/bivariate_indicators: static_data/bivariate_indicators.csv | db/table ## Metadata for indicators used in bivariate layers
-	psql -f tables/bivariate_indicators.sql
-	cat static_data/bivariate_indicators.csv | psql -c "copy bivariate_indicators (param_id,param_label,copyrights,direction,description,coverage,update_frequency,unit_id,is_public,emoji,downscale) from stdin with csv header;"
-	psql -f tables/bivariate_indicators_finalize.sql
-	touch $@
-
 db/table/global_rva_indexes: | db/table ## Global RVA indexes to Bivariate Manager
 	psql -f tables/global_rva_indexes.sql
 	cat static_data/pdc_bivariate_manager/global_rva_hasc.csv | psql -c "copy global_rva_indexes from stdin with csv header;"

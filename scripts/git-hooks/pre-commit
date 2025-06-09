@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+# Run style checks before commit
+scripts/check_makefile_tabs.sh

@@ -190,6 +190,8 @@ clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-r
 	psql -f scripts/clean.sql
 	# Update bivariate indicators
 	psql -f tables/bivariate_indicators.sql
+	cat static_data/bivariate_indicators.csv | psql -c "copy bivariate_indicators (param_id,param_label,copyrights,direction,description,coverage,update_frequency,unit_id,is_public,emoji,downscale) from stdin with csv header;"
+	psql -f tables/bivariate_indicators_finalize.sql
 	psql -f tables/bivariate_axis_overrides.sql
 	# Clean old OSRM docker images
 	docker image prune --force --filter label=stage=osrm-builder

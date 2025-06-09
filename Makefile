@@ -3241,7 +3241,7 @@ data/out/csv/communication_line_length.csv: db/table/communication_line_length_h
 	psql -q -X -c "copy (select h3, communication_length::float/1000.0 from communication_line_length_h3 where h3 is not null and communication_length is not null and communication_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/motor_vehicle_road_length.csv: db/table/motor_vehicle_road_length_h3 | data/out/csv ## extract motor_vehicle_road_length to csv file
-	psql -q -X -c "copy (select h3, road_length::float/1000.0 from motor_vehicle_road_length_h3 where h3 is not null and road_length is not null and road_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+	psql -q -X -c "copy (select h3, motor_vehicle_road_length::float/1000.0 from motor_vehicle_road_length_h3 where h3 is not null and motor_vehicle_road_length is not null and motor_vehicle_road_length > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/timezone_offset.csv: db/table/timezone_offset_h3 | data/out/csv ## extract timezone_offset to csv file
 	psql -q -X -c "copy (select h3, utc_offset from timezone_offset_h3 where h3 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@

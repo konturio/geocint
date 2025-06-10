@@ -12,10 +12,10 @@ with gsa_ghi as (select gsa.h3                                  as h3,
 
      slope as (select gebco.h3 as                                                     h3,
                       case
-                          when gebco.avg_slope_gebco_2022 < 0 then 1
-                          when gebco.avg_slope_gebco_2022 > 4 then 0
-                          else (1 - ((gebco.avg_slope_gebco_2022 - 0) / (4 - 0))) end slope
-               from gebco_2022_h3 gebco),
+                          when gebco.avg_slope_gebco < 0 then 1
+                          when gebco.avg_slope_gebco > 4 then 0
+                          else (1 - ((gebco.avg_slope_gebco - 0) / (4 - 0))) end slope
+               from gebco_h3 gebco),
 
      powerlines_prox as (select prox_tab.h3 as                                                               h3,
                                 case
@@ -54,12 +54,12 @@ with gsa_ghi as (select gsa.h3                                  as h3,
 
      constraint_slope as (select gebco.h3 as    h3,
                                  case
-                                     when gebco.avg_slope_gebco_2022 < 5 then 1
+                                     when gebco.avg_slope_gebco < 5 then 1
                                      -- set values from 1 to 0.1 by proportion
-                                     when gebco.avg_slope_gebco_2022 < 6.8 
-                                         then (7 - gebco.avg_slope_gebco_2022) * (0.5)
+                                     when gebco.avg_slope_gebco < 6.8 
+                                         then (7 - gebco.avg_slope_gebco) * (0.5)
                                      else 0.1 end constraint_slope
-                          from gebco_2022_h3 gebco),
+                          from gebco_h3 gebco),
 
      -- constraint_popprox as (select prox_tab.h3 as h3,
      --                               case

@@ -40,6 +40,8 @@ params=$(psql -Xqtc "
     'description', description,
     'coverage', coverage,
     'update_frequency', update_frequency,
+    'spatial_resolution', spatial_resolution,
+    'temporal_extent', temporal_extent,
     'unit_id', unit_id,
     'emoji', emoji,
     'downscale', downscale
@@ -54,6 +56,8 @@ layer_isbase=$(echo "$params" | jq -r '.is_base')
 layer_ispublic=$(echo "$params" | jq -r '.is_public')
 layer_coverage=$(echo "$params" | jq -r '.coverage')
 layer_update_freq=$(echo "$params" | jq -r '.update_frequency')
+layer_spatial_res=$(echo "$params" | jq -r '.spatial_resolution')
+layer_temporal_ext=$(echo "$params" | jq -r '.temporal_extent')
 layer_unit_id=$(echo "$params" | jq -r '.unit_id')
 layer_emoji=$(echo "$params" | jq -r '.emoji')
 layer_downscale=$(echo "$params" | jq -r '.downscale')
@@ -86,11 +90,11 @@ fi
 if [[ -z $existing_uuid ]]; then
   action="upload"
   method="POST"
-  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"spatialResolution\": \"${layer_spatial_res}\", \"temporalExtent\": \"${layer_temporal_ext}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
 else
   action="update"
   method="PUT"
-  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existing_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existing_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"spatialResolution\": \"${layer_spatial_res}\", \"temporalExtent\": \"${layer_temporal_ext}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
 fi
 
 # Execute the curl request to upload the file

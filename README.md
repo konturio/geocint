@@ -146,6 +146,30 @@ find /home/gis/geocint/logs -type f -regex ".*/db/table/osm_admin_boundaries/log
 
 `-regex ".*/db/table/osm_admin_boundaries/log.txt"` - change `osm_admin_boundaries` to your {*tablename*}
 
+### Spatial resolution and temporal extent
+
+Indicators have two optional metadata fields describing their source granularity and time coverage. These help consumers understand how layers are aggregated and how often they are refreshed.
+
+| value | meaning | typical examples |
+| -------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| **admin_national** | one value per country (ISO 3166-1 boundary) | *INFORM Risk*, *HDI*, *GDP per capita* |
+| **admin_subnational** | any aggregated admin unit below the country level (admin-1, admin-2, counties, districts…) | US Census ACS tables, national statistics splits |
+| **grid_coarse** | regularly-spaced rasters or H3 > ≈1 km (250 m GHS-POP counts as coarse once aggregated) | *WorldClim*, *GHSL*, 1 km slope |
+| **grid_fine** | rasters or H3 ≤ ≈1 km (250 m, 100 m, 30 m, etc.) | *Kontur Population 250 m*, *Copernicus LC 100 m* |
+| **feature_derived** | counts, densities or proximities based on discrete features (points, lines, polygons) | *OSM road length*, *distance to hospitals* |
+
+| value | meaning | covers examples |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| **historical_static** | fixed multi-year climatology or census baseline compiled **>10 years** ago; doesn’t move with the calendar | *WorldClim 1970-2000*, *2000 census* |
+| **snapshot_year** | a single named year (often last authoritative release) | *Population 2023-11-01*, *Night-lights 2021* |
+| **rolling_year** | moving 365-day window ending “today” | *wildfire_days_count*, *cyclone_days_count* |
+| **rolling_month** | moving 30-day (or 4-week) window | *OSM views 30 d*, *recent_hotspots* |
+| **current_value** | latest single measurement, updated continuously | *wind speed*, *air temperature* |
+| **cumulative_to_date** | running total from the first record up to now; only increases (or steps down on data corrections) | *OSM edits since 2005*, *unique users who ever touched this cell* |
+| **future_projection** | any modelled future scenario (RCP, SSP, +2 °C, 2050-forecast) | *Probable Futures +2 °C days*, *sea-level 2100* |
+
+Note: some OSM editing indicators use a six-month window but are categorized under **rolling_year**.
+
 ### Manual update of Global Fires
 
 Global Fires data is updated automatically only for the last week. If `geocint` hasn't built in a week, you need to

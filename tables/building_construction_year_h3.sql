@@ -18,7 +18,7 @@ create table building_year_points as (
 );
 
 drop table if exists building_construction_year_h3;
-create table building_start_year_h3 as (
+create table building_construction_year_h3 as (
     select h3_lat_lng_to_cell(geom::point, 8) as h3,
            min(start_year)::float             as min_osm_building_construction_year,
            max(start_year)::float             as max_osm_building_construction_year,

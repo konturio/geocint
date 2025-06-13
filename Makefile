@@ -1594,7 +1594,7 @@ data/in/microsoft_buildings: | data/in ## Microsoft Building Footprints dataset 
 data/in/microsoft_buildings/microsoft_buildings_dataset_links.csv: | data/in/microsoft_buildings ## Download file with Microsoft Building Footprints datasets links.
 	wget https://minedbuildings.z5.web.core.windows.net/global-buildings/dataset-links.csv -O $@
 
-data/in/microsoft_buildings/download: data/in/microsoft_buildings/microsoft_buildings_dataset_links.csv
+data/in/microsoft_buildings/download: data/in/microsoft_buildings/microsoft_buildings_dataset_links.csv ## Download Microsoft Building Footprints archives.
 	find data/in/microsoft_buildings -name "*.csv.gz" -delete
 	tail -n +2 data/in/microsoft_buildings/microsoft_buildings_dataset_links.csv | cut -f3 -d ',' | sed 's|/| |g' | parallel --colsep ' ' 'echo "{1}/{2}/{3}/{4}/{5}/{6}/{7}/{8}/{9} {7}_{8}_{9}"' | sed "s/'//g" | parallel --colsep ' ' "wget -c {1} -O data/in/microsoft_buildings/{2}"
 	touch $@
@@ -3861,11 +3861,11 @@ deploy_indicators/dev/uploads/min_osm_building_construction_year_upload: data/ou
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_osm_building_construction_year.csv "min_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
-deploy_indicators/dev/uploads/max_osm_building_construction_year_upload: data/out/csv/max_osm_building_construction_year.csv | deploy_indicators/dev/uploads
+deploy_indicators/dev/uploads/max_osm_building_construction_year_upload: data/out/csv/max_osm_building_construction_year.csv | deploy_indicators/dev/uploads ## upload max_osm_building_construction_year to insight-api
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/max_osm_building_construction_year.csv "max_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
-deploy_indicators/dev/uploads/avg_osm_building_construction_year_upload: data/out/csv/avg_osm_building_construction_year.csv | deploy_indicators/dev/uploads
+deploy_indicators/dev/uploads/avg_osm_building_construction_year_upload: data/out/csv/avg_osm_building_construction_year.csv | deploy_indicators/dev/uploads ## upload avg_osm_building_construction_year to insight-api
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/avg_osm_building_construction_year.csv "avg_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
@@ -5052,11 +5052,11 @@ deploy_indicators/test/uploads/min_osm_building_construction_year_upload: data/o
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_osm_building_construction_year.csv "min_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
-deploy_indicators/test/uploads/max_osm_building_construction_year_upload: data/out/csv/max_osm_building_construction_year.csv | deploy_indicators/test/uploads
+deploy_indicators/test/uploads/max_osm_building_construction_year_upload: data/out/csv/max_osm_building_construction_year.csv | deploy_indicators/test/uploads ## upload max_osm_building_construction_year to insight-api
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/max_osm_building_construction_year.csv "max_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
-deploy_indicators/test/uploads/avg_osm_building_construction_year_upload: data/out/csv/avg_osm_building_construction_year.csv | deploy_indicators/test/uploads
+deploy_indicators/test/uploads/avg_osm_building_construction_year_upload: data/out/csv/avg_osm_building_construction_year.csv | deploy_indicators/test/uploads ## upload avg_osm_building_construction_year to insight-api
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/avg_osm_building_construction_year.csv "avg_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
@@ -6245,11 +6245,11 @@ deploy_indicators/prod/uploads/min_osm_building_construction_year_upload: data/o
 	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_osm_building_construction_year.csv "min_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
-deploy_indicators/prod/uploads/max_osm_building_construction_year_upload: data/out/csv/max_osm_building_construction_year.csv | deploy_indicators/prod/uploads
+deploy_indicators/prod/uploads/max_osm_building_construction_year_upload: data/out/csv/max_osm_building_construction_year.csv | deploy_indicators/prod/uploads ## upload max_osm_building_construction_year to insight-api
 	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/max_osm_building_construction_year.csv "max_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 
-deploy_indicators/prod/uploads/avg_osm_building_construction_year_upload: data/out/csv/avg_osm_building_construction_year.csv | deploy_indicators/prod/uploads
+deploy_indicators/prod/uploads/avg_osm_building_construction_year_upload: data/out/csv/avg_osm_building_construction_year.csv | deploy_indicators/prod/uploads ## upload avg_osm_building_construction_year to insight-api
 	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/avg_osm_building_construction_year.csv "avg_osm_building_construction_year" db/table/building_construction_year_h3
 	touch $@
 

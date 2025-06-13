@@ -25,7 +25,6 @@ values
     ('view_count', 'area_km2', 'Map views, last 30 days'),
     ('osm_users', 'one', 'OpenStreetMap Contributors'),
     ('total_building_count', 'area_km2', 'Total buildings count'),
-    ('wildfires', 'area_km2', 'Wildfires'),
     ('hazardous_days_count', 'area_km2', 'Number of days with any disaster occurs, last year'),
     ('hazardous_days_count', 'one', 'Number of days with any disaster occurs, last year'),
     ('earthquake_days_count', 'area_km2', 'Number of days under earthquake impact, last year'),

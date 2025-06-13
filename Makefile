@@ -4428,12 +4428,6 @@ deploy_indicators/dev/custom_axis/total_building_count_area_km2: deploy_indicato
 	bash scripts/upload_custom_axis_to_insights_api.sh dev "total_building_count" "area_km2"
 	touch $@
 
-deploy_indicators/dev/custom_axis/wildfires_area_km2: deploy_indicators/dev/uploads/wildfires_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for wildfires area_km2 axis on dev.
-	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
-	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
-	bash scripts/upload_custom_axis_to_insights_api.sh dev "wildfires" "area_km2"
-	touch $@
-
 deploy_indicators/dev/custom_axis/forest_area_km2: deploy_indicators/dev/uploads/forest_upload db/table/insights_api_indicators_list_dev | deploy_indicators/dev/custom_axis ## Deploy custom values for forest area_km2 axis on dev.
 	psql -c "create table if not exists insights_api_indicators_list_dev(j jsonb);"
 	bash scripts/update_indicators_list.sh dev | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_dev(j) from stdin;"
@@ -4665,7 +4659,6 @@ deploy_indicators/dev/custom_axis/all_custom_axis: \
     deploy_indicators/dev/custom_axis/view_count_area_km2 \
     deploy_indicators/dev/custom_axis/osm_users_one \
     deploy_indicators/dev/custom_axis/total_building_count_area_km2 \
-    deploy_indicators/dev/custom_axis/wildfires_area_km2 \
     deploy_indicators/dev/custom_axis/forest_area_km2 \
     deploy_indicators/dev/custom_axis/days_maxtemp_over_32c_1c_one \
     deploy_indicators/dev/custom_axis/days_mintemp_above_25c_1c_one \
@@ -5628,12 +5621,6 @@ deploy_indicators/test/custom_axis/total_building_count_area_km2: deploy_indicat
 	bash scripts/upload_custom_axis_to_insights_api.sh test "total_building_count" "area_km2"
 	touch $@
 
-deploy_indicators/test/custom_axis/wildfires_area_km2: deploy_indicators/test/uploads/wildfires_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for wildfires area_km2 axis on test.
-	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
-	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
-	bash scripts/upload_custom_axis_to_insights_api.sh test "wildfires" "area_km2"
-	touch $@
-
 deploy_indicators/test/custom_axis/forest_area_km2: deploy_indicators/test/uploads/forest_upload db/table/insights_api_indicators_list_test | deploy_indicators/test/custom_axis ## Deploy custom values for forest area_km2 axis on test.
 	psql -c "create table if not exists insights_api_indicators_list_test(j jsonb);"
 	bash scripts/update_indicators_list.sh test | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_test(j) from stdin;"
@@ -5865,7 +5852,6 @@ deploy_indicators/test/custom_axis/all_custom_axis: \
     deploy_indicators/test/custom_axis/view_count_area_km2 \
     deploy_indicators/test/custom_axis/osm_users_one \
     deploy_indicators/test/custom_axis/total_building_count_area_km2 \
-    deploy_indicators/test/custom_axis/wildfires_area_km2 \
     deploy_indicators/test/custom_axis/forest_area_km2 \
     deploy_indicators/test/custom_axis/days_maxtemp_over_32c_1c_one \
     deploy_indicators/test/custom_axis/days_mintemp_above_25c_1c_one \
@@ -6825,12 +6811,6 @@ deploy_indicators/prod/custom_axis/total_building_count_area_km2: deploy_indicat
 	bash scripts/upload_custom_axis_to_insights_api.sh prod "total_building_count" "area_km2"
 	touch $@
 
-deploy_indicators/prod/custom_axis/wildfires_area_km2: deploy_indicators/prod/uploads/wildfires_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for wildfires area_km2 axis on prod.
-	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
-	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
-	bash scripts/upload_custom_axis_to_insights_api.sh prod "wildfires" "area_km2"
-	touch $@
-
 deploy_indicators/prod/custom_axis/forest_area_km2: deploy_indicators/prod/uploads/forest_upload db/table/insights_api_indicators_list_prod | deploy_indicators/prod/custom_axis ## Deploy custom values for forest area_km2 axis on prod.
 	psql -c "create table if not exists insights_api_indicators_list_prod(j jsonb);"
 	bash scripts/update_indicators_list.sh prod | sed 's/\\"/\\\\\"/g' | psql -c "copy insights_api_indicators_list_prod(j) from stdin;"
@@ -7062,7 +7042,6 @@ deploy_indicators/prod/custom_axis/all_custom_axis: \
     deploy_indicators/prod/custom_axis/view_count_area_km2 \
     deploy_indicators/prod/custom_axis/osm_users_one \
     deploy_indicators/prod/custom_axis/total_building_count_area_km2 \
-    deploy_indicators/prod/custom_axis/wildfires_area_km2 \
     deploy_indicators/prod/custom_axis/forest_area_km2 \
     deploy_indicators/prod/custom_axis/days_maxtemp_over_32c_1c_one \
     deploy_indicators/prod/custom_axis/days_mintemp_above_25c_1c_one \

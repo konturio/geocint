@@ -32,6 +32,15 @@ tested by other team members, and will automatically produce new artifacts once 
 - python3 for small tasks like unpivoting source data.
 - GDAL, OGR, osm-c-tools, osmium, and others are used as needed in Bash CLI.
 
+### Continuous Integration
+
+GitHub Actions checks the pipeline by cloning
+[geocint-runner](https://github.com/konturio/geocint-runner) and
+[geocint-openstreetmap](https://github.com/konturio/geocint-openstreetmap),
+then running `profile_make_lint` to lint the combined Makefile.  Python scripts
+are also validated with `flake8` and `pylint`. Run these tools locally before
+committing significant changes.
+
 ### Things to avoid:
 
 - Views and materialized views.

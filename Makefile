@@ -178,7 +178,6 @@ db/table/all_datasets: \
     db/table/pipeline_length_h3 \
     db/table/communication_line_length_h3 \
     db/table/motor_vehicle_road_length_h3 \
-    db/table/building_start_year_h3 \
     db/table/railway_length_h3 \
     | db/table ## service target to build all datasets without deployment
 	touch $@
@@ -414,8 +413,8 @@ db/procedure/dither_area_to_not_bigger_than_100pc_of_hex_area: | db/procedure ##
 	touch $@
 
 db/procedure/linear_segments_length_to_h3: | db/procedure ## calculate length of linear segments per hexagon
-        psql -f procedures/linear_segments_length_to_h3.sql
-        touch $@
+	psql -f procedures/linear_segments_length_to_h3.sql
+	touch $@
 
 db/procedures: | db ## Directory for storing results of long SQL procedures.
 	mkdir -p $@

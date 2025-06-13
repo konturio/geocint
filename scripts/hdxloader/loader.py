@@ -2,6 +2,8 @@ import datetime
 import logging
 import uuid
 
+# pylint: disable=too-many-locals,consider-using-f-string
+
 from typing import Dict, Set, Union
 
 from hdx.data.organization import Organization
@@ -226,11 +228,8 @@ def create_datasets_for_all_hdx_countries(
         )
         dataset.set_organization(we_are['id'])
         dataset.set_maintainer(i_am['id'])
-        dataset.update({
-            'dataset_date': "[{0}T00:00:00 TO {0}T23:59:59]".format(
-                datetime.datetime.today().strftime('%Y-%m-%d')
-            )
-        })
+        date_str = datetime.datetime.today().strftime('%Y-%m-%d')
+        dataset.update({'dataset_date': f'[{date_str}T00:00:00 TO {date_str}T23:59:59]'})
         dataset.set_expected_update_frequency('-2')
 
         if create_private:

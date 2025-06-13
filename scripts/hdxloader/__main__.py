@@ -4,6 +4,9 @@ import os
 import uuid
 import yaml
 
+# pylint: disable=too-many-positional-arguments,too-many-locals,
+# pylint: disable=too-many-branches,unspecified-encoding
+
 from hdx.facades.keyword_arguments import facade
 from hdx.utilities.easy_logging import setup_logging
 from hdx.data.dataset import Dataset
@@ -331,7 +334,7 @@ def update_dataset(
 
             # read yaml file with key(iso3 lowercase code) - value(yaml key-value properties)
             # configuration for update by matching iso3 codes
-            with open(iso3_file, "r") as file:
+            with open(iso3_file, "r", encoding="utf-8") as file:
                 iso3_values_dict = yaml.load(file, Loader=yaml.FullLoader)
 
             # updated_datasets = []

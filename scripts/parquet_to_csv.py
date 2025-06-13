@@ -6,10 +6,12 @@ import pandas as pd
 import numpy as np
 import csv
 
+
 def to_pg_array(val):
     if isinstance(val, (list, np.ndarray)):
         return '{' + ','.join(str(v).replace('"', '\\"').replace('\\', '\\\\') for v in val) + '}'
     return val
+
 
 if len(sys.argv) < 3:
     print(f"Usage: {sys.argv[0]} input.parquet output.csv [col1 col2 ...]")

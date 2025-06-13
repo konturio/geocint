@@ -105,8 +105,9 @@ def get_credentials(cli_args: argparse.Namespace) -> Credentials:
 
 
 def parse_datetime_from_iso8601(datetime_string: str) -> datetime.datetime:
-    return  dateutil.parser.isoparse(datetime_string)
-    
+    return dateutil.parser.isoparse(datetime_string)
+
+
 class FeedParser:
     logger = setup_logger()
 

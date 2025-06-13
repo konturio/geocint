@@ -42,6 +42,8 @@ class Datasource(abc.ABC):
 # 3. Hardcoded Amazon S3 as cloud storage
 # 4. Hardcoded format for uploaded files - gpkg
 # Looks like we should move these things to special configuration file or console line attributes
+
+
 class CountryDatasource(Datasource, abc.ABC):
     FILENAMEREGEX = None
     ALPHA2REGEX = re.compile(r'[A-Z]{2}')
@@ -170,7 +172,9 @@ class CountryPopulationDensityFor400mH3Hexagons(CountryDatasource):
 
 
 class CountryAdministrativeDivisionWithAggregatedPopulation(CountryDatasource):
-    FILENAMEREGEX = re.compile(r'.*kontur(_topology_|_)boundaries_(?P<alpha2>[A-Z]{2})_(?P<date>\d{8})\.gpkg')
+    FILENAMEREGEX = re.compile(
+        r'.*kontur(_topology_|_)boundaries_(?P<alpha2>[A-Z]{2})_(?P<date>\d{8})\.gpkg'
+    )
 
     def __repr__(self):
         return f'CountryAdministrativeDivisionWithAggregatedPopulation("{self._dataset_path}")'

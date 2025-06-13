@@ -2,6 +2,8 @@ import datetime
 import logging
 import uuid
 
+# pylint: disable=too-many-locals,consider-using-f-string
+
 from typing import Dict, Set, Union
 
 from hdx.data.organization import Organization
@@ -105,11 +107,14 @@ class Loader:
             )
 
 # TO DO
-# expected tags for type should be moved to separate config file, to avoid errors in case, when tasg were changed by HDX
+# expected tags for type should be moved to a separate configuration file to
+# avoid errors in case the tags are changed by HDX
+
+
 def get_datasets_for_dataset_type(dataset_type: DatasetType) -> Dict[str, Dataset]:
     def _is_dataset_ok_by_tags(
-            dataset_: Dataset,
-            dataset_type_: DatasetType,
+        dataset_: Dataset,
+        dataset_type_: DatasetType,
     ) -> bool:
         expected_name_for_type = {
             DatasetType.CountryAdministrativeDivisionWithAggregatedPopulation: 'kontur-boundaries',
@@ -117,14 +122,14 @@ def get_datasets_for_dataset_type(dataset_type: DatasetType) -> Dict[str, Datase
         }
         expected_tags_for_type = {
             DatasetType.CountryAdministrativeDivisionWithAggregatedPopulation: {
-                  'baseline population', 
-                  'geodata', 
-                  'administrative boundaries-divisions'
+                'baseline population',
+                'geodata',
+                'administrative boundaries-divisions'
             },
             DatasetType.CountryPopulationDensityFor400mH3Hexagons: {
-                  'baseline population', 
-                  'geodata', 
-                  'population'
+                'baseline population',
+                'geodata',
+                'population'
             },
         }
         skip_global = dataset_type in {
@@ -191,10 +196,10 @@ def create_datasets_for_all_hdx_countries(
 
     # check if we should use create_from_hasc_code mod instead of creating all non-existing datasets
     if create_from_hasc_code:
-        
-        assert hasc_list and len(hasc_list) >= 2, \
-            '--hasc-list should contains at least 1 valid hasc code (use comma to separate multiple codes; do not put comma at the end)'
-        
+        assert hasc_list and len(hasc_list) >= 2, (
+            '--hasc-list should contains at least 1 valid hasc code (use comma to '
+            'separate multiple codes; do not put comma at the end)'
+        )
         hascs = [x.upper() for x in hasc_list.split(',')]
 
         # modify list of countries to include only what you need
@@ -204,9 +209,9 @@ def create_datasets_for_all_hdx_countries(
             if _country['#country+code+v_iso2'] in hascs
         }
 
-    assert countries_without_dataset and len(hasc_list) > 0, \
-            'there is no countries without dataset for selected dataset type'
-
+    assert countries_without_dataset and len(hasc_list) > 0, (
+        'there is no countries without dataset for selected dataset type'
+    )
 
     new_datasets = []
 
@@ -223,11 +228,12 @@ def create_datasets_for_all_hdx_countries(
         )
         dataset.set_organization(we_are['id'])
         dataset.set_maintainer(i_am['id'])
-        dataset.update({'dataset_date':"[{0}T00:00:00 TO {0}T23:59:59]".format(datetime.datetime.today().strftime('%Y-%m-%d'))})
+        date_str = datetime.datetime.today().strftime('%Y-%m-%d')
+        dataset.update({'dataset_date': f'[{date_str}T00:00:00 TO {date_str}T23:59:59]'})
         dataset.set_expected_update_frequency('-2')
-        
+
         if create_private:
-            dataset.update({'private':True})
+            dataset.update({'private': True})
 
         new_datasets.append(dataset)
 

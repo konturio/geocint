@@ -5,6 +5,8 @@ import os
 __here__ = os.path.dirname(os.path.abspath(__file__))
 
 # Add new property to class DatasetType if you want to load a new kind of datasets to HDX
+
+
 class DatasetType(str, enum.Enum):
     CountryAdministrativeDivisionWithAggregatedPopulation = 'country-boundaries'
     CountryPopulationDensityFor400mH3Hexagons = 'country-population'

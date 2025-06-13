@@ -14,7 +14,10 @@ STAGES = {
     ),
     'test': EventsServers(
         api='https://test-event-api.k8s-01.konturlabs.com/events/v1',
-        auth='https://test-keycloak.k8s-01.konturlabs.com/realms/test/protocol/openid-connect/token',
+        auth=(
+            'https://test-keycloak.k8s-01.konturlabs.com/realms/test/'
+            'protocol/openid-connect/token'
+        ),
     ),
     'prod': EventsServers(
         api='https://prod-event-api.k8s-01.konturlabs.com/events/v1',

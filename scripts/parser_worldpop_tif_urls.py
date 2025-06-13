@@ -10,7 +10,7 @@ SITE = 'data.worldpop.org'
 
 
 def get_ids():
-    response_id = requests.get(IDS_URL)
+    response_id = requests.get(IDS_URL, timeout=30)
     data = response_id.json()
 
     url_ids = [row['id'] for row in data if row['popyear'] == '2020']
@@ -22,7 +22,7 @@ def get_urls(ids):
     image_urls = []
     for id_ in ids:
         url = PAGE_URL + id_
-        a_html = requests.get(url).text
+        a_html = requests.get(url, timeout=30).text
         for line in a_html.split('\n'):
             if SITE in line:
                 found_urls = re.findall(r'href="(.*\.tif)', line)

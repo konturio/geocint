@@ -17,3 +17,7 @@ Notes for agents:
  - SQL is lowercase, PostGIS functions follow their spelling from the manual (`st_segmentize` -> `ST_Segmentize`).
  - clean stuff up if you can: fix typos, make lexics more correct in Enghish.
  - trivial oneliner SQLs are okay to keep in Makefile.
+ - The pipeline is organized across three repositories: geocint-runner, geocint-openstreetmap and this repo. Always inspect all three when making changes.
+- CI runs `make profiler lint` (`profile_make_lint`) to validate the combined pipeline and checks python scripts with flake8 and pylint. GitHub Actions clones geocint-runner and geocint-openstreetmap to get the needed makefiles. Run these locally before committing Makefile changes.
+ - The `.gitlab-ci.yml` file has been removed; GitHub Actions handles CI.
+

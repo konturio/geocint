@@ -4,12 +4,20 @@ import os
 import uuid
 import yaml
 
+# pylint: disable=too-many-positional-arguments,too-many-locals,
+# pylint: disable=too-many-branches,unspecified-encoding
+
 from hdx.facades.keyword_arguments import facade
 from hdx.utilities.easy_logging import setup_logging
 from hdx.data.dataset import Dataset
 
 from hdxloader.dataset import DatasetType
-from hdxloader.loader import create_datasets_for_all_hdx_countries, get_datasets_for_dataset_type, Loader, SCRIPT_NAME
+from hdxloader.loader import (
+    create_datasets_for_all_hdx_countries,
+    get_datasets_for_dataset_type,
+    Loader,
+    SCRIPT_NAME,
+)
 from hdxloader.inforeader import get_available_keys
 
 
@@ -73,7 +81,10 @@ def parse_args() -> argparse.Namespace:
     )
     parser_update.add_argument(
         '--iso3_file',
-        help='Yaml file with key(iso3 lowercase code) - value(yaml key-value properties) configuration for update by matching iso3 codes)',
+        help=(
+            'Yaml file with key(iso3 lowercase code) - value(yaml key-value '
+            'properties) configuration for update by matching iso3 codes)'
+        ),
         required=False,
         type=str,
     )
@@ -199,9 +210,11 @@ def parse_args() -> argparse.Namespace:
 
     return parser.parse_args()
 
+
 # get hdx key from environmental variable if -k, --key options will be omit
 def get_hdx_key_from_env():
     return os.environ.get('HDX_KEY', None)
+
 
 def load(
         data_directory: str,
@@ -252,6 +265,7 @@ def create_datasets(
         for dataset in new_datasets:
             logging.info(dataset)
 
+
 # get info about datasets
 def get_datasets_info(
         dataset_type: DatasetType,
@@ -270,7 +284,8 @@ def get_datasets_info(
         )
     else:
         logging.info('just do nothing!')
-    
+
+
 # upfate existed datasets
 def update_dataset(
         dataset_type: DatasetType,
@@ -285,38 +300,43 @@ def update_dataset(
         **_kwargs
 ):
     # if True - do actual work, else - do nothing
-    if no_dry_run:        
+    if no_dry_run:
 
         datasets_for_update = []
 
         # If true - update all <dataset_type> datasets
         if dataset_type.value != 'without-type':
-            datasets = get_datasets_for_dataset_type(dataset_type)            
-            datasets_for_update = [datasets[_id] for _id in datasets.keys()]  
+            datasets = get_datasets_for_dataset_type(dataset_type)
+            datasets_for_update = [datasets[_id] for _id in datasets.keys()]
 
             assert len(datasets_for_update) > 0, \
                 'The number of datasets to update must be greater than 0.'
 
         elif dataset_identifier:
             # get dataset by identifier
-            datasets_for_update = [Dataset.read_from_hdx(dataset_identifier),]  
+            datasets_for_update = [Dataset.read_from_hdx(dataset_identifier)]
 
             assert datasets_for_update != [None], \
                 'Request dataset by the dataset identifier returned None.'
         else:
-            print('No right conditions provided, please set correct dataset_type or dataset_identifier')
+            print(
+                'No right conditions provided, please set correct dataset_type or '
+                'dataset_identifier'
+            )
 
-
-        # if true - update datasets by iso3 code, else - update from yaml/json/command line attribute
+        # if true - update datasets by iso3 code,
+        # else - update from yaml/json/command line attribute
         if update_by_iso3:
 
-            assert iso3_file, \
+            assert iso3_file, (
                 'You use update by iso3 option but missed iso3_file argument.'
-            
-            # read yaml file with key(iso3 lowercase code) - value(yaml key-value properties) configuration for update by matching iso3 codes
-            with open(iso3_file, "r") as file:
-                iso3_values_dict = yaml.load(file, Loader=yaml.FullLoader)            
-            
+            )
+
+            # read yaml file with key(iso3 lowercase code) - value(yaml key-value properties)
+            # configuration for update by matching iso3 codes
+            with open(iso3_file, "r", encoding="utf-8") as file:
+                iso3_values_dict = yaml.load(file, Loader=yaml.FullLoader)
+
             # updated_datasets = []
             keys = iso3_values_dict.keys()
             print(keys)
@@ -330,16 +350,16 @@ def update_dataset(
 
         else:
             # update local version of dataset by one of several options
-            if update_with_file in ('json','yml','yaml','no_file'):
+            if update_with_file in ('json', 'yml', 'yaml', 'no_file'):
                 if update_with_file == 'json':
                     for i in datasets_for_update:
                         i.update_from_json(file_with_update)
-                elif update_with_file in ['yml','yaml']:
+                elif update_with_file in ['yml', 'yaml']:
                     for i in datasets_for_update:
                         i.update_from_yaml(file_with_update)
                 elif update_with_file == 'no_file':
                     for i in datasets_for_update:
-                        i.update({updated_tag : updated_tag_value})
+                        i.update({updated_tag: updated_tag_value})
                 # update dataset metadata on hdx server
                 for i in datasets_for_update:
                     i.update_in_hdx()

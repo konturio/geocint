@@ -1,0 +1,27 @@
+name: Lint pipeline
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  make-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Checkout dependencies
+        run: |
+          git clone --depth 1 https://github.com/konturio/geocint-runner
+          git clone --depth 1 https://github.com/konturio/geocint-openstreetmap
+          cp geocint-runner/runner_make .
+          cp geocint-openstreetmap/osm_make .
+      - name: Install make-profiler
+        run: pip install git+https://github.com/konturio/make-profiler
+      - name: Run make-profiler lint
+        run: profile_make_lint
+      - name: Python lint
+        run: |
+          python3 -m pip install flake8 pylint
+          python3 -m flake8 .
+          python3 -m pylint .

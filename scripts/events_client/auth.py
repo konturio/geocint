@@ -34,6 +34,7 @@ def get_token_from_credentials(
         url=STAGES[stage].auth,
         data=auth_data,
         headers=headers,
+        timeout=30,
     )
     assert response.status_code == 200
 

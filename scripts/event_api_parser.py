@@ -3,7 +3,6 @@
 import argparse
 import copy
 import datetime
-import dateutil.parser
 import getpass
 import json
 import logging
@@ -11,6 +10,8 @@ import os
 import sys
 
 from typing import Any, Dict
+
+import dateutil.parser
 
 from events_client.auth import EVENTAPI_USERNAME_VAR, EVENTAPI_PASSWORD_VAR, \
     Credentials, get_token_from_credentials
@@ -105,8 +106,9 @@ def get_credentials(cli_args: argparse.Namespace) -> Credentials:
 
 
 def parse_datetime_from_iso8601(datetime_string: str) -> datetime.datetime:
-    return  dateutil.parser.isoparse(datetime_string)
-    
+    return dateutil.parser.isoparse(datetime_string)
+
+
 class FeedParser:
     logger = setup_logger()
 

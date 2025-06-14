@@ -27,6 +27,10 @@ begin
         return (c - 1) * 100 + 50;
     end if;
 
+    if s ~ '^[0-9]{1,4}\s*bc$' then
+        return -substring(s from '[0-9]{1,4}')::integer;
+    end if;
+
     if s ~ '^(early |mid |late |~)?[0-9]{4}s$' then
         m := substring(s from '([0-9]{4})');
         return m::integer;

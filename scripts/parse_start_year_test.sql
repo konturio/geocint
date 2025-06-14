@@ -10,6 +10,7 @@ with tests(val, expected) as (
            ('before 1855', 1855),
            ('after 1823', 1823),
            ('mid C17..late C17', 1650),
+           ('480 BC', -480),
            ('j:1918-01-31', 1918),
            ('jd:2455511', null)
 )

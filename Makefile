@@ -385,12 +385,12 @@ db/function/parse_float: | db/function ## Converts text into a float or a NULL.
 	touch $@
 
 db/function/parse_integer: | db/function ## Converts text levels into a integer or a NULL.
-        psql -f functions/parse_integer.sql
-        touch $@
+	psql -f functions/parse_integer.sql
+	touch $@
 
 db/function/parse_start_year: | db/function ## Extract year from start_date string
-        psql -f functions/parse_start_year.sql
-        touch $@
+	psql -f functions/parse_start_year.sql
+	touch $@
 
 db/function/tile_zoom_level_to_h3_resolution: | db/function ## Function to get H3 resolution that will fit given tile zoom level
 	psql -f functions/tile_zoom_level_to_h3_resolution.sql
@@ -400,7 +400,7 @@ data/out/tile_zoom_level_to_h3_resolution_test: db/function/tile_zoom_level_to_h
 	cat scripts/tile_zoom_level_to_h3_resolution_test.sql | psql -AXt |  xargs -I {} bash scripts/check_items_count.sh {} 1
 	touch $@
 
-data/out/parse_start_year_test: db/function/parse_start_year | data/out ## Test start year parser for start_date tag
+data/out/parse_start_year_test: db/function/parse_start_year | data/out ## [FINAL] Test start year parser for start_date tag
 	cat scripts/parse_start_year_test.sql | psql -AXt |  xargs -I {} bash scripts/check_items_count.sh {} 1
 	touch $@
 

@@ -385,8 +385,12 @@ db/function/parse_float: | db/function ## Converts text into a float or a NULL.
 	touch $@
 
 db/function/parse_integer: | db/function ## Converts text levels into a integer or a NULL.
-	psql -f functions/parse_integer.sql
-	touch $@
+        psql -f functions/parse_integer.sql
+        touch $@
+
+db/function/parse_start_year: | db/function ## Extract year from start_date string
+        psql -f functions/parse_start_year.sql
+        touch $@
 
 db/function/tile_zoom_level_to_h3_resolution: | db/function ## Function to get H3 resolution that will fit given tile zoom level
 	psql -f functions/tile_zoom_level_to_h3_resolution.sql
@@ -394,6 +398,10 @@ db/function/tile_zoom_level_to_h3_resolution: | db/function ## Function to get H
 
 data/out/tile_zoom_level_to_h3_resolution_test: db/function/tile_zoom_level_to_h3_resolution | data/out ## Test if current version of function returns same h3 resolutions as previous one
 	cat scripts/tile_zoom_level_to_h3_resolution_test.sql | psql -AXt |  xargs -I {} bash scripts/check_items_count.sh {} 1
+	touch $@
+
+data/out/parse_start_year_test: db/function/parse_start_year | data/out ## Test start year parser for start_date tag
+	cat scripts/parse_start_year_test.sql | psql -AXt |  xargs -I {} bash scripts/check_items_count.sh {} 1
 	touch $@
 
 db/function/h3_raster_agg_to_h3: | db/function ## Aggregate raster values on H3 hexagon grid (default sum, options - min, max, avg, count).
@@ -2750,7 +2758,7 @@ db/table/timezone_offset_h3: db/table/osm db/index/osm_tags_idx | db/procedure/g
 
 ### Building construction year layer ###
 
-db/table/building_construction_year_h3: db/table/osm db/index/osm_tags_idx db/function/parse_integer | db/procedure/generate_overviews db/table ## Aggregated OSM building construction year stats (min, max, avg) per hexagon
+db/table/building_construction_year_h3: db/table/osm db/index/osm_tags_idx db/function/parse_start_year | db/procedure/generate_overviews db/table ## Aggregated OSM building construction year stats (min, max, avg) per hexagon
 	psql -f tables/building_construction_year_h3.sql
 	touch $@
 

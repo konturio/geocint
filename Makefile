@@ -389,9 +389,9 @@ db/function/parse_integer: | db/function ## Converts text levels into a integer 
 	touch $@
 
 db/function/parse_start_year: | db/function ## Install parse_start_year and run unit tests
-       psql -f functions/parse_start_year.sql
-       cat scripts/parse_start_year_test.sql | psql -AXt | xargs -I {} bash scripts/check_items_count.sh {} 1
-       touch $@
+	psql -f functions/parse_start_year.sql
+	cat scripts/parse_start_year_test.sql | psql -AXt | xargs -I {} bash scripts/check_items_count.sh {} 1
+	touch $@
 
 db/function/tile_zoom_level_to_h3_resolution: | db/function ## Function to get H3 resolution that will fit given tile zoom level
 	psql -f functions/tile_zoom_level_to_h3_resolution.sql

@@ -178,6 +178,8 @@ db/table/all_datasets: \
     db/table/pipeline_length_h3 \
     db/table/communication_line_length_h3 \
     db/table/motor_vehicle_road_length_h3 \
+    db/table/building_construction_year_h3 \
+    db/table/timezone_offset_h3 \
     db/table/railway_length_h3 \
     | db/table ## service target to build all datasets without deployment
 	touch $@

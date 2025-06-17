@@ -1,10 +1,10 @@
 -- average building construction year per h3
 drop table if exists building_year_points_in;
 create table building_year_points_in as (
-    select parse_start_year(coalesce(tags ->> 'construction_date',
-                                    tags ->> 'year_of_construction',
-                                    tags ->> 'start_date',
-                                    tags ->> 'opening_date')) as start_year,
+    select coalesce(parse_start_year(tags ->> 'construction_date'),
+                    parse_start_year(tags ->> 'year_of_construction'),
+                    parse_start_year(tags ->> 'start_date'),
+                    parse_start_year(tags ->> 'opening_date')) as start_year,
            ST_PointOnSurface(geog::geometry) as geom
     from osm
     where tags ? 'building'

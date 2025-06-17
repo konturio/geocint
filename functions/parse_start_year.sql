@@ -84,39 +84,67 @@ begin
 
     -- full dates like "2010-03-31" or single digit month/day
     if s ~ '^[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}$' then
-        return substring(s from 1 for 4)::integer;
+        m := substring(s from 1 for 4);
+        if m::integer between 1000 and 2100 then
+            return m::integer;
+        end if;
+        return null;
     end if;
 
     -- year and month like "2010-03" or "2010-3"
     if s ~ '^[0-9]{4}-[0-9]{1,2}$' then
-        return substring(s from 1 for 4)::integer;
+        m := substring(s from 1 for 4);
+        if m::integer between 1000 and 2100 then
+            return m::integer;
+        end if;
+        return null;
     end if;
 
     -- plain year or approximate year like "~1855"
     if s ~ '^~?[0-9]{4}$' then
-        return regexp_replace(s, '[^0-9]', '', 'g')::integer;
+        m := regexp_replace(s, '[^0-9]', '', 'g');
+        if m::integer between 1000 and 2100 then
+            return m::integer;
+        end if;
+        return null;
     end if;
 
     -- ranges expressed with "before" or "after" or "on or before"/"on or after"
     if s ~ '^(on or )?before [0-9]{1,4}\s*bc(e)?$' then
-        return -substring(s from '[0-9]{1,4}')::integer;
-    elsif s ~ '^(on or )?before [0-9]{1,4}' then
-        return substring(s from '[0-9]{1,4}')::integer;
+        m := substring(s from '[0-9]{1,4}');
+        return -m::integer;
+    elsif s ~ '^(on or )?before [0-9]{4}' then
+        m := substring(s from '([0-9]{4})');
+        if m::integer between 1000 and 2100 then
+            return m::integer;
+        end if;
+        return null;
     end if;
 
-    if s ~ '^(on or )?after [0-9]{1,4}' then
-        return substring(s from '[0-9]{1,4}')::integer;
+    if s ~ '^(on or )?after [0-9]{4}' then
+        m := substring(s from '([0-9]{4})');
+        if m::integer between 1000 and 2100 then
+            return m::integer;
+        end if;
+        return null;
     end if;
 
     -- ranges like "1894..1905" -> first year
     if s ~ '^[0-9]{4}\.{2}[0-9]{4}' then
-        return substring(s from '^[0-9]{4}')::integer;
+        m := substring(s from '^[0-9]{4}');
+        if m::integer between 1000 and 2100 then
+            return m::integer;
+        end if;
+        return null;
     end if;
 
     -- any other string containing a standalone 4 digit year
     m := substring(s from '(?:^|[^0-9])([0-9]{4})(?:[^0-9]|$)');
     if m is not null then
-        return m::integer;
+        if m::integer between 1000 and 2100 then
+            return m::integer;
+        end if;
+        return null;
     end if;
 
     return null;

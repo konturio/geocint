@@ -3519,6 +3519,12 @@ data/out/csv/sports_and_recreation_fsq_count.csv: db/table/foursquare_os_places_
 data/out/csv/events_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract events_fsq_count to csv file
 	psql -q -X -c "copy (select h3, events_fsq_count from foursquare_os_places_h3 where h3 is not null and events_fsq_count is not null and events_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
+static_data/osm_example_values/start_dates.csv: db/table/osm ## export distinct OSM start_date values
+	psql -q -X -c "copy (select distinct tags->>'start_date' as start_date from osm where tags ? 'start_date' order by 1) to stdout with csv header" > $@
+
+static_data/osm_example_values/update_llm_example_data: static_data/osm_example_values/start_dates.csv ## final target for LLM example data update
+	touch $@
+
 ### Deploy block ###
 ## Deploy dev ##
 db/table/insights_api_indicators_list_dev: | db/table ## Refresh insights_api_indicators_list_dev table before new deploy cycle

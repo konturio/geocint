@@ -184,6 +184,12 @@ db/table/all_datasets: \
     | db/table ## service target to build all datasets without deployment
 	touch $@
 
+
+update_llm_example_data: static_data/osm_example_values/start_dates.csv ## [FINAL] update all example data for LLMs
+	touch $@
+
+
+
 clean: ## [FINAL] Cleans the worktree for next nightly run. Does not clean non-repeating targets.
 	if [ -f data/planet-is-broken ]; then rm -rf data/planet-latest.osm.pbf ; fi
 	rm -rf deploy/ data/tiles/stats data/tiles/users data/tile_logs/index.html data/planet-is-broken
@@ -3521,9 +3527,6 @@ data/out/csv/events_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/c
 
 static_data/osm_example_values/start_dates.csv: db/table/osm ## export distinct OSM start_date values
 	psql -q -X -c "copy (select distinct tags->>'start_date' as start_date from osm where tags ? 'start_date' order by 1) to stdout with csv header" > $@
-
-static_data/osm_example_values/update_llm_example_data: static_data/osm_example_values/start_dates.csv ## final target for LLM example data update
-	touch $@
 
 ### Deploy block ###
 ## Deploy dev ##

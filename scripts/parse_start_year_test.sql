@@ -17,7 +17,17 @@ with tests(val, expected) as (
            ('2010-3', 2010),
            ('2010-3-5', 2010),
            ('1894..1905', 1894),
-           ('1970-11-25;2006-5-24', 1970)
+           ('1970-11-25;2006-5-24', 1970),
+           ('01012000', 2000),
+           ('19930709000000', 1993),
+           ('c.1300', 1300),
+           ('ca 1300', 1300),
+           ('12th century', 1150),
+           ('on or before 1562', 1562),
+           ('on or after 1881', 1881),
+           ('before 0600 BC', -600),
+           ('15/10/2023', 2023),
+           ('0771171840', null)
 )
 select min(case when parse_start_year(val) is not distinct from expected then 1 else 0 end) as equal
 from tests;

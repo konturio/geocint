@@ -22,6 +22,28 @@ begin
         return null;
     end if;
 
+    -- eight digit numbers like 01012000 or 19991231
+    if s ~ '^[0-9]{8}$' then
+        m := substring(s from 5 for 4);
+        if m::integer between 1000 and 2100 then
+            return m::integer;
+        end if;
+        m := substring(s from 1 for 4);
+        if m::integer between 1000 and 2100 then
+            return m::integer;
+        end if;
+        return null;
+    end if;
+
+    -- fourteen digit timestamps like 19930709000000
+    if s ~ '^[0-9]{14}$' then
+        m := substring(s from 1 for 4);
+        if m::integer between 1000 and 2100 then
+            return m::integer;
+        end if;
+        return null;
+    end if;
+
     -- centuries like "C18" or "mid C17" -> middle year of the century
     if s ~ '^(early |mid |late |~)?c[0-9]{1,2}$' then
         m := substring(s from 'c([0-9]{1,2})');
@@ -29,8 +51,28 @@ begin
         return (c - 1) * 100 + 50;
     end if;
 
-    -- years BC like "480 BC"
-    if s ~ '^[0-9]{1,4}\s*bc$' then
+    -- centuries written as "12th century" or "12 century"
+    if s ~ '^[0-9]{1,2}(st|nd|rd|th)?( |\.)?century$' then
+        m := substring(s from '([0-9]{1,2})');
+        c := m::integer;
+        return (c - 1) * 100 + 50;
+    end if;
+
+    -- century ranges like "mid c17..late c17" -> use the first century
+    if s ~ 'c[0-9]{1,2}\.{2}' then
+        m := substring(s from 'c([0-9]{1,2})');
+        c := m::integer;
+        return (c - 1) * 100 + 50;
+    end if;
+
+    -- circa year like "c.1300" or "ca 1300"
+    if s ~ '^ca?\.?\s*[0-9]{3,4}$' then
+        m := substring(s from '[0-9]{3,4}');
+        return m::integer;
+    end if;
+
+    -- years BC like "480 BC" or "480 BCE"
+    if s ~ '^[0-9]{1,4}\s*bc(e)?$' then
         return -substring(s from '[0-9]{1,4}')::integer;
     end if;
 
@@ -55,13 +97,15 @@ begin
         return regexp_replace(s, '[^0-9]', '', 'g')::integer;
     end if;
 
-    -- ranges expressed with "before" or "after"
-    if s ~ '^before [0-9]{4}' then
-        return substring(s from '[0-9]{4}')::integer;
+    -- ranges expressed with "before" or "after" or "on or before"/"on or after"
+    if s ~ '^(on or )?before [0-9]{1,4}\s*bc(e)?$' then
+        return -substring(s from '[0-9]{1,4}')::integer;
+    elsif s ~ '^(on or )?before [0-9]{1,4}' then
+        return substring(s from '[0-9]{1,4}')::integer;
     end if;
 
-    if s ~ '^after [0-9]{4}' then
-        return substring(s from '[0-9]{4}')::integer;
+    if s ~ '^(on or )?after [0-9]{1,4}' then
+        return substring(s from '[0-9]{1,4}')::integer;
     end if;
 
     -- ranges like "1894..1905" -> first year
@@ -69,8 +113,8 @@ begin
         return substring(s from '^[0-9]{4}')::integer;
     end if;
 
-    -- any other string containing a 4 digit year
-    m := substring(s from '([0-9]{4})');
+    -- any other string containing a standalone 4 digit year
+    m := substring(s from '(?:^|[^0-9])([0-9]{4})(?:[^0-9]|$)');
     if m is not null then
         return m::integer;
     end if;

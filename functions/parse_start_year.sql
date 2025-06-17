@@ -1,3 +1,19 @@
+-- parse_start_year attempts to extract a valid construction year from a free
+-- form OSM tag value. To refine or extend the patterns:
+--   1. Install PostgreSQL locally and create a test database
+--        sudo apt-get install postgresql
+--        sudo service postgresql start
+--        sudo -u postgres createdb testdb
+--   2. Refresh sample values with
+--        make static_data/osm_example_values/start_dates.csv
+--   3. Add new examples to scripts/parse_start_year_test.sql and adjust this
+--      function accordingly.
+--   4. Run the tests
+--        sudo -u postgres psql -d testdb -f functions/parse_start_year.sql
+--        sudo -u postgres psql -d testdb -f scripts/parse_start_year_test.sql
+--   5. Optionally run `make profiler lint` for CI-style checks.
+-- The function returns an integer year between 1000 and 2100 or NULL otherwise.
+
 create or replace function parse_start_year(val text)
     returns integer
     language plpgsql

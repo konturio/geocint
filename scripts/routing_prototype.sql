@@ -9,54 +9,61 @@
 -- style for directed evacuation: symbology -> replace line with arrow (in SQL choose evac_agg_directed)
 
 -- TODO: hardcoded resolution - edges graph for routing will be constructed by res 8
-\set resolution 8
+\set population_resolution 8
+\set roads_resolution 11
 -- TODO: hardcoded start/end points groupping resolution - used to reduce the number of paths.
--- should be closer to :resolution if disaster area is small, should be less otherwise
+-- should be closer to :population_resolution if disaster area is small, should be less otherwise
 \set group_to_resolution 7
 
 drop table if exists tmp_stat_h3;
 create table tmp_stat_h3 (h3, danger_estimate, passability, capacity, population, geom) as
 with event(geom) as (
     -- TODO: replace with actual disaster shape (polygon or multipolygon)
-    select ST_Transform(ST_Buffer(ST_SetSRID(ST_Point(-156.3270,20.8215), 4326)::geography, 5000)::geometry, 3857)
+    select ST_Transform(ST_Buffer(ST_SetSRID(ST_Point(
+                    -- -156.3270, 20.8215 -- Maui
+                    -83.52858, 35.78243 -- Sevier county
+    ), 4326)::geography, 25000)::geometry, 3857)
 ),
 event_buffer(geom) as (
-    -- TODO: 40km hardcoded buffer radius
-    select ST_Transform(ST_Buffer(ST_SetSRID(ST_Point(-156.3270,20.8215), 4326)::geography, 40000)::geometry, 3857)
+    -- TODO: 60km hardcoded buffer radius
+    select ST_Transform(ST_Buffer(ST_SetSRID(ST_Point(
+                    -- -156.3270, 20.8215 -- Maui
+                    -83.52858, 35.78243 -- Sevier county
+    ), 4326)::geography, 60000)::geometry, 4326)
 ),
 -- all h3 cells of simulation field
-hexes(h3) as materialized (
-    select h3
-    from stat_h3_geom st, event_buffer
-    where ST_Intersects(st.geom, event_buffer.geom)
-        and resolution = :resolution
+population_hexes(h3) as materialized (
+    select h3_polygon_to_cells(ST_Subdivide(event_buffer.geom), :population_resolution) from event_buffer
 ),
-population (h3, population) as (
-    select h3, indicator_value
+road_hexes(h3) as materialized (
+    select h3_polygon_to_cells(ST_Subdivide(event_buffer.geom), :roads_resolution) from event_buffer
+),
+population (h3, original_h3, population) as (
+    select h3_cell_to_center_child(h3, :roads_resolution), h3, indicator_value
     from stat_h3_transposed s
-    join hexes using(h3)
+    join population_hexes using(h3)
     where indicator_uuid = (
         select internal_id from bivariate_indicators_metadata
         where owner = 'disaster.ninja' and param_id = 'population' and state = 'READY' order by date desc limit 1)
 ),
 accommodation_capacity (h3, capacity) as (
-    select * from population
+    select h3, population from population
 ),
 -- h3 cells inside a disaster shape
 danger_zones(h3, danger_estimate) as (
-    select h3, 1000
+    select population.h3, 1000
     from stat_h3_geom st
-    join population using(h3), event
+    join population on (population.original_h3 = st.h3), event
     where ST_Intersects(st.geom, event.geom)
-        and resolution = :resolution
+        and resolution = :population_resolution
 ),
 passable_roads (h3, passability) as (
     select h3, indicator_value
     from stat_h3_transposed s
-    join hexes using(h3)
+    join road_hexes using(h3)
     where indicator_uuid = (
         select internal_id from bivariate_indicators_metadata
-        where owner = 'disaster.ninja' and param_id = 'highway_length' and state = 'READY' order by date desc limit 1)
+        where owner = 'disaster.ninja' and param_id = 'motor_vehicle_road_length' and state = 'READY' order by date desc limit 1)
 )
 select h3, sum(danger_estimate), sum(passability), sum(capacity), sum(population),
         ST_Transform(h3_cell_to_boundary_geometry(h3), 3857) from (
@@ -114,7 +121,7 @@ from pgr_dijkstra(
     -- start points are inside disaster:
     (select array_agg(h3index_to_bigint(h3)) from (
         -- to reduce the number of vertices, cell -> parent -> center cell clustering is used
-        select h3_cell_to_center_child(h3_cell_to_parent(h3, :group_to_resolution), 8) h3
+        select h3_cell_to_center_child(h3_cell_to_parent(h3, :group_to_resolution), :roads_resolution) h3
         from tmp_stat_h3
         where danger_estimate > 0
         group by h3_cell_to_parent(h3, :group_to_resolution)
@@ -124,7 +131,7 @@ from pgr_dijkstra(
     ),
     -- start points are outside disaster:
     (select array_agg(h3index_to_bigint(h3)) from (
-        select h3_cell_to_center_child(h3_cell_to_parent(h3, :group_to_resolution), 8) h3
+        select h3_cell_to_center_child(h3_cell_to_parent(h3, :group_to_resolution), :roads_resolution) h3
         from tmp_stat_h3
         where capacity > 0
         group by h3_cell_to_parent(h3, :group_to_resolution)

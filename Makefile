@@ -3152,7 +3152,7 @@ data/out/csv/avg_elevation_gebco.csv: db/table/gebco_h3 | data/out/csv ## extrac
 	psql -q -X -c "copy (select h3, avg_elevation_gebco from gebco_h3 where h3 is not null and avg_elevation_gebco is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_elevation_gebco.csv
 
 data/out/csv/relative_elevation.csv: db/table/relative_elevation_h3 | data/out/csv ## extract relative_elevation to csv file
-	psql -q -X -c "copy (select h3, relative_elevation from gebco_h3 where h3 is not null and relative_elevation is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/relative_elevation.csv
+	psql -q -X -c "copy (select h3, relative_elevation from relative_elevation_h3 where h3 is not null and relative_elevation is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/relative_elevation.csv
 
 data/out/csv/forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract forest to csv file
 	psql -q -X -c "copy (select h3, forest_area as forest from copernicus_landcover_h3 where h3 is not null and forest_area is not null and forest_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/forest.csv

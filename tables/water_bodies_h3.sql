@@ -8,9 +8,9 @@ create table water_bodies_in as (
 	       geom                                               as geom3857
     from osm_water_polygons_in_subdivided
     union all
-    (select ST_Subdivide(ST_Buffer(ST_Transform(geom,4326)::geography, 500)::geometry,100) as geom,
-	       geom                                                                            as geom3857
-    from osm_water_lines limit 500)
+    select ST_Subdivide(ST_Buffer(ST_Transform(geom,4326)::geography, 500)::geometry,100) as geom,
+	       geom                                                                           as geom3857
+    from osm_water_lines
 );
 
 create index on water_bodies_in using gist(geom3857);

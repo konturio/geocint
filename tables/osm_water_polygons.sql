@@ -22,5 +22,4 @@ create table osm_water_polygons as (
 
 create index on osm_water_polygons using gist(geom);
 
-drop table if exists osm_water_polygons_in_subdivided;
 drop table if exists osm_water_lines_buffers_subdivided;

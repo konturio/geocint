@@ -60,7 +60,7 @@ layer_downscale=$(echo "$params" | jq -r '.downscale')
 
 # Retrieve and process copyrights and description separately
 layer_copyrights=$(psql -Xqtc "SELECT copyrights::text FROM bivariate_indicators WHERE param_id = '$3';" | sed 's/;/.,/g' | sed 's/, /,/g' | jq -c .)
-layer_description=$(psql -Xqtc "SELECT description::text FROM bivariate_indicators WHERE param_id = '$3';" | sed 's/;/.,/g')
+layer_description=$(psql -Xqtc "SELECT description::text FROM bivariate_indicators WHERE param_id = '$3';" | sed 's/;/,/g')
 
 # Get last updated timestamp
 layer_last_updated="\"$(date -r "$4" +'%Y-%m-%dT%H:%M:%SZ')\""

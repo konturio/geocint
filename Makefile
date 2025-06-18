@@ -127,7 +127,7 @@ db/table/all_datasets: \
     db/table/building_count_grid_h3 \
     db/table/copernicus_landcover_h3 \
     db/table/gebco_h3 \
-    db/table/relative_elevation_h3  \
+    db/table/relative_elevation_h3 \
     db/table/ndvi_2019_06_10_h3 \
     db/table/kontur_population_v5_h3 \
     db/table/osm_landuse_industrial_h3 \
@@ -819,14 +819,13 @@ db/table/water_bodies_h3: db/table/osm_water_polygons_in_subdivided db/table/osm
 	psql -f tables/water_bodies_h3.sql
 	touch $@
 
-db/table/water_level_idw_h3: db/table/water_bodies_h3 db/table/gebco_2022_h3 | db/table ## Interpolated water level
+db/table/water_level_idw_h3: db/table/water_bodies_h3 db/table/gebco_h3 | db/table ## Interpolated water level
 	psql -f tables/water_level_idw_h3.sql
 	touch $@
 
-db/table/relative_elevation_h3: db/table/water_level_idw_h3 db/table/gebco_2022_h3 | db/table ## Relative elevation = elevation - water level
+db/table/relative_elevation_h3: db/table/water_level_idw_h3 db/table/gebco_h3 | db/table ## Relative elevation is elevation - water level
 	psql -f tables/relative_elevation_h3.sql
 	touch $@
-
 
 data/mid/ndvi_2019_06_10/generate_ndvi_tifs: | data/mid/ndvi_2019_06_10 ## NDVI rasters generated from Sentinel 2 data.
 	find /home/gis/sentinel-2-2019/2019/6/10/* -type d | parallel --eta 'cd {} && gdal_calc.py -A B04.tif -B B08.tif --calc="((1.0*B-1.0*A)/(1.0*B+1.0*A))" --type=Float32 --overwrite --outfile=ndvi.tif'
@@ -3151,6 +3150,9 @@ data/out/csv/avg_slope_gebco.csv: db/table/gebco_h3 | data/out/csv ## extract av
 
 data/out/csv/avg_elevation_gebco.csv: db/table/gebco_h3 | data/out/csv ## extract avg_elevation_gebco to csv file
 	psql -q -X -c "copy (select h3, avg_elevation_gebco from gebco_h3 where h3 is not null and avg_elevation_gebco is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/avg_elevation_gebco.csv
+
+data/out/csv/relative_elevation.csv: db/table/relative_elevation_h3 | data/out/csv ## extract relative_elevation to csv file
+	psql -q -X -c "copy (select h3, relative_elevation from gebco_h3 where h3 is not null and relative_elevation is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/relative_elevation.csv
 
 data/out/csv/forest.csv: db/table/copernicus_landcover_h3 | data/out/csv ## extract forest to csv file
 	psql -q -X -c "copy (select h3, forest_area as forest from copernicus_landcover_h3 where h3 is not null and forest_area is not null and forest_area > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/forest.csv

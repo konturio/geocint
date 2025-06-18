@@ -52,15 +52,15 @@ layer_label=$(echo "$params" | jq -r '.label')
 layer_direction=$(echo "$params" | jq -r '.direction')
 layer_isbase=$(echo "$params" | jq -r '.is_base')
 layer_ispublic=$(echo "$params" | jq -r '.is_public')
-layer_description=$(echo "$params" | jq -r '.description')
 layer_coverage=$(echo "$params" | jq -r '.coverage')
 layer_update_freq=$(echo "$params" | jq -r '.update_frequency')
 layer_unit_id=$(echo "$params" | jq -r '.unit_id')
 layer_emoji=$(echo "$params" | jq -r '.emoji')
 layer_downscale=$(echo "$params" | jq -r '.downscale')
 
-# Retrieve and process copyrights separately
+# Retrieve and process copyrights and description separately
 layer_copyrights=$(psql -Xqtc "SELECT copyrights::text FROM bivariate_indicators WHERE param_id = '$3';" | sed 's/;/.,/g' | sed 's/, /,/g' | jq -c .)
+layer_description=$(psql -Xqtc "SELECT description::text FROM bivariate_indicators WHERE param_id = '$3';" | sed 's/;/,/g')
 
 # Get last updated timestamp
 layer_last_updated="\"$(date -r "$4" +'%Y-%m-%dT%H:%M:%SZ')\""

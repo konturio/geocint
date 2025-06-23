@@ -10,14 +10,19 @@ output_file="$3"
 limit=10000
 offset=0
 
+if [ -z "$GFW_TOKEN" ]; then
+  echo "Error: GFW_TOKEN is not set"
+  exit 1
+fi
+
 : > "$output_file"
 
 while true; do
   response=$(curl -s \
-    "https://gateway.api.globalfishingwatch.org/v2/events?datasets=public-global-fishing-events:latest&start-date=${start_date}&end-date=${end_date}&limit=${limit}&offset=${offset}&includes[]=id&includes[]=type&includes[]=start&includes[]=end&includes[]=position&includes[]=vessel.id&includes[]=portVisit.portId&includes[]=portVisit.portName&includes[]=confidence.level" \
+    "https://gateway.api.globalfishingwatch.org/v3/events?datasets%5B0%5D=public-global-fishing-events:latest&start-date=${start_date}&end-date=${end_date}&limit=${limit}&offset=${offset}" \
     -H "Authorization: Bearer ${GFW_TOKEN}")
 
-  echo "$response" | jq -c '.events[]' >> "$output_file"
+  echo "$response" | jq -c '.entries[]' >> "$output_file"
 
   next_offset=$(echo "$response" | jq -r '.nextOffset')
   if [ "$next_offset" = "null" ]; then
@@ -25,5 +30,3 @@ while true; do
   fi
   offset="$next_offset"
 done
-
-pigz -f "$output_file"

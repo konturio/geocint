@@ -1611,14 +1611,13 @@ db/table/global_fires_stat_h3: deploy/s3/global_fires ## Aggregate active fire d
 data/in/gfw: | data/in ## Directory for Global Fishing Watch events data.
 	mkdir -p $@
 
-data/in/gfw/events_202505.jsonl.gz: | data/in/gfw ## Download GFW vessel events for May 2025.
-	bash scripts/fetch_gfw_events.sh 2025-05-01 2025-05-31 $@.tmp
-	mv $@.tmp.gz $@
+data/in/gfw/events_202505.jsonl: | data/in/gfw ## Download GFW vessel events for May 2025.
+	bash scripts/fetch_gfw_events.sh 2025-05-01 2025-05-31 $@
 
-db/table/gfw_events_raw: data/in/gfw/events_202505.jsonl.gz | db/table ## Load raw GFW events JSON into DB.
+db/table/gfw_events_raw: data/in/gfw/events_202505.jsonl | db/table ## Load raw GFW events JSON into DB.
 	psql -c "drop table if exists gfw_events_raw;"
 	psql -c "create table gfw_events_raw(json jsonb);"
-	gunzip -c $< | psql -c "copy gfw_events_raw(json) from stdin;"
+	cat data/in/gfw/events_202505.jsonl | psql -c "copy gfw_events_raw(json) from stdin;"
 	touch $@
 
 db/table/gfw_events: db/table/gfw_events_raw | db/table ## Parsed GFW events table.

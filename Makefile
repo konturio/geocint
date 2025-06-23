@@ -181,6 +181,7 @@ db/table/all_datasets: \
     db/table/building_construction_year_h3 \
     db/table/timezone_offset_h3 \
     db/table/railway_length_h3 \
+    db/table/gfw_flag_popular_h3 \
     | db/table ## service target to build all datasets without deployment
 	touch $@
 
@@ -1639,21 +1640,6 @@ db/table/gfw_ports_actual: db/table/gfw_events | db/table ## Actual port centroi
 db/table/gfw_flag_popular_h3: db/table/gfw_events db/table/gfw_vessel_flags | db/procedure/generate_overviews db/table ## Popular vessel flags per H3 cell.
 	psql -f tables/gfw_flag_popular_h3.sql
 	psql -c "call generate_overviews('gfw_flag_popular_h3', '{n_evts}'::text[], '{sum}'::text[], 11);"
-	touch $@
-
-data/out/csv/gfw_popular_flag.csv: db/table/gfw_flag_popular_h3 | data/out/csv ## Extract GFW popular flags to CSV.
-	psql -q -X -c "copy (select h3, top_flag, n_evts from gfw_flag_popular_h3 where h3 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
-
-deploy_indicators/dev/uploads/gfw_popular_flag_upload: data/out/csv/gfw_popular_flag.csv | deploy_indicators/dev/uploads ## upload gfw_popular_flag to insight-api
-	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gfw_popular_flag.csv "gfw_popular_flag" db/table/gfw_flag_popular_h3
-	touch $@
-
-deploy_indicators/test/uploads/gfw_popular_flag_upload: data/out/csv/gfw_popular_flag.csv | deploy_indicators/test/uploads ## upload gfw_popular_flag to insight-api
-	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gfw_popular_flag.csv "gfw_popular_flag" db/table/gfw_flag_popular_h3
-	touch $@
-
-deploy_indicators/prod/uploads/gfw_popular_flag_upload: data/out/csv/gfw_popular_flag.csv | deploy_indicators/prod/uploads ## upload gfw_popular_flag to insight-api
-	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gfw_popular_flag.csv "gfw_popular_flag" db/table/gfw_flag_popular_h3
 	touch $@
 
 ### END Global Fishing Watch block ###
@@ -3579,6 +3565,9 @@ data/out/csv/sports_and_recreation_fsq_count.csv: db/table/foursquare_os_places_
 data/out/csv/events_fsq_count.csv: db/table/foursquare_os_places_h3 | data/out/csv ## extract events_fsq_count to csv file
 	psql -q -X -c "copy (select h3, events_fsq_count from foursquare_os_places_h3 where h3 is not null and events_fsq_count is not null and events_fsq_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
+data/out/csv/gfw_popular_flag.csv: db/table/gfw_flag_popular_h3 | data/out/csv ## Extract GFW popular flags to CSV.
+	psql -q -X -c "copy (select h3, top_flag, n_evts from gfw_flag_popular_h3 where h3 is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+
 static_data/osm_example_values/start_dates.csv: db/table/osm ## export distinct OSM start_date values
 	psql -q -X -c "copy (select distinct tags->>'start_date' as start_date from osm where tags ? 'start_date' order by 1) to stdout with csv header" > $@
 
@@ -4277,6 +4266,10 @@ deploy_indicators/dev/uploads/events_fsq_count_upload: data/out/csv/events_fsq_c
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
+deploy_indicators/dev/uploads/gfw_popular_flag_upload: data/out/csv/gfw_popular_flag.csv | deploy_indicators/dev/uploads ## upload gfw_popular_flag to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/gfw_popular_flag.csv "gfw_popular_flag" db/table/gfw_flag_popular_h3
+	touch $@
+
 deploy_indicators/dev/uploads/upload_dev: \
     deploy_indicators/dev/uploads/view_count_upload \
     deploy_indicators/dev/uploads/count_upload \
@@ -4450,6 +4443,7 @@ deploy_indicators/dev/uploads/upload_dev: \
     deploy_indicators/dev/uploads/arts_and_entertainment_fsq_count_upload \
     deploy_indicators/dev/uploads/sports_and_recreation_fsq_count_upload \
     deploy_indicators/dev/uploads/events_fsq_count_upload \
+    deploy_indicators/dev/uploads/gfw_popular_flag_upload \
     | deploy_indicators/dev/uploads ## Control of layer uploads to Insights API or DEV without one and area_km2
 	touch $@
 
@@ -5469,6 +5463,10 @@ deploy_indicators/test/uploads/events_fsq_count_upload: data/out/csv/events_fsq_
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
+deploy_indicators/test/uploads/gfw_popular_flag_upload: data/out/csv/gfw_popular_flag.csv | deploy_indicators/test/uploads ## upload gfw_popular_flag to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/gfw_popular_flag.csv "gfw_popular_flag" db/table/gfw_flag_popular_h3
+	touch $@
+
 deploy_indicators/test/uploads/upload_test: \
     deploy_indicators/test/uploads/view_count_upload \
     deploy_indicators/test/uploads/count_upload \
@@ -5642,6 +5640,7 @@ deploy_indicators/test/uploads/upload_test: \
     deploy_indicators/test/uploads/arts_and_entertainment_fsq_count_upload \
     deploy_indicators/test/uploads/sports_and_recreation_fsq_count_upload \
     deploy_indicators/test/uploads/events_fsq_count_upload \
+    deploy_indicators/test/uploads/gfw_popular_flag_upload \
     | deploy_indicators/test/uploads  ##  Control of  layer uploads to Insigths API for TEST -  without area_km2 and one
 	touch $@
 
@@ -6662,6 +6661,10 @@ deploy_indicators/prod/uploads/events_fsq_count_upload: data/out/csv/events_fsq_
 	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/events_fsq_count.csv "events_fsq_count" db/table/foursquare_os_places_h3
 	touch $@
 
+deploy_indicators/prod/uploads/gfw_popular_flag_upload: data/out/csv/gfw_popular_flag.csv | deploy_indicators/prod/uploads ## upload gfw_popular_flag to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/gfw_popular_flag.csv "gfw_popular_flag" db/table/gfw_flag_popular_h3
+	touch $@
+
 deploy_indicators/prod/uploads/upload_prod: \
     deploy_indicators/prod/uploads/view_count_upload \
     deploy_indicators/prod/uploads/count_upload \
@@ -6833,6 +6836,7 @@ deploy_indicators/prod/uploads/upload_prod: \
     deploy_indicators/prod/uploads/arts_and_entertainment_fsq_count_upload \
     deploy_indicators/prod/uploads/sports_and_recreation_fsq_count_upload \
     deploy_indicators/prod/uploads/events_fsq_count_upload \
+    deploy_indicators/prod/uploads/gfw_popular_flag_upload \
     | deploy_indicators/prod/uploads ## Control of layer uploads to Insigths API for prod without one and area_km2
 	touch $@
 

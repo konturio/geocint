@@ -160,9 +160,12 @@ Indicators have two optional metadata fields describing their source granularity
 
 | value | meaning | covers examples |
 | ---------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| **static** | fixed value; doesn’t move with the calendar | *area_km2*, *one* |
 | **historical_static** | fixed multi-year climatology or census baseline compiled **>10 years** ago; doesn’t move with the calendar | *WorldClim 1970-2000*, *2000 census* |
 | **snapshot_year** | a single named year (often last authoritative release) | *Population 2023-11-01*, *Night-lights 2021* |
+| **rolling_2_years** | moving 2-year window ending “today” | *OSM contributor activity*, *total_hours* |
 | **rolling_year** | moving 365-day window ending “today” | *wildfire_days_count*, *cyclone_days_count* |
+| **rolling_6_months** | moving 6-month (or 183-day) window | *OSM objects (edited in last 6 months)*, *count_6_months* |
 | **rolling_month** | moving 30-day (or 4-week) window | *OSM views 30 d*, *recent_hotspots* |
 | **current_value** | latest single measurement, updated continuously | *wind speed*, *air temperature* |
 | **cumulative_to_date** | running total from the first record up to now; only increases (or steps down on data corrections) | *OSM edits since 2005*, *unique users who ever touched this cell* |

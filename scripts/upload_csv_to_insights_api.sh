@@ -44,7 +44,8 @@ params=$(psql -Xqtc "
     'temporal_extent', temporal_extent,
     'unit_id', unit_id,
     'emoji', emoji,
-    'downscale', downscale
+    'downscale', downscale,
+    'category', category::text
   )::text
   from bivariate_indicators where param_id = '$3';
 ")
@@ -61,6 +62,7 @@ layer_temporal_ext=$(echo "$params" | jq -r '.temporal_extent')
 layer_unit_id=$(echo "$params" | jq -r '.unit_id')
 layer_emoji=$(echo "$params" | jq -r '.emoji')
 layer_downscale=$(echo "$params" | jq -r '.downscale')
+layer_category=$(echo "$params" | jq -r '.category')
 
 # Retrieve and process copyrights and description separately
 layer_copyrights=$(psql -Xqtc "SELECT copyrights::text FROM bivariate_indicators WHERE param_id = '$3';" | sed 's/;/.,/g' | sed 's/, /,/g' | jq -c .)
@@ -90,11 +92,11 @@ fi
 if [[ -z $existing_uuid ]]; then
   action="upload"
   method="POST"
-  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"spatialResolution\": \"${layer_spatial_res}\", \"temporalExtent\": \"${layer_temporal_ext}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"spatialResolution\": \"${layer_spatial_res}\", \"temporalExtent\": \"${layer_temporal_ext}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"category\": ${layer_category}, \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
 else
   action="update"
   method="PUT"
-  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existing_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"spatialResolution\": \"${layer_spatial_res}\", \"temporalExtent\": \"${layer_temporal_ext}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existing_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"spatialResolution\": \"${layer_spatial_res}\", \"temporalExtent\": \"${layer_temporal_ext}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"category\": ${layer_category}, \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
 fi
 
 # Execute the curl request to upload the file

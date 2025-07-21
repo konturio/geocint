@@ -15,7 +15,8 @@ create table bivariate_indicators
     application json,
     unit_id text,
     emoji text,
-    downscale text
+    downscale text,
+    category json
 );
 
 alter table bivariate_indicators

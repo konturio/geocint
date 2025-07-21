@@ -9,6 +9,8 @@ create table bivariate_indicators
     description text,
     coverage text,
     update_frequency text,
+    spatial_resolution text,
+    temporal_extent text,
     is_public boolean,
     application json,
     unit_id text,

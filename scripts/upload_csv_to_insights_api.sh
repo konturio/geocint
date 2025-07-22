@@ -92,11 +92,11 @@ fi
 if [[ -z $existing_uuid ]]; then
   action="upload"
   method="POST"
-  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"spatialResolution\": \"${layer_spatial_res}\", \"temporalExtent\": \"${layer_temporal_ext}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"category\": ${layer_category}, \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"layerSpatialRes\": \"${layer_spatial_res}\", \"layerTemporalExt\": \"${layer_temporal_ext}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"category\": ${layer_category}, \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
 else
   action="update"
   method="PUT"
-  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existing_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"spatialResolution\": \"${layer_spatial_res}\", \"temporalExtent\": \"${layer_temporal_ext}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"category\": ${layer_category}, \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
+  parameters_json="{\"id\": \"${3}\", \"label\": \"${layer_label}\", \"uuid\": \"${existing_uuid}\", \"direction\": ${layer_direction}, \"isBase\": ${layer_isbase}, \"isPublic\": ${layer_ispublic}, \"copyrights\": ${layer_copyrights}, \"description\": \"${layer_description}\", \"coverage\": \"${layer_coverage}\", \"updateFrequency\": \"${layer_update_freq}\", \"layerSpatialRes\": \"${layer_spatial_res}\", \"layerTemporalExt\": \"${layer_temporal_ext}\", \"unitId\": \"${layer_unit_id}\", \"emoji\": \"${layer_emoji}\", \"downscale\": \"${layer_downscale}\", \"category\": ${layer_category}, \"hash\": \"${csv_hash}\", \"lastUpdated\": ${layer_last_updated}}"
 fi
 
 # Execute the curl request to upload the file

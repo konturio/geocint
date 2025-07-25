@@ -150,6 +150,7 @@ db/table/all_datasets: \
     db/table/worldclim_temperatures_h3 \
     db/table/isodist_bomb_shelters_h3 \
     db/table/isodist_charging_stations_h3 \
+    db/table/isodist_ports_h3 \
     db/table/waste_basket_coverage_h3 \
     db/table/proximities_h3 \
     db/table/solar_farms_placement_suitability_synthetic_h3 \
@@ -172,6 +173,8 @@ db/table/all_datasets: \
     db/table/osm_transport_facilities_h3 \
     db/table/osm_car_parkings_capacity_h3 \
     db/table/osm_heritage_sites_h3 \
+    db/table/osm_ports_h3 \
+    db/table/osm_power_plants_h3 \
     db/table/foursquare_os_places_h3 \
     db/table/kontur_population_h3 \
     db/table/wind_farms_h3 \
@@ -2156,6 +2159,18 @@ db/table/osm_heritage_sites_h3: db/table/osm_heritage_sites | db/procedure/gener
 	psql -f tables/osm_heritage_sites_h3.sql
 	touch $@
 
+db/table/osm_ports: db/index/osm_tags_idx | db/table ## Extract ports from osm.
+	psql -f tables/osm_ports.sql
+	touch $@
+
+db/table/osm_ports_h3: db/table/osm_ports | db/procedure/generate_overviews db/table ## Calculate number of ports per hexagon
+	psql -f tables/osm_ports_h3.sql
+	touch $@
+
+db/table/osm_power_plants_h3: db/table/osm db/index/osm_tags_idx db/function/parse_float | db/procedure/generate_overviews db/table ## Count of power plants and their capacity
+	psql -f tables/osm_power_plants_h3.sql
+	touch $@
+
 db/table/osm_car_parkings_capacity: db/index/osm_tags_idx | db/table ## Extract parkings capacity from osm
 	psql -f tables/osm_car_parkings_capacity.sql
 	touch $@
@@ -2214,6 +2229,10 @@ db/table/isodist_charging_stations_h3: db/table/update_isochrone_destinations db
 	psql -f tables/isodist_charging_stations_h3.sql
 	seq 8 -1 1 | xargs -I {} psql -f tables/isodist_h3_overview.sql -v table_name=isodist_charging_stations_h3 -v seq_res={}
 	psql -c "drop table isodist_charging_stations_h3_distinct;"
+	touch $@
+
+db/table/isodist_ports_h3: db/table/update_isochrone_destinations | db/procedure/generate_overviews db/table ## H3 hexagons from ports.
+	psql -f tables/isodist_ports_h3.sql
 	touch $@
 
 db/table/isodist_bomb_shelters_h3: db/table/update_isochrone_destinations db/table/kontur_population_h3 | db/table ## H3 hexagons from bomb shelters.
@@ -3117,6 +3136,9 @@ data/out/csv/man_distance_to_bomb_shelters.csv: db/table/isodist_bomb_shelters_h
 data/out/csv/man_distance_to_charging_stations.csv: db/table/isodist_charging_stations_h3 | data/out/csv ## extract man_distance_to_charging_stations to csv file
 	psql -q -X -c "copy (select h3, man_distance as man_distance_to_charging_stations from isodist_charging_stations_h3 where h3 is not null and man_distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/man_distance_to_charging_stations.csv
 
+data/out/csv/distance_to_port.csv: db/table/isodist_ports_h3 | data/out/csv ## extract distance_to_port to csv file
+	psql -q -X -c "copy (select h3, distance as distance_to_port from isodist_ports_h3 where h3 is not null and distance is not null order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/distance_to_port.csv
+
 data/out/csv/eatery_count.csv: db/table/osm_places_eatery_h3 | data/out/csv ## extract eatery_count to csv file
 	psql -q -X -c "copy (select h3, eatery_count from osm_places_eatery_h3 where h3 is not null and eatery_count is not null and eatery_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > data/out/csv/eatery_count.csv
 
@@ -3482,6 +3504,15 @@ data/out/csv/osm_car_parkings_capacity.csv: db/table/osm_car_parkings_capacity_h
 
 data/out/csv/osm_heritage_sites_count.csv: db/table/osm_heritage_sites_h3 | data/out/csv ## extract osm_heritage_sites_count to csv file
 	psql -q -X -c "copy (select h3, osm_heritage_sites_count from osm_heritage_sites_h3 where h3 is not null and osm_heritage_sites_count is not null and osm_heritage_sites_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_ports_count.csv: db/table/osm_ports_h3 | data/out/csv ## extract osm_ports_count to csv file
+	psql -q -X -c "copy (select h3, osm_ports_count from osm_ports_h3 where h3 is not null and osm_ports_count is not null and osm_ports_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_power_plants_count.csv: db/table/osm_power_plants_h3 | data/out/csv ## extract osm_power_plants_count to csv file
+	psql -q -X -c "copy (select h3, osm_power_plants_count from osm_power_plants_h3 where h3 is not null and osm_power_plants_count is not null and osm_power_plants_count > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
+
+data/out/csv/osm_power_plants_capacity_mw.csv: db/table/osm_power_plants_h3 | data/out/csv ## extract osm_power_plants_capacity_mw to csv file
+	psql -q -X -c "copy (select h3, osm_power_plants_capacity_mw from osm_power_plants_h3 where h3 is not null and osm_power_plants_capacity_mw is not null and osm_power_plants_capacity_mw > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
 
 data/out/csv/min_osm_heritage_admin_level.csv: db/table/osm_heritage_sites_h3 | data/out/csv ## extract min_osm_heritage_admin_level to csv file
 	psql -q -X -c "copy (select h3, min_osm_heritage_admin_level from osm_heritage_sites_h3 where h3 is not null and min_osm_heritage_admin_level is not null and min_osm_heritage_admin_level > 0 order by h3_get_resolution(h3), h3) to stdout with delimiter ',' csv;" > $@
@@ -4171,6 +4202,23 @@ deploy_indicators/dev/uploads/osm_heritage_sites_count_upload: data/out/csv/osm_
 deploy_indicators/dev/uploads/min_osm_heritage_admin_level_upload: data/out/csv/min_osm_heritage_admin_level.csv | deploy_indicators/dev/uploads ## upload min_osm_heritage_admin_level to insight-api
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/min_osm_heritage_admin_level.csv "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
 	touch $@
+
+deploy_indicators/dev/uploads/osm_ports_count_upload: data/out/csv/osm_ports_count.csv | deploy_indicators/dev/uploads ## upload osm_ports_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_ports_count.csv "osm_ports_count" db/table/osm_ports_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_power_plants_count_upload: data/out/csv/osm_power_plants_count.csv | deploy_indicators/dev/uploads ## upload osm_power_plants_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_power_plants_count.csv "osm_power_plants_count" db/table/osm_power_plants_h3
+	touch $@
+
+deploy_indicators/dev/uploads/osm_power_plants_capacity_mw_upload: data/out/csv/osm_power_plants_capacity_mw.csv | deploy_indicators/dev/uploads ## upload osm_power_plants_capacity_mw to insight-api
+	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/osm_power_plants_capacity_mw.csv "osm_power_plants_capacity_mw" db/table/osm_power_plants_h3
+	touch $@
+
+deploy_indicators/dev/uploads/distance_to_port_upload: data/out/csv/distance_to_port.csv | deploy_indicators/dev/uploads ## upload distance_to_port to insight-api
+	       bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/distance_to_port.csv "distance_to_port" db/table/isodist_ports_h3
+	       touch $@
+
 deploy_indicators/dev/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv | deploy_indicators/dev/uploads ## upload foursquare_os_places_count to insight-api
 	bash scripts/upload_csv_to_insights_api.sh dev data/out/csv/foursquare_os_places_count.csv "foursquare_os_places_count" db/table/foursquare_os_places_h3
 	touch $@
@@ -4383,6 +4431,10 @@ deploy_indicators/dev/uploads/upload_dev: \
     deploy_indicators/dev/uploads/osm_car_parkings_capacity_upload \
     deploy_indicators/dev/uploads/osm_heritage_sites_count_upload \
     deploy_indicators/dev/uploads/min_osm_heritage_admin_level_upload \
+    deploy_indicators/dev/uploads/osm_ports_count_upload \
+    deploy_indicators/dev/uploads/osm_power_plants_count_upload \
+    deploy_indicators/dev/uploads/osm_power_plants_capacity_mw_upload \
+    deploy_indicators/dev/uploads/distance_to_port_upload \
     deploy_indicators/dev/uploads/foursquare_os_places_count_upload \
     deploy_indicators/dev/uploads/coffee_shops_fsq_count_upload \
     deploy_indicators/dev/uploads/kebab_restaurants_fsq_count_upload \
@@ -5363,6 +5415,22 @@ deploy_indicators/test/uploads/min_osm_heritage_admin_level_upload: data/out/csv
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/min_osm_heritage_admin_level.csv "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
 	touch $@
 
+deploy_indicators/test/uploads/osm_ports_count_upload: data/out/csv/osm_ports_count.csv | deploy_indicators/test/uploads ## upload osm_ports_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_ports_count.csv "osm_ports_count" db/table/osm_ports_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_power_plants_count_upload: data/out/csv/osm_power_plants_count.csv | deploy_indicators/test/uploads ## upload osm_power_plants_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_power_plants_count.csv "osm_power_plants_count" db/table/osm_power_plants_h3
+	touch $@
+
+deploy_indicators/test/uploads/osm_power_plants_capacity_mw_upload: data/out/csv/osm_power_plants_capacity_mw.csv | deploy_indicators/test/uploads ## upload osm_power_plants_capacity_mw to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/osm_power_plants_capacity_mw.csv "osm_power_plants_capacity_mw" db/table/osm_power_plants_h3
+	touch $@
+
+deploy_indicators/test/uploads/distance_to_port_upload: data/out/csv/distance_to_port.csv | deploy_indicators/test/uploads ## upload distance_to_port to insight-api
+	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/distance_to_port.csv "distance_to_port" db/table/isodist_ports_h3
+	touch $@
+
 deploy_indicators/test/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv | deploy_indicators/test/uploads ## upload foursquare_os_places_count to insight-api
 	bash scripts/upload_csv_to_insights_api.sh test data/out/csv/foursquare_os_places_count.csv "foursquare_os_places_count" db/table/foursquare_os_places_h3
 	touch $@
@@ -5575,6 +5643,10 @@ deploy_indicators/test/uploads/upload_test: \
     deploy_indicators/test/uploads/osm_car_parkings_capacity_upload \
     deploy_indicators/test/uploads/osm_heritage_sites_count_upload \
     deploy_indicators/test/uploads/min_osm_heritage_admin_level_upload \
+    deploy_indicators/test/uploads/osm_ports_count_upload \
+    deploy_indicators/test/uploads/osm_power_plants_count_upload \
+    deploy_indicators/test/uploads/osm_power_plants_capacity_mw_upload \
+    deploy_indicators/test/uploads/distance_to_port_upload \
     deploy_indicators/test/uploads/foursquare_os_places_count_upload \
     deploy_indicators/test/uploads/coffee_shops_fsq_count_upload \
     deploy_indicators/test/uploads/kebab_restaurants_fsq_count_upload \
@@ -6556,6 +6628,22 @@ deploy_indicators/prod/uploads/min_osm_heritage_admin_level_upload: data/out/csv
 	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/min_osm_heritage_admin_level.csv "min_osm_heritage_admin_level" db/table/osm_heritage_sites_h3
 	touch $@
 
+deploy_indicators/prod/uploads/osm_ports_count_upload: data/out/csv/osm_ports_count.csv | deploy_indicators/prod/uploads ## upload osm_ports_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_ports_count.csv "osm_ports_count" db/table/osm_ports_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_power_plants_count_upload: data/out/csv/osm_power_plants_count.csv | deploy_indicators/prod/uploads ## upload osm_power_plants_count to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_power_plants_count.csv "osm_power_plants_count" db/table/osm_power_plants_h3
+	touch $@
+
+deploy_indicators/prod/uploads/osm_power_plants_capacity_mw_upload: data/out/csv/osm_power_plants_capacity_mw.csv | deploy_indicators/prod/uploads ## upload osm_power_plants_capacity_mw to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/osm_power_plants_capacity_mw.csv "osm_power_plants_capacity_mw" db/table/osm_power_plants_h3
+	touch $@
+
+deploy_indicators/prod/uploads/distance_to_port_upload: data/out/csv/distance_to_port.csv | deploy_indicators/prod/uploads ## upload distance_to_port to insight-api
+	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/distance_to_port.csv "distance_to_port" db/table/isodist_ports_h3
+	touch $@
+
 deploy_indicators/prod/uploads/foursquare_os_places_count_upload: data/out/csv/foursquare_os_places_count.csv | deploy_indicators/prod/uploads ## upload foursquare_os_places_count to insight-api
 	bash scripts/upload_csv_to_insights_api.sh prod data/out/csv/foursquare_os_places_count.csv "foursquare_os_places_count" db/table/foursquare_os_places_h3
 	touch $@
@@ -6766,6 +6854,10 @@ deploy_indicators/prod/uploads/upload_prod: \
     deploy_indicators/prod/uploads/osm_car_parkings_capacity_upload \
     deploy_indicators/prod/uploads/osm_heritage_sites_count_upload \
     deploy_indicators/prod/uploads/min_osm_heritage_admin_level_upload \
+    deploy_indicators/prod/uploads/osm_ports_count_upload \
+    deploy_indicators/prod/uploads/osm_power_plants_count_upload \
+    deploy_indicators/prod/uploads/osm_power_plants_capacity_mw_upload \
+    deploy_indicators/prod/uploads/distance_to_port_upload \
     deploy_indicators/prod/uploads/foursquare_os_places_count_upload \
     deploy_indicators/prod/uploads/coffee_shops_fsq_count_upload \
     deploy_indicators/prod/uploads/kebab_restaurants_fsq_count_upload \

@@ -1,3 +1,12 @@
+-- ➊ one row per hex, keep the cheapest agg_cost we have seen so far
+drop TABLE if exists hex_owner;
+CREATE TABLE hex_owner (
+    h3           h3index PRIMARY KEY,
+    airport_id   bigint,
+    cost         float  -- network distance / agg_cost
+);
+
+
 DO $$
 DECLARE
     airport RECORD;
@@ -9,7 +18,7 @@ BEGIN
     FOR airport IN
         SELECT id, geom
         FROM airports_india
-        WHERE name !~ 'Abandoned'
+        WHERE name !~ 'Abandoned' and disused is distinct from 'yes' and landuse is distinct from  'military' and access is distinct from 'private'
         --WHERE abandoned IS DISTINCT FROM 'yes'
     LOOP
         RAISE NOTICE 'Processing airport id=%', airport.id;
@@ -144,78 +153,117 @@ from pgr_dijkstra(
     directed := false
 );
 
+/* pick one row per start_hex (seq = max ⇒ last step of the path) */
+WITH cheapest AS (
+    SELECT DISTINCT ON (r.start_vid)
+           start_h3.h3,
+           airport.id      AS airport_id,
+           r.agg_cost      AS cost
+    FROM   routes r
+    JOIN   tmp_stat_h3 start_h3
+           ON r.start_vid = h3index_to_bigint(start_h3.h3)
+    WHERE  r.node = r.end_vid              -- last record of the path
+    ORDER  BY r.start_vid, r.agg_cost      -- keep the cheapest
+)
+INSERT INTO hex_owner AS ho (h3, airport_id, cost)
+SELECT h3, airport_id, cost
+FROM   cheapest
+ON CONFLICT (h3)            -- hex already assigned?
+DO UPDATE                    -- keep the cheaper one
+      SET (airport_id, cost) = (EXCLUDED.airport_id, EXCLUDED.cost)
+      WHERE EXCLUDED.cost < ho.cost;      -- only overwrite if better
+
 --select count(0) route_count_pgr_dijkstra from routes;
 
--- Join routes with relevant data
-drop table if exists route_segments;
-create table route_segments as
-select
-    r.seq seq,
-    e.source source,
-    e.target target,
-    r.start_vid path_start,
-    r.end_vid path_end,
-    -- for equal (source, target) tuple there can be 2 distinct geometries depending on edge orientation in current path
-    ST_SetSRID(st_makeline(
-        h3_cell_to_lat_lng(case node when source then source_h3 else target_h3 end)::geometry,
-        h3_cell_to_lat_lng(case node when source then target_h3 else source_h3 end)::geometry), 4326) geom,
-    start_h3.population as population_in_danger,
-    end_h3.capacity as cell_capacity,
-    sum(end_h3.capacity) over (partition by start_h3.h3) as total_reachable_capacity
-from routes r
-join edges e on (r.edge = e.edge_id)
-join tmp_stat_h3 start_h3 on r.start_vid = h3index_to_bigint(start_h3.h3)
-join tmp_stat_h3 end_h3 on r.end_vid = h3index_to_bigint(end_h3.h3)
-where
-    r.end_vid in (select h3index_to_bigint(h3) from tmp_stat_h3 where capacity > 0);
-
--- set of directed edges from all paths with amount of people travelling on each 
-drop table if exists evacuation_estimates;
-create table evacuation_estimates as
-select
-    rs.source,
-    rs.target,
-    path_start,
-    path_end,
-    rs.population_in_danger,
-    rs.geom,
-    rs.cell_capacity,
-    rs.total_reachable_capacity,
-    rs.population_in_danger * (rs.cell_capacity::float / rs.total_reachable_capacity::float) as estimated_evacuees
-from route_segments rs;
-
-
--- this is aggregated *undirected* graph of all edges:
--- each edge has a sum of people travelling through it, even if they has different start and/or end points
-drop table if exists evac_agg;
-create table evac_agg as
-select source, target, sum(estimated_evacuees) estimated_evacuees, max(geom) geom
-from evacuation_estimates
-group by 1,2;
-
-
-        -- After evac_agg is created, compute the reachable population:
-        SELECT SUM(indicator_value) INTO reachable
-        FROM stat_h3_transposed
-        WHERE h3 IN (
-            SELECT DISTINCT target::h3index FROM evac_agg
-        )
-        AND indicator_uuid = (
-            SELECT internal_id
-            FROM bivariate_indicators_metadata
-            WHERE owner = 'disaster.ninja'
-              AND param_id = 'population'
-              AND state = 'READY'
-            ORDER BY date DESC
-            LIMIT 1
-        );
-
-        -- Update the airport with the result
-        UPDATE airports_india
-        SET reachable_population = COALESCE(reachable, 0)
-        WHERE id = airport.id;
-
-        RAISE NOTICE 'Airport id=% -> reachable population = %', airport.id, reachable;
+---- Join routes with relevant data
+--drop table if exists route_segments;
+--create table route_segments as
+--select
+--    r.seq seq,
+--    e.source source,
+--    e.target target,
+--    r.start_vid path_start,
+--    r.end_vid path_end,
+--    -- for equal (source, target) tuple there can be 2 distinct geometries depending on edge orientation in current path
+--    ST_SetSRID(st_makeline(
+--        h3_cell_to_lat_lng(case node when source then source_h3 else target_h3 end)::geometry,
+--        h3_cell_to_lat_lng(case node when source then target_h3 else source_h3 end)::geometry), 4326) geom,
+--    start_h3.population as population_in_danger,
+--    end_h3.capacity as cell_capacity,
+--    sum(end_h3.capacity) over (partition by start_h3.h3) as total_reachable_capacity
+--from routes r
+--join edges e on (r.edge = e.edge_id)
+--join tmp_stat_h3 start_h3 on r.start_vid = h3index_to_bigint(start_h3.h3)
+--join tmp_stat_h3 end_h3 on r.end_vid = h3index_to_bigint(end_h3.h3)
+--where
+--    r.end_vid in (select h3index_to_bigint(h3) from tmp_stat_h3 where capacity > 0);
+--
+---- set of directed edges from all paths with amount of people travelling on each 
+--drop table if exists evacuation_estimates;
+--create table evacuation_estimates as
+--select
+--    rs.source,
+--    rs.target,
+--    path_start,
+--    path_end,
+--    rs.population_in_danger,
+--    rs.geom,
+--    rs.cell_capacity,
+--    rs.total_reachable_capacity,
+--    rs.population_in_danger * (rs.cell_capacity::float / rs.total_reachable_capacity::float) as estimated_evacuees
+--from route_segments rs;
+--
+--
+---- this is aggregated *undirected* graph of all edges:
+---- each edge has a sum of people travelling through it, even if they has different start and/or end points
+--drop table if exists evac_agg;
+--create table evac_agg as
+--select source, target, sum(estimated_evacuees) estimated_evacuees, max(geom) geom
+--from evacuation_estimates
+--group by 1,2;
+--
+--
+--        -- After evac_agg is created, compute the reachable population:
+--        SELECT SUM(indicator_value) INTO reachable
+--        FROM stat_h3_transposed
+--        WHERE h3 IN (
+--            SELECT DISTINCT target::h3index FROM evac_agg
+--        )
+--        AND indicator_uuid = (
+--            SELECT internal_id
+--            FROM bivariate_indicators_metadata
+--            WHERE owner = 'disaster.ninja'
+--              AND param_id = 'population'
+--              AND state = 'READY'
+--            ORDER BY date DESC
+--            LIMIT 1
+--        );
+--
+--        -- Update the airport with the result
+--        UPDATE airports_india
+--        SET reachable_population = COALESCE(reachable, 0)
+--        WHERE id = airport.id;
+--
+--        RAISE NOTICE 'Airport id=% -> reachable population = %', airport.id, reachable;
     END LOOP;
 END$$;
+
+UPDATE airports_india a
+SET    closest_reachable_population = COALESCE(pop.reach, 0)
+FROM  (
+    SELECT airport_id,
+           SUM(t.indicator_value) AS reach
+    FROM   hex_owner            ho
+    JOIN   stat_h3_transposed   t USING (h3)
+    WHERE  t.indicator_uuid = (
+             SELECT internal_id
+             FROM   bivariate_indicators_metadata
+             WHERE  owner = 'disaster.ninja'
+             AND    param_id = 'population'
+             AND    state = 'READY'
+             ORDER  BY date DESC
+             LIMIT 1)
+    GROUP  BY airport_id
+) pop
+WHERE a.id = pop.airport_id;
 

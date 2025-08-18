@@ -20,15 +20,13 @@ create table tmp_stat_h3 (h3, danger_estimate, passability, capacity, population
 with event(geom) as (
     -- TODO: replace with actual disaster shape (polygon or multipolygon)
     select ST_Transform(ST_Buffer(ST_SetSRID(ST_Point(
-                    -- -156.3270, 20.8215 -- Maui
-                    -83.52858, 35.78243 -- Sevier county
+                    -156.3270, 20.8215 -- Maui
     ), 4326)::geography, 25000)::geometry, 3857)
 ),
 event_buffer(geom) as (
     -- TODO: 60km hardcoded buffer radius
     select ST_Transform(ST_Buffer(ST_SetSRID(ST_Point(
-                    -- -156.3270, 20.8215 -- Maui
-                    -83.52858, 35.78243 -- Sevier county
+                    -156.3270, 20.8215 -- Maui
     ), 4326)::geography, 60000)::geometry, 4326)
 ),
 -- all h3 cells of simulation field

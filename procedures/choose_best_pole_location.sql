@@ -55,4 +55,4 @@ begin
 end;
 $$;
 
--- call example:  call choose_best_pole_location ('gatlinburg_candidates_copy', 'proposed_points_3_scenario', 30, '{1608.3,3216.6}'::float[]);
+-- call example:  call choose_best_pole_location ('testcity_candidates_copy', 'proposed_points_3_scenario', 30, '{1608.3,3216.6}'::float[]);

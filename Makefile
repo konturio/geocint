@@ -2965,14 +2965,14 @@ db/table/inform_risk_profile_2025_h3: db/table/inform_risk_profile_2025 | db/pro
 
 ### END Inform Risk Index
 
-### N5 Wildfire sensors placement block
+### Wildfire sensors placement block
 db/function/st_weightedcentroids: | db/function ## Converts text into a float or a NULL.
 	psql -f functions/st_weightedcentroids.sql
 	touch $@
 
-db/table/sevier_county_poles_without_osm: | db/table ## Load data about Sevier County poles
-	psql -c "drop table if exists sevier_county_poles_without_osm;"
-	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/sevier_county_poles_without_osm.gpkg -t_srs EPSG:4326 -nln sevier_county_poles_without_osm -lco GEOMETRY_NAME=geom
+db/table/county_poles_without_osm: | db/table ## Load data about County poles
+	psql -c "drop table if exists county_poles_without_osm;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/county_poles_without_osm.gpkg -t_srs EPSG:4326 -nln county_poles_without_osm -lco GEOMETRY_NAME=geom
 	touch $@
 
 db/table/areas_of_concern: | db/table ## Load areas_of_concern data
@@ -2980,22 +2980,22 @@ db/table/areas_of_concern: | db/table ## Load areas_of_concern data
 	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/areas_of_concern.gpkg -t_srs EPSG:4326 -nln areas_of_concern -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/gatlinburg: | db/table ## Load gatlinburg data
-	psql -c "drop table if exists gatlinburg;"
-	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/gatlinburg.gpkg -t_srs EPSG:4326 -nln gatlinburg -lco GEOMETRY_NAME=geom
+db/table/testcity: | db/table ## Load testcity data
+	psql -c "drop table if exists testcity;"
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/testcity.gpkg -t_srs EPSG:4326 -nln testcity -lco GEOMETRY_NAME=geom
 	touch $@
 
-db/table/gatlinburg_historical_fires_h3_r10: | db/table ## Load historical_fires data
+db/table/testcity_historical_fires_h3_r10: | db/table ## Load historical_fires data
 	psql -c "drop table if exists historical_fires;"
-	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/historical_fires.gpkg -t_srs EPSG:4326 -nln gatlinburg_historical_fires -lco GEOMETRY_NAME=geom
-	psql -f tables/count_items_in_h3_10r.sql -v table=gatlinburg_historical_fires -v table_h3=gatlinburg_historical_fires_h3_r10 -v item_count=fires_count
+	ogr2ogr --config PG_USE_COPY YES -f PostgreSQL PG:'dbname=gis' static_data/wildfire_sensors/historical_fires.gpkg -t_srs EPSG:4326 -nln testcity_historical_fires -lco GEOMETRY_NAME=geom
+	psql -f tables/count_items_in_h3_10r.sql -v table=testcity_historical_fires -v table_h3=testcity_historical_fires_h3_r10 -v item_count=fires_count
 	touch $@
 
-db/table/gatlinburg_poles: db/index/osm_tags_idx db/table/sevier_county_poles_without_osm | db/table ## Extract osm power poles and towers
-	psql -f tables/gatlinburg_poles.sql
+db/table/testcity_poles: db/index/osm_tags_idx db/table/county_poles_without_osm | db/table ## Extract osm power poles and towers
+	psql -f tables/testcity_poles.sql
 	touch $@
 
-db/procedures/poles_for_sensors_placement_v3: db/table/gatlinburg_poles db/table/gatlinburg_historical_fires_h3_r10 db/table/gatlinburg db/table/areas_of_concern db/table/kontur_population_h3 db/function/st_weightedcentroids | db/procedures ## select poles suitable for wildfire sensors placement (requires kontur_population on resolution 10)
+db/procedures/poles_for_sensors_placement_v3: db/table/testcity_poles db/table/testcity_historical_fires_h3_r10 db/table/testcity db/table/areas_of_concern db/table/kontur_population_h3 db/function/st_weightedcentroids | db/procedures ## select poles suitable for wildfire sensors placement (requires kontur_population on resolution 10)
 	psql -f procedures/select_poles_for_sensors_placement_v3.sql
 	touch $@
 
@@ -3005,7 +3005,7 @@ data/out/v3_output: db/procedures/poles_for_sensors_placement_v3 | data/out/wild
 	rm -f data/out/wildfire_sensors_placement_1_mile_buffer.gpkg
 	ogr2ogr -f GPKG data/out/wildfire_sensors_placement_1_mile_buffer.gpkg PG:'dbname=gis' -sql "select * from wildfire_sensors_placement_1_mile_buffer order by rank" -lco "SPATIAL_INDEX=NO" -nln wildfire_sensors_placement_1_mile_buffer
 	rm -f data/out/uncovered_areas.gpkg
-	ogr2ogr -f GPKG data/out/uncovered_areas.gpkg PG:'dbname=gis' -sql "select h3, cost, updated_cost, geom from gatlinburg_stat_h3_r10 where updated_cost > 0 order by h3" -lco "SPATIAL_INDEX=NO" -nln uncovered_areas
+	ogr2ogr -f GPKG data/out/uncovered_areas.gpkg PG:'dbname=gis' -sql "select h3, cost, updated_cost, geom from testcity_stat_h3_r10 where updated_cost > 0 order by h3" -lco "SPATIAL_INDEX=NO" -nln uncovered_areas
 	touch $@
 
 db/procedures/poles_for_sensors_placement_v4: db/procedures/poles_for_sensors_placement_v3 db/function/st_weightedcentroids | db/procedures ## V4 create 2 scenarios for wildfire sensors placement (requires kontur_population on resolution 10)

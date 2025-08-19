@@ -11,19 +11,19 @@ create table osm_poles_towers as (
 
 create index on osm_poles_towers using gist(geom);
 
-drop table if exists gatlinburg_poles;
-create table gatlinburg_poles as (
+drop table if exists testcity_poles;
+create table testcity_poles as (
     select p.osm_id as objectid,
            'osm'    as source,
            geom
-    from osm_poles_towers p, gatlinburg g 
+    from osm_poles_towers p, testcity g 
     where ST_Intersects(p.geom, g.geom)
     union all
     select objectid,
            source,
            geom
-    from sevier_county_poles_without_osm
+    from county_poles_without_osm
 );
-create index on gatlinburg_poles using gist(geom);
+create index on testcity_poles using gist(geom);
 
 drop table if exists osm_poles_towers;
